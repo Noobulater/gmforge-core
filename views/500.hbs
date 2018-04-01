@@ -1,0 +1,26 @@
+<center><img src='/content/banner8.png' style='width: 615px; height: 128px;'></img></center>
+<script>
+  var container = $("<div>").appendTo("body");
+  container.addClass("flexaround");
+
+  var div = $("<div>").appendTo(container);
+  div.css("display", "inline-block");
+  div.addClass("flexmiddle");
+
+  var chatboxPrompt = $("<div>").appendTo(div);
+  chatboxPrompt.css("border-radius", "4px");
+  chatboxPrompt.css("margin", "0");
+  chatboxPrompt.css("max-width", "40vw");
+
+  chatboxPrompt.append("<h4 class='flexmiddle'>Zogs, Dah Crooza has crashed (Error 500 - Server Error)</h4>");
+
+  var a = $("<a>").appendTo(div);
+  a.attr("href", "http://imaduck.deviantart.com/art/ORK-MEK-331399371");
+  a.addClass("flexmiddle");
+
+  var img = $("<img>").appendTo(a);
+  img.attr("src", "/content/ork.png");
+  img.css("display", "block");
+  img.css("width", "240px");
+  img.after("<i class='flexmiddle'>Image by Derek Mancini</i>");
+</script>

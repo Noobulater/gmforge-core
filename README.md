@@ -22,7 +22,7 @@ To start testing your code, simply go to the development server @ www.gmforge.io
 
 #### Testing on your local GM Forge server
 
-In order to get your new code running, you must first concatenate your modified 'Scripts' folder together into a single file, 'core.js'. 
+In order to get your new code running, you must first concatenate your modified 'Scripts' folder together into a single file, 'core.js'.
 
 #####TODO Write out how to concatenate your files
 

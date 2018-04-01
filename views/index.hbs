@@ -1,0 +1,19 @@
+<div class="flexcolumn" style="position: absolute; left:0; top: 0; width: 100%; height:100%; overflow:hidden;">
+  <div class="flexcolumn flex" style="position: relative; overflow: hidden;" id="viewPort" host={{host}} player={{player}}>
+  </div>
+</div>
+<div id='videoRemotes'></div>
+<script>
+$.ajax({
+   url: '/gameList',
+   error: function(code) {
+     console.log(code);
+   },
+   dataType: 'json',
+   success: function(data) {
+     game.locals["gameList"] = game.locals["gameList"] || data.list;
+     openSplash();
+   },
+   type : "GET",
+});
+</script>

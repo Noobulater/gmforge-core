@@ -1,0 +1,270 @@
+<style>
+/*This is applied to the main template*/
+.primary {
+	background-color: rgba(255, 255, 255, 1.0);
+	box-shadow: inset 4px 4px 1em rgb(255,255,255);
+}
+
+.secondary {
+	background-color: rgba(38, 38, 38, 1.0);
+}
+
+.highlight {
+	background: linear-gradient(to top, rgba(190,4,15,1.0), rgba(230,44,55,1.0));
+}
+
+.highlight2 {
+	background-color: rgba(230,44,55,1.0);
+}
+
+.white {
+	background-color: white;
+}
+
+.dull {
+	color : rgba(215, 215, 215, 1.0);
+}
+
+.create {
+	color : rgba(66, 138, 66, 1.0);
+	-webkit-text-fill-color: rgba(66, 138, 66, 1.0);
+}
+
+.combat {
+	color : rgba(190,4,15,1.0);
+	-webkit-text-stroke-color: rgba(255, 255, 255, 1.0);
+	-webkit-text-fill-color: rgba(190,4,15,1.0);
+}
+
+.destroy {
+	color : rgba(190,4,15,1.0);
+ 	-webkit-text-fill-color: rgba(190,4,15,1.0);
+}
+
+.alttext {
+	font-weight: bold;
+	color: white;
+	text-shadow: 0em 0em 8px black;
+}
+
+.hover1:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: rgba(190,4,15,1.0);
+	outline-color: rgba(190,4,15,1.0);
+	cursor : pointer;
+}
+
+/*rgba(230,44,55, 0.6)*/
+.hover2:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: rgba(230,44,55,1.0);
+	outline-color: rgba(230,44,55,1.0);
+	box-shadow: 0 0 0.5em rgb(230,44,55);
+	cursor : pointer;
+}
+
+.hover3:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: #ff8a42;
+	outline-color: rgba(66, 138, 66, 1.0);
+	cursor : pointer;
+}
+
+.hover:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: rgba(99, 207, 99, 1.0);
+	outline-color: rgba(230,44,55,1.0);
+	cursor : pointer;
+}
+
+.link {
+	color : inherit;
+}
+
+.link:hover {
+	color: rgba(66, 138, 66, 1.0);
+}
+
+.noHover:hover {
+	color: inherit;
+}
+
+.focus {
+	/*background: linear-gradient(to top, #ff8a42, #ffAD75);*/
+	box-shadow: inset 0 0 0.5em rgb(230,44,55);
+}
+
+.foreground {
+	background : none;
+  background-color: rgb(33,46,55);
+}
+
+.background {
+	background: linear-gradient(to top, rgb(33,46,55), rgb(44,57,66));
+}
+
+.overlay {
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+.noflex {
+	display: block;
+	justify-content: none;
+}
+
+.flexrow {
+  display: flex;
+	flex-flow: row;
+	min-height: 0;
+}
+
+.flexcolumn {
+  display: flex;
+	flex-flow: column;
+	min-height: 0;
+}
+
+.flexaround {
+	display: flex;
+	justify-content: space-around;
+	min-height: 0;
+}
+
+.flexbetween {
+	display: flex;
+	justify-content: space-between;
+	min-height: 0;
+}
+
+.flexcenter {
+	display: flex;
+	justify-content: center;
+	min-height: 0;
+}
+
+.flexmiddle {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	min-height: 0;
+}
+
+.middle {
+	text-align: center;
+}
+
+.smooth {
+	border-radius: 2px;
+}
+
+.rounded {
+	border-radius: 25%;
+}
+
+.round {
+	border-radius: 50%;
+}
+
+.flexwrap {
+  display: flex;
+	flex-wrap: wrap;
+}
+
+.flex {
+	flex: 1;
+}
+
+.flex2 {
+	flex: 2;
+}
+
+.flex3 {
+	flex: 3,
+}
+
+.flex4 {
+	flex: 4;
+}
+
+.lightoutline {
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.outline {
+	border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+a {
+	text-decoration : none;
+}
+</style>
+<div style='width : 100%; height : 100%; color : #333' class='flexcolumn flexmiddle' id='bdy'>
+	<div><b style='font-size: 1.4em;'>Loading</b><br><b style='font-size: 0.8em;'>The worldbuilder will launch shortly!</b></div><br>
+
+	<a href='https://www.patreon.com/noobulater' target='_'>
+		<div class='flexcolumn flexmiddle' style='color : #333; text-decoration : none;'>
+			<div class='loader flexmiddle' style='position:relative;'><div class='flexcolumn' style='font-size:0.8em;'><img height=40 src='/content/patreon.png'></img><b style='text-decoration : none;'>Wheee!</b></div></div>
+			<div style='text-decoration:underline; font-weight : bold;'>Like the project?<br> Support the creation of more tools like this on patreon!</div>
+		</div>
+		<div class='flexrow flexmiddle spadding'>
+			<a target="_" href='https://twitter.com/noobulater'class='hover2 lrmargin lrpadding'>
+				<img  style='width : 2em' src='https://cdn1.iconfinder.com/data/icons/logotypes/32/twitter-128.png'></img>
+			</a>
+			<a target="_blank" href='https://www.patreon.com/user?u=4706291' class='hover2 lrmargin lrpadding'>
+				<img style='width : 2em' src='/content/patreon.png'></img>
+			</a>
+
+			<a target="_" href='https://www.facebook.com/GameMasterApp/' class='hover2 lrmargin lrpadding'>
+				<img style="width: 2em;" src='https://en.facebookbrand.com/wp-content/uploads/2016/05/FB-fLogo-Blue-broadcast-2.png'></img>
+			</a>
+			<a target="_" href='https://www.reddit.com/r/GameMasterApp/' class='hover2 lrmargin lrpadding'>
+				<img style="width: 2em;" src='/content/redditicon.png'></img>
+			</a>
+			<a target="_" href='https://discord.gg/usy4ByN' class='hover2 lrmargin lrpadding'>
+				<img style="width: 2em;" src='/content/Discord-Logo-Black.png'></img>
+			</a>
+		</div>
+	</a>
+
+	<a href='{{URL}}' target="_" stlye='font-size:1.4em;'>Didn't Open? Click here to start!</a>
+	<a href='http://www.gmforge.io/' target="_">Make sure to check the site for the latest updates</a>
+</div>
+<div id='loadport'></div>
+<script>
+var supressLoad;
+$("#loadport").load("http://files.gmforge.io/worlds", function( response, status, xhr ) {
+  if ( status == "error" ) {
+		setTimeout(function(){
+			if (!supressLoad) {
+				var w = window.open("{{URL}}","_blank");
+			}
+		}, Math.random() * 2000 + 1000);
+  }
+	else {
+		setTimeout(function(){
+			if (!supressLoad) {
+				var w = window.open("{{URL}}","_blank");
+			}
+		}, Math.random() * 2000 + 1000);
+		$("body").append(response);
+	}
+});
+</script>

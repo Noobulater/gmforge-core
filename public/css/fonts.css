@@ -1,0 +1,76 @@
+@font-face {
+  font-family: BolsterBold;
+  src: url('/content/bolsterbold_bold.ttf');
+}
+
+@font-face {
+  font-family: Arkhip;
+  src: url('/content/arkhip_font.ttf');
+}
+
+@font-face {
+  font-family: DragonForce;
+  src: url('/content/dragonForce.ttf');
+}
+
+@font-face {
+  font-family: EvilDead;
+  src: url('/content/evildead.ttf');
+}
+
+@font-face {
+  font-family: Immortal;
+  src: url('/content/immrtlt_.ttf');
+}
+
+@font-face {
+  font-family: LifeCraft;
+  src: url('/content/lifecraft_font.ttf');
+}
+
+@font-face {
+  font-family: scriptin;
+  src: url('/content/fonts/otto.ttf');
+}
+
+@font-face {
+  font-family: scriptalt;
+  src: url('/content/fonts/scriptalt.ttf');
+}
+
+@font-face {
+  font-family: StarJedi;
+  src: url('/content/star_jedi.ttf');
+}
+
+@font-face {
+  font-family: Kickstarter;
+  src: url('/content/kickstarter.ttf');
+}
+
+
+
+/*
+HOMEBREWERY STUFF
+*/
+
+
+@font-face {
+  font-family: "Bookinsanity";
+  src: url('/content/fonts/Bookinsanity.otf');
+}
+
+@font-face {
+  font-family: "Nodesto Caps Condensed";
+  src: url('/content/fonts/Nodesto Caps Condensed.otf');
+}
+
+@font-face {
+  font-family: "Scaly Sans";
+  src: url('/content/fonts/Scaly Sans.otf');
+}
+
+@font-face {
+  font-family: "Zatanna Misdirection";
+  src: url('/content/fonts/Zatanna Misdirection.otf');
+}

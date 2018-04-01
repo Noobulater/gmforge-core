@@ -1,0 +1,162 @@
+.board-selected {
+  box-shadow: inset 0 0 0.5em rgba(255, 138, 66, 1.0);
+  outline : 1px solid rgba(255, 138, 66, 1.0);
+}
+.marker-selected {
+  box-shadow: inset 0 0 0.5em rgba(255, 138, 66, 1.0);
+  outline : 1px solid rgba(255, 138, 66, 1.0);
+}
+.stamp-selected {
+  box-shadow: inset 0 0 0.5em rgba(255, 138, 66, 1.0);
+  outline : 1px solid rgba(255, 138, 66, 1.0);
+}
+.card-selected {
+  box-shadow: inset 0 0 0.5em rgba(255, 138, 66, 1.0);
+  outline : 1px solid rgba(255, 138, 66, 1.0);
+  background: rgba(255, 138, 66, 1.0);
+}
+
+.selected {
+  box-shadow: inset 0 0 0.5em rgba(255, 138, 66, 1.0);
+  outline : 1px solid rgba(255, 138, 66, 1.0);
+}
+
+.mce-tinymce, .mce-container-body, #code_ifr {
+    min-height: 100% !important;
+}
+/* fix for tile selection */
+div.ui-selectable-helper {
+  pointer-events: none;
+}
+
+div.body-background {
+  position: relative;
+  width: 200px;
+  height: 200px;
+
+  background-color: white;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  z-index: 0;
+}
+
+div.body-mask {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  -webkit-mask-position-x: center;
+  -webkit-mask-position-y: center;
+  -webkit-mask-repeat-x: no-repeat;
+  -webkit-mask-repeat-y: no-repeat;
+  -webkit-mask-size: 100% 100%;
+
+  mask-position: center;
+  mask-repeat-x: no-repeat;
+  mask-repeat-y: no-repeat;
+  mask-size: 100% 100%;
+}
+
+div.body-part {
+  position: absolute;
+  border: 1px dotted rgb(30, 30, 30);
+  background-color: rgba(0,0,0,0);
+  cursor: pointer;
+}
+
+.ui-popout {
+  border: 0px solid rgba(0, 0, 0, 0);
+  border-radius: 2px;
+  max-height: 99vh;
+  max-width: 99vw;
+}
+
+.ui-stat {
+  padding: 4px;
+  text-align: center;
+}
+
+input.ui-stat {
+  display: block;
+  width: 3em;
+  padding: 4px;
+  text-align: center;
+}
+
+input.advancement {
+  width: 0.8em;
+  height: 0.8em;
+}
+
+div.application {
+  flex : 1;
+  overflow-x: hidden;
+  outline : 1px solid rgba(0,0,0,0.05);
+}
+
+div.ui-dropoption-disabled {
+	color: grey;
+	cursor: not-allowed;
+}
+
+div.ui-dropoption {
+	cursor: pointer;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+div.ui-dropoption:hover {
+	background-color: rgba(200, 255, 200, 0.8);
+	outline: 1px solid #333;
+}
+
+div.choice {
+  display: inline-block;
+  padding: 4px;
+  color: white;
+  background-color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cursorT {
+  -webkit-transition: left 50ms, top 50ms; /* Safari */
+  transition: left 50ms, top 50ms, transform 500ms, -ms-transform 500ms, -webkit-transform 500ms, -webkit-transform 500ms; /* Safari */
+}
+
+.pieceT {
+  -webkit-transition: left 1s, top 1s; /* Safari */
+  transition: left 1s, top 1s, transform 500ms, -ms-transform 500ms, -webkit-transform 500ms, -webkit-transform 500ms; /* Safari */
+}
+
+div.piece {
+  position: absolute;
+  display: block;
+  min-width: 10;
+  min-height: 10;
+  overflow-x: none;
+  overflow-y: none;
+  border-radius: 2px;
+}
+
+.sheet-hover {
+	border: 3px solid #ff8a42;
+  background-color: rgba(66, 138, 66, 0.4);
+  cursor : pointer;
+}
+
+.sheet-hover:hover {
+	background-color: rgba(66, 138, 66, 0.4);
+	cursor : pointer;
+}
+
+.decor-selected {
+	outline: 3px solid #ff8a42;
+  background-color: rgba(66, 138, 66, 0.4);
+  cursor : pointer;
+}

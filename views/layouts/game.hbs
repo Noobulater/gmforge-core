@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- fixes jquery error load before and after -->
+		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"></link>
+		<link rel="stylesheet" href="/css/jquery-ui.min.css"></link>
+		<link rel="stylesheet" href="/css/base.css"></link>
+		<link rel="stylesheet" href="/css/layout.css"></link>
+		<link rel="stylesheet" href="/css/ui.css"></link>
+		<link rel="stylesheet" href="/css/credits.css"></link>
+		<link rel="stylesheet" href="/css/effects.css"></link>
+		<link rel="stylesheet" href="/css/autocomplete.css"></link>
+		<link rel="stylesheet" href="/css/fonts.css"></link>
+		<script src="/bin/jquery-3.2.1.min.js"></script>
+		<script src="/bin/jquery-ui.min.js"></script>
+		<script src="/bin/jquery-canvas.min.js"></script>
+	  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+		<script src="https://www.youtube.com/iframe_api"></script>
+		<script src="https://apis.google.com/js/client.js?onload=initMediaAPI" type="text/javascript"></script>
+		<script src="/bin/pdf.js"></script>
+		<script src="/bin/pdf.worker.js"></script>
+		<script src="/tinymce/js/tinymce/tinymce.min.js"></script>
+		<script src="/bin/chance.min.js"></script>
+		<script src="/bin/pixi.min.js"></script>
+		<script src="/bin/core.js"></script>
+		<script src="/bin/standalone.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<meta name="keywords" content={{tags}}/>
+		<link rel="icon" type="image/png" href="/content/icon.png"></link>
+		<title>{{{title}}}</title>
+		<script>if (window.module) module = window.module;</script>
+	</head>
+	<body style='overflow:hidden;'>
+		<div class="flexcolumn" style="width : 100%; min-height : 100vh;">
+			<div id="alertList" style="position: fixed; top: 10vh; width: 100%; height: auto; z-index : 1000000; pointer-events : none;" class='flexcolumn flexmiddle flexwrap'></div>
+			<div class="flexcolumn flex" style="position: relative">
+				{{{body}}}
+			</div>
+		</div>
+	</body>
+</html>

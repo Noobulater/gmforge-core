@@ -1,0 +1,20 @@
+.titles {
+  $titles-width: 14.65em;
+  width: $titles-width;
+  margin: 0 0 0 (- $titles-width / 2);
+  top: auto;
+  bottom: 0;
+  height: 50em;
+  color : #ff6;
+  font-size: 350%;
+  text-align: justify;
+  overflow: hidden;
+  transform-origin: 50% 100%;
+}
+
+@-webkit-keyframes creditsroll {
+    0%   {top: 0px;}
+    25%  {top: 200px;}
+    75%  {top: 50px}
+    100% {top: 100px;}
+}

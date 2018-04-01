@@ -1,0 +1,3385 @@
+﻿//This file is protected under the OGL http://www.opengamingfoundation.org/licenses.html
+Dungeons and Dragons 5th={<
+	Race?Race={(
+		Unidentified?No bonuses for this race={<
+		>}
+		Dwarf={<
+			INFO-
+			race:Dwarf
+			STATS-
+			Con:{"modifiers":{"Racial":2}}
+			COUNTERS-
+			speed:25
+			TAGS-
+			lang_Dwarvish:true
+			lang_Common:true
+			prof_Battleaxe:true
+			prof_Handaxe:true
+			prof_Warhammer:true
+			prof_Throwing Hammer:true
+			SPECIALS-
+			Proud and Stout:Dwarves do not reduce movement by wearing heavy armor
+			Darksight:Within 60ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+			Stout Toughness:Dwarves have resistance against poison, and have advantage when making these rolls
+			Stonebuff:Dwarves are proficient, and add double proficiency when making History checks to determine the origin of stoneworks
+			Sub-Race={(
+				Hill Dwarf={<
+					INFO-
+					race:Hill Dwarf
+					STATS-
+					Wis:{"modifiers":{"Racial":1}}
+					COUNTERS-
+					hp:{"modifiers" : {"0":1}}
+					SPECIALS-
+					Dwarven Toughness:Your hit point maximum increases by 1, and it increases by 1 every time you gain a level
+				>}
+				Mountain Dwarf={<
+					INFO-
+					race:Mountain Dwarf
+					STATS-
+					Str:{"modifiers":{"Racial":2}}
+					TAGS-
+					prof_Light Armor:true
+					prof_Medium Armor:true
+				>}
+			)}
+			Tool Proficiency={(
+				Smith's Tools={<
+					TAGS-
+					prof_Smithing Tools:true
+				>}
+				Brewer's Supplies={<
+					TAGS-
+					prof_Brewer Supplies:true
+				>}
+				Mason's Tools={<
+					TAGS-
+					prof_Mason's Tools:true
+				>}
+			)}
+		>}
+		Elf={<
+			INFO-
+			race:Elf
+			STATS-
+			Dex:{"modifiers":{"Racial":2}}
+			TAGS-
+			lang_Elvish:true
+			lang_Common:true
+			SKILLS-
+			Perception (Wis)
+			SPECIALS-
+			Elvish Immunitiy:Elves have advatange whilst attemping to be charmed, and are immune to sleep magic
+			Resting Mind:Elves sleep in a semi-concious state for a reduced amount of time
+			Sub-Race={(
+				High Elf={<
+					INFO-
+					race:High Elf
+					STATS-
+					Int:{"modifiers":{"Racial":1}}
+					TAGS-
+					prof_Longsword:true
+					prof_Shortsword:true
+					prof_Longbow:true
+					prof_Shortbow:true
+					SPECIALS-
+					Darksight:Within 60ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+					Elves are Magical:Elves can know one cantrip from the wizard spell list, and use intelligence to cast it
+				>}
+				Wood Elf={<
+					INFO-
+					race:Wood Elf
+					COUNTERS-
+					speed:35
+					STATS-
+					Wis:{"modifiers":{"Racial":1}}
+					TAGS-
+					prof_Longsword:true
+					prof_Shortsword:true
+					prof_Longbow:true
+					prof_Shortbow:true
+					SPECIALS-
+					Darksight:Within 60ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+					Wilderness Mask:Wood Elves can hide even when only slightly obscured by nature
+				>}
+				Dark Elf={<
+					INFO-
+					race:Dark Elf
+					STATS-
+					Cha:{"modifiers":{"Racial":1}}
+					TAGS-
+					prof_Rapier:true
+					prof_Shortsword:true
+					prof_Hand Crossbow:true
+					SPECIALS-
+					Dark Elf Magic:Dark elves know dancing lights at base level, faeric fire once per day at 3, and darkness once per day at 5. Uses Charisma
+					Superior Darksight:Within 120ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+					Sparkling:Dark Elves are disatvantaged when taking perception checks based on sight in the sunlight
+				>}
+			)}
+		>}
+		Halfling={<
+			INFO-
+			race:Halfling
+			STATS-
+			Dex:{"modifiers":{"Racial":2}}
+			TAGS-
+			lang_Halfling:true
+			lang_Common:true
+			COUNTERS-
+			speed:25
+			SPECIALS-
+			Lucky:When a critical failure is rolled on a saving bonus, re-roll it and use the new result
+			Brave:When saving against being frightened, Halflings have advantage
+			Nimble:Halflings can not be blocked by creatures larger than them
+			Sub-Race={(
+				Lightfoot={<
+					INFO-
+					race:Lightfoot Halfling
+					STATS-
+					Cha:{"modifiers":{"Racial":1}}
+					SPECIALS-
+					Slight:Lightfoot Halflings may hide behind creatures that are only a size larger than them
+				>}
+				Stout={<
+					INFO-
+					race:Stout Halfling
+					STATS-
+					Con:{"modifiers":{"Racial":1}}
+					SPECIALS-
+					Stout Toughness:Stout Halflings have resistance against poison, and have advantage when making these rolls
+				>}
+			)}
+		>}
+		Human={<
+			STATS-
+			Str:{"modifiers":{"Racial":1}}
+			Dex:{"modifiers":{"Racial":1}}
+			Con:{"modifiers":{"Racial":1}}
+			Int:{"modifiers":{"Racial":1}}
+			Wis:{"modifiers":{"Racial":1}}
+			Cha:{"modifiers":{"Racial":1}}
+			TAGS-
+			lang_Common:true
+			SPECIALS-
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+		Dragonborn={<
+			INFO-
+			race:Dragonborn
+			STATS-
+			Str:{"modifiers":{"Racial":2}}
+			Cha:{"modifiers":{"Racial":1}}
+			PROFICIENT
+			Language Common : true
+			Language Draconic : true
+			SPECIALS-
+			Language:Dragonborn know Draconic and Common
+			Natural Resistance:Dragonborn have natural damage resistance to their breathe's damage type
+			Dragontype={(
+				Black={<
+					INFO-
+					race:Black Dragonborn
+					SPECIALS-
+					Black Dragon:Dragonborn breathe weapon is an Acid 5 by 30ft line (Dex save)
+				>}
+				Blue={<
+					INFO-
+					race:Blue Dragonborn
+					SPECIALS-
+					Blue Dragon:Dragonborn breathe weapon is a Lightning a 5 by 30ft line (Dex save)
+				>}
+				Brass={<
+					INFO-
+					race:Brass Dragonborn
+					SPECIALS-
+					Brass Dragon:Dragonborn breathe weapon is a Fire a 5 by 30ft line (Dex save)
+				>}
+				Bronze={<
+					INFO-
+					race:Bronze Dragonborn
+					SPECIALS-
+					Bronze Dragon:Dragonborn breathe weapon is a Lightning 5 by 30ft line (Dex save)
+				>}
+				Copper={<
+					INFO-
+					race:Copper Dragonborn
+					SPECIALS-
+					Copper Dragon:Dragonborn breathe weapon is an Acid 5 by 30ft line (Dex save)
+				>}
+				Gold={<
+					INFO-
+					race:Gold Dragonborn
+					SPECIALS-
+					Gold Dragon:Dragonborn breathe weapon is a Fire 15ft cone (Dex save)
+				>}
+				Green={<
+					INFO-
+					race:Green Dragonborn
+					SPECIALS-
+					Green Dragon:Dragonborn breathe weapon is a Poison 15ft cone (Con save)
+				>}
+				Red={<
+					INFO-
+					race:Red Dragonborn
+					SPECIALS-
+					Red Dragon:Dragonborn breathe weapon is a Fire 15ft cone (Dex save)
+				>}
+				Silver={<
+					INFO-
+					race:Silver Dragonborn
+					SPECIALS-
+					Silver Dragon:Dragonborn breathe weapon is a Cold 15ft cone (Con save)
+				>}
+				White={<
+					INFO-
+					race:White Dragonborn
+					SPECIALS-
+					White Dragon:Dragonborn breathe weapon is a Cold 15ft cone (Con save)
+				>}
+			)}
+		>}
+		Gnome={<
+			INFO-
+			race:Gnome
+			STATS-
+			Int:{"modifiers":{"Racial":2}}
+			COUNTERS-
+			speed:25
+			TAGS-
+			lang_Common : true
+			lang_Gnomish : true
+			SPECIALS-
+			Gnomish Cunning:Gnomes have advantage on Intelligence/Wisdom and Charisma magical saving bonuses
+			Darksight:Within 60ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+			Sub-Race={(
+				Forest Gnome={<
+					INFO-
+					race:Forest Gnome
+					STATS-
+					Dex:{"modifiers":{"Racial":1}}
+					SPECIALS-
+					Illusionist:Forest Gnomes know the minor illusion cantrip, this uses Intelligence
+					Small Beast Commune:Forest gnomes can communicate simple ideas with smaller beasts
+				>}
+				Rock Gnome={<
+					INFO-
+					race:Rock Gnome
+					STATS-
+					Con:{"modifiers":{"Racial":1}}
+					1 Mysterious Letter[u=/content/icons/Scroll1000p.png;]
+					1 Tinkering Tools
+					SPECIALS-
+					Stonebuff:Gnomes are proficient, and add double proficiency when making History checks against magical/alchemic/technological items
+					Tinker:Gnomes can create Clockwork Toy, Fire Starter, Music Box with their Tinkering Tools
+				>}
+			)}
+		>}
+		Half-Elf={<
+			INFO-
+			race:Half-Elf
+			STATS-
+			Cha:{"modifiers":{"Racial":2}}
+			TAGS-
+			lang_Common : true
+			lang_Elvish : true
+			SPECIALS-
+			Elvish Immunitiy:Elves have advatange whilst attemping to be charmed, and are immune to sleep magic
+			Darksight:Within 60ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+			Skill:Half-Elves have proficient skills of their choice
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+		Half-Orc={<
+			INFO-
+			race:Half-Orc
+			STATS-
+			Str:{"modifiers":{"Racial":2}}
+			Con:{"modifiers":{"Racial":1}}
+			SKILLS-
+			Intimidation (Cha)
+			TAGS-
+			lang_Common : true
+			lang_Orc : true
+			SPECIALS-
+			Darksight:Within 60ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+			Rigid Strength:Half-Orcs can choose to be reduced to 1 hit point if they drop to 0, but must long rest before doing this again
+			Savagry:Half-Orcs that critically hit with a melee weapon can roll an additional damage dice for the weapon and add it to the result
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+		Tiefling={<
+			INFO-
+			race:Tiefling
+			STATS-
+			Int:{"modifiers":{"Racial":1}}
+			Cha:{"modifiers":{"Racial":2}}
+			TAGS-
+			lang_Common : true
+			lang_Infernal : true
+			SPECIALS-
+			Darksight:Within 60ft of this character is considered bright light, and darkness is considered dim. Only this character benefits from this
+			Borne from Hell:Tieflings have resistance to fire damage
+			Hellish Legacy:Tiefling characters know thaumaturgy cantrip at base level, hellish rebuke (2nd level spell) once per day at level 3, and darkness once per day at 5th level. These are cast with Charisma
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+	)}
+	Class?Class={(
+		No Class?No bonuses for this class={<
+		>}
+		Barbarian={<
+			INFO-
+			class:Barbarian
+			COUNTERS-
+			proficiency:2
+			hp:{"current":12, "max":12}
+			hit:{"current" : "1d12"}
+			saving:{"current" : {"Str" : {"current" : 1}, "Con" : {"current" : 1}}}
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=2d4x10]
+			1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+			4 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Shields:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+
+			TALENTS-
+
+			Rage[r=Barbarian;n= In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action. While raging, you gain the following benefits if you aren’t wearing heavy armor: • You have advantage on Strength checks and Strength saving throws. • When you make a melee weapon attack using Strength, you gain a bonus to the damage roll that increases as you gain levels as a barbarian, as shown in the Rage Damage column of the Barbarian table. • You have resistance to bludgeoning, piercing, and slashing damage. If you are able to cast spells, you can’t cast them or concentrate on them while raging. Your rage lasts for 1 minute. It ends early if you are knocked unconscious or if your turn ends and you haven’t attacked a hostile creature since your last turn or taken damage since then. You can also end your rage on your turn as a bonus action. Once you have raged the number of times shown for your barbarian level in the Rages column of the Barbarian table, you must finish a long rest before you can rage again.;]
+			Unarmored Defense[r=Barbarian;n= While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit.;]
+			Primary Weapon={(
+				Greataxe={<
+					INVENTORY-
+					1 Greataxe[w=7;u=/content/icons/Axe1000p.png;s=slashing, heavy, two handed;damage=1d12;]
+				>}
+				Martial Melee Weapon={<
+					INFO-
+					Pick a Martial Melee Weapon={(
+						Battleaxe={<
+							INVENTORY-
+							1 Battleaxe[w=4;u=/content/icons/BattleAxe1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Flail={<
+							INVENTORY-
+							1 Flail[w=2;s=bludgeoning;damage=1d8;]
+						>}
+						Glaive={<
+							INVENTORY-
+							1 Glaive[w=4;u=/content/icons/Spear1000p.png;s=slashing heavy, two handed;damage=1d10;]
+						>}
+						Greataxe={<
+							INVENTORY-
+							1 Greataxe[w=7;u=/content/icons/Axe1000p.png;s=slashing, heavy, two handed;damage=1d12;]
+						>}
+						Greatsword={<
+							INVENTORY-
+							1 Greatsword[w=6;u=/content/icons/Sword1000p.png;s=slashing, heavy, two handed;damage=2d6;]
+						>}
+						Halberd={<
+							INVENTORY-
+							1 Halberd[w=6;u=/content/icons/Halberd1000p.png;s=slashing;damage=1d10;]
+						>}
+						Lance={<
+							INVENTORY-
+							1 Lance[w=6;u=/content/icons/Spear1000p.png;s=piercing, heavy, two handed;damage=1d12;]
+						>}
+						Longsword={<
+							INVENTORY-
+							1 Longsword[w=3;u=/content/icons/Sword1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Maul={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Morning Star={<
+							INVENTORY-
+							1 Morning Star[w=4;u=/content/icons/Mace1000p.png;s=piercing, reach, special;damage=1d8;]
+						>}
+						Pike={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Rapier={<
+							INVENTORY-
+							1 Rapier[u=/content/icons/Rapier1000p.png;w=4;s=slashing, finesse, light;damage=1d8;]
+						>}
+						Scimitar={<
+							INVENTORY-
+							1 Scimitar[w=3;u=/content/icons/Scimitar1000p.png;s=slashing, finesse, light;damage=1d6;]
+						>}
+						Shortsword={<
+							INVENTORY-
+							1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+						>}
+						Trident={<
+							INVENTORY-
+							1 Trident[w=4;s=piercing, thrown(range 20/60), versatile(1d8);damage=1d6;]
+						>}
+						War pick={<
+							INVENTORY-
+							1 War pick[u=/content/icons/Maul1000p.png;w=2;s=piercing;damage=1d8;]
+						>}
+						Warhammer={<
+							INVENTORY-
+							1 Warhammer[u=/content/icons/Warhammer1000p.png;w=2;s=bludgeoning, versatile(1d10);damage=1d8;]
+						>}
+						Whip={<
+							INVENTORY-
+							1 Whip[w=3;s=slashing, finesse, reach;damage=1d4;]
+						>}
+					)}
+				>}
+			)}
+			Secondary Weapon={(
+				Two Handaxes={<
+					INVENTORY-
+					2 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+				>}
+				Simple Weapon={<
+					INFO-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+						Light Crossbow={<
+							INVENTORY-
+							1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+						>}
+						Dart={<
+							INVENTORY-
+							1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+						>}
+						Shortbow={<
+							INVENTORY-
+							1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+						>}
+						Sling={<
+							INVENTORY-
+							1 Sling[w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+						>}
+					)}
+				>}
+			)}
+			Skill={2[
+				Animal Handling={<
+					SKILLS-
+					Animal Handling (Wis)
+				>}
+				Athletics={<
+					SKILLS-
+					Athletics (Str)
+				>}
+				Intimidation={<
+					SKILLS-
+					Intimidation (Cha)
+				>}
+				Nature={<
+					SKILLS-
+					Nature (Int)
+				>}
+				Perception={<
+					SKILLS-
+					Perception (Wis)
+				>}
+				Survival={<
+					SKILLS-
+					Survival (Wis)
+				>}
+			)}
+		>}
+		Bard={<
+			INFO-
+			class:Bard
+			COUNTERS-
+			proficiency:2
+			hp:{"current":8, "max":8}
+			hit:{"current" : "1d8"}
+			saving:{"current" : {"Dex" : {"current" : 1}, "Cha" : {"current" : 1}}}
+			SPELLBOOK-
+			Cantrip
+			Cantrip
+			TALENTS-
+			Spellcasting[r=Bard;n=You have learned to untangle and reshape the fabric of reality in harmony with your wishes and music. Your spells are part of your vast repertoire, magic that you can tune to different situations.;]
+			Bardic Inspiration[r=Bard (d6);n= You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6. Once within the next 10 minutes, the creature can roll the die and add the number rolled to one ability check, attack roll, or saving throw it makes. The creature can wait until after it rolls the d20 before deciding to use the Bardic Inspiration die, but must decide before the GM says whether the roll succeeds or fails. Once the Bardic Inspiration die is rolled, it is lost. A creature can have only one Bardic Inspiration die at a time. You can use this feature a number of times equal to your Charisma modifier (a minimum of once). You regain any expended uses when you finish a long rest. Your Bardic Inspiration die changes when you reach certain levels in this class. The die becomes a d8 at 5th level, a d10 at 10th level, and a d12 at 15th level.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=5d4x10]
+			3 Musical Instrument
+			1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+			1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+			TAGS-
+			prof_Light Armor:true
+			prof_Hand Crossbow:true
+			prof_Longsword:true
+			prof_Rapiers:true
+			prof_Shortsword:true
+			prof_Simple Weapon:true
+			SPECIALS-
+			Bard:Proficient in 3 skills of the Bard's choice
+			Bard:Knows 2 cantrips of the Bard's choice
+			Weapon={(
+				Rapier={<
+					INVENTORY-
+					1 Rapier[u=/content/icons/Rapier1000p.png;w=4;s=slashing, finesse, light;damage=1d8;]
+				>}
+				Long Sword={<
+					INVENTORY-
+					1 Longsword[w=3;u=/content/icons/Sword1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+				>}
+				Simple Weapon={<
+					INFO-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+						Light Crossbow={<
+							INVENTORY-
+							1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+						>}
+						Dart={<
+							INVENTORY-
+							1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+						>}
+						Shortbow={<
+							INVENTORY-
+							1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+						>}
+						Sling={<
+							INVENTORY-
+							1 Sling[w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+						>}
+					)}
+				>}
+			)}
+			Backpack={(
+				Diplomat's Pack={<
+					INVENTORY-
+					1 Diplomat's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Entertainer's Pack={<
+					INVENTORY-
+					1 Entertainer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Musical Instrument={(
+				A Lute={<
+					INVENTORY-
+					1 Lute
+				>}
+				Musical Instrument={<
+					INVENTORY-
+					1 Musical Instrument
+				>}
+			)}
+		>}
+		Cleric={<
+			INFO-
+			class:Cleric
+			COUNTERS-
+			proficiency:2
+			hp:{"current":8, "max":8}
+			hit:{"current" : "1d8"}
+			saving:{"current" : {"Wis" : {"current" : 1}, "Cha" : {"current" : 1}}}
+			SPELLSLOTS-
+			[{"u":1},{"u":1},{"u":1}]
+			[{"u":1},{"u":1}]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=5d4x10]
+			1 Shield[w=6;u=/content/icons/Shield1000p.png;a=2;]
+			1 Holy Symbol[u=/content/icons/Amulet1000p.png;]
+			TAGS-
+			prof_Light Armor:true
+			prof_Hand Crossbow:true
+			prof_Shields:true
+			prof_Simple Weapon:true
+			TALENTS-
+			Spellcasting[r=Cleric;n= As a conduit for divine power, you can cast cleric spells.Divine Domain Choose one domain related to your deity, such as Life. Each domain is detailed at the end of the class description, and each one provides examples of gods associated with it. Your choice grants you domain spells and other features when you choose it at 1st level. It also grants you additional ways to use Channel Divinity when you gain that feature at 2nd level, and additional benefits at 6th, 8th, and 17th levels. Domain Spells Each domain has a list of spells—its domain spells— that you gain at the cleric levels noted in the domain description. Once you gain a domain spell, you always have it prepared, and it doesn’t count against the number of spells you can prepare each day. If you have a domain spell that doesn’t appear on the cleric spell list, the spell is nonetheless a cleric spell for you.;]
+			Channel Divinity[r=Cleric;n= At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the domain description. When you use your Channel Divinity, you choose which effect to create. You must then finish a short or long rest to use your Channel Divinity again. Some Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your cleric spell save DC. Beginning at 6th level, you can use your Channel Divinity twice between rests, and beginning at 18th level, you can use it three times between rests. When you finish a short or long rest, you regain your expended uses.;]
+			Primary Weapon={(
+				Mace={<
+					INVENTORY-
+					1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+				>}
+				Warhammer (only if proficient)={<
+					INVENTORY-
+					1 Warhammer[u=/content/icons/Warhammer1000p.png;w=2;s=bludgeoning, versatile(1d10);damage=1d8;]
+				>}
+			)}
+			Secondary Weapon={(
+				Light Crossbow={<
+					INVENTORY-
+					1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+					20 Bolts[u=/content/icons/Arrows1000p.png;]
+				>}
+				Simple Weapon={<
+					INFO-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+						Light Crossbow={<
+							INVENTORY-
+							1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+						>}
+						Dart={<
+							INVENTORY-
+							1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+						>}
+						Shortbow={<
+							INVENTORY-
+							1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+						>}
+						Sling={<
+							INVENTORY-
+							1 Sling[w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+						>}
+					)}
+				>}
+			)}
+			Armor={(
+				Scale Mail={<
+					INVENTORY-
+					1 Scale Mail[w=45;u=/content/icons/PlateMail1000p.png;a={"current" : 4, "modifiers" : {"Dex" : "(M@c.stats.Dex)|2"}};]
+				>}
+				Leather Armor (only if proficient)={<
+					INVENTORY-
+					1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+				>}
+				Chain Mail (only if proficient)={<
+					INVENTORY-
+					1 Chain Mail[w=55;u=/content/icons/PlateMail1000p.png;a=16;]
+				>}
+			)}
+			Backpack={(
+				Priest's Pack={<
+					INVENTORY-
+					1 Priest's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Explorer's Pack={<
+					INVENTORY-
+					1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={2(
+				History={<
+					SKILLS-
+					History (Int)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Medicine={<
+					SKILLS-
+					Medicine (Wis)
+				>}
+				Persuasion={<
+					SKILLS-
+					Persuasion (Cha)
+				>}
+				Religion={<
+					SKILLS-
+					Religion (Int)
+				>}
+			)}
+		>}
+		Druid={<
+			INFO-
+			class:Druid
+			COUNTERS-
+			proficiency:2
+			hp:{"current":8, "max":8}
+			hit:{"current" : "1d8"}
+			saving:{"current" : {"Int" : {"current" : 1}, "Cha" : {"current" : 1}}}
+			SPELLSLOTS-
+			[{"u":1},{"u":1}]
+			TALENTS-
+			Druidic[r=Druid;n= You know Druidic, the secret language of druids. You can speak the language and use it to leave hidden messages. You and others who know this language automatically spot such a message. Others spot the message’s presence with a successful DC 15 Wisdom (Perception) check but can’t decipher it without magic.;]
+			Spellcasting[r=Druid;n= Drawing on the divine essence of nature itself, you can cast spells to shape that essence to your will.Cantrips At 1st level, you know two cantrips of your choice from the druid spell list. You learn additional druid cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Druid table. Preparing and Casting Spells The Druid table shows how many spell slots you have to cast your spells of 1st level and higher. To cast one of these druid spells, you must expend a slot of the spell’s level or higher. You regain all expended spell slots when you finish a long rest. You prepare the list of druid spells that are available for you to cast, choosing from the druid spell list. When you do so, choose a number of druid spells equal to your Wisdom modifier + your druid level (minimum of one spell). The spells must be of a level for which you have spell slots. For example, if you are a 3rd-level druid, you have four 1st-level and two 2nd-level spell slots. With a Wisdom of 16, your list of prepared spells can include six spells of 1st or 2nd level, in any combination. If you prepare the 1st-level spell cure hp, you can cast it using a 1st-level or 2nd-level slot. Casting the spell doesn’t remove it from your list of prepared spells. You can also change your list of prepared spells when you finish a long rest. Preparing a new list of druid spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list. Spellcasting Ability Wisdom is your spellcasting ability for your druid spells, since your magic draws upon your devotion and attunement to nature. You use your Wisdom whenever a spell refers to your spellcasting ability. In addition, you use your Wisdom modifier when setting the saving throw DC for a druid spell you cast and when making an attack roll with one. Spell save DC = 8 + your proficiency bonus + your Wisdom modifier Spell attack modifier = your proficiency bonus + your Wisdom modifier Ritual Casting You can cast a druid spell as a ritual if that spell has the ritual tag and you have the spell prepared. Spellcasting Focus You can use a druidic focus (see “Equipment”) as a spellcasting focus for your druid spells.;]
+			Spellcasting Focus[r=Druid;n= You can use a druidic focus (see “Equipment”) as a spellcasting focus for your druid spells.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=2d4x10]
+			1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+			1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+			1 Druidic Focus[u=/content/icons/Amulet1000p.png;]
+			1 Herbalism Kit[u=/content/icons/spot_S1000p.png;][u=/content/icons/spot_S1000p.png;]
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Shield:true
+			prof_Club:true
+			prof_Dagger:true
+			prof_Dart:true
+			prof_Javelin:true
+			prof_Mace:true
+			prof_Quarterstaff:true
+			prof_Scimitar:true
+			prof_Sickle:true
+			prof_Sling:true
+			prof_Spear:true
+			lang_Drudic:true
+			SPECIALS-
+			Druid:Druids are only proficient in only non-metal Light Armor, non-metal Medium Armor, non-metal Shields
+			Druid:Druids know 2 spells and 2 cantrips of their choice upon creation
+			Primary Weapon={(
+				Scimitar={<
+					INVENTORY-
+					1 Scimitar[w=3;u=/content/icons/Scimitar1000p.png;s=slashing, finesse, light;damage=1d6;]
+				>}
+				Simple Melee Weapon={<
+					INVENTORY-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+					)}
+				>}
+			)}
+			Secondary Weapon={(
+				Wooden Shield={<
+					INVENTORY-
+					1 Wooden Shield[w=6;u=/content/icons/Shield1000p.png;a=2;]
+				>}
+				Simple Weapon={<
+					INFO-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+						Light Crossbow={<
+							INVENTORY-
+							1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+						>}
+						Dart={<
+							INVENTORY-
+							1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+						>}
+						Shortbow={<
+							INVENTORY-
+							1 Shortbow[u=/content/icons/Bow1000p.png;w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+						>}
+						Sling={<
+							INVENTORY-
+							1 Sling[u=/content/icons/Slingshot1000p.png;w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+						>}
+					)}
+				>}
+			)}
+			Armor={(
+				Scale Mail={<
+					INVENTORY-
+					1 Scale Mail[w=45;u=/content/icons/PlateMail1000p.png;a={"current" : 4}, "modifiers" : {"Dex" : "(M@c.stats.Dex)|2"}};]
+				>}
+				Leather Armor (only if proficient)={<
+					INVENTORY-
+					1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+				>}
+				Chain Mail (only if proficient)={<
+					INVENTORY-
+					1 Chain Mail[w=55;u=/content/icons/PlateMail1000p.png;a=16;]
+				>}
+			)}
+			Backpack={(
+				Priest's Pack={<
+					INVENTORY-
+					1 Priest's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Explorer's Pack={<
+					INVENTORY-
+					1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={2(
+				Animal Handling={<
+					SKILLS-
+					Animal Handling (Wis)
+				>}
+				Arcana={<
+					SKILLS-
+					Arcana (Int)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Medicine={<
+					SKILLS-
+					Medicine (Wis)
+				>}
+				Nature={<
+					SKILLS-
+					Nature (Int)
+				>}
+				Perception={<
+					SKILLS-
+					Perception (Wis)
+				>}
+			)}
+		>}
+		Fighter={<
+			INFO-
+			class:Fighter
+			COUNTERS-
+			proficiency:2
+			hp:{"current":10, "max":10}
+			hit:{"current" : "1d10"}
+			saving:{"current" : {"Str" : {"current" : 1}, "Con" : {"current" : 1}}}
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Heavy Armor:true
+			prof_Shield:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=5d4x10]
+			TALENTS-
+			Fighting Style[r=Fighter;n= You adopt a particular style of fighting as your specialty. Choose one of the following options. You can’t take a Fighting Style option more than once, even if you later get to choose again.;]
+			Second Wind[r=Fighter;n= You have a limited well of stamina that you can draw on to protect yourself from harm. On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level. Once you use this feature, you must finish a short or long rest before you can use it again.;]
+			SPECIALS-
+			Fighter:A Fighter picks a fighting style upon creation (Archery, Dueling, Great Weapon Fighting, Protection, Two-Weapon Fighting)
+			Primary Weapon={(
+				Martial Weapon & Shield={<
+					INVENTORY-
+					1 Shield[w=6;u=/content/icons/Shield1000p.png;a=2;]
+					Pick a Martial Weapon={(
+						Battleaxe={<
+							INVENTORY-
+							1 Battleaxe[w=4;u=/content/icons/BattleAxe1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Flail={<
+							INVENTORY-
+							1 Flail[w=2;s=bludgeoning;damage=1d8;]
+						>}
+						Glaive={<
+							INVENTORY-
+							1 Glaive[w=4;u=/content/icons/Spear1000p.png;s=slashing heavy, two handed;damage=1d10;]
+						>}
+						Greataxe={<
+							INVENTORY-
+							1 Greataxe[w=7;u=/content/icons/Axe1000p.png;s=slashing, heavy, two handed;damage=1d12;]
+						>}
+						Greatsword={<
+							INVENTORY-
+							1 Greatsword[w=6;u=/content/icons/Sword1000p.png;s=slashing, heavy, two handed;damage=2d6;]
+						>}
+						Halberd={<
+							INVENTORY-
+							1 Halberd[w=6;u=/content/icons/Halberd1000p.png;s=slashing;damage=1d10;]
+						>}
+						Lance={<
+							INVENTORY-
+							1 Lance[w=6;u=/content/icons/Spear1000p.png;s=piercing, heavy, two handed;damage=1d12;]
+						>}
+						Longsword={<
+							INVENTORY-
+							1 Longsword[w=3;u=/content/icons/Sword1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Maul={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Morning Star={<
+							INVENTORY-
+							1 Morning Star[w=4;u=/content/icons/Mace1000p.png;s=piercing, reach, special;damage=1d8;]
+						>}
+						Pike={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Rapier={<
+							INVENTORY-
+							1 Rapier[u=/content/icons/Rapier1000p.png;w=4;s=slashing, finesse, light;damage=1d8;]
+						>}
+						Scimitar={<
+							INVENTORY-
+							1 Scimitar[w=3;u=/content/icons/Scimitar1000p.png;s=slashing, finesse, light;damage=1d6;]
+						>}
+						Shortsword={<
+							INVENTORY-
+							1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+						>}
+						Trident={<
+							INVENTORY-
+							1 Trident[w=4;s=piercing, thrown(range 20/60), versatile(1d8);damage=1d6;]
+						>}
+						War pick={<
+							INVENTORY-
+							1 War pick[u=/content/icons/Maul1000p.png;w=2;s=piercing;damage=1d8;]
+						>}
+						Warhammer={<
+							INVENTORY-
+							1 Warhammer[u=/content/icons/Warhammer1000p.png;w=2;s=bludgeoning, versatile(1d10);damage=1d8;]
+						>}
+						Whip={<
+							INVENTORY-
+							1 Whip[w=3;s=slashing, finesse, reach;damage=1d4;]
+						>}
+						Blowgun={<
+							INVENTORY-
+							1 Blowgun[w=1;damage=1;s=piercing, loading;range=25/100]
+						>}
+						Hand Crossbow={<
+							INVENTORY-
+							1 Hand Crossbow[w=3;u=/content/icons/Crossbow1000p.png;damage=1d6;s=piercing, light, loading;range=30/120]
+						>}
+						Heavy Crossbow={<
+							INVENTORY-
+							1 Heavy Crossbow[w=18;u=/content/icons/Crossbow1000p.png;damage=1d10;s=piercing, heavy, loading, two handed;range=100/400]
+						>}
+						Longbow={<
+							INVENTORY-
+							1 Longbow[w=2;u=/content/icons/Bow1000p.png;damage=1d8;s=piercing, heavy, two handed;range=100/400]
+						>}
+					)}
+				>}
+				Two Martial Weapons={<
+					INFO-
+					Pick a Martial Weapon={2[
+						Battleaxe={<
+							INVENTORY-
+							1 Battleaxe[w=4;u=/content/icons/BattleAxe1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Flail={<
+							INVENTORY-
+							1 Flail[w=2;s=bludgeoning;damage=1d8;]
+						>}
+						Glaive={<
+							INVENTORY-
+							1 Glaive[w=4;u=/content/icons/Spear1000p.png;s=slashing heavy, two handed;damage=1d10;]
+						>}
+						Greataxe={<
+							INVENTORY-
+							1 Greataxe[w=7;u=/content/icons/Axe1000p.png;s=slashing, heavy, two handed;damage=1d12;]
+						>}
+						Greatsword={<
+							INVENTORY-
+							1 Greatsword[w=6;u=/content/icons/Sword1000p.png;s=slashing, heavy, two handed;damage=2d6;]
+						>}
+						Halberd={<
+							INVENTORY-
+							1 Halberd[w=6;u=/content/icons/Halberd1000p.png;s=slashing;damage=1d10;]
+						>}
+						Lance={<
+							INVENTORY-
+							1 Lance[w=6;u=/content/icons/Spear1000p.png;s=piercing, heavy, two handed;damage=1d12;]
+						>}
+						Longsword={<
+							INVENTORY-
+							1 Longsword[w=3;u=/content/icons/Sword1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Maul={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Morning Star={<
+							INVENTORY-
+							1 Morning Star[w=4;u=/content/icons/Mace1000p.png;s=piercing, reach, special;damage=1d8;]
+						>}
+						Pike={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Rapier={<
+							INVENTORY-
+							1 Rapier[u=/content/icons/Rapier1000p.png;w=4;s=slashing, finesse, light;damage=1d8;]
+						>}
+						Scimitar={<
+							INVENTORY-
+							1 Scimitar[w=3;u=/content/icons/Scimitar1000p.png;s=slashing, finesse, light;damage=1d6;]
+						>}
+						Shortsword={<
+							INVENTORY-
+							1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+						>}
+						Trident={<
+							INVENTORY-
+							1 Trident[w=4;s=piercing, thrown(range 20/60), versatile(1d8);damage=1d6;]
+						>}
+						War pick={<
+							INVENTORY-
+							1 War pick[u=/content/icons/Maul1000p.png;w=2;s=piercing;damage=1d8;]
+						>}
+						Warhammer={<
+							INVENTORY-
+							1 Warhammer[u=/content/icons/Warhammer1000p.png;w=2;s=bludgeoning, versatile(1d10);damage=1d8;]
+						>}
+						Whip={<
+							INVENTORY-
+							1 Whip[w=3;s=slashing, finesse, reach;damage=1d4;]
+						>}
+						Blowgun={<
+							INVENTORY-
+							1 Blowgun[w=1;damage=1;s=piercing, loading;range=25/100]
+						>}
+						Hand Crossbow={<
+							INVENTORY-
+							1 Hand Crossbow[w=3;u=/content/icons/Crossbow1000p.png;damage=1d6;s=piercing, light, loading;range=30/120]
+						>}
+						Heavy Crossbow={<
+							INVENTORY-
+							1 Heavy Crossbow[w=18;u=/content/icons/Crossbow1000p.png;damage=1d10;s=piercing, heavy, loading, two handed;range=100/400]
+						>}
+						Longbow={<
+							INVENTORY-
+							1 Longbow[w=2;u=/content/icons/Bow1000p.png;damage=1d8;s=piercing, heavy, two handed;range=100/400]
+						>}
+					)}
+				>}
+			)}
+			Secondary Weapon={(
+				Light Crossbow={<
+					INVENTORY-
+					1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+					20 Bolts[u=/content/icons/Arrows1000p.png;]
+				>}
+				Two Handaxes={<
+					INVENTORY-
+					2 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+				>}
+			)}
+			Armor={(
+				Chain Mail={<
+					INVENTORY-
+					1 Chain Mail[w=55;u=/content/icons/PlateMail1000p.png;a=16;]
+				>}
+				Leather Armor & Longbow={<
+					INVENTORY-
+					1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+					1 Longbow[w=2;u=/content/icons/Bow1000p.png;damage=1d8;s=piercing, heavy, two handed;range=100/400]
+					20 Arrows[u=/content/icons/Arrows1000p.png;]
+				>}
+			)}
+			Backpack={(
+				Dungeoneer's Pack={<
+					INVENTORY-
+					1 Dungeoneer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Entertainer's Pack={<
+					INVENTORY-
+					1 Entertainer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={2(
+				Acrobatics={<
+					SKILLS-
+					Acrobatics (Dex)
+				>}
+				Animal Handling={<
+					SKILLS-
+					Animal Handling (Wis)
+				>}
+				Athletics={<
+					SKILLS-
+					Athletics (Str)
+				>}
+				History={<
+					SKILLS-
+					History (Int)
+				>}
+				Intimidation={<
+					SKILLS-
+					Intimidation (Cha)
+				>}
+				Perception={<
+					SKILLS-
+					Perception (Wis)
+				>}
+				Survival={<
+					SKILLS-
+					Survival (Wis)
+				>}
+			)}
+		>}
+		Monk={<
+			INFO-
+			class:Monk
+			COUNTERS-
+			proficiency:2
+			hp:{"current":10, "max":10}
+			hit:{"current" : "1d10"}
+			saving:{"current" : {"Str" : {"current" : 1}, "Dex" : {"current" : 1}}}
+			TALENTS-
+			Unarmored Defense[r=Monk;n= Beginning at 1st level, while you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.;]
+			Martial Arts[r=Monk;n= At 1st level, your practice of martial arts gives you mastery of combat styles that use unarmed strikes and monk weapons, which are shortswords and any simple melee weapons that don’t have the twohanded or heavy property. You gain the following benefits while you are unarmed or wielding only monk weapons and you aren’t wearing armor or wielding a shield: • You can use Dexterity instead of Strength for the attack and damage rolls of your unarmed strikes and monk weapons. • You can roll a d4 in place of the normal damage of your unarmed strike or monk weapon. This die changes as you gain monk levels, as shown in the Martial Arts column of the Monk table. • When you use the Attack action with an unarmed strike or a monk weapon on your turn, you can make one unarmed strike as a bonus action. For example, if you take the Attack action and attack with a quarterstaff, you can also make an unarmed strike as a bonus action, assuming you haven’t already taken a bonus action this turn. Certain monasteries use specialized forms of the monk weapons. For example, you might use a club that is two lengths of wood connected by a short chain (called a nunchaku) or a sickle with a shorter, straighter blade (called a kama). Whatever name you use for a monk weapon, you can use the game statistics provided for the weapon.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=5d4]
+			10 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+			TAGS-
+			prof_Shortsword:true
+			prof_Simple Weapon:true
+			Primary Weapon={(
+				Shortsword={<
+					INVENTORY-
+					1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+				>}
+				Simple Weapon={<
+					INFO-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+						Light Crossbow={<
+							INVENTORY-
+							1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+						>}
+						Dart={<
+							INVENTORY-
+							1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+						>}
+						Shortbow={<
+							INVENTORY-
+							1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+						>}
+						Sling={<
+							INVENTORY-
+							1 Sling[w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+						>}
+					)}
+				>}
+			)}
+			Backpack={(
+				Dungeoneer's Pack={<
+					INVENTORY-
+					1 Dungeoneer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Entertainer's Pack={<
+					INVENTORY-
+					1 Entertainer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Tools={(
+				Artisan Tools={<
+					INVENTORY-
+					1 Artisan Tools[n=Pick Type]
+				>}
+				Musical Instrument={<
+					INVENTORY-
+					1 Musical Instrument
+				>}
+			)}
+			Skill={2(
+				Acrobatics={<
+					SKILLS-
+					Acrobatics (Dex)
+				>}
+				Athletics={<
+					SKILLS-
+					Athletics (Str)
+				>}
+				History={<
+					SKILLS-
+					History (Int)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Religion={<
+					SKILLS-
+					Religion (Int)
+				>}
+				Stealth={<
+					SKILLS-
+					Stealth (Dex)
+				>}
+			)}
+		>}
+		Paladin={<
+			INFO-
+			class:Paladin
+			COUNTERS-
+			proficiency:2
+			hp:{"current":10, "max":10}
+			hit:{"current" : "1d10"}
+			saving:{"current" : {"Wis" : {"current" : 1}, "Cha" : {"current" : 1}}}
+			TALENTS-
+			Divine Sense[r=Paladin;n= The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. As an action, you can open your awareness to detect such forces. Until the end of your next turn, you know the location of any celestial, fiend, or undead within 60 feet of you that is not behind total cover. You know the type (celestial, fiend, or undead) of any being whose presence you sense, but not its identity (the vampire Count Strahd von Zarovich, for instance). Within the same radius, you also detect the presence of any place or object that has been consecrated or desecrated, as with the hallow spell. You can use this feature a number of times equal to 1 + your Charisma modifier. When you finish a long rest, you regain all expended uses.;]
+			Lay on Hands[r=Paladin;n= Your blessed touch can heal hp. You have a pool of healing power that replenishes when you take a long rest. With that pool, you can restore a total number of hit points equal to your paladin level × 5. As an action, you can touch a creature and draw power from the pool to restore a number of hit points to that creature, up to the maximum amount remaining in your pool. Alternatively, you can expend 5 hit points from your pool of healing to cure the target of one disease or neutralize one poison affecting it. You can cure multiple diseases and neutralize multiple poisons with a single use of Lay on Hands, expending hit points separately for each one. This feature has no effect on undead and constructs.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=5d4x10]
+			1 Chain Mail[w=55;u=/content/icons/PlateMail1000p.png;a=16;]
+			1 Holy Symbol
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Heavy Armor:true
+			prof_Shield:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+			Primary Weapon={(
+				Martial Weapon & Shield={<
+					INVENTORY-
+					1 Shield[w=6;u=/content/icons/Shield1000p.png;a=2;]
+					Pick a Martial Weapon={(
+						Battleaxe={<
+							INVENTORY-
+							1 Battleaxe[w=4;u=/content/icons/BattleAxe1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Flail={<
+							INVENTORY-
+							1 Flail[w=2;s=bludgeoning;damage=1d8;]
+						>}
+						Glaive={<
+							INVENTORY-
+							1 Glaive[w=4;u=/content/icons/Spear1000p.png;s=slashing heavy, two handed;damage=1d10;]
+						>}
+						Greataxe={<
+							INVENTORY-
+							1 Greataxe[w=7;u=/content/icons/Axe1000p.png;s=slashing, heavy, two handed;damage=1d12;]
+						>}
+						Greatsword={<
+							INVENTORY-
+							1 Greatsword[w=6;u=/content/icons/Sword1000p.png;s=slashing, heavy, two handed;damage=2d6;]
+						>}
+						Halberd={<
+							INVENTORY-
+							1 Halberd[w=6;u=/content/icons/Halberd1000p.png;s=slashing;damage=1d10;]
+						>}
+						Lance={<
+							INVENTORY-
+							1 Lance[w=6;u=/content/icons/Spear1000p.png;s=piercing, heavy, two handed;damage=1d12;]
+						>}
+						Longsword={<
+							INVENTORY-
+							1 Longsword[w=3;u=/content/icons/Sword1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Maul={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Morning Star={<
+							INVENTORY-
+							1 Morning Star[w=4;u=/content/icons/Mace1000p.png;s=piercing, reach, special;damage=1d8;]
+						>}
+						Pike={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Rapier={<
+							INVENTORY-
+							1 Rapier[u=/content/icons/Rapier1000p.png;w=4;s=slashing, finesse, light;damage=1d8;]
+						>}
+						Scimitar={<
+							INVENTORY-
+							1 Scimitar[w=3;u=/content/icons/Scimitar1000p.png;s=slashing, finesse, light;damage=1d6;]
+						>}
+						Shortsword={<
+							INVENTORY-
+							1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+						>}
+						Trident={<
+							INVENTORY-
+							1 Trident[w=4;s=piercing, thrown(range 20/60), versatile(1d8);damage=1d6;]
+						>}
+						War pick={<
+							INVENTORY-
+							1 War pick[u=/content/icons/Maul1000p.png;w=2;s=piercing;damage=1d8;]
+						>}
+						Warhammer={<
+							INVENTORY-
+							1 Warhammer[u=/content/icons/Warhammer1000p.png;w=2;s=bludgeoning, versatile(1d10);damage=1d8;]
+						>}
+						Whip={<
+							INVENTORY-
+							1 Whip[w=3;s=slashing, finesse, reach;damage=1d4;]
+						>}
+						Blowgun={<
+							INVENTORY-
+							1 Blowgun[w=1;damage=1;s=piercing, loading;range=25/100]
+						>}
+						Hand Crossbow={<
+							INVENTORY-
+							1 Hand Crossbow[w=3;u=/content/icons/Crossbow1000p.png;damage=1d6;s=piercing, light, loading;range=30/120]
+						>}
+						Heavy Crossbow={<
+							INVENTORY-
+							1 Heavy Crossbow[w=18;u=/content/icons/Crossbow1000p.png;damage=1d10;s=piercing, heavy, loading, two handed;range=100/400]
+						>}
+						Longbow={<
+							INVENTORY-
+							1 Longbow[w=2;u=/content/icons/Bow1000p.png;damage=1d8;s=piercing, heavy, two handed;range=100/400]
+						>}
+					)}
+				>}
+				Two Martial Weapons={<
+					INVENTORY-
+					Pick a Martial Weapon={2[
+						Battleaxe={<
+							INVENTORY-
+							1 Battleaxe[w=4;u=/content/icons/BattleAxe1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Flail={<
+							INVENTORY-
+							1 Flail[w=2;s=bludgeoning;damage=1d8;]
+						>}
+						Glaive={<
+							INVENTORY-
+							1 Glaive[w=4;u=/content/icons/Spear1000p.png;s=slashing heavy, two handed;damage=1d10;]
+						>}
+						Greataxe={<
+							INVENTORY-
+							1 Greataxe[w=7;u=/content/icons/Axe1000p.png;s=slashing, heavy, two handed;damage=1d12;]
+						>}
+						Greatsword={<
+							INVENTORY-
+							1 Greatsword[w=6;u=/content/icons/Sword1000p.png;s=slashing, heavy, two handed;damage=2d6;]
+						>}
+						Halberd={<
+							INVENTORY-
+							1 Halberd[w=6;u=/content/icons/Halberd1000p.png;s=slashing;damage=1d10;]
+						>}
+						Lance={<
+							INVENTORY-
+							1 Lance[w=6;u=/content/icons/Spear1000p.png;s=piercing, heavy, two handed;damage=1d12;]
+						>}
+						Longsword={<
+							INVENTORY-
+							1 Longsword[w=3;u=/content/icons/Sword1000p.png;s=slashing, versatile(1d10);damage=1d8;]
+						>}
+						Maul={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Morning Star={<
+							INVENTORY-
+							1 Morning Star[w=4;u=/content/icons/Mace1000p.png;s=piercing, reach, special;damage=1d8;]
+						>}
+						Pike={<
+							INVENTORY-
+							1 Maul[u=/content/icons/Maul1000p.png;w=10;s=bludgeoning, heavy, two handed;damage=2d6;]
+						>}
+						Rapier={<
+							INVENTORY-
+							1 Rapier[u=/content/icons/Rapier1000p.png;w=4;s=slashing, finesse, light;damage=1d8;]
+						>}
+						Scimitar={<
+							INVENTORY-
+							1 Scimitar[w=3;u=/content/icons/Scimitar1000p.png;s=slashing, finesse, light;damage=1d6;]
+						>}
+						Shortsword={<
+							INVENTORY-
+							1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+						>}
+						Trident={<
+							INVENTORY-
+							1 Trident[w=4;s=piercing, thrown(range 20/60), versatile(1d8);damage=1d6;]
+						>}
+						War pick={<
+							INVENTORY-
+							1 War pick[u=/content/icons/Maul1000p.png;w=2;s=piercing;damage=1d8;]
+						>}
+						Warhammer={<
+							INVENTORY-
+							1 Warhammer[u=/content/icons/Warhammer1000p.png;w=2;s=bludgeoning, versatile(1d10);damage=1d8;]
+						>}
+						Whip={<
+							INVENTORY-
+							1 Whip[w=3;s=slashing, finesse, reach;damage=1d4;]
+						>}
+						Blowgun={<
+							INVENTORY-
+							1 Blowgun[w=1;damage=1;s=piercing, loading;range=25/100]
+						>}
+						Hand Crossbow={<
+							INVENTORY-
+							1 Hand Crossbow[w=3;u=/content/icons/Crossbow1000p.png;damage=1d6;s=piercing, light, loading;range=30/120]
+						>}
+						Heavy Crossbow={<
+							INVENTORY-
+							1 Heavy Crossbow[w=18;u=/content/icons/Crossbow1000p.png;damage=1d10;s=piercing, heavy, loading, two handed;range=100/400]
+						>}
+						Longbow={<
+							INVENTORY-
+							1 Longbow[w=2;u=/content/icons/Bow1000p.png;damage=1d8;s=piercing, heavy, two handed;range=100/400]
+						>}
+					)}
+				>}
+			)}
+			Secondary Weapon={(
+				5 Javelins={<
+					INVENTORY-
+					5 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+				>}
+				Simple Melee Weapon={<
+					INVENTORY-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+					)}
+				>}
+			)}
+			Backpack={(
+				Priest's Pack={<
+					INVENTORY-
+					1 Priest's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Explorer's Pack={<
+					INVENTORY-
+					1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={2(
+				Athletics={<
+					SKILLS-
+					Athletics (Str)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Intimidation={<
+					SKILLS-
+					Intimidation (Cha)
+				>}
+				Medicine={<
+					SKILLS-
+					Medicine (Wis)
+				>}
+				Persuasion={<
+					SKILLS-
+					Persuasion (Cha)
+				>}
+				Religion={<
+					SKILLS-
+					Religion (Int)
+				>}
+			)}
+		>}
+		Ranger={<
+			INFO-
+			class:Ranger
+			COUNTERS-
+			proficiency:2
+			hp:{"current":10, "max":10}
+			hit:{"current" : "1d10"}
+			saving:{"current" : {"Str" : {"current" : 1}, "Dex" : {"current" : 1}}}
+			TALENTS-
+			Favored Enemy[r=Ranger;n= Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy. Choose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies. You have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them. When you gain this feature, you also learn one language of your choice that is spoken by your favored enemies, if they speak one at all. You choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures.;]
+			Natural Explorer[r=Ranger;n= You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, or swamp. When you make an Intelligence or Wisdom check related to your favored terrain, your proficiency bonus is doubled if you are using a skill that you’re proficient in. While traveling for an hour or more in your favored terrain, you gain the following benefits: • Difficult terrain doesn’t slow your group’s travel. • Your group can’t become lost except by magical means. • Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger. • If you are traveling alone, you can move stealthily at a normal pace. • When you forage, you find twice as much food as you normally would. • While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. You choose additional favored terrain types at 6th and 10th level.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=5d4x10]
+			1 Longbow[w=2;u=/content/icons/Bow1000p.png;damage=1d8;s=piercing, heavy, two handed;range=100/400]
+			20 Arrows[u=/content/icons/Arrows1000p.png;]
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Shield:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+			Secondary Weapons={(
+				Two Shortswords={<
+					INVENTORY-
+					2 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+				>}
+				Two Simple Melee Weapons={<
+					INVENTORY-
+					Pick a Simple Weapon={2[
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+					)}
+				>}
+			)}
+			Armor={(
+				Scale Mail={<
+					INVENTORY-
+					1 Scale Mail[w=45;u=/content/icons/PlateMail1000p.png;a={"current" : 4, "modifiers" : {"Dex" : "(M@c.stats.Dex)|2"}};]
+				>}
+				Leather Armor={<
+					INVENTORY-
+					1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+				>}
+			)}
+			Backpack={(
+				Dungeoneer's Pack={<
+					INVENTORY-
+					1 Dungeoneer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Explorer's Pack={<
+					INVENTORY-
+					1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={3(
+				Animal Handling={<
+					SKILLS-
+					Animal Handling (Wis)
+				>}
+				Athletics={<
+					SKILLS-
+					Athletics (Str)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Investigation={<
+					SKILLS-
+					Investigation (Int)
+				>}
+				Nature={<
+					SKILLS-
+					Nature (Int)
+				>}
+				Perception={<
+					SKILLS-
+					Perception (Wis)
+				>}
+				Stealth={<
+					SKILLS-
+					Stealth (Dex)
+				>}
+				Survival={<
+					SKILLS-
+					Survival (Wis)
+				>}
+			)}
+		>}
+		Rogue={<
+			INFO-
+			class:Rogue
+			COUNTERS-
+			proficiency:2
+			hp:{"current":8, "max":8}
+			hit:{"current" : "1d8"}
+			saving:{"current" : {"Dex" : {"current" : 1}, "Int" : {"current" : 1}}}
+			TALENTS-
+			Expertise[r=Rogue;n= At 1st level, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thieves’ tools. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies. At 6th level, you can choose two more of your proficiencies (in skills or with thieves’ tools) to gain this benefit.;]
+			Sneak Attack[r=Rogue;n= Beginning at 1st level, you know how to strike subtly and exploit a foe’s distraction. Once per turn, you can deal an extra 1d6 damage to one creature you hit with an attack if you have advantage on the attack roll. The attack must use a finesse or a ranged weapon. You don’t need advantage on the attack roll if another enemy of the target is within 5 feet of it, that enemy isn’t incapacitated, and you don’t have disadvantage on the attack roll. The amount of the extra damage increases as you gain levels in this class, as shown in the Sneak Attack column of the Rogue table.;]
+			Thieves’ Cant[r=Rogue;n= During your rogue training you learned thieves’ cant, a secret mix of dialect, jargon, and code that allows you to hide messages in seemingly normal conversation. Only another creature that knows thieves’ cant understands such messages. It takes four times longer to convey such a message than it does to speak the same idea plainly. In addition, you understand a set of secret signs and symbols used to convey short, simple messages, such as whether an area is dangerous or the territory of a thieves’ guild, whether loot is nearby, or whether the people in an area are easy marks or will provide a safe house for thieves on the run.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=4d4x10]
+			Thieving Tools[u=/content/icons/Crowbar1000p.png;]
+			1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+			2 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+			TAGS-
+			prof_Light Armor:true
+			prof_Hand Crossbow:true
+			prof_Longsword:true
+			prof_Shortsword:true
+			Primary Weapon={(
+				Rapier={<
+					INVENTORY-
+					1 Rapier[u=/content/icons/Rapier1000p.png;w=4;s=slashing, finesse, light;damage=1d8;]
+				>}
+				Shortsword={<
+					INVENTORY-
+					1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+				>}
+			)}
+			Secondary Weapon={(
+				Shortbow={<
+					INVENTORY-
+					1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+					20 Arrows[u=/content/icons/Arrows1000p.png;]
+				>}
+				Shortsword={<
+					INVENTORY-
+					1 Shortsword[w=2;u=/content/icons/Sword1000p.png;s=piercing, finesse, light;damage=1d6;]
+				>}
+			)}
+			Armor={(
+				Scale Mail={<
+					INVENTORY-
+					1 Scale Mail[w=45;u=/content/icons/PlateMail1000p.png;a={"current" : 4}, "modifiers" : {"Dex" : "(M@c.stats.Dex)|2"}};]
+				>}
+				Leather Armor={<
+					INVENTORY-
+					1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+				>}
+			)}
+			Backpack={(
+				Burglar's Pack={<
+					INVENTORY-
+					1 Burglar's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Dungeoneer's Pack={<
+					INVENTORY-
+					1 Dungeoneer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Explorer's Pack={<
+					INVENTORY-
+					1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={4(
+				Acrobatics={<
+					SKILLS-
+					Acrobatics (Dex)
+				>}
+				Athletics={<
+					SKILLS-
+					Athletics (Str)
+				>}
+				Deception={<
+					SKILLS-
+					Deception (Cha)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Intimidation={<
+					SKILLS-
+					Intimidation (Cha)
+				>}
+				Investigation={<
+					SKILLS-
+					Investigation (Int)
+				>}
+				Perception={<
+					SKILLS-
+					Perception (Wis)
+				>}
+				Peformance={<
+					SKILLS-
+					Performance (Cha)
+				>}
+				Persuasion={<
+					SKILLS-
+					Persuasion (Cha)
+				>}
+				Sleight of Hand={<
+					SKILLS-
+					Sleight of Hand (Dex)
+				>}
+				Stealth={<
+					SKILLS-
+					Stealth (Dex)
+				>}
+			)}
+		>}
+		Sorcerer={<
+			INFO-
+			class:Sorcerer
+			COUNTERS-
+			proficiency:2
+			hp:{"current":8, "max":8}
+			hit:{"current" : "1d8"}
+			saving:{"current" : {"Con" : {"current" : 1}, "Cha" : {"current" : 1}}}
+			SPELLSLOTS-
+			[{"u":1},{"u":1}]
+			TALENTS-
+			Spellcasting[r=Sorcerer;n= An event in your past, or in the life of a parent or ancestor, left an indelible mark on you, infusing you with arcane magic. This font of magic, whatever its origin, fuels your spells.;]
+			Cantrips[r=Sorcerer;n= At 1st level, you know four cantrips of your choice from the sorcerer spell list. You learn additional sorcerer cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Sorcerer table.;]
+			Spell Slots[r=Sorcerer;n= The Sorcerer table shows how many spell slots you have to cast your spells of 1st level and higher. To cast one of these sorcerer spells, you must expend a slot of the spell’s level or higher. You regain all expended spell slots when you finish a long rest. For example, if you know the 1st-level spell burning hands and have a 1st-level and a 2nd-level spell slot available, you can cast burning hands using either slot. Spells Known of 1st Level and Higher You know two 1st-level spells of your choice from the sorcerer spell list. The Spells Known column of the Sorcerer table shows when you learn more sorcerer spells of your choice. Each of these spells must be of a level for which you have spell slots. For instance, when you reach 3rd level in this class, you can learn one new spell of 1st or 2nd level. Additionally, when you gain a level in this class, you can choose one of the sorcerer spells you know and replace it with another spell from the sorcerer spell list, which also must be of a level for which you have spell slots.;]
+			Spellcasting Ability[r=Sorcerer;n= Charisma is your spellcasting ability for your sorcerer spells, since the power of your magic relies on your ability to project your will into the world. You use your Charisma whenever a spell refers to your spellcasting ability. In addition, you use your Charisma modifier when setting the saving throw DC for a sorcerer spell you cast and when making an attack roll with one. Spell save DC = 8 + your proficiency bonus + your Charisma modifier Spell attack modifier = your proficiency bonus + your Charisma modifier;]
+			Spellcasting Focus[r=Sorcerer;n= You can use an arcane focus as a spellcasting focus for your sorcerer spells.;]
+			Sorcerous Origin[r=Sorcerer;n= Choose a sorcerous origin, which describes the source of your innate magical power, such as;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=3d4x10]
+			2 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+			TAGS-
+			prof_Dagger:true
+			prof_Dart:true
+			prof_Sling:true
+			prof_Quarterstaff:true
+			prof_Light Crossbow:true
+			SPECIALS-
+			Knowledge is Power:Sorcerer's Start with 2 level one spells of their choice and 4 cantrips of their choice
+			Primary Weapon={(
+				Light Crossbow={<
+					INVENTORY-
+					1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+					20 Bolts[u=/content/icons/Arrows1000p.png;]
+				>}
+				Simple Weapon={<
+					INFO-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+						Light Crossbow={<
+							INVENTORY-
+							1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+						>}
+						Dart={<
+							INVENTORY-
+							1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+						>}
+						Shortbow={<
+							INVENTORY-
+							1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+						>}
+						Sling={<
+							INVENTORY-
+							1 Sling[w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+						>}
+					)}
+				>}
+			)}
+			Accessory={(
+				Component Pouch={<
+					INVENTORY-
+					1 Component pouch[u=/content/icons/Pouch1000p.png;]
+				>}
+				Arcane Focus={<
+					INVENTORY-
+					1 Arcane Focus[u=/content/icons/Amulet1000p.png;][u=/content/icons/Amulet1000p.png;]
+				>}
+			)}
+			Backpack={(
+				Dungeoneer's Pack={<
+					INVENTORY-
+					1 Dungeoneer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Explorer's Pack={<
+					INVENTORY-
+					1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={2(
+				Arcana={<
+					SKILLS-
+					Arcana (Int)
+				>}
+				Deception={<
+					SKILLS-
+					Deception (Cha)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Intimidation={<
+					SKILLS-
+					Intimidation (Cha)
+				>}
+				Persuasion={<
+					SKILLS-
+					Persuasion (Cha)
+				>}
+				Religion={<
+					SKILLS-
+					Religion (Int)
+				>}
+			)}
+		>}
+		Warlock={<
+			INFO-
+			class:Warlock
+			COUNTERS-
+			proficiency:2
+			hp:{"current":8, "max":8}
+			hit:{"current" : "1d8"}
+			saving:{"current" : {"Wis" : {"current" : 1}, "Cha" : {"current" : 1}}}
+			SPELLSLOTS-
+			[{"u":1}]
+			TALENTS-
+			Otherworldly Patron[r=Warlock;n= At 1st level, you have struck a bargain with an otherworldly being of your choice: the Archfey, the Fiend, or the Great Old One, each of which is detailed at the end of the class description. Your choice grants you features at 1st level and again at 6th, 10th, and 14th level.;]
+			Pact Magic[r=Warlock;n= Your arcane research and the magic bestowed on you by your patron have given you facility with spells.;]
+			Cantrips[r=Warlock;n= You know two cantrips of your choice from the warlock spell list. You learn additional warlock cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Warlock table.;]
+			Spell Slots[r=Warlock;n= The Warlock table shows how many spell slots you have. The table also shows what the level of those slots is; all of your spell slots are the same level. To cast one of your warlock spells of 1st level or higher, you must expend a spell slot. You regain all expended spell slots when you finish a short or long rest. For example, when you are 5th level, you have two 3rd-level spell slots. To cast the 1st-level spell thunderwave, you must spend one of those slots, and you cast it as a 3rd-level spell. Spells Known of 1st Level and Higher At 1st level, you know two 1st-level spells of your choice from the warlock spell list. The Spells Known column of the Warlock table shows when you learn more warlock spells of your choice of 1st level and higher. A spell you choose must be of a level no higher than what’s shown in the table’s Slot Level column for your level. When you reach 6th level, for example, you learn a new warlock spell, which can be 1st, 2nd, or 3rd level. Additionally, when you gain a level in this class, you can choose one of the warlock spells you know and replace it with another spell from the warlock spell list, which also must be of a level for which you have spell slots.;]
+			Spellcasting Ability[r=Warlock;n= Charisma is your spellcasting ability for your warlock spells, so you use your Charisma whenever a spell refers to your spellcasting ability. In addition, you use your Charisma modifier when setting the saving throw DC for a warlock spell you cast and when making an attack roll with one. Spell save DC = 8 + your proficiency bonus + your Charisma modifier Spell attack modifier = your proficiency bonus + your Charisma modifier;]
+			Spellcasting Focus[r=Warlock;n= You can use an arcane focus as a spellcasting focus for your warlock spells.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=4d4x10]
+			2 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+			1 Leather Armor[u=/content/icons/CommonClothes1000p.png;w=10;a={"current" : 1}]
+			TAGS-
+			prof_Light Armor:true
+			prof_Simple Weapon:true
+			SPECIALS-
+			Knowledge is Power:Warlock's Start with 2 level one spells of their choice and 2 cantrips of their choice
+			Primary Weapon={(
+				Light Crossbow={<
+					INVENTORY-
+					1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+					20 Bolts[u=/content/icons/Arrows1000p.png;]
+				>}
+				Simple Weapon={<
+					INFO-
+					Pick a Simple Weapon={(
+						Club={<
+							INVENTORY-
+							1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+						>}
+						Dagger={<
+							INVENTORY-
+							1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+						>}
+						Greatclub={<
+							INVENTORY-
+							1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+						>}
+						Handaxe={<
+							INVENTORY-
+							1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+						>}
+						Javelin={<
+							INVENTORY-
+							1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+						>}
+						Light Hammer={<
+							INVENTORY-
+							1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+						>}
+						Mace={<
+							INVENTORY-
+							1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+						>}
+						Quarterstaff={<
+							INVENTORY-
+							1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+						>}
+						Sickle={<
+							INVENTORY-
+							1 Sickle[w=2;damage=1d4;s=slashing, light;]
+						>}
+						Spear={<
+							INVENTORY-
+							1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+						>}
+						Light Crossbow={<
+							INVENTORY-
+							1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+						>}
+						Dart={<
+							INVENTORY-
+							1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+						>}
+						Shortbow={<
+							INVENTORY-
+							1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+						>}
+						Sling={<
+							INVENTORY-
+							1 Sling[w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+						>}
+					)}
+				>}
+			)}
+			Secondary Weapon={(
+				Club={<
+					INVENTORY-
+					1 Club[u=/content/icons/Club1000p.png;w=2;damage=1d4;s=bludgeoning, light;]
+				>}
+				Dagger={<
+					INVENTORY-
+					1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+				>}
+				Greatclub={<
+					INVENTORY-
+					1 Greatclub[u=/content/icons/Club1000p.png;w=10;damage=1d8;s=bludgeoning, two handed;]
+				>}
+				Handaxe={<
+					INVENTORY-
+					1 Handaxe[w=2;u=/content/icons/Axe1000p.png;damage=1d6;s=slashing, light, thrown(range 20/60);]
+				>}
+				Javelin={<
+					INVENTORY-
+					1 Javelin[w=2;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 30/120);]
+				>}
+				Light Hammer={<
+					INVENTORY-
+					1 Light Hammer[u=/content/icons/Hammer1000p.png;w=2;damage=1d4;s=bludgeoning, thrown(range 30/120);]
+				>}
+				Mace={<
+					INVENTORY-
+					1 Mace[w=4;u=/content/icons/Mace1000p.png;damage=1d6;s=bludgeoning;]
+				>}
+				Quarterstaff={<
+					INVENTORY-
+					1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+				>}
+				Sickle={<
+					INVENTORY-
+					1 Sickle[w=2;damage=1d4;s=slashing, light;]
+				>}
+				Spear={<
+					INVENTORY-
+					1 Spear[w=3;u=/content/icons/Spear1000p.png;damage=1d6;s=piercing, thrown(range 20/60);]
+				>}
+				Light Crossbow={<
+					INVENTORY-
+					1 Light Crossbow[w=5;u=/content/icons/Crossbow1000p.png;damage=1d8;s=piercing, loading, two handed;range=80/320;]
+				>}
+				Dart={<
+					INVENTORY-
+					1 Dart[w=0.25;damage=1d4;s=piercing, finesse, thrown(range 20/60);]
+				>}
+				Shortbow={<
+					INVENTORY-
+					1 Shortbow[w=2;damage=1d6;s=piercing, two-handed;range=80/320;]
+				>}
+				Sling={<
+					INVENTORY-
+					1 Sling[w=0;damage=1d4;s=piercing, two-handed;range=80/320;]
+				>}
+			)}
+			Accessory={(
+				Component Pouch={<
+					INVENTORY-
+					1 Component pouch[u=/content/icons/Pouch1000p.png;]
+				>}
+				Arcane Focus={<
+					INVENTORY-
+					1 Arcane Focus[u=/content/icons/Amulet1000p.png;]
+				>}
+			)}
+			Backpack={(
+				Dungeoneer's Pack={<
+					INVENTORY-
+					1 Dungeoneer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Scholar's Pack={<
+					INVENTORY-
+					1 Scholar's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={2(
+				Arcana={<
+					SKILLS-
+					Arcana (Int)
+				>}
+				Deception={<
+					SKILLS-
+					Deception (Cha)
+				>}
+				History={<
+					SKILLS-
+					History (Int)
+				>}
+				Intimidation={<
+					SKILLS-
+					Intimidation (Cha)
+				>}
+				Persuasion={<
+					SKILLS-
+					Persuasion (Cha)
+				>}
+				Religion={<
+					SKILLS-
+					Religion (Int)
+				>}
+			)}
+		>}
+		Wizard={<
+			INFO-
+			class:Wizard
+			COUNTERS-
+			proficiency:2
+			hp:{"current":6, "max":6}
+			hit:1d6
+			saving:{"current" : {"Int" : {"current" : 1}, "Cha" : {"current" : 1}}}
+			SPELLSLOTS-
+			[{"u":1}]
+			TALENTS-
+			Spellcasting[r=Wizard;n= As a student of arcane magic, you have a spellbook containing spells that show the first glimmerings of your true power.;]
+			Cantrips[r=Wizard;n= At 1st level, you know three cantrips of your choice from the wizard spell list. You learn additional wizard cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Wizard table.;]
+			Spellbook[r=Wizard;n= At 1st level, you have a spellbook containing six 1stlevel wizard spells of your choice. Your spellbook is the repository of the wizard spells you know, except your cantrips, which are fixed in your mind.Preparing and Casting Spells The Wizard table shows how many spell slots you have to cast your spells of 1st level and higher. To cast one of these spells, you must expend a slot of the spell’s level or higher. You regain all expended spell slots when you finish a long rest. You prepare the list of wizard spells that are available for you to cast. To do so, choose a number of wizard spells from your spellbook equal to your Intelligence modifier + your wizard level (minimum of one spell). The spells must be of a level for which you have spell slots. For example, if you’re a 3rd-level wizard, you have four 1st-level and two 2nd-level spell slots. With an Intelligence of 16, your list of prepared spells can include six spells of 1st or 2nd level, in any combination, chosen from your spellbook. If you prepare the 1st-level spell magic missile, you can cast it using a 1st-level or a 2nd-level slot. Casting the spell doesn’t remove it from your list of prepared spells. You can change your list of prepared spells when you finish a long rest. Preparing a new list of wizard spells requires time spent studying your spellbook and memorizing the incantations and gestures you must make to cast the spell: at least 1 minute per spell level for each spell on your list.;]
+			Spellcasting Ability[r=Wizard;n= Intelligence is your spellcasting ability for your wizard spells, since you learn your spells through dedicated study and memorization. You use your Intelligence whenever a spell refers to your spellcasting ability. In addition, you use your Intelligence modifier when setting the saving throw DC for a wizard spell you cast and when making an attack roll with one. Spell save DC = 8 + your proficiency bonus + your Intelligence modifier Spell attack modifier = your proficiency bonus + your Intelligence modifier;]
+			Ritual Casting[r=Wizard;n= You can cast a wizard spell as a ritual if that spell has the ritual tag and you have the spell in your spellbook. You don’t need to have the spell prepared. Spellcasting Focus You can use an arcane focus as a spellcasting focus for your wizard spells. Learning Spells of 1st Level and Higher Each time you gain a wizard level, you can add two wizard spells of your choice to your spellbook for free. Each of these spells must be of a level for which you have spell slots, as shown on the Wizard table. On your adventures, you might find other spells that you can add to your spellbook (see the “Your Spellbook” sidebar).;]
+			Arcane Recovery[r=Wizard;n= You have learned to regain some of your magical energy by studying your spellbook. Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up), and none of the slots can be 6th level or higher. For example, if you’re a 4th-level wizard, you can recover up to two levels worth of spell slots. You can recover either a 2nd-level spell slot or two 1st-level spell slots.;]
+			INVENTORY-
+			1 Starting Gold[u=/content/icons/Pouch1000p.png;n=4d4x10]
+			1 Spellbook[u=/content/icons/Book1000p.png;]
+			TAGS-
+			prof_Dagger:true
+			prof_Dart:true
+			prof_Sling:true
+			prof_Quarterstaff:true
+			prof_Light Crossbow:true
+			SPECIALS-
+			Knowledge is Power:Sorcerer's Start with 2 level one spells of their choice and 3 cantrips of their choice
+			Primary Weapon={(
+				Quarterstaff={<
+					INVENTORY-
+					1 Quarterstaff[w=4;u=/content/icons/Staff1000p.png;damage=1d6;s=bludgeoning, versatile(1d8);]
+				>}
+				Dagger={<
+					INVENTORY-
+					1 Dagger[w=1;u=/content/icons/Knife1000p.png;damage=1d4;s=piercing, finesse, light, thrown(range 20/60);]
+				>}
+			)}
+			Accessory={(
+				Component Pouch={<
+					INVENTORY-
+					1 Component pouch[u=/content/icons/Pouch1000p.png;]
+				>}
+				Arcane Focus={<
+					INVENTORY-
+					1 Arcane Focus[u=/content/icons/Amulet1000p.png;]
+				>}
+			)}
+			Backpack={(
+				Explorer's Pack={<
+					INVENTORY-
+					1 Explorer's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+				Scholar's Pack={<
+					INVENTORY-
+					1 Scholar's Pack[u=/content/icons/Backpack1000p.png;]
+				>}
+			)}
+			Skill={2(
+				Arcana={<
+					SKILLS-
+					Arcana (Int)
+				>}
+				History={<
+					SKILLS-
+					History (Int)
+				>}
+				Insight={<
+					SKILLS-
+					Insight (Wis)
+				>}
+				Investigation={<
+					SKILLS-
+					Investigation (Int)
+				>}
+				Medicine={<
+					SKILLS-
+					Medicine (Wis)
+				>}
+				Religion={<
+					SKILLS-
+					Religion (Int)
+				>}
+			)}
+		>}
+	)}
+	Background={(
+		Unknown={<
+		>}
+		Acolyte={<
+			INFO-
+			back:Acolyte
+			SKILLS-
+			Insight (Wis)
+			Religion (Int)
+			TALENTS-
+			Shelter of the Faithful
+			INVENTORY-
+			1 Holy Symbol[u=/content/icons/1000p.png;];
+			5 Stick of Incense
+			1 Vestments
+			1 Common Clothes[u=/content/icons/CommonClothes1000p.png;][u=/content/icons/CommonClothes1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			15 Gold[u=/content/icons/Pouch1000p.png;][u=/content/icons/Pouch1000p.png;][u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			Item={(
+				Prayer Book={<
+					INVENTORY-
+					1 Prayer Book[u=/content/icons/Book1000p.png;]
+				>}
+				Prayer Wheel={<
+					INVENTORY-
+					1 Prayer Wheel
+				>}
+			)}
+			Starting Language={2(
+				Custom Language={<
+				>}
+				Common={<
+					TAGS-
+					lang_Common : true
+				>}
+				Dwarvish={<
+					TAGS-
+					lang_Dwarvish : true
+				>}
+				Elvish={<
+					TAGS-
+					lang_Elvish : true
+				>}
+				Giant={<
+					TAGS-
+					lang_Giant : true
+				>}
+				Gnomish={<
+					TAGS-
+					lang_Gnomish : true
+				>}
+				Halfling={<
+					TAGS-
+					lang_Halfling : true
+				>}
+				Orc={<
+					TAGS-
+					lang_Orc : true
+				>}
+				Abyssal={<
+					TAGS-
+					lang_Abyssal : true
+				>}
+				Celestial={<
+					TAGS-
+					lang_Celestial : true
+				>}
+				Draconic={<
+					TAGS-
+					lang_Draconic : true
+				>}
+				Giant={<
+					TAGS-
+					lang_Giant : true
+				>}
+				Deep Speech={<
+					TAGS-
+					lang_Deep Speech : true
+				>}
+				Infernal={<
+					TAGS-
+					lang_Infernal : true
+				>}
+				Primordial={<
+					TAGS-
+					lang_Primordial : true
+				>}
+				Sylvan={<
+					TAGS-
+					lang_Sylvan : true
+				>}
+				Undercommon={<
+					TAGS-
+					lang_Undercommon : true
+				>}
+			)}
+		>}
+		Charlatan={<
+			INFO-
+			back:Charlatan
+			SKILLS-
+			Deception (Cha)
+			Sleight of Hand (Dex)
+			TALENTS-
+			False Identity
+			TAGS-
+			prof_Disguise Kit
+			prof_Forgery Kit
+			INVENTORY-
+			1 Fine Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Choose a con-artist tool
+			1 Disguise Kit[u=/content/icons/Toolbox1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			15 Gold[u=/content/icons/Pouch1000p.png;][u=/content/icons/Pouch1000p.png;]
+		>}
+		Criminal={<
+			INFO-
+			back:Criminal
+			SKILLS-
+			Deception (Cha)
+			Stealth (Dex)
+			TALENTS-
+			Criminal Contact
+			TAGS-
+			prof_Thieve's Tools
+			INVENTORY-
+			1 Crowbar[u=/content/icons/Crowbar1000p.png;]
+			1 Hooded Dark Common Clothes[u=/content/icons/Robes1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			15 Gold[u=/content/icons/Pouch1000p.png;][u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			It's all a game:Thieves choose a gaming set to be proficient in
+		>}
+		Entertainer={<
+			INFO-
+			back:Entertainer
+			SKILLS-
+			Acrobatics (Dex)
+			Performance (Cha)
+			TALENTS-
+			By Popular Demand
+			TAGS-
+			prof_Disguise Kit
+			INVENTORY-
+			1 Choose a Musical Instrument
+			1 Favor of an Admirer
+			1 Costume
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			15 Gold[u=/content/icons/Pouch1000p.png;][u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			Showmanship:Entertainers choose a musical instrument to be proficient with
+		>}
+		Folk Hero={<
+			INFO-
+			back:Folk Hero
+			SKILLS-
+			Animal Handling (Wis)
+			Survival (Wis)
+			TALENTS-
+			Rustic Hospitality
+			TAGS-
+			prof_Land Vehicles
+			INVENTORY-
+			1 Choose a set of Artisan Tools[u=/content/icons/Toolbox1000p.png;]
+			1 Shovel
+			1 Iron Pot
+			1 Common Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			10 Gold[u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			Hobby:Folk Heros choose a set of artisan tools to be proficient in
+		>}
+		Guild Artisan={<
+			INFO-
+			back:Guild Artisan
+			SKILLS-
+			Insight (Wis)
+			Persuasion (Cha)
+			TALENTS-
+			Guild Membership
+			INVENTORY-
+			1 Choose a set of Artisan Tools[u=/content/icons/Toolbox1000p.png;]
+			1 Guild Letter of Introduction[u=/content/icons/Scroll1000p.png;]
+			1 Traveler's Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			15 Gold[u=/content/icons/Pouch1000p.png;][u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			Speciality:Guild Artisans choose a set of artisan tools to be proficient in
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+		Hermit={<
+			INFO-
+			back:Hermit
+			SKILLS-
+			Medicine (Wis)
+			Religion (Int)
+			TALENTS-
+			Discovery
+			TAGS-
+			prof_Herbalism Kit
+			INVENTORY-
+			1 Scroll Case[n=Stuffed with notes of your choice]
+			1 Winter blanket[u=/content/icons/Backpack1000p.png;]
+			1 Common Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Herbalism Kit[u=/content/icons/spot_S1000p.png;]
+			5 Gold[u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+		Noble={<
+			INFO-
+			back:Noble
+			SKILLS-
+			History (Int)
+			Persuasion (Cha)
+			TALENTS-
+			Position of Privilege
+			INVENTORY-
+			1 Fine Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Signet Ring[u=/content/icons/Ring1000p.png;]
+			1 Scroll of Pedigree[u=/content/icons/Scroll1000p.png;]
+			1 Purse[u=/content/icons/Pouch1000p.png;]
+			25 Gold[u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			It's all a game:Nobles choose a gaming set to be proficient in
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+		Outlander={<
+			INFO-
+			back:Outlander
+			SKILLS-
+			Athletics (Str)
+			Survival (Wis)
+			TALENTS-
+			Wanderer
+			INVENTORY-
+			1 Staff[w=4;u=/content/icons/Staff1000p.png;]
+			1 Hunting Trap
+			1 Traveler's Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Animal Trophy
+			10 Gold[u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			Showmanship:Entertainers choose a musical instrument to be proficient with
+			Starting Language={(
+				Custom Language={<
+				>}
+				Standard Language={<
+					INFO-
+					={(
+						Common={<
+							TAGS-
+							lang_Common : true
+						>}
+						Dwarvish={<
+							TAGS-
+							lang_Dwarvish : true
+						>}
+						Elvish={<
+							TAGS-
+							lang_Elvish : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Gnomish={<
+							TAGS-
+							lang_Gnomish : true
+						>}
+						Halfling={<
+							TAGS-
+							lang_Halfling : true
+						>}
+						Orc={<
+							TAGS-
+							lang_Orc : true
+						>}
+					)}
+				>}
+				Exotic Language={<
+					INFO-
+					={(
+						Abyssal={<
+							TAGS-
+							lang_Abyssal : true
+						>}
+						Celestial={<
+							TAGS-
+							lang_Celestial : true
+						>}
+						Draconic={<
+							TAGS-
+							lang_Draconic : true
+						>}
+						Giant={<
+							TAGS-
+							lang_Giant : true
+						>}
+						Deep Speech={<
+							TAGS-
+							lang_Deep Speech : true
+						>}
+						Infernal={<
+							TAGS-
+							lang_Infernal : true
+						>}
+						Primordial={<
+							TAGS-
+							lang_Primordial : true
+						>}
+						Sylvan={<
+							TAGS-
+							lang_Sylvan : true
+						>}
+						Undercommon={<
+							TAGS-
+							lang_Undercommon : true
+						>}
+					)}
+				>}
+			)}
+		>}
+		Sage={<
+			INFO-
+			back:Sage
+			SKILLS-
+			Aracana (Int)
+			History (Int)
+			TALENTS-
+			Researcher
+			INVENTORY-
+			1 Bottle of Black Ink
+			1 Quill
+			1 Small Knife[u=/content/icons/Knife1000p.png;]
+			1 Mysterious Letter[u=/content/icons/Scroll1000p.png;]
+			1 Common Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			10 Gold[u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			Starting Language={2(
+				Custom Language={<
+				>}
+				Common={<
+					TAGS-
+					lang_Common : true
+				>}
+				Dwarvish={<
+					TAGS-
+					lang_Dwarvish : true
+				>}
+				Elvish={<
+					TAGS-
+					lang_Elvish : true
+				>}
+				Giant={<
+					TAGS-
+					lang_Giant : true
+				>}
+				Gnomish={<
+					TAGS-
+					lang_Gnomish : true
+				>}
+				Halfling={<
+					TAGS-
+					lang_Halfling : true
+				>}
+				Orc={<
+					TAGS-
+					lang_Orc : true
+				>}
+				Abyssal={<
+					TAGS-
+					lang_Abyssal : true
+				>}
+				Celestial={<
+					TAGS-
+					lang_Celestial : true
+				>}
+				Draconic={<
+					TAGS-
+					lang_Draconic : true
+				>}
+				Giant={<
+					TAGS-
+					lang_Giant : true
+				>}
+				Deep Speech={<
+					TAGS-
+					lang_Deep Speech : true
+				>}
+				Infernal={<
+					TAGS-
+					lang_Infernal : true
+				>}
+				Primordial={<
+					TAGS-
+					lang_Primordial : true
+				>}
+				Sylvan={<
+					TAGS-
+					lang_Sylvan : true
+				>}
+				Undercommon={<
+					TAGS-
+					lang_Undercommon : true
+				>}
+			)}
+		>}
+		Sailor={<
+			INFO-
+			back:Sailor
+			SKILLS-
+			Athletics (Str)
+			Perception (Wis)
+			TALENTS-
+			Ship's Passage
+			TAGS-
+			prof_Navigator Tools
+			prof_Water Vehicles
+			INVENTORY-
+			1 Club belaying pin
+			1 Rope[n=50 Feet]
+			1 Lucky Charm
+			1 Common Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			10 Gold[u=/content/icons/Pouch1000p.png;]
+		>}
+		Soldier={<
+			INFO-
+			back:Soldier
+			SKILLS-
+			Athletics (Str)
+			Intimidation (Cha)
+			TALENTS-
+			Military Rank
+			TAGS-
+			prof_Land Vehicles
+			INVENTORY-
+			1 Insignia of Rank
+			1 War Trophy
+			1 Common Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			10 Gold[u=/content/icons/Pouch1000p.png;]
+			SPECIALS-
+			It's all a game:Nobles choose a gaming set to be proficient in
+		>}
+		Urchin={<
+			INFO-
+			back:Urchin
+			SKILLS-
+			Sleight of Hand (Dex)
+			Stealth (Dex)
+			TALENTS-
+			City Secrets
+			TAGS-
+			prof_Diguise Kit
+			prof_Thieve's Tools
+			INVENTORY-
+			1 Map of Home City[u=/content/icons/Scroll1000p.png;]
+			1 Small Knife[u=/content/icons/Knife1000p.png;]
+			1 Common Clothes[u=/content/icons/CommonClothes1000p.png;]
+			1 Personal Token
+			1 Pet Mouse
+			1 Belt Pouch[u=/content/icons/Pouch1000p.png;]
+			10 Gold[u=/content/icons/Pouch1000p.png;]
+		>}
+	)}
+>}

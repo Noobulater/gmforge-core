@@ -1,0 +1,731 @@
+/*This is applied to the main template*/
+
+
+.primary {
+	background-color: rgba(255, 255, 255, 1.0);
+	box-shadow: inset 4px 4px 1em rgb(255,255,255);
+}
+
+.secondary {
+	background-color: rgba(38, 38, 38, 1.0);
+}
+
+.highlight {
+	background: linear-gradient(to top, rgba(170,0,0,1.0), rgba(190,4,15,1.0), rgba(190,4,15,1.0), rgba(190,4,15,1.0), rgba(190,4,15,1.0), rgba(190,4,15,1.0), rgba(230,44,55,1.0));
+}
+
+.highlight2 {
+	background-color: rgba(230,44,55,1.0);
+}
+
+.white {
+	background-color: white;
+}
+
+.dull {
+	color : rgba(215, 215, 215, 1.0);
+}
+
+.create {
+	color : rgba(66, 138, 66, 1.0);
+	-webkit-text-fill-color: rgba(66, 138, 66, 1.0);
+}
+
+.combat {
+	color : white;
+	-webkit-text-stroke-color: white;
+	-webkit-text-fill-color: white;
+	-webkit-text-stroke-width : 3px;
+	text-shadow: 0em 0em 8px black;
+}
+
+.inactive {
+	background-color : rgb(235,235,228);
+}
+
+.destroy {
+	color : rgba(190,4,15,1.0);
+ 	-webkit-text-fill-color: rgba(190,4,15,1.0);
+}
+
+.alttext {
+	font-weight: bold;
+	color: white;
+	text-shadow: 0em 0em 8px black;
+}
+
+.glow {
+	text-shadow: 0em 0em 4px white;
+}
+
+.shroud {
+	text-shadow: 0em 0em 4px black;
+}
+
+.hover1:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: rgba(190,4,15,1.0);
+	outline-color: rgba(190,4,15,1.0);
+	cursor : pointer;
+}
+
+/*rgba(230,44,55, 0.6)*/
+.hover2:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: rgba(230,44,55,1.0);
+	outline-color: rgba(230,44,55,1.0);
+	box-shadow: 0 0 0.5em rgb(230,44,55);
+	cursor : pointer;
+}
+
+.hover3:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: #ff8a42;
+	outline-color: rgba(66, 138, 66, 1.0);
+	cursor : pointer;
+}
+
+.hover:hover {
+	color : white;
+	border-radius: 2px;
+	background-color: rgba(99, 207, 99, 1.0);
+	outline-color: rgba(230,44,55,1.0);
+	cursor : pointer;
+}
+
+.link {
+	color : inherit;
+}
+
+.link:hover {
+	color: rgba(66, 138, 66, 1.0);
+}
+
+.noHover:hover {
+	color: inherit;
+}
+
+.focus {
+	/*background: linear-gradient(to top, #ff8a42, #ffAD75);*/
+	box-shadow: inset 0 0 0.5em rgb(230,44,55);
+}
+
+.foreground {
+  background: linear-gradient(to top, rgb(22,35,44), rgb(33,46,55));
+}
+
+.background {
+	background: linear-gradient(to top, rgb(22,35,44), rgb(33,46,55), rgb(33,46,55), rgb(33,46,55), rgb(33,46,55), rgb(33,46,55), rgb(44,57,66));
+}
+
+.overlay {
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+.noflex {
+	display: block;
+	justify-content: none;
+}
+
+.flexrow {
+  display: flex;
+	flex-flow: row;
+	min-height: 0;
+}
+
+.flexcolumn {
+  display: flex;
+	flex-flow: column;
+	min-height: 0;
+}
+
+.flexaround {
+	display: flex;
+	justify-content: space-around;
+	min-height: 0;
+}
+
+.flexbetween {
+	display: flex;
+	justify-content: space-between;
+	min-height: 0;
+}
+
+.flexcenter {
+	display: flex;
+	justify-content: center;
+	min-height: 0;
+}
+
+.flexmiddle {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	min-height: 0;
+}
+
+.middle {
+	text-align: center;
+}
+
+.smooth {
+	border-radius: 2px;
+}
+
+.rounded {
+	border-radius: 25%;
+}
+
+.round {
+	border-radius: 50%;
+}
+
+.flexwrap {
+  display: flex;
+	flex-wrap: wrap;
+}
+
+.flex {
+	flex: 1;
+}
+
+.flex2 {
+	flex: 2;
+}
+
+.flex3 {
+	flex: 3,
+}
+
+.flex4 {
+	flex: 4;
+}
+
+.lightoutline {
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.checkered {
+	margin : 4px !important;
+	outline : #ff8a42 dashed 4px;
+}
+
+.outline {
+	border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.hardoutline {
+	border: 2px solid rgb(42, 41, 37);
+}
+
+.outlinebottom {
+	border-bottom : 1px solid rgba(0,0,0,0.4);
+}
+
+.nooutline {
+	border: none;
+}
+
+.noborder {
+	border: none;
+	border-radius: 0px;
+}
+
+.exact {
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+.fit {
+  width: 100%;
+  height: 100%;
+}
+
+.fit-x {
+  width: 100%;
+}
+
+.fit-y {
+  height: 100%;
+}
+
+.fit-xy {
+  width: 100%;
+	height: 100%;
+}
+
+.boxshadow {
+	-moz-box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.37);
+  -webkit-box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.37);
+  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.37);
+}
+
+.boxinshadow {
+	-moz-box-shadow:    inset 0 0 1em rgba(0, 0, 0, 0.37);
+  -webkit-box-shadow: inset 0 0 1em rgba(0, 0, 0, 0.37);
+  box-shadow:         inset 0 0 1em rgba(0, 0, 0, 0.37);
+}
+
+.boxshadowhighlight {
+	-moz-box-shadow:    0 0 3em rgba(66, 138, 66, 1.0);
+  -webkit-box-shadow: 0 0 3em rgba(66, 138, 66, 1.0);
+  box-shadow:         0 0 3em rgba(66, 138, 66, 1.0);
+}
+
+.boxshadowfocus {
+	-moz-box-shadow:    0 0 3em #ff8a42;
+  -webkit-box-shadow: 0 0 3em #ff8a42;
+  box-shadow:         0 0 3em #ff8a42;
+}
+
+.outlinefocus {
+	border : 6px solid #ff8a42;
+	padding : 6px;
+}
+
+.lrpadding {
+	padding : 0px 4px 0px 4px;
+}
+
+.lrmargin {
+	margin : 0px 4px 0px 4px;
+}
+
+.dice {
+	background-color: #333333;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.underline {
+	text-decoration: underline;
+}
+
+.link {
+  cursor: pointer;
+	color : inherit;
+}
+.link:hover {
+	color : inherit;
+	text-shadow: 0em 0em 8px rgb(230,44,55);
+}
+
+.bolder {
+	font-weight: bolder;
+}
+
+.subtitle {
+	font-size: 0.8em;
+}
+
+
+.lpadding {
+	padding : 1.0em;
+}
+
+.padding {
+	padding : 0.5em;
+}
+
+.spadding {
+	padding : 0.25em;
+}
+
+.lmargin {
+	margin : 1.0em;
+}
+
+.margin {
+	margin : 0.5em;
+}
+
+.smargin {
+	margin : 0.25em;
+}
+
+/* Let's get this party started */
+::-webkit-scrollbar {
+  width: 12px;
+	background-color: rgb(235,235,228);
+}
+
+::-webkit-scrollbar:horizontal {
+  height: 12px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-corner {
+	border : 1px solid rgb(200,200,200);
+  background-color: rgb(235,235,228);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 4px;
+  border-radius: 0px;
+	border : 1px solid rgba(0, 0, 0, 0.6);
+  background: linear-gradient(to right, #EEE, #DDD);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to right, #FFF, #EEE);
+}
+
+::-webkit-scrollbar-thumb: {
+  background: rgba(255,255,255,0.8);
+}
+
+::-webkit-scrollbar-thumb:window-inactive {
+	background: rgba(235,235,228,0.4);
+}
+
+input:not([type=checkbox]){
+	padding : 2px;
+	outline : 0;
+	border : 1px solid rgba(0,0,0,0.4);
+	box-shadow: inset 3px 3px 3px 0px #CCC;
+	border-radius: 2px;
+}
+
+input[type=range] {
+	box-shadow: none;
+	border : 0px;
+	outline : 0px;
+}
+
+input[type=range]:focus {
+	padding : 0px;
+	border : 0px !important;
+	outline : 0px;
+}
+
+input[type=checkbox] {
+	cursor : pointer;
+}
+
+input:focus{
+	/*background: linear-gradient(to top, rgba(79, 187, 79, 1.0), rgba(99, 207, 99, 1.0));*/
+	padding : 2px;
+	outline: 0px !important;
+	border : 1px solid rgba(230,44,55, 0.6);
+	border-radius: 2px;
+	box-shadow: 0 0 2px rgb(230,44,55);
+}
+
+input.line{
+	border-top-width : 0;
+	border-left-width : 0;
+	border-right-width : 0;
+	border-bottom-width: 1px;
+	background : transparent;
+	box-shadow : none;
+	padding : 0px;
+}
+
+input.line:focus {
+	padding : 0px;
+}
+
+.button {
+	cursor: pointer;
+	background: linear-gradient(to top, #BBB, #DDD, #DDD, #DDD, #DDD, #DDD, #FFF);
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 2px;
+	font-weight: bold;
+}
+
+.button:hover {
+	/*background: linear-gradient(to top, rgba(79, 187, 79, 1.0), rgba(99, 207, 99, 1.0));*/
+	cursor: pointer;
+	border-radius: 2px;
+	box-shadow: 0 0 0.5em rgb(230,44,55);
+}
+
+button {
+	background: linear-gradient(to top, #BBB, #DDD, #DDD, #DDD, #DDD, #DDD, #FFF);
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	border-radius: 2px;
+	font-weight: bold;
+}
+
+button:hover {
+	/*background: linear-gradient(to top, rgba(79, 187, 79, 1.0), rgba(99, 207, 99, 1.0));*/
+	border-radius: 2px;
+	box-shadow: 0 0 0.5em rgb(230,44,55);
+}
+
+canvas::selection {
+  background-color: rgba(0,0,0,0);
+}
+
+/*** Mozilla based browsers ***/
+canvas::-moz-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+/***For Other Browsers ***/
+canvas::-o-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+canvas::-ms-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+/*** For Webkit ***/
+canvas::-webkit-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+/*
+div::selection {
+  background-color: rgba(0,0,0,0);
+}
+
+div::-moz-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+div::-o-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+div::-ms-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+div::-webkit-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+
+img::selection {
+  background-color: rgba(0,0,0,0);
+}
+
+img::-moz-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+img::-o-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+img::-ms-selection {
+  background-color: rgba(0,0,0,0);
+}
+
+img::-webkit-selection {
+  background-color: rgba(0,0,0,0);
+}
+*/
+
+textarea {
+  resize: none;
+}
+
+a {
+  cursor: pointer;
+	color : inherit;
+}
+a:hover {
+	color : inherit;
+	text-shadow: 0em 0em 8px rgb(230,44,55);
+}
+
+ul {
+	list-style-type: circle;
+}
+
+div.backdrop {
+  background-color: rgba(0,0,0,0.8);
+}
+
+div.fluid {
+  display: flex;
+  justify-content: space-around;
+  border: 1px solid rgb(200,200,200);
+}
+
+span.fluid {
+  display: flex;
+  justify-content: space-around;
+  border: 1px solid rgb(200,200,200);
+  height : 100%
+}
+
+div.overlay {
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1;
+}
+
+div.chat {
+  background-color: white;
+  border: 1px solid rgb(200,200,200);
+
+  -moz-box-shadow:    inset 0 0 1em rgb(200,200,200);
+  -webkit-box-shadow: inset 0 0 1em rgb(200,200,200);
+  box-shadow:         inset 0 0 1em rgb(200,200,200);
+}
+
+a.table-control {
+	padding: 4px;
+	font-size: 2em;
+	transition: font-size 1s;
+}
+
+a.table-control:hover {
+	font-size: 3em;
+	color: white;
+}
+
+.purchase {
+	font-size: 1em;
+	transition: font-size 1s;
+}
+
+.purchase:hover {
+	font-size: 1.25em;
+}
+
+hr {
+	outline : none;
+	border : none;
+	border-radius : 1px;
+}
+
+highlight {
+  text-align: center;
+  font-weight: normal;
+  font-size: 3em;
+
+  color : #333;
+  -webkit-text-fill-color: #333; /* Will override color (regardless of order) */
+	-webkit-text-stroke-color: #333;
+	-webkit-text-stroke-width: 2px;
+}
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/* The slider itself */
+input[type=range] {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 15px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+input[type=range]:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 15px; /* Set a specific slider handle width */
+  height: 15px; /* Slider handle height */
+  background: linear-gradient(to top, #DDD, #FFF); /* Green background */
+	border-radius : 2px;
+	border : 1px solid #333;
+  cursor: pointer; /* Cursor on hover */
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 15px; /* Set a specific slider handle width */
+  height: 15px; /* Slider handle height */
+  background: linear-gradient(to top, #DDD, #FFF); /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+
+/* The slider itself */
+input.large[type=range] {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+input.large[type=range]:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+input.large[type=range]::-webkit-slider-thumb {
+	-webkit-appearance: none; /* Override default look */
+	appearance: none;
+	width: 15px; /* Set a specific slider handle width */
+	height: 25px; /* Slider handle height */
+	background: linear-gradient(to top, #DDD, #FFF); /* Green background */
+	border-radius : 2px;
+	border : 1px solid #333;
+	cursor: pointer; /* Cursor on hover */
+}
+
+input.large[type=range]::-moz-range-thumb {
+  width: 15px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: linear-gradient(to top, #DDD, #FFF); /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.noSelect {
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+canvas {
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+/*Post : XXXIV
+The Star Wars Credits
+And I guess there are some groups too. Groups are pretty interesting, they give you the ability to organize and plan very simply and work with data in chunks.
+Now that I think about it there must be some pretty cool things you could do with groups, like applying group modifiers, damage reduction, skills. Hm, Food for thought
+Anyways you should check out gamemaster its a pretty neat tool if I do say sohttps://i.redditmedia.com/icZc03A5t3-YeuMsyMUFrcKKE8nPHC3t9UOI1igQxss.jpg?w=1024&s=ec742369e611a5f209ac179b56874f6c myself, lots of utilities that will make your life and your group's lives easier.
+ENJOY!*/

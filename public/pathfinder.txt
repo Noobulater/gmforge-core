@@ -1,0 +1,657 @@
+﻿Pathfinder={<
+	Race?Nerd={(
+		Unidentified?No bonuses for this race={<
+		>}
+		Dwarf={<
+			INFO-
+			race:Dwarf
+			STATS-
+			Con:4B3[1d6]+2
+			Wis:4B3[1d6]+2
+			Cha:4B3[1d6]-2
+			COUNTERS-
+			speed:20
+			TAGS-
+			prof_Battleaxe:true
+			prof_Heavy Pick:true
+			prof_Warhammer:true
+			lang_Dwarven
+			lang_Common
+			SPECIALS-
+			Darkvision: Dwarves can see in the dark up to 60 feet.
+			Defensive Training: Dwarves get a +4 dodge bonus to AC against monsters of the giant subtype.
+			Greed: Dwarves receive a +2 racial bonus on Appraise skill checks made to determine the price of nonmagical goods that contain precious metals or gemstones.
+			Hatred: Dwarves receive a +1 bonus on attack rolls against humanoid creatures of the orc and goblinoid subtypes due to special training against these hated foes.
+			Hardy: Dwarves receive a +2 racial bonus on saving throws against poison, spells, and spell-like abilities.
+			Stability: Dwarves receive a +4 racial bonus to their Combat Maneuver Defense when resisting a bull rush or trip attempt while standing on the ground.
+			Stonecunning: Dwarves receive a +2 bonus on Perception checks to potentially notice unusual stonework, such as traps and hidden doors located in stone walls or floors. They receive a check to notice such features whenever they pass within 10 feet of them, whether or not they are actively looking.
+			Weapon Familiarity: Dwarves are proficient with battleaxes, heavy picks, and warhammers, and treat any weapon with the word "dwarven" in its name as a martial weapon.
+			Languages: Dwarves begin play speaking Common and Dwarven. Dwarves with high Intelligence scores can choose from the following: Giant, Gnome, Goblin, Orc, Terran, and Undercommon.
+		>}
+		Elf={<
+			INFO-
+			race:Elf
+			STATS-
+			Dex:4B3[1d6]+2
+			Int:4B3[1d6]+2
+			Con:4B3[1d6]-2
+			TAGS-
+			prof_Longbow:true
+			prof_Longsword:true
+			prof_Rapier:true
+			prof_Shortbow:true
+			lang_Elven
+			lang_Common
+			SKILLS-
+			Perception (Wis)[Racial=2]
+			SPECIALS-
+			Low-Light Vision: Elves can see twice as far as humans in conditions of dim light. See Additional Rules.
+			Elven Immunities: Elves are immune to magic sleep effects and get a +2 racial saving throw bonus against enchantment spells and effects.
+			Elven Magic: Elves receive a +2 racial bonus on caster level checks made to overcome spell resistance. In addition, elves receive a +2 racial bonus on Spellcraft skill checks made to identify the properties of magic items.
+			Keen Senses: Elves receive a +2 racial bonus on Perception skill checks.
+			Weapon Familiarity: Elves are proficient with longbows (including composite longbows), longswords, rapiers, and shortbows (including composite shortbows), and treat any weapon with the word "elven" in its name as a martial weapon.
+			Languages: Elves begin play speaking Common and Elven. Elves with high Intelligence scores can choose from the following: Celestial, Draconic, Gnoll, Gnome, Goblin, Orc, and Sylvan.
+		>}
+		Gnome={<
+			INFO-
+			race:Gnome
+			TAGS-
+			lang_Gnomish
+			lang_Slyvan
+			lang_Common
+			COUNTERS-
+			speed:20
+			size:-1
+			SKILLS-
+			Perception (Wis)[Racial=2]
+			SPECIALS-
+			Defensive Training: Gnomes get a +4 dodge bonus to AC against monsters of the giant type.
+			Gnome Magic: Gnomes add +1 to the DC of any saving throws against illusion spells that they cast. Gnomes with a Charisma of 11 or higher also gain the following spell-like abilities: 1/day—dancing lights, ghost sound, prestidigitation, and speak with animals. The caster level for these effects is equal to the gnome's level. The DC for these spells is equal to 10 + the spell's level + the gnome's Charisma modifier.
+			Hatred: Gnomes receive a +1 bonus on attack rolls against humanoid creatures of the reptilian and goblinoid subtypes due to special training against these hated foes.
+			Illusion Resistance: Gnomes get a +2 racial saving throw bonus against illusion spells or effects.
+			Keen Senses: Gnomes receive a +2 racial bonus on Perception skill checks.
+			Obsessive: Gnomes receive a +2 racial bonus on a Craft or Profession skill of their choice.
+			Weapon Familiarity: Gnomes treat any weapon with the word "gnome" in its name as a martial weapon.
+			Languages: Gnomes begin play speaking Common, Gnome, and Sylvan. Gnomes with high Intelligence scores can choose from the following: Draconic, Dwarven, Elven, Giant, Goblin, and Orc.
+		>}
+		Half-Elf={<
+			INFO-
+			race:Half-Elf
+			SKILLS-
+			Perception (Wis)[Racial=2]
+			TALENTS-
+			Skill Focus
+			TAGS-
+			lang_Elven
+			lang_Common
+			SPECIALS-
+			Low-Light Vision: Half-elves can see twice as far as humans in conditions of dim light. See Additional Rules.
+			Adaptability: Half-elves receive Skill Focus as a bonus feat at 1st level.
+			Elf Blood: Half-elves count as both elves and humans for any effect related to race.
+			Elven Immunities: Half-elves are immune to magic sleep effects and get a +2 racial saving throw bonus against enchantment spells and effects.
+			Keen Senses: Half-elves receive a +2 racial bonus on Perception skill checks.
+			Multitalented: Half-elves choose two favored classes at first level and gain +1 hit point or +1 skill point whenever they take a level in either one of those classes. See Classes for more information about favored classes.
+			Languages: Half-elves begin play speaking Common and Elven. Half-elves with high Intelligence scores can choose any languages they want (except secret languages, such as Druidic).
+			Add +2 to any Stat={(
+				Strength={<
+					STATS-
+					Str:4B3[1d6]+2
+				>}
+				Dexterity={<
+					STATS-
+					Dex:4B3[1d6]+2
+				>}
+				Constitution={<
+					STATS-
+					Con:4B3[1d6]+2
+				>}
+				Intelligence={<
+					STATS-
+					Int:4B3[1d6]+2
+				>}
+				Wisdom={<
+					STATS-
+					Wis:4B3[1d6]+2
+				>}
+				Charisma={<
+					STATS-
+					Cha:4B3[1d6]+2
+				>}
+			)}
+		>}
+		Half-Orc={<
+			INFO-
+			race:Half-Orc
+			TAGS-
+			prof_Greataxe:true
+			prof_Falchions:true
+			lang_Orc
+			lang_Common
+			SKILLS-
+			Intimidiate (Wis)[Racial=2]
+			SPECIALS-
+			Darkvision: Half-orcs can see in the dark up to 60 feet.
+			Intimidating: Half-orcs receive a +2 racial bonus on Intimidate skill checks due to their fearsome nature.
+			Orc Blood: Half-orcs count as both humans and orcs for any effect related to race.
+			Orc Ferocity: Once per day, when a half-orc is brought below 0 hit points but not killed, he can fight on for one more round as if disabled. At the end of his next turn, unless brought to above 0 hit points, he immediately falls unconscious and begins dying.
+			Weapon Familiarity: Half-orcs are proficient with greataxes and falchions and treat any weapon with the word "orc" in its name as a martial weapon.
+			Languages: Half-orcs begin play speaking Common and Orc. Half-orcs with high Intelligence scores can choose from the following: Abyssal, Draconic, Giant, Gnoll, and Goblin.
+			Add +2 to any Stat={(
+				Strength={<
+					STATS-
+					Str:4B3[1d6]+2
+				>}
+				Dexterity={<
+					STATS-
+					Dex:4B3[1d6]+2
+				>}
+				Constitution={<
+					STATS-
+					Con:4B3[1d6]+2
+				>}
+				Intelligence={<
+					STATS-
+					Int:4B3[1d6]+2
+				>}
+				Wisdom={<
+					STATS-
+					Wis:4B3[1d6]+2
+				>}
+				Charisma={<
+					STATS-
+					Cha:4B3[1d6]+2
+				>}
+			)}
+		>}
+		Halfling={<
+			INFO-
+			race:Halfling
+			STATS-
+			Dex:4B3[1d6]+2
+			Cha:4B3[1d6]+2
+			Str:4B3[1d6]-2
+			COUNTERS-
+			size:-1
+			speed:20
+			TAGS-
+			prof_Sling:true
+			lang_Halfling
+			lang_Common
+			SKILLS-
+			Acrobatics (Dex)[Racial=2]
+			Climb (Str)[Racial=2]
+			Perception (Wis)[Racial=2]
+			SPECIALS-
+			Fearless: Halflings receive a +2 racial bonus on all saving throws against fear. This bonus stacks with the bonus granted by halfling luck.
+			Halfling Luck: Halflings receive a +1 racial bonus on all saving throws.
+			Keen Senses: Halflings receive a +2 racial bonus on Perception skill checks.
+			Sure-Footed: Halflings receive a +2 racial bonus on Acrobatics and Climb skill checks.
+			Weapon Familiarity: Halflings are proficient with slings and treat any weapon with the word "halfling" in its name as a martial weapon.
+			Languages: Halflings begin play speaking Common and Halfling. Halflings with high Intelligence scores can choose from the following: Dwarven, Elven, Gnome, and Goblin.
+		>}
+		Human={<
+			TAGS-
+			lang_Common
+			SPECIALS-
+			Bonus Feat: Humans select one extra feat at 1st level.
+			Skilled: Humans gain an additional skill rank at first level and one additional rank whenever they gain a level.
+			Languages: Humans begin play speaking Common. Humans with high Intelligence scores can choose any languages they want (except secret languages, such as Druidic).
+			Add +2 to any Stat={(
+				Strength={<
+					STATS-
+					Str:4B3[1d6]+2
+				>}
+				Dexterity={<
+					STATS-
+					Dex:4B3[1d6]+2
+				>}
+				Constitution={<
+					STATS-
+					Con:4B3[1d6]+2
+				>}
+				Intelligence={<
+					STATS-
+					Int:4B3[1d6]+2
+				>}
+				Wisdom={<
+					STATS-
+					Wis:4B3[1d6]+2
+				>}
+				Charisma={<
+					STATS-
+					Cha:4B3[1d6]+2
+				>}
+			)}
+		>}
+	)}
+	Class?Class={(
+		No Class?No bonuses for this class={<
+		>}
+		Barbarian={<
+			INFO-
+			class:Barbarian
+			COUNTERS-
+			hp:{"current":12, "max" : 12}
+			hit:{"current":"1d12"}
+			attack:1
+			saving:{"current" : {"Dex" : {"current" : 0}, "Con" : {"current" : 2}, "Wis" : {"current" : 0}}}
+			SKILLS-
+			Acrobatics (Dex)
+			Climb (Str)
+			Craft (Int)
+			Handle Animal (Cha)
+			Intimidate (Cha)
+			Knowledge - Nature (Int)
+			Perception (Wis)
+			Ride (Dex)
+			Survival (Wis)
+			Swim (Str)
+			TALENTS-
+			Fast Movement
+			Rage
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Shields:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+		>}
+		Bard={<
+			INFO-
+			class:Bard
+			COUNTERS-
+			hp:{"current":8, "max" : 8}
+			hit:{"current":"1d8"}
+			saving:{"current" : {"Dex" : {"current" : 2}, "Con" : {"current" : 0}, "Wis" : {"current" : 2}}}
+			SPELLS-
+			[{"u":1},{"u":1},{"u":1}]
+			[{"u":1},{"u":1}]
+			SKILLS-
+			Acrobatics (Dex)
+			Appraise (Int)
+			Bluff (Cha)
+			Climb (Str)
+			Craft (Int)
+			Diplomacy (Cha)
+			Escape Artist (Dex)
+			Intimidate (Cha)
+			Knowledge - Arcana (Int)
+			Knowledge - Dungeoneering (Int)
+			Knowledge - Engineering (Int)
+			Knowledge - History (Int)
+			Knowledge - Geography (Int)
+			Knowledge - Local (Int)
+			Knowledge - Nature (Int)
+			Knowledge - Nobility (Int)
+			Knowledge - Planes (Int)
+			Knowledge - Religion (Int)
+			Linguistics (Int)
+			Perception (Wis)
+			Perform (Cha)
+			Profession (Wis)
+			Sense Motive (Wis)
+			Sleight of Hand (Dex)
+			Spellcraft (Int)
+			Stealth (Dex)
+			Use Magic Device (Cha)
+			TALENTS-
+			Bardic Knowledge
+			Bardic Performance
+			Countersong
+			Distraction
+			Fascinate
+			Inspire-Courage
+			Cantrips
+			TAGS-
+			prof_Light Armor:true
+			prof_Shield:true
+			prof_Sap:true
+			prof_Shortbow:true
+			prof_Longsword:true
+			prof_Rapiers:true
+			prof_Shortsword:true
+			prof_Simple Weapon:true
+			prof_Whip:true
+			SPECIALS-
+			Bard:Proficient in 3 skills of the Bard's choice
+			Bard:Knows 2 cantrips of the Bard's choice
+		>}
+		Cleric={<
+			INFO-
+			class:Cleric
+			COUNTERS-
+			hp:{"current":8, "max" : 8}
+			hit:{"current":"1d8"}
+			saving:{"current" : {"Dex" : {"current" : 0}, "Con" : {"current" : 2}, "Wis" : {"current" : 2}}}
+			SPELLS-
+			[{"u":1},{"u":1},{"u":1}]
+			[{"u":1},{"u":1}]
+			TALENTS-
+			Aura
+			Channel Energy
+			Domains
+			Orisons
+			SKILLS-
+			Appraise (Int)
+			Craft (Int)
+			Diplomacy (Cha)
+			Heal (Wis)
+			Knowledge - Arcana (Int)
+			Knowledge - History (Int)
+			Knowledge - Nobility (Int)
+			Knowledge - Planes (Int)
+			Knowledge - Religion (Int)
+			Linguistics (Int)
+			Profession (Wis)
+			Sense Motive (Wis)
+			Spellcraft (Int)
+			TAGS-
+			prof_Light Armor:true
+			prof_Hand Crossbow:true
+			prof_Shields:true
+			prof_Simple Weapon:true
+			SPECIALS-
+			Divine Proficiency:Clerics are proficient in the weapon of their diety
+		>}
+		Druid={<
+			INFO-
+			class:Druid
+			COUNTERS-
+			hp:{"current":8, "max" : 8}
+			hit:{"current":"1d8"}
+			saving:{"current" : {"Dex" : {"current" : 2}, "Con" : {"current" : 0}, "Wis" : {"current" : 2}}}
+			SPELLS-
+			[{"u":1},{"u":1},{"u":1}]
+			[{"u":1}]
+			TALENTS-
+			Nature Bond
+			Nature Sense
+			Orisons
+			Wild Empathy
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Shield:true
+			prof_Club:true
+			prof_Dagger:true
+			prof_Dart:true
+			prof_Javelin:true
+			prof_Mace:true
+			prof_Quarterstaff:true
+			prof_Scimitar:true
+			prof_Sickle:true
+			prof_Sling:true
+			prof_Spear:true
+			SKILLS-
+			Climb (Str)
+			Craft (Int)
+			Fly (Dex)
+			Handle Animal (Cha)
+			Heal (Wis)
+			Knowledge - Geography (Int)
+			Knowledge - Nature (Int)
+			Perception (Wis)
+			Profession (Wis)
+			Ride (Dex)
+			Spellcraft (Int)
+			Survival (Wis)
+			Swim (Str)
+			SPECIALS-
+			Druid : Druids are only proficient in only non-metal Light Armor, non-metal Medium Armor, non-metal Shields. If they don any metallic armor they are unable to cast druid spells/spell-like abilities for 24hrs
+			Druid : Druids know Druidic
+		>}
+		Fighter={<
+			INFO-
+			class:Fighter
+			COUNTERS-
+			hp:{"current":10, "max" : 10}
+			hit:{"current":"1d10"}
+			attack:1
+			saving:{"current" : {"Dex" : {"current" : 0}, "Con" : {"current" : 2}, "Wis" : {"current" : 0}}}
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Heavy Armor:true
+			prof_Shield:true
+			prof_Tower Shield:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+			SKILLS-
+			Climb (Str)
+			Craft (Int)
+			Handle Animal (Cha)
+			Intimidate (Cha)
+			Knowledge - Dungeoneering (Int)
+			Knowledge - Engineering (Int)
+			Profession (Wis)
+			Ride (Dex)
+			Survival (Wis)
+			Swim (Str)
+			SPECIALS-
+			Fighter:A Fighter picks a bonus talent upon Creation
+		>}
+		Monk={<
+			INFO-
+			class:Monk
+			COUNTERS-
+			hp:{"current":10, "max" : 10}
+			hit:{"current":"1d10"}
+			saving:{"current" : {"Dex" : {"current" : 2}, "Con" : {"current" : 2}, "Wis" : {"current" : 2}}}
+			TALENTS-
+			Flurry of Blows
+			Stunning Fist
+			Unarmed Strike
+			TAGS-
+			prof_Club:true
+			prof_Light Crossbow:true
+			prof_Heavy Crossbow:true
+			prof_Dagger:true
+			prof_Handaxe:true
+			prof_Javelin:true
+			prof_Kama:true
+			prof_Nunchaku:true
+			prof_Quarterstaff:true
+			prof_Sai:true
+			prof_Shortspear:true
+			prof_Shortsword:true
+			prof_Shuriken:true
+			prof_Siangham:true
+			prof_Sling:true
+			prof_Spear:true
+			SKILLS-
+			Acrobatics (Dex)
+			Climb (Str)
+			Craft (Int)
+			Escape Artist (Dex)
+			Intimidate (Cha)
+			Knowledge - History (Int)
+			Knowledge - Religion (Int)
+			Perception (Wis)
+			Perform (Cha)
+			Profession (Wis)
+			Ride (Dex)
+			Sense Motive (Wis)
+			Stealth (Dex)
+			Swim (Str)
+			special-
+			Restricted:Monks lose their Armor Bonus, fast movement, and furry of blows while using armor or shields, carrying a Medium/Heavy load
+			Discpline:Monks begin with a bonus talent
+		>}
+		Paladin={<
+			INFO-
+			class:Paladin
+			COUNTERS-
+			hp:{"current":10, "max" : 10}
+			hit:{"current":"1d10"}
+			attack:1
+			saving:{"current" : {"Dex" : {"current" : 0}, "Con" : {"current" : 2}, "Wis" : {"current" : 2}}}
+			TALENTS-
+			Aura of Good
+			Detect Evil
+			Smite Evil
+			SKILLS-
+			Craft (Int)
+			Diplomacy (Cha)
+			Handle Animal (Cha)
+			Heal (Wis)
+			Knowledge - Nobility (Int)
+			Knowledge - Religion (Int)
+			Profession (Wis)
+			Ride (Dex)
+			Sense Motive (Wis)
+			Spellcraft (Int)
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Heavy Armor:true
+			prof_Shield:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+		>}
+		Ranger={<
+			INFO-
+			class:Ranger
+			COUNTERS-
+			hp:{"current":10, "max" : 10}
+			hit:{"current":"1d10"}
+			attack:1
+			saving:{"current" : {"Dex" : {"current" : 2}, "Con" : {"current" : 2}, "Wis" : {"current" : 0}}}
+			TALENTS-
+			Favoured Enemy[r:1]
+			Track
+			Wild Empathy
+			SKILLS-
+			Climb (Str)
+			Craft (Int)
+			Handle Animal (Cha)
+			Heal (Wis)
+			Intimidate (Cha)
+			Knowledge - Dungeoneering (Int)
+			Knowledge - Geography (Int)
+			Knowledge - Nature (Int)
+			Perception (Wis)
+			Profession (Wis)
+			Ride (Dex)
+			Spellcraft (Int)
+			Stealth (Dex)
+			Survival (Wis)
+			Swim (Str)
+			TAGS-
+			prof_Light Armor:true
+			prof_Medium Armor:true
+			prof_Shield:true
+			prof_Simple Weapon:true
+			prof_Martial Weapon:true
+		>}
+		Rogue={<
+			INFO-
+			class:Rogue
+			COUNTERS-
+			hp:{"current":8, "max" : 8}
+			hit:{"current":"1d8"}
+			saving:{"current" : {"Dex" : {"current" : 2}, "Con" : {"current" : 0}, "Wis" : {"current" : 0}}}
+			TALENTS-
+			Sneak Attack[r:1d6]
+			Trapfinding
+			SKILLS-
+			Acrobatics (Dex)
+			Appraise (Int)
+			Bluff (Cha)
+			Climb (Str)
+			Craft (Int)
+			Diplomacy (Cha)
+			Disable Device (Dex)
+			Escape Artist (Dex)
+			Intimidate (Cha)
+			Knowledge - Dungeoneering (Int)
+			Knowledge - Local (Int)
+			Linguistics (Int)
+			Perception (Wis)
+			Perform (Cha)
+			Profession (Wis)
+			Sense Motive (Wis)
+			Sleight of Hand (Dex)
+			Stealth (Dex)
+			Swim (Str)
+			Use Magic Device (Cha)
+			TAGS-
+			prof_Light Armor:true
+			prof_Hand Crossbow:true
+			prof_Shortsword:true
+			prof_Sap:true
+			prof_Shortbow:true
+			prof_Rapier:true
+		>}
+		Sorcerer={<
+			INFO-
+			class:Sorcerer
+			COUNTERS-
+			hp:{"current":8, "max" : 8}
+			hit:{"current":"1d8"}
+			saving:{"current" : {"Dex" : {"current" : 0}, "Con" : {"current" : 0}, "Wis" : {"current" : 2}}}
+			SPELLS-
+			[{"u":1},{"u":1},{"u":1},{"u":1}]
+			[{"u":1},{"u":1},{"u":1}]
+			TALENTS-
+			Bloodline Power
+			Cantrips
+			Eschew Materials
+			SKILLS-
+			Appraise (Int)
+			Bluff (Cha)
+			Craft (Int)
+			Fly (Dex)
+			Intimidate (Cha)
+			Knowledge - Arcana (Int)
+			Profession (Wis)
+			Spellcraft (Int)
+			Use Magic Device (Cha)
+			TAGS-
+			prof_Simple Weapon:true
+			prof_Dart:true
+			prof_Sling:true
+			prof_Quarterstaff:true
+			prof_Light Crossbow:true
+			SPECIALS-
+			Knowledge is Power:Sorcerer's Start with 2 level one spells of their choice and 4 cantrips of their choice
+		>}
+		Wizard={<
+			INFO-
+			class:Wizard
+			COUNTERS-
+			hp:{"current":6, "max" : 6}
+			hit:{"current":"1d6"}
+			saving:{"current" : {"Dex" : {"current" : 0}, "Con" : {"current" : 0}, "Wis" : {"current" : 0}}}
+			SPELLS-
+			[{"u":1},{"u":1},{"u":1}]
+			TALENTS-
+			Arcane Bond
+			Arcane School
+			Cantrips
+			Scribe Scroll
+			SKILLS-
+			Appraise (Int)
+			Craft (Int)
+			Fly (Dex)
+			Knowledge - Arcana (Int)
+			Knowledge - Dungeoneering (Int)
+			Knowledge - Engineering (Int)
+			Knowledge - History (Int)
+			Knowledge - Geography (Int)
+			Knowledge - Local (Int)
+			Knowledge - Nature (Int)
+			Knowledge - Nobility (Int)
+			Knowledge - Planes (Int)
+			Knowledge - Religion (Int)
+			Linguistics (Int)
+			Profession (Wis)
+			Spellcraft (Int)
+			TAGS-
+			prof_Club:true
+			prof_Dagger:true
+			prof_Quarterstaff:true
+			prof_Light Crossbow:true
+			prof_Heavy Crossbow:true
+		>}
+	)}
+>}

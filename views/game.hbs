@@ -1,0 +1,11 @@
+<div class="flexcolumn" style="position: absolute; left:0; top: 0; width: 100%; height:100%; overflow:hidden;">
+  <div class="flexcolumn flex" style="position: relative; overflow: hidden;" id="viewPort" offline={{offline}} userID={{offline}}>
+  </div>
+</div>
+<div id='videoRemotes'></div>
+<script>
+  if (getCookie("UserID")) {
+    $("#viewPort").append("<div class='flex flexmiddle'><div class='loader padding'></div></div>");
+  }
+  setTimeout(function(){$("#viewPort").empty(); connection_init();}, 1000);
+</script>
