@@ -4,8 +4,8 @@ The Core Scripts providing all the virtual tabletop aspects of the tool (Develop
 # Getting Started
 
 ## What you'll need
-# A copy of GM Forge
-# A way to concatenate Javascript files (see [grunt](https://github.com/gruntjs/grunt), [gulp](https://github.com/gulpjs/gulp))
+A copy of GM Forge
+A way to concatenate Javascript files (see [grunt](https://github.com/gruntjs/grunt), [gulp](https://github.com/gulpjs/gulp))
 
 
 
