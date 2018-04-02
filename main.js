@@ -24,6 +24,16 @@ app.on('ready', function () {
         title : "GM Forge",
         //  'node-integration': false // otherwise various client-side things may break
     });
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        if(input.type == "keyUp" && input.key == "F12")
+        {
+            mainWindow.webContents.openDevTools()
+        }
+        if(input.type == "keyUp" && input.key == "F5")
+        {
+            mainWindow.webContents.reloadIgnoringCache()
+        }
+    });
     appIcon.setToolTip('GM Forge');
     mainWindow.loadURL('http://localhost:30000/');
     mainWindow.webContents.on('new-window', function(e, url) {
