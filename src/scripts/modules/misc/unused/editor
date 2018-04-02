@@ -1,3 +1,4 @@
+/*
 sync.render("ui_editor", function(obj, data, scope) {
   var div = $("<div>");
 
@@ -931,67 +932,6 @@ sync.render("ui_fakeSheet", function(obj, app, scope) {
   return div;
 });
 
-sync.render("ui_JSON", function(obj, app, scope) {
-  scope = scope || {
-    viewOnly: (app.attr("viewOnly") == "true"),
-    lookup : app.attr("lookup"),
-    textEdit : app.attr("textEdit") == "true",
-    hideConfirm : app.attr("hideConfirm") == "true",
-    closeTarget : app.attr("closeTarget"),
-    width : app.attr("width"),
-    height : app.attr("height")
-  };
-
-  var div = $("<div>");
-  div.addClass("flexcolumn flex");
-
-  var data = obj.data;
-  var value = obj.data;
-  if (scope.lookup) {
-    value = sync.traverse(data, scope.lookup || "");
-  }
-  var errorFeedback = $("<div>").appendTo(div);
-  errorFeedback.addClass("flexmiddle destroy");
-
-  var inputTest = $("<textarea>").appendTo(div);
-  inputTest.addClass("flex subtitle");
-  if (scope.viewOnly) {
-    inputTest.attr("disabled", true);
-  }
-  inputTest.css("min-width", scope.width || "300px");
-  inputTest.css("min-height", scope.height || "300px");
-  inputTest.text(JSON.stringify(value, null, 2));
-  inputTest.attr("_lastScrollTop", app.attr("_lastScrollTop"));
-  inputTest.attr("_lastScrollLeft", app.attr("_lastScrollTop"));
-  inputTest.scroll(function(){
-    app.attr("_lastScrollTop", $(this).scrollTop());
-    app.attr("_lastScrollLeft", $(this).scrollLeft());
-  });
-  inputTest.change(function(){
-    errorFeedback.empty();
-    try {
-      var newData = eval("var variable = "+$(this).val()+"; variable");
-      if (scope.lookup) {
-        sync.traverse(obj.data, scope.lookup || "", newData);
-      }
-      else {
-        obj.data = newData;
-      }
-      obj.update();
-      if (app.attr("closeTarget")) {
-        layout.coverlay(app.attr("closeTarget"));
-      }
-    }
-    catch(err) {
-      errorFeedback.append("<b>Error Parsing Data</b>");
-    }
-  });
-  if (!scope.hideConfirm) {
-    var button = $("<button>").appendTo(div);
-    button.append("Confirm");
-  }
-  return div;
-});
 
 sync.render("ui_tableEditor", function(obj, app, scope) {
   scope = scope || {viewOnly: (app.attr("viewOnly") == "true"), lookup : app.attr("lookup"), structure : app.attr("structure"), textEdit : app.attr("textEdit") == "true"};
@@ -1959,104 +1899,6 @@ sync.render("ui_displayTree", function(obj, app, scope) {
   return div;
 });
 
-sync.render("ui_diceDisplayBuilder", function(obj, app, scope){
-  scope = scope || {viewOnly : app.attr("viewOnly") == "true", display : app.attr("diceKey")};
-  var div = $("<div>");
-  div.addClass("flexrow flex");
-
-  var colWrap = $("<div>").appendTo(div);
-  colWrap.addClass("flexcolumn flex");
-
-  var col = $("<div>").appendTo(colWrap);
-  col.addClass("flexrow flexwrap padding");
-
-  for (var i in obj.data.templates.display.ui) {
-    var button = $("<button>").appendTo(col);
-    if (scope.display == i) {
-      button.addClass("highlight alttext");
-    }
-    button.attr("key", i);
-    button.append(i);
-    button.click(function(){
-      app.attr("diceKey", $(this).attr("key"));
-      obj.update();
-    });
-  }
-
-  var plus = $("<button>").appendTo(col);
-  plus.addClass("background alttext");
-  plus.append("New Display");
-  plus.click(function(){
-    ui_prompt({
-      target : $(this),
-      inputs : {
-        "Identifier" : {placeholder : "The unique identifier"}
-      },
-      click : function(ev, inputs) {
-        if (inputs["Identifier"].val()) {
-          obj.data.templates.display.ui[inputs["Identifier"].val()] = {
-            classes : "",
-            style : {},
-            dice : {},
-            displays : {},
-            results : {},
-          };
-          obj.update();
-        }
-      }
-    });
-  });
-
-  if (scope.display) {
-    app.attr("lookup", "templates.display.ui."+scope.display);
-
-    var select = sync.render("ui_JSON")(obj, app, null).appendTo(colWrap);
-    select.addClass("flex padding");
-
-    var dataRollWrap = $("<div>").appendTo(div);
-    dataRollWrap.addClass("flexcolumn flex");
-    dataRollWrap.append("<b class='underline'>Test your Display</b>");
-
-    var dataDiv = $("<div>").appendTo(dataRollWrap);
-    dataDiv.addClass("flexrow flex padding");
-
-    var flavorText = $("<textarea>").appendTo(dataDiv);
-    flavorText.addClass("flex");
-    flavorText.val(app.attr("flavor") || "");
-    flavorText.attr("placeholder", "Flavor Text");
-    flavorText.change(function(){
-      app.attr("flavor", $(this).val());
-      obj.update();
-    });
-
-    var eqText = $("<textarea>").appendTo(dataDiv);
-    eqText.addClass("flex");
-    eqText.val(app.attr("equation") || "d20");
-    eqText.attr("placeholder", "Equation");
-    eqText.change(function(){
-      app.attr("equation", $(this).val());
-      obj.update();
-    });
-
-    var dataRoll = $("<div>").appendTo(dataRollWrap);
-    dataRoll.addClass("flexcolumn flexmiddle flex padding");
-
-    var wrapObj = sync.dummyObj();
-    wrapObj.data = {data : sync.executeQuery((app.attr("equation") || "d20"), sync.defaultContext()), msg : "Flavor Text"};
-
-    dataRoll.append("<b class='underline'>Result</b>");
-
-    dataRoll.append("<b>"+(sync.eval(app.attr("flavor"), sync.defaultContext()) || "")+"</b>");
-
-    var display = sync.render("ui_newDiceResults")(wrapObj, app, {display : obj.data.templates.display.ui[scope.display]}).appendTo(dataRoll);
-    display.css("width", "350px");
-    display.css("min-height", "200px");
-
-    dataRoll.append("<b class='flex'></b>");
-  }
-
-  return div;
-});
 
 sync.render("ui_gameLibraries", function(obj, app, scope) {
   var div = $("<div>");
@@ -2913,7 +2755,7 @@ sync.render("ui_homebrew", function(obj, app, scope) {
     obj.addApp(select);
   });
 
-/*
+
   var vehicle = genIcon("plane", "Vehicle Data").appendTo(sidebar);
   vehicle.click(function(){
     optionsLabel.text("Vehicle Data");

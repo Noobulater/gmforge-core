@@ -30,6 +30,14 @@ app.on('ready', function () {
       e.preventDefault();
       require('electron').shell.openExternal(url);
     });
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.type == "keyUp" && input.key == "F12") {
+        mainWindow.webContents.openDevTools();
+      }
+      if (input.type == "keyUp" && input.key == "F5") {
+        mainWindow.webContents.reloadIgnoringCache();
+      }
+    });
     mainWindow.focus();
     //require('electron').shell.openExternal("http://www.gmforge.io");
 });

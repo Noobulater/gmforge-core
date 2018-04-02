@@ -448,7 +448,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       obj.update();
     });
 
-    if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
+    if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
       var confirm = $("<button>").appendTo(buttonList);
       confirm.addClass("background alttext flexmiddle");
       confirm.text("Confirm Calculations");

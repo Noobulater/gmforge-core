@@ -58,11 +58,11 @@ function _mw_canChange(ui, delay, callback) {
 var _inputUpdates;
 function _stageUpdate(obj, cmd, target){
   _inputUpdates = {obj : obj, cmd : cmd, target : target, focused : document.activeElement};
-  _inputSync();
+  _inputSync(obj);
 }
 function _inputSync(obj) {
   setTimeout(function(){
-    if (!$(document.activeElement).is(":input") || $(document.activeElement).attr("obj") != obj.id() || document.activeElement == _inputUpdates.focused) {
+    if (!$(document.activeElement).is(":input") || $(document.activeElement).attr("obj") != obj.id() || (!_inputUpdates || document.activeElement == _inputUpdates.focused)) {
       if (_inputUpdates) {
         if (_inputUpdates.cmd) {
           _inputUpdates.obj.sync(_inputUpdates.cmd, _inputUpdates.target);
@@ -85,7 +85,7 @@ function genInput(options, delay) {
       input.blur();
     });
   }
-  if (options.value != null && options.type != "list") {
+  if (options.value != null) {
     if (options.type == "number" || options.type == "range") {
       input.bind('mousewheel', function(e) {
         if ($(this).prop("disabled") || (!$(this).is(':focus') && options.type != "range")) {return;}
@@ -1205,7 +1205,7 @@ function ui_processMedia(data, options) {
     parent = options.parent;
   }
 
-  if (data.match(".webm") || data.match(".mp4") || data.match(".ogg")) {
+  if (data && (data.match(".webm") || data.match(".mp4") || data.match(".ogg"))) {
     // no audio
     var content = $("<video>");
     content.attr('height', "auto");

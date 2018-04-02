@@ -1404,7 +1404,8 @@ var game = {
   actions : null, // All the actions objects/players can perform
   components : null, // list of all the ui components a player has access to
   actions : null, // list of all the actions a player has access to
-  templates : {} // data structures specific to game
+  templates : {}, // data structures specific to game
+  version : 1 // the version for the patcher to check against
 };
 
 function setupGame() {
@@ -4523,11 +4524,11 @@ function _mw_canChange(ui, delay, callback) {
 var _inputUpdates;
 function _stageUpdate(obj, cmd, target){
   _inputUpdates = {obj : obj, cmd : cmd, target : target, focused : document.activeElement};
-  _inputSync();
+  _inputSync(obj);
 }
 function _inputSync(obj) {
   setTimeout(function(){
-    if (!$(document.activeElement).is(":input") || $(document.activeElement).attr("obj") != obj.id() || document.activeElement == _inputUpdates.focused) {
+    if (!$(document.activeElement).is(":input") || $(document.activeElement).attr("obj") != obj.id() || (!_inputUpdates || document.activeElement == _inputUpdates.focused)) {
       if (_inputUpdates) {
         if (_inputUpdates.cmd) {
           _inputUpdates.obj.sync(_inputUpdates.cmd, _inputUpdates.target);
@@ -4550,7 +4551,7 @@ function genInput(options, delay) {
       input.blur();
     });
   }
-  if (options.value != null && options.type != "list") {
+  if (options.value != null) {
     if (options.type == "number" || options.type == "range") {
       input.bind('mousewheel', function(e) {
         if ($(this).prop("disabled") || (!$(this).is(':focus') && options.type != "range")) {return;}
@@ -5670,7 +5671,7 @@ function ui_processMedia(data, options) {
     parent = options.parent;
   }
 
-  if (data.match(".webm") || data.match(".mp4") || data.match(".ogg")) {
+  if (data && (data.match(".webm") || data.match(".mp4") || data.match(".ogg"))) {
     // no audio
     var content = $("<video>");
     content.attr('height', "auto");
@@ -8032,6 +8033,7 @@ layout.left = function() {
       $("#audio-player").hide();
       $("#game-options").hide();
       $("#quick-combat").hide();
+      $("#quick-help").hide();
       if ($("#cloud-files").length) {
         if ($("#cloud-files").is(":visible")) {
           $("#cloud-files").hide();
@@ -8074,6 +8076,7 @@ layout.left = function() {
     $("#audio-player").hide();
     $("#game-options").hide();
     $("#quick-combat").hide();
+    $("#quick-help").hide();
     if ($("#asset-manager").length) {
       if ($("#asset-manager").is(":visible")) {
         $("#asset-manager").hide();
@@ -8102,8 +8105,6 @@ layout.left = function() {
       pop.resizable();*/
     }
   });
-  media.click();
-
 
   if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
     var media = genIcon("film").appendTo(mediaOptions);
@@ -8118,6 +8119,7 @@ layout.left = function() {
       $("#audio-player").hide();
       $("#game-options").hide();
       $("#quick-combat").hide();
+      $("#quick-help").hide();
       if ($("#media-player").length) {
         if ($("#media-player").is(":visible")) {
           $("#media-player").hide();
@@ -8160,6 +8162,7 @@ layout.left = function() {
       $("#media-player").hide();
       $("#game-options").hide();
       $("#quick-combat").hide();
+      $("#quick-help").hide();
       if ($("#audio-player").length) {
         if ($("#audio-player").is(":visible")) {
           $("#audio-player").hide();
@@ -8203,6 +8206,7 @@ layout.left = function() {
     $("#media-player").hide();
     $("#game-options").hide();
     $("#audio-player").hide();
+    $("#quick-help").hide();
     if ($("#quick-combat").length) {
       if ($("#quick-combat").is(":visible")) {
         $("#quick-combat").hide();
@@ -8233,6 +8237,49 @@ layout.left = function() {
     }
   });
 
+  var media = genIcon("question-sign").appendTo(mediaOptions);
+  media.addClass("lrpadding create");
+  media.attr("title", "Quick Help!");
+  media.attr("id", "help-button");
+  media.css("font-size", "1.4em");
+  media.css("padding-left", "0.5em");
+  media.css("padding-right", "0.5em");
+  media.click(function() {
+    $("#cloud-files").hide();
+    $("#asset-manager").hide();
+    $("#media-player").hide();
+    $("#game-options").hide();
+    $("#audio-player").hide();
+    $("#quick-combat").hide();
+    if ($("#quick-help").length) {
+      if ($("#quick-help").is(":visible")) {
+        $("#quick-help").hide();
+      }
+      else {
+        $("#quick-help").show();
+        var max = util.getMaxZ(".ui-popout");
+        $("#quick-help").css("z-index", max+1);
+      }
+    }
+    else {
+      var newApp = sync.newApp("ui_renderHelp", null, {}).appendTo(menuContent);
+      newApp.css("width", assetTypes["assetPicker"].width);
+      newApp.attr("id", "quick-help");
+      /*var popOut = ui_popOut({
+        target : left,
+        align : "right",
+        title : "Audio Player",
+        id : "audio-player",
+        close : function(ev, ui) {
+          popOut.hide();
+          return false;
+        },
+        style : {"width" : "400px", "height" : "400px"}
+      }, newApp);
+      popOut.resizable();*/
+    }
+  });
+  media.click();
 
   var div = $("<div>").appendTo(leftContent);
   div.addClass("flex");
@@ -8283,6 +8330,7 @@ layout.left = function() {
     $("#media-player").hide();
     $("#music-player").hide();
     $("#quick-combat").hide();
+    $("#quick-help").hide();
     if ($("#game-options").length) {
       $("#game-options").toggle();
       return;
@@ -15575,17 +15623,163 @@ sync.render("ui_existing", function(obj, app, scope) {
   }
 });
 
-sync.render("ui_elementBuilder", function(obj, app, scope){
-  var ctx = obj.data.context; // use this for context
+sync.render("ui_JSON", function(obj, app, scope) {
+  scope = scope || {
+    viewOnly: (app.attr("viewOnly") == "true"),
+    lookup : app.attr("lookup"),
+    textEdit : app.attr("textEdit") == "true",
+    hideConfirm : app.attr("hideConfirm") == "true",
+    closeTarget : app.attr("closeTarget"),
+    width : app.attr("width"),
+    height : app.attr("height")
+  };
 
   var div = $("<div>");
-  div.addClass("fit-xy flexcolumn");
+  div.addClass("flexcolumn flex");
 
-  var list = $("<div>").appendTo(div);
-  list.addClass("padding");
+  var data = obj.data;
+  var value = obj.data;
+  if (scope.lookup) {
+    value = sync.traverse(data, scope.lookup || "");
+  }
+  var errorFeedback = $("<div>").appendTo(div);
+  errorFeedback.addClass("flexmiddle destroy");
 
-  var contents = $("<div>").appendTo(div);
+  var inputTest = $("<textarea>").appendTo(div);
+  inputTest.addClass("flex subtitle");
+  if (scope.viewOnly) {
+    inputTest.attr("disabled", true);
+  }
+  inputTest.css("min-width", scope.width || "300px");
+  inputTest.css("min-height", scope.height || "300px");
+  inputTest.text(JSON.stringify(value, null, 2));
+  inputTest.attr("_lastScrollTop", app.attr("_lastScrollTop"));
+  inputTest.attr("_lastScrollLeft", app.attr("_lastScrollTop"));
+  inputTest.scroll(function(){
+    app.attr("_lastScrollTop", $(this).scrollTop());
+    app.attr("_lastScrollLeft", $(this).scrollLeft());
+  });
+  inputTest.change(function(){
+    errorFeedback.empty();
+    try {
+      var newData = eval("var variable = "+$(this).val()+"; variable");
+      if (scope.lookup) {
+        sync.traverse(obj.data, scope.lookup || "", newData);
+      }
+      else {
+        obj.data = newData;
+      }
+      obj.update();
+      if (app.attr("closeTarget")) {
+        layout.coverlay(app.attr("closeTarget"));
+      }
+    }
+    catch(err) {
+      errorFeedback.append("<b>Error Parsing Data</b>");
+    }
+  });
+  if (!scope.hideConfirm) {
+    var button = $("<button>").appendTo(div);
+    button.append("Confirm");
+  }
+  return div;
+});
 
+sync.render("ui_diceDisplayBuilder", function(obj, app, scope){
+  scope = scope || {viewOnly : app.attr("viewOnly") == "true", display : app.attr("diceKey")};
+  var div = $("<div>");
+  div.addClass("flexrow flex");
+
+  var colWrap = $("<div>").appendTo(div);
+  colWrap.addClass("flexcolumn flex");
+
+  var col = $("<div>").appendTo(colWrap);
+  col.addClass("flexrow flexwrap padding");
+
+  for (var i in obj.data.templates.display.ui) {
+    var button = $("<button>").appendTo(col);
+    if (scope.display == i) {
+      button.addClass("highlight alttext");
+    }
+    button.attr("key", i);
+    button.append(i);
+    button.click(function(){
+      app.attr("diceKey", $(this).attr("key"));
+      obj.update();
+    });
+  }
+
+  var plus = $("<button>").appendTo(col);
+  plus.addClass("background alttext");
+  plus.append("New Display");
+  plus.click(function(){
+    ui_prompt({
+      target : $(this),
+      inputs : {
+        "Identifier" : {placeholder : "The unique identifier"}
+      },
+      click : function(ev, inputs) {
+        if (inputs["Identifier"].val()) {
+          obj.data.templates.display.ui[inputs["Identifier"].val()] = {
+            classes : "",
+            style : {},
+            dice : {},
+            displays : {},
+            results : {},
+          };
+          obj.update();
+        }
+      }
+    });
+  });
+
+  if (scope.display) {
+    app.attr("lookup", "templates.display.ui."+scope.display);
+
+    var select = sync.render("ui_JSON")(obj, app, null).appendTo(colWrap);
+    select.addClass("flex padding");
+
+    var dataRollWrap = $("<div>").appendTo(div);
+    dataRollWrap.addClass("flexcolumn flex");
+    dataRollWrap.append("<b class='underline'>Test your Display</b>");
+
+    var dataDiv = $("<div>").appendTo(dataRollWrap);
+    dataDiv.addClass("flexrow flex padding");
+
+    var flavorText = $("<textarea>").appendTo(dataDiv);
+    flavorText.addClass("flex");
+    flavorText.val(app.attr("flavor") || "");
+    flavorText.attr("placeholder", "Flavor Text");
+    flavorText.change(function(){
+      app.attr("flavor", $(this).val());
+      obj.update();
+    });
+
+    var eqText = $("<textarea>").appendTo(dataDiv);
+    eqText.addClass("flex");
+    eqText.val(app.attr("equation") || "d20");
+    eqText.attr("placeholder", "Equation");
+    eqText.change(function(){
+      app.attr("equation", $(this).val());
+      obj.update();
+    });
+
+    var dataRoll = $("<div>").appendTo(dataRollWrap);
+    dataRoll.addClass("flexcolumn flexmiddle flex padding");
+
+    var wrapObj = sync.dummyObj();
+    wrapObj.data = {data : sync.executeQuery((app.attr("equation") || "d20"), sync.defaultContext()), msg : "Flavor Text"};
+
+    dataRoll.append("<b class='underline'>Result</b>");
+
+    dataRoll.append("<b>"+(sync.eval(app.attr("flavor"), sync.defaultContext()) || "")+"</b>");
+
+    var display = sync.render("ui_newDiceResults")(wrapObj, app, {display : obj.data.templates.display.ui[scope.display]}).appendTo(dataRoll);
+    display.css("width", "350px");
+    display.css("min-height", "200px");
+
+    dataRoll.append("<b class='flex'></b>");
+  }
 
   return div;
 });
@@ -27200,1289 +27394,6 @@ comms.initialize = function(){
   }
 }
 
-function ogg_import(xml, override) {
-  searchObj = {};
-  searchObj["Skills"] = function(src, output) {
-
-    var skillKeys = {
-      "RANGHVY" : "raH",
-      "RANGLT" : "raL",
-      "SW" : "str",
-      "LTSABER" : "lig",
-      "PILOTSP" : "pls",
-      "PILOTPL" : "plp",
-    }
-
-    src = src.CharSkill;
-
-    for (var key in src) {
-      // each skill
-      var current = 0;
-      var mods = {};
-
-      if (src[key]["isCareer"] && src[key]["isCareer"]["#text"]) {
-        current = 1;
-      }
-      if (src[key]["Rank"]) {
-        for (var rIndex in src[key]["Rank"]) {
-          if (rIndex != "#text") {
-            if (rIndex == "PurchasedRanks") {
-              mods["rank"] = (mods["ranks"] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
-            }
-            else if (rIndex != "NonCareerRanks") {
-              mods[rIndex] = (mods[rIndex] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
-            }
-          }
-        }
-      }
-      if (src[key]["Key"] && src[key]["Key"]["#text"] != null) {
-        if (src[key]["Key"]["#text"].length > 2 && !skillKeys[src[key]["Key"]["#text"]]) {
-          var matched = false;
-          for (var i in output.skills) {
-            if (output.skills[i].name.toLowerCase().match(src[key]["Key"]["#text"].toLowerCase())) {
-              output.skills[i].current = current;
-              output.skills[i].modifiers = mods;
-              matched = true;
-              break;
-            }
-          }
-          if (!matched) {
-            output.skills[src[key]["Key"]["#text"]] = output.skills[src[key]["Key"]["#text"]] || sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
-          }
-        }
-        else {
-          output.skills[skillKeys[src[key]["Key"]["#text"]]].current = current;
-          output.skills[skillKeys[src[key]["Key"]["#text"]]].modifiers = mods;
-        }
-      }
-      else {
-        var skillVal = sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
-        output.skills[src[key]["Key"]["#text"]] = (skillVal);
-      }
-    }
-  };
-
-  searchObj["Career"] = function(src, output) {
-    var current;
-    var mods = {};
-    if (src["CareerKey"]) {
-      current = src["CareerKey"]["#text"];
-    }
-    if (src["StartingSpecKey"]) {
-      current = current + " - " + src["StartingSpecKey"]["#text"];
-    }
-    output.info.career.current = current;
-  };
-
-  searchObj["Experience"] = function(src, output) {
-    var current;
-    var mods = {};
-    for (var key in src["ExperienceRanks"]) {
-      // each additon
-      if (src["ExperienceRanks"][key]) {
-        mods[key] = parseInt(src["ExperienceRanks"][key]["#text"] || 0);
-      }
-    }
-    output.counters.exp.modifiers = mods;
-    for (var key in src["UsedExperience"]) {
-      // each additon
-      if (src["UsedExperience"][key]) {
-        current = (current || 0) + parseInt(src["UsedExperience"][key]["#text"] || 0);
-      }
-    }
-    output.counters.exp.current = current;
-  };
-
-  searchObj["Characteristics"] = function(src, output) {
-    for (var key in src["CharCharacteristic"]) {
-      var statData = src["CharCharacteristic"][key];
-      if (statData) {
-        var stat = statData["Key"]["#text"].charAt(0) + statData["Key"]["#text"].substring(1,statData["Key"]["#text"].length).toLowerCase();
-
-        var current = 0;
-        var mods = {};
-        var rank = statData["Rank"];
-        if (!output.stats[stat]) {
-          for (var statIndex in output.stats) {
-            if (output.stats[statIndex].name == statData["Name"]["#text"]) {
-            stat = statIndex;
-              break;
-            }
-          }
-        }
-        for (var rIndex in rank) {
-          if (rank[rIndex] && rank[rIndex]["#text"]) {
-            if (!current) {
-              current = parseInt(rank[rIndex]["#text"]);
-            }
-            else {
-              mods[rIndex] = parseInt(rank[rIndex]["#text"]);
-            }
-          }
-        }
-        output.stats[stat].current = current;
-        output.stats[stat].modifiers = mods;
-      }
-    }
-  };
-  searchObj["Species"] = function(src, output) {
-    if (src["SpeciesKey"]) {
-      output.info.race.current = src["SpeciesKey"]["#text"];
-    }
-  };
-  searchObj["Description"] = function(src, output) {
-    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
-    if (src["CharName"]) {
-      output.info.name.current = src["CharName"]["#text"];
-    }
-    for (var index in src) {
-      if (index != "CharName" && src[index] && src[index]["#text"]) {
-        output.info.notes.current = (output.info.notes.current || "") + "<p><b>"+index + "&nbsp;-&nbsp;</b>" + src[index]["#text"] + "</p>";
-      }
-    }
-  };
-  searchObj["Credits"] = function(src, output) {
-    if (src["#text"]) {
-      var item = JSON.parse(JSON.stringify(game.templates.item));
-      sync.rawVal(item.info.name, "Credits");
-      sync.rawVal(item.info.quantity, parseInt(src["#text"]));
-    }
-  };
-
-  searchObj["Specializations"] = function(src, output) {
-    var obj = {
-      "ADV" : "Adversary",
-      "ANAT" : "Anatomy Lessons",
-      "ALLTERDRIV" : "All-Terrain Driver",
-      "ARM" : "Armor Master",
-      "ARMIMP" : "Armor Master (Improved)",
-      "BACT" : "Bacta Specialist",
-      "BADM" : "Bad Motivator",
-      "BAL" : "Balance",
-      "BAR" : "Barrage",
-      "BASICTRAIN" : "Basic Combat Training",
-      "BLA" : "Black Market Contacts",
-      "BLO" : "Blooded",
-      "BOD" : "Body Guard",
-      "BOUGHT" : "Bought Info",
-      "BRA" : "Brace",
-      "BRI" : "Brilliant Evasion",
-      "BYP" : "Bypass Security",
-      "CAREPLAN" : "Careful Planning",
-      "CLEVERSOLN" : "Clever Solution",
-      "COD" : "Codebreaker",
-      "COM" : "Command",
-      "COMMPRES" : "Commanding Presence",
-      "CONF" : "Confidence",
-      "CONT" : "Contraption",
-      "CONV" : "Convincing Demeanor",
-      "COORDASS" : "Coordinated Assault",
-      "CREATKILL" : "Creative Killer",
-      "CRIPV" : "Crippling Blow",
-      "DEAD" : "Dead to Rights",
-      "DEADIMP" : "Dead to Rights (Improved)",
-      "DEADACC" : "Deadly Accuracy",
-      "DEPSHOT" : "Debilitating Shot",
-      "DEDI" : "Dedication",
-      "DEFDRI" : "Defensive Driving",
-      "DEFSLI" : "Defensive Slicing",
-      "DEFSLIIMP" : "Defensive Slicing (Improved)",
-      "DEFSTA" : "Defensive Stance",
-      "DISOR" : "Disorient",
-      "DODGE" : "Dodge",
-      "DURA" : "Durable",
-      "DYNFIRE" : "Dynamic Fire",
-      "ENDUR" : "Enduring",
-      "EXHPORT" : "Exhaust Port",
-      "EXTRACK" : "Expert Tracker",
-      "FAMSUNS" : "Familiar Suns",
-      "FERSTR" : "Feral Strength",
-      "FLDCOMM" : "Field Commander",
-      "FLDCOMMIMP" : "Field Commander (Improved)",
-      "FINETUN" : "Fine Tuning",
-      "FIRECON" : "Fire Control",
-      "FORAG" : "Forager",
-      "FORCEWILL" : "Force of Will",
-      "FORCERAT" : "Force Rating",
-      "FORMONME" : "Form On Me",
-      "FRENZ" : "Frenzied Attack",
-      "FULLSTOP" : "Full Stop",
-      "FULLTH" : "Full Throttle",
-      "FULLTHIMP" : "Full Throttle (Improved)",
-      "FULLTHSUP" : "Full Throttle (Supreme)",
-      "GALMAP" : "Galaxy Mapper",
-      "GEARHD" : "Gearhead",
-      "GREASE" : "Greased Palms",
-      "GRIT" : "Grit",
-      "HARDHD" : "Hard Headed",
-      "HARDHDIMP" : "Hard Headed (Improved)",
-      "HEIGHT" : "Heightened Awareness",
-      "HERO" : "Heroic Fortitude",
-      "HIDD" : "Hidden Storage",
-      "HOLDTOG" : "Hold Together",
-      "HUNT" : "Hunter",
-      "INCITE" : "Incite Rebellion",
-      "INDIS" : "Indistinguishable",
-      "INSIGHT" : "Insight",
-      "INSPRHET" : "Inspiring Rhetoric",
-      "INSPRHETIMP" : "Inspiring Rhetoric (Improved)",
-      "INSPRHETSUP" : "Inspiring Rhetoric (Supreme)",
-      "INTENSFOC" : "Intense Focus",
-      "INTENSPRE" : "Intense Presence",
-      "INTIM" : "Intimidating",
-      "INVENT" : "Inventor",
-      "INVIG" : "Invigorate",
-      "ITSNOTTHATBAD" : "It's Not that Bad",
-      "JUMP" : "Jump Up",
-      "JURY" : "Jury Rigged",
-      "KILL" : "Kill With Kindness",
-      "KNOCK" : "Knockdown",
-      "KNOWSOM" : "Know Somebody",
-      "KNOWSPEC" : "Knowledge Specialization",
-      "KNOWSCH" : "Known Schematic",
-      "LETSRIDE" : "Let's Ride",
-      "LETHALBL" : "Lethal Blows",
-      "MASDOC" : "Master Doctor",
-      "MASDRIV" : "Master Driver",
-      "MASGREN" : "Master Grenadier",
-      "MASLEAD" : "Master Leader",
-      "MASMERC" : "Master Merchant",
-      "MASSHAD" : "Master of Shadows",
-      "MASPIL" : "Master Pilot",
-      "MASSLIC" : "Master Slicer",
-      "MASSTAR" : "Master Starhopper",
-      "MENTFOR" : "Mental Fortress",
-      "NATBRAW" : "Natural Brawler",
-      "NATCHARM" : "Natural Charmer",
-      "NATDOC" : "Natural Doctor",
-      "NATDRIV" : "Natural Driver",
-      "NATENF" : "Natural Enforcer",
-      "NATHUN" : "Natural Hunter",
-      "NATLEAD" : "Natural Leader",
-      "NATMAR" : "Natural Marksman",
-      "NATNEG" : "Natural Negotiator",
-      "NATOUT" : "Natural Outdoorsman",
-      "NATPIL" : "Natural Pilot",
-      "NATPRO" : "Natural Programmer",
-      "NATROG" : "Natural Rogue",
-      "NATSCH" : "Natural Scholar",
-      "NATTIN" : "Natural Tinkerer",
-      "NOBFOOL" : "Nobody's Fool",
-      "OUTDOOR" : "Outdoorsman",
-      "OVEREM" : "Overwhelm Emotions",
-      "OVERDEF" : "Overwhelm Defenses",
-      "PHYSTRAIN" : "Physical Training",
-      "PLAUSDEN" : "Plausible Deniability",
-      "POINTBL" : "Point Blank",
-      "PWRBLST" : "Powerful Blast",
-      "PRECAIM" : "Precise Aim",
-      "PRESPNT" : "Pressure Point",
-      "QUICKDR" : "Quick Draw",
-      "QUICKFIX" : "Quick Fix",
-      "QUICKST" : "Quick Strike",
-      "RAPREA" : "Rapid Reaction",
-      "RAPREC" : "Rapid Recovery",
-      "REDUNSYS" : "Redundant Systems",
-      "RESEARCH" : "Researcher",
-      "RESOLVE" : "Resolve",
-      "RESPSCHOL" : "Respected Scholar",
-      "SCATH" : "Scathing Tirade",
-      "SCATHIMP" : "Scathing Tirade (Improved)",
-      "SCATHSUP" : "Scathing Tirade (Supreme)",
-      "SECWIND" : "Second Wind",
-      "SELDETON" : "Selective Detonation",
-      "SENSDANG" : "Sense Danger",
-      "SENSDEMO" : "Sense Emotions",
-      "SHORTCUT" : "Short Cut",
-      "SIDESTEP" : "Side Step",
-      "SITAWARE" : "Situational Awareness",
-      "SIXSENSE" : "Sixth Sense",
-      "SKILLJOCK" : "Skilled Jockey",
-      "SKILLSLIC" : "Skilled Slicer",
-      "SLEIGHTMIND" : "Sleight of Mind",
-      "SMOOTHTALK" : "Smooth Talker",
-      "SNIPSHOT" : "Sniper Shot",
-      "SOFTSP" : "Soft Spot",
-      "SOLREP" : "Solid Repairs",
-      "SOUNDINV" : "Sound Investments",
-      "SPARECL" : "Spare Clip",
-      "SPKBIN" : "Speaks Binary",
-      "STALK" : "Stalker",
-      "STNERV" : "Steely Nerves",
-      "STIMAP" : "Stim Application",
-      "STIMAPIMP" : "Stim Application (Improved)",
-      "STIMAPSUP" : "Stim Application (Supreme)",
-      "STIMSPEC" : "Stimpack Specialization",
-      "STRSMART" : "Street Smarts",
-      "STRGEN" : "Stroke of Genius",
-      "STRONG" : "Strong Arm",
-      "STUNBL" : "Stunning Blow",
-      "STUNBLIMP" : "Stunning Blow (Improved)",
-      "SUPREF" : "Superior Reflexes",
-      "SURG" : "Surgeon",
-      "SWIFT" : "Swift",
-      "TACTTRAIN" : "Tactical Combat Training",
-      "TARGBL" : "Targeted Blow",
-      "TECHAPT" : "Technical Aptitude",
-      "TIME2GO" : "Time to Go",
-      "TIME2GOIMP" : "Time to Go (Improved)",
-      "TINK" : "Tinkerer",
-      "TOUCH" : "Touch of Fate",
-      "TOUGH" : "Toughened",
-      "TRICK" : "Tricky Target",
-      "TRUEAIM" : "True Aim",
-      "UNCANREAC" : "Uncanny Reactions",
-      "UNCANSENS" : "Uncanny Senses",
-      "UNSTOP" : "Unstoppable",
-      "UTIL" : "Utility Belt",
-      "UTINNI" : "Utinni!",
-      "VEHTRAIN" : "Vehicle Combat Training",
-      "WELLROUND" : "Well Rounded",
-      "WELLTRAV" : "Well Travelled",
-      "WHEEL" : "Wheel and Deal",
-      "WORKLIKECHARM" : "Works Like A Charm",
-      "PIN" : "Pin",
-      "MUSEUMWORTHY" : "Museum Worthy",
-      "BRNGITDWN" : "Bring It Down",
-      "HUNTERQUARRY" : "Hunter's Quarry",
-      "HUNTQIMP" : "Hunter's Quarry (Improved)",
-      "BURLY" : "Burly",
-      "FEARSOME" : "Fearsome",
-      "HEAVYHITTER" : "Heavy Hitter",
-      "HEROICRES" : "Heroic Resilience",
-      "IMPDET" : "Improvised Detonation",
-      "IMPDETIMP" : "Improvised Detonation (Improved)",
-      "LOOM" : "Loom",
-      "RAINDEATH" : "Rain of Death",
-      "STEADYNERVES" : "Steady Nerves",
-      "TALKTALK" : "Talk the Talk",
-      "WALKWALK" : "Walk the Walk",
-      "IDEALIST" : "Idealist",
-      "AAO" : "Against All Odds",
-      "ANIMALBOND" : "Animal Bond",
-      "ANIMALEMP" : "Animal Empathy",
-      "ATARU" : "Ataru Technique",
-      "BODIMP" : "Body Guard (Improved)",
-      "CALMAURA" : "Calming Aura",
-      "CALMAURAIMP" : "Calming Aura (Improved)",
-      "CENTBEING" : "Center of Being",
-      "CENTBEINGIMP" : "Center of Being (Improved)",
-      "CIRCLESHELTER" : "Circle of Shelter",
-      "COMPTECH" : "Comprehend Technology",
-      "CONDITIONED" : "Conditioned",
-      "CONTPLAN" : "Contingency Plan",
-      "COUNTERST" : "Counterstrike",
-      "DEFCIRCLE" : "Defensive Circle",
-      "DEFTRAIN" : "Defensive Training",
-      "DISRUPSTRIKE" : "Disruptive Strike",
-      "DJEMSODEFL" : "Djem So Deflection",
-      "DRAWCLOSER" : "Draw Closer",
-      "DUELTRAIN" : "Duelist's Training",
-      "ENHLEAD" : "Enhanced Leader",
-      "FALLAVAL" : "Falling Avalanche",
-      "FEINT" : "Feint",
-      "FORCEASSAULT" : "Force Assault",
-      "FORCEPROT" : "Force Protection",
-      "FOREWARN" : "Forewarning",
-      "HAWKSWOOP" : "Hawk Bat Swoop",
-      "HEALTRANCE" : "Healing Trance",
-      "HEALTRANCEIMP" : "Healing Trance (Improved)",
-      "IMBUEITEM" : "Imbue Item",
-      "INTUITEVA" : "Intuitive Evasion",
-      "INTUITIMP" : "Intuitive Improvements",
-      "INTUITSHOT" : "Intuitive Shot",
-      "INTUITSTRIKE" : "Intuitive Strike",
-      "KEENEYED" : "Keen Eyed",
-      "KNOWPOW" : "Knowledge is Power",
-      "KNOWHEAL" : "Knowledgeable Healing",
-      "MAKFIN" : "Makashi Finish",
-      "MAKFLOUR" : "Makashi Flourish",
-      "MAKTECH" : "Makashi Technique",
-      "MASTART" : "Master Artisan",
-      "MENTBOND" : "Mental Bond",
-      "MENTTOOLS" : "Mental Tools",
-      "MULTOPP" : "Multiple Opponents",
-      "NATBLADE" : "Natural Blademaster",
-      "NATMYSTIC" : "Natural Mystic",
-      "NIMTECH" : "Niman Technique",
-      "NOWYOUSEE" : "Now You See Me",
-      "ONEUNI" : "One With The Universe",
-      "PARRY" : "Parry",
-      "PARRYIMP" : "Parry (Improved)",
-      "PARRYSUP" : "Parry (Supreme)",
-      "PHYSICIAN" : "Physician",
-      "PREEMAVOID" : "Preemptive Avoidance",
-      "PREYWEAK" : "Prey on the Weak",
-      "QUICKMOVE" : "Quick Movement",
-      "REFLECT" : "Reflect",
-      "REFLECTIMP" : "Reflect (Improved)",
-      "REFLECTSUP" : "Reflect (Supreme)",
-      "RESDISARM" : "Resist Disarm",
-      "SABERSW" : "Saber Swarm",
-      "SABERTHROW" : "Saber Throw",
-      "SARSWEEP" : "Sarlacc Sweep",
-      "SENSEADV" : "Sense Advantage",
-      "SHAREPAIN" : "Share Pain",
-      "SHIENTECH" : "Shien Technique",
-      "SHROUD" : "Shroud",
-      "SLIPMIND" : "Slippery Minded",
-      "SORESUTECH" : "Soresu Technique",
-      "STRATFORM" : "Strategic Form",
-      "SUMDJEM" : "Sum Djem",
-      "TERRIFY" : "Terrify",
-      "TERRIFYIMP" : "Terrify (Improved)",
-      "FORCEALLY" : "The Force Is My Ally",
-      "UNITYASSAULT" : "Unity Assault",
-      "VALFACT" : "Valuable Facts",
-      "BADCOP" : "Bad Cop",
-      "BIGGESTFAN" : "Biggest Fan",
-      "CONGENIAL" : "Congenial",
-      "COORDODGE" : "Coordination Dodge",
-      "DISBEH" : "Distracting Behavior",
-      "DISBEHIMP" : "Distracting Behavior (Improved)",
-      "DECEPTAUNT" : "Deceptive Taunt",
-      "GOODCOP" : "Good Cop",
-      "NATATHL" : "Natural Athlete",
-      "NATMERCH" : "Natural Merchant",
-      "THROWCRED" : "Throwing Credits",
-      "UNRELSKEP" : "Unrelenting Skeptic",
-      "UNRELSKEPIMP" : "Unrelenting Skeptic (Improved)",
-      "BEASTWRANG" : "Beast Wrangler",
-      "BOLSTARMOR" : "Bolstered Armor",
-      "CORSEND" : "Corellian Sendoff",
-      "CORSENDIMP" : "Corellian Sendoff (Improved)",
-      "CUSTCOOL" : "Customized Cooling Unit",
-      "EXHANDLER" : "Expert Handler",
-      "FANCPAINT" : "Fancy Paint Job",
-      "FORTVAC" : "Fortified Vacuum Seal",
-      "HIGHGTRAIN" : "High-G Training",
-      "KOITURN" : "Koiogran Turn",
-      "LARGEPROJ" : "Larger Project",
-      "NOTTODAY" : "Not Today",
-      "OVERAMMO" : "Overstocked Ammo",
-      "REINFRAME" : "Reinforced Frame",
-      "SHOWBOAT" : "Showboat",
-      "SIGVEH" : "Signature Vehicle",
-      "SOOTHTONE" : "Soothing Tone",
-      "SPUR" : "Spur",
-      "SPURIMP" : "Spur (Improved)",
-      "SPURSUP" : "Spur (Supreme)",
-      "TUNEDTHRUST" : "Tuned Maneuvering Thrusters",
-      "CALLEM" : "Call 'Em",
-      "DISARMSMILE" : "Disarming Smile",
-      "DONTSHOOT" : "Don't Shoot!",
-      "DOUBLEORNOTHING" : "Double or Nothing",
-      "DOUBLEORNOTHINGIMP" : "Double or Nothing (Improved)",
-      "DOUBLEORNOTHINGSUP" : "Double or Nothing (Supreme)",
-      "FORTFAVORBOLD" : "Fortune Favors the Bold",
-      "GUNSBLAZING" : "Guns Blazing",
-      "JUSTKID" : "Just Kidding!",
-      "QUICKDRIMP" : "Quickdraw (Improved)",
-      "SECCHANCE" : "Second Chances",
-      "SORRYMESS" : "Sorry About the Mess",
-      "SPITFIRE" : "Spitfire",
-      "UPANTE" : "Up the Ante",
-      "WORKLIKECHARM" : "Works Like a Charm",
-      "BADPRESS" : "Bad Press",
-      "BLACKMAIL" : "Blackmail",
-      "CUTQUEST" : "Cutting Question",
-      "DISCREDIT" : "Discredit",
-      "ENCCOMM" : "Encoded Communique",
-      "ENCWORD" : "Encouraging Words",
-      "INKNOW" : "In The Know",
-      "INKNOWIMP" : "In The Know (Improved)",
-      "INFORM" : "Informant",
-      "INTERJECT" : "Interjection",
-      "KNOWALL" : "Know-It-All",
-      "PLAUSDENIMP" : "Plausible Deniability (Improved)",
-      "POSSPIN" : "Positive Spin",
-      "POSSPINIMP" : "Positive Spin (Improved)",
-      "RESEARCHIMP" : "Researcher (Improved)",
-      "SUPPEVI" : "Supporting Evidence",
-      "THORASS" : "Thorough Assessment",
-      "TWISTWORD" : "Twisted Words",
-      "DRIVEBACK" : "Drive Back",
-      "ARMSUP" : "Armor Master (Supreme)",
-      "BALEGAZE" : "Baleful Gaze",
-      "BLINDSPOT" : "Blind Spot",
-      "GRAPPLE" : "Grapple",
-      "NOESC" : "No Escape",
-      "OVERBAL" : "Overbalance",
-      "PRECSTR" : "Precision Strike",
-      "PRIMEPOS" : "Prime Positions",
-      "PRESSHOT" : "Prescient Shot",
-      "PROPAIM" : "Prophetic Aim",
-      "REINITEM" : "Reinforce Item",
-      "SUPPRFIRE" : "Suppressing Fire",
-      "CALMCOMM" : "Calm Commander",
-      "CLEVCOMM" : "Clever Commander",
-      "COMMPRESIMP" : "Commanding Presence (Improved)",
-      "CONFIMP" : "Confidence (Improved)",
-      "MASINST" : "Master Instructor",
-      "MASSTRAT" : "Master Strategist",
-      "NATINST" : "Natural Instructor",
-      "READANY" : "Ready for Anything",
-      "READANYIMP" : "Ready for Anything (Improved)",
-      "THATHOWDONE" : "That's How It's Done",
-      "WELLREAD" : "Well Read",
-      "CUSTLOAD" : "Custom Loadout",
-      "CYBERNETICIST" : "Cyberneticist",
-      "DEFTMAKER" : "Deft Maker",
-      "ENGREDUN" : "Engineered Redundancies",
-      "EYEDET" : "Eye for Detail",
-      "ENERGTRANS" : "Energy Transfer",
-      "MACHMEND" : "Machine Mender",
-      "MOREMACH" : "More Machine Than Man",
-      "OVERCHARGE" : "Overcharge",
-      "OVERCHARGEIMP" : "Improved Overcharge",
-      "OVERCHARGESUP" : "Supreme Overcharge",
-      "REROUTEPROC" : "Reroute Processors",
-      "RESOURCEREFIT" : "Resourceful Refit",
-      "SPKBINIMP" : "Improved Speaks Binary",
-      "SPKBINSUP" : "Supreme Speaks Binary",
-    }
-
-    var charSpec = src["CharSpecialization"];
-    for (var _ in charSpec["Talents"]) {
-      for (var index in charSpec["Talents"][_]) {
-        var charTalent = charSpec["Talents"][_][index];
-        if (charTalent["Key"] && charTalent["Key"]["#text"]) {
-          var selected = "";
-          if (charTalent["SelectedSkills"]) {
-            for (var key in charTalent["SelectedSkills"]) {
-              if (charTalent["SelectedSkills"][key] && charTalent["SelectedSkills"][key]["#text"]) {
-                if (skillRef[charTalent["SelectedSkills"][key]["#text"]]) {
-                  selected = selected + game.templates.character.skills[skillRef[charTalent["SelectedSkills"][key]["#text"]]].name + "\n";
-                }
-                else {
-                  selected = selected + charTalent["SelectedSkills"][key]["#text"] + "\n";
-                }
-              }
-            }
-          }
-          if (charTalent["Purchased"]) {
-            var insert = true;
-            for (var tIndex in output.talents) {
-              if (output.talents[tIndex].name == obj[charTalent["Key"]["#text"]]) {
-                output.talents[tIndex] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
-                insert = false;
-                break;
-              }
-            }
-            if (insert) {
-              output.talents[obj[charTalent["Key"]["#text"]]] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
-            }
-          }
-        }
-      }
-    }
-  }
-
-  searchObj["Attributes"] = function(src, output) {
-    var wTotal = 0;
-    for (var key in src["WoundThreshold"]) {
-      if (src["WoundThreshold"][key] && src["WoundThreshold"][key]["#text"]) {
-        wTotal = parseInt(wTotal) + parseInt(src["WoundThreshold"][key]["#text"]);
-      }
-    }
-    output.counters.wounds.current = wTotal;
-    output.counters.wounds.max = wTotal;
-
-    var sTotal = 0;
-    for (var key in src["StrainThreshold"]) {
-      if (src["StrainThreshold"][key] && src["StrainThreshold"][key]["#text"]) {
-        sTotal = parseInt(sTotal) + parseInt(src["StrainThreshold"][key]["#text"]);
-      }
-    }
-    output.counters.stress.current = sTotal;
-    output.counters.stress.max = sTotal;
-
-    if (src["DefenseRanged"]) {
-      output.counters.rdf.current = parseInt(src["DefenseRanged"]["#text"] || 0);
-    }
-    if (src["DefenseMelee"]) {
-      output.counters.mdf.current = parseInt(["DefenseMelee"]["#text"] || 0);
-    }
-  }
-
-  var weapon = {
-    "BLASTHOLD" : {name : "Holdout Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTHOLDTT24" : {name : "TT24 Holdout Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "MILHOLDBLAST" : {name : "Military Holdout Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "VARHOLDBLAST" : {name : "Variable Holdout Blaster", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "QUICKFIRE" : {name : "Model Q4 Quickfire", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "12DEFEND" : {name : "12 Defender", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "DEFSPBLAST" : {name : "Defender Sporting Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "ELG3ABLAST" : {name : "ELG-3A Blaster Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTLT" : {name : "Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTLTHL27" : {name : "HL-27 Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "POCKPIS" : {name : "Pocket Blaster Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPIS" : {name : "Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISCDEF" : {name : "CDEF Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTPISK23" : {name : "Relby-K23 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "DUELPIS" : {name : "Dueling Pistol", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "BLASTPISXL2" : {name : "XL-2 'Flashfire' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISH7" : {name : "H-7 'Equalizer' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
-    "BLASTPISDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTCARBDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster (Carbine Mode)", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTBOONTA" : {name : "Boonta Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTATAPULSE" : {name : "Greff-Timms ATA Pulse-Wave Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHVY" : {name : "Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHVYGEO" : {name : "Geonosian Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
-    "SECURITYS5" : {name : "Security S-5 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "KO-2HSP" : {name : "KO-2 Heavy Stun Pistol", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "MODEL44BLASTPIST" : {name : "Model 44 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "MODEL80BLASTPIST" : {name : "Model 80 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
-    "IR5BLASTPIST" : {name : "IR-5 'Intimidator' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHVYCR2" : {name : "CR-2 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "SITE145PISTOL" : {name : "Site-145 Replica Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "X30LANCER" : {name : "x-30 Lancer", d : 5, r : "wrLong", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTPISTDL19C" : {name : "DL-19C Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "DL7HBLASTPISTHVY" : {name : "DL-7h Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHH50" : {name : "HH-50 Heavy Blaster Pistol", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "MONCALBAT" : {name : "Mon Calamari Battle Baton", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "ENSLING" : {name : "Energy Slingshot", d : 3, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "BLASTCARB" : {name : "Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTCARBGEO" : {name : "Geonosian Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "2"},
-    "OK98BLASTCARB" : {name : "OK-98 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTCARBE5" : {name : "E5 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BOLACARB" : {name : "Bola Carbine", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "DLS12HBR" : {name : "DLS-12 Heavy Blaster Carbine", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTRIF" : {name : "Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTRIFGEO" : {name : "Geonosian Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "BLASTRIFSKZ" : {name : "SKZ Sporting Blaster Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
-    "BLASTLANCE" : {name : "Weequay Blaster Lance", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTRIFDDCMR6" : {name : "DDC-MR6 Modular Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "ACPREPEATER" : {name : "ACP Repeater Gun", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "ACPARRAYGUN" : {name : "ACP Array Gun", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
-    "SWE2SONIC" : {name : "SWE/2 Sonic Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "6"},
-    "BLASTRIFHVY" : {name : "Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "DHXBLASTRIFHVY" : {name : "DH-X Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "E11SNIPER" : {name : "E-11S Sniper Rifle", d : 10, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "LBR9STUNRIFLE" : {name : "LBR-9 Stun Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "BLASTLTREP" : {name : "Light Repeating Blaster", d : 11, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "SE14RBLASTLTREP" : {name : "SE-14r Light Repeating Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTHVYREP" : {name : "Heavy Repeating Blaster", d : 15, r : "wrLong", s : "Gunnery (Ag)", c : "2"},
-    "VXBLASTREP" : {name : "VX 'Sidewinder' Repeating Blaster", d : 12, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
-    "HOBBLASTREPHVY" : {name : "HOB Heavy Repeating Blaster", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "D29REPULSOR" : {name : "D-29 Repulsor Rifle", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "MONCALSPBLAST" : {name : "Mon Calamari Spear Blaster (Blaster)", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MONCALSPBLASTSP" : {name : "Mon Calamari Spear Blaster (Spear)", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ELECTPULSEDIS" : {name : "Electromag-Pulse Disruptor", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "BOWCAST" : {name : "Bowcaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTION" : {name : "Ion Blaster", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "DROIDDIS" : {name : "Droid Disruptor", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "DISRPIS" : {name : "Disruptor Pistol", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "DISRRIF" : {name : "Disruptor Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "SLUGPIS" : {name : "Slugthrower Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "SLUGPISASP9" : {name : "ASP-9 'Vrelt' Autopistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "FIVERSLUGPIST" : {name : "Model C 'Fiver' Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "SLUGKD30" : {name : "KD-30 'Dissuader' Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "STEALTH2VX" : {name : "Stealth-2VX Palm Shooter", d : 1, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "VODRANRIFLE" : {name : "Vodran Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
-    "SLUGRIF" : {name : "Slugthrower Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
-    "SLUGRIFMKV" : {name : "Mark V 'Sand Panther' Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
-    "ASSAULTSLUGCARB" : {name : "FYR Assault Carbine", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
-    "SLUGRIFSELSHARD" : {name : "Selonian Shard Shooter", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MODEL77" : {name : "Model 77 Air Rifle", d : 6, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "MODEL38" : {name : "Model 38 Sharpshooter's Rifle", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MODEL38DET" : {name : "Model 38 Sharpshooter's Rifle (Detonator Round)", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "HAMMER" : {name : "KS-23 Hammer", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
-    "DFD1" : {name : "DF-D1 Duo-Flechette Rifle", d : 9, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
-    "VERPSHATPIS" : {name : "Verpine Shatter Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "VERPSHATRIF" : {name : "Verpine Shatter Rifle", d : 12, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "VERPSHATHVYRIF" : {name : "Verpine Heavy Shatter Rifle", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "BOLA" : {name : "Bola/Net", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "ELECTRONET" : {name : "Electronet", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "FLAME" : {name : "Flame Projector", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MISS" : {name : "Missile Tube", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "L70ACID" : {name : "L70 Acid Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
-    "NETGUN" : {name : "AO14 'Aranea' Net Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "0"},
-    "STOKHLI" : {name : "Stokhli Spray Stick", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "RIOTRIFLE" : {name : "R-88 Supressor Riot Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
-    "TANGLEGUN" : {name : "Tangle Gun", d : 1, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
-    "FRAGGR" : {name : "Frag Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "STUNGR" : {name : "Stun Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "THERMDET" : {name : "Thermal Detonator", d : 20, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "THERMDETMINI" : {name : "Mini Thermal Detonator", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "APGREN" : {name : "Armor Piercing Grenade", d : 13, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "N4NOISEGREN" : {name : "N-4 Noise Grenade", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "6"},
-    "WIPE3GREN" : {name : "Wipe-3 Data-Purge Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "HICMERCYGREN" : {name : "HIC 'Mercy' Grenade", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "SPOREBSTUNGREN" : {name : "Spore/B Stun Grenade", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "AVMINE" : {name : "Anti-Vehicle Mine", d : 25, r : "wrEngaged", s : "Mechanics (Int)", c : "2"},
-    "APMINE" : {name : "Anti-Personnel Mine", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
-    "KNOCKMINE" : {name : "Knockout Mine", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "GLOPGRND" : {name : "Glop Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "INFERGREND" : {name : "D-24 Inferno Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "CONCGREND" : {name : "G2 Concussion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "IONGREND" : {name : "Lightning 22 Ion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "PLASGREND" : {name : "NOVA40 Plasma Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "HVYFRGGREND" : {name : "Mk.4 Heavy Frag Grenade", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "POISONGR" : {name : "Poison Gas Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "CONCMISSILEMK10" : {name : "Mk.10 Concussion Missile", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
-    "FRAGMISSILEC88" : {name : "C-88 Fragmentation Missile", d : 12, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
-    "PLASMISSILESK44" : {name : "SK-44 Plasma Missile", d : 16, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "INCENMISSILEC908" : {name : "C-908 Incendiary Missile", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "BARADIUMCHRG" : {name : "Baradium Charge", d : 3, r : "wrLong", s : "Mechanics (Int)", c : "0"},
-    "DETONITECHRG" : {name : "Detonite Charge", d : 15, r : "wrShort", s : "Mechanics (Int)", c : "0"},
-    "PLASMACHRG" : {name : "Plasma Charge", d : 9, r : "wrMedium", s : "Mechanics (Int)", c : "0"},
-    "PROTONGRNAD" : {name : "Proton Grenade", d : 10, r : "wrShort", s : "Mechanics (Int)", c : "0"},
-    "COMPBOW" : {name : "Corellian Compound Bow", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
-    "COMPBOWEXP" : {name : "Corellian Compound Bow (Explosive Tipped)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "COMPBOWSTUN" : {name : "Corellian Compound Bow (Stun)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "0"},
-    "STYANAX" : {name : "Styanax Lance", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
-    "CZ28FLAME" : {name : "CZ-28 Flamestrike", d : 9, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
-    "FC1FLECHETTE" : {name : "FC1 Flechette Launcher (Anti-Infantry)", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "FC1FLECHETTEVEH" : {name : "FC1 Flechette Launcher (Anti-Vehicle)", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
-    "GRENADLAUNCHZ50" : {name : "Z50 Grenade Launcher", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "MINTORPLAUNCH" : {name : "Mini-Torpedo Launcher", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MINTORPAP" : {name : "Mini-Torpedo, Anti-Personnel", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MINTORPARMP" : {name : "Mini-Torpedo, Armor Piercing", d : 12, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MINTORPINK" : {name : "Mini-Torpedo, Ink", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "MINTORPION" : {name : "Mini-Torpedo, Ion", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MINTORPNET" : {name : "Mini-Torpedo, Net", d : 0, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
-    "MINTORPSTUN" : {name : "Mini-Torpedo, Stun", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "AURBOOM" : {name : "Aurateran Boomerang", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "5"},
-    "GUNGATL" : {name : "Gungan Atlatl", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "GUNGPLAS" : {name : "Gungan Plasma Ball", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "LONGBOW" : {name : "Long Bow", d : 5, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
-    "BRASS" : {name : "Brass Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "SHOCKGL" : {name : "Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "REFCORTCAUNT" : {name : "Refined Cortosis Gauntlets", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "BLSTKNUK" : {name : "Blast Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "VAMBLADES1" : {name : "S-1 Vamblade (Single)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "VAMBLADE2S1" : {name : "S-1 Vamblade (Paired)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "VIBROKNUK" : {name : "Vibroknucklers", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "2"},
-    "BACKHANDSHKGLV" : {name : "Backhand Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "NEEDLEGLOVES" : {name : "Needle Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "SHIELDGAUNT" : {name : "Shield Gauntlet", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "KNIFE" : {name : "Combat Knife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "CUTLASSCOR" : {name : "Corellian Cutlass", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "LONGWHIP" : {name : "Longeing Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "5"},
-    "PERSUADER" : {name : "Sorosuub 'Persuader' Shock Prod", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "CERBLADE" : {name : "Ceremonial Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "STAFFOFF" : {name : "Staff of Office", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "ANCIENTSWORD" : {name : "Ancient Sword", d : 0, r : "wrEngaged", s : "LTSABER", c : "3"},
-    "CORTSHIELD" : {name : "Cortosis Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "CORTSWORD" : {name : "Cortosis Sword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ELECSTAFF" : {name : "Electrostaff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "REFCORTSTAFF" : {name : "Refined Cortosis Staff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "GAFF" : {name : "Gaffi Stick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "FLASHSTICK" : {name : "Drall Flashstick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "0"},
-    "FORCEP" : {name : "Force Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "DIIRO" : {name : "Diiro", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "CORALPIKE" : {name : "Coral Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "ENERGYLANCE" : {name : "Energy Lance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "CS12STUNMAST" : {name : "CS-12 Stun Master", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ENERGYBUCK" : {name : "Energy Buckler", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "PARRVIBRO" : {name : "Parrying Vibroblade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "PARRDAGG" : {name : "Parrying Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "CRYOWHIP" : {name : "Rodian Cryogen Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "3"},
-    "SITHSHIELD" : {name : "Sith Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "SNAPBATON" : {name : "Snap Baton", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "BARDLANCE" : {name : "Bardottan Electrolance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "GUNGPOLE" : {name : "Gungan Electropole", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "GUNGPOLET" : {name : "Gungan Electropole (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "GUNGPES" : {name : "Gungan Personal Energy Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "TRAINSTICK" : {name : "Training Stick", d : 0, r : "wrEngaged", s : "LTSABER", c : "5"},
-    "VOSSWARSP" : {name : "Voss Warspear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "VOSSWARSPT" : {name : "Voss Warspear (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "WEIKGS" : {name : "Weik Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "THERMCUTW" : {name : "Thermal Cutter", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "SVT300" : {name : "SVT-300 Stun Cloak", d : 7, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "LTSABER" : {name : "Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
-    "LTSABERBASIC" : {name : "Basic Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERDBL" : {name : "Double-Bladed Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERPIKE" : {name : "Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERSHOTO" : {name : "Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERTRAIN" : {name : "Training Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERGUASH" : {name : "Guard Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERTEMGUAPIKE" : {name : "Temple Guard Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERBASICHILT" : {name : "Basic Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERDBLHILT" : {name : "Double-Bladed Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERPIKEHILT" : {name : "Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERSHOTOHILT" : {name : "Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERTEMGUAPIKEHILT" : {name : "Temple Guard Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERGUASHHILT" : {name : "Guard Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERLODAKA" : {name : "Master Lodaka's Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
-    "TRUNCH" : {name : "Truncheon", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "STUNCLUB" : {name : "Stun Club", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "PULSEDRILL" : {name : "G9-GP Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "PULSEDRILLGX" : {name : "G9-GX Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "BEAMDRILLJ7B" : {name : "J-7b Beamdrill", d : 9, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "ENTRENCHTOOL" : {name : "Entrenching Tool (Improvised)", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "GLAIVESEL" : {name : "Selonian Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBAX" : {name : "Vibro-ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "VIBKN" : {name : "Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "STVIBKN" : {name : "Stealth Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "VIBSW" : {name : "Vibrosword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "SWORDCANE" : {name : "Sword Cane", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBROSPR" : {name : "Huntsman Vibrospear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBROSAW" : {name : "Mk. VIII Vibrosaw", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "FUSCUT" : {name : "Fusion Cutter", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "RYYKBLADE" : {name : "Ryyk Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "VIBROGRTSWRDVX" : {name : "VX 'Czerhander' Vibro-Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "THERMAXMOD7" : {name : "Model 7 Therm-Ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ARGGAROK" : {name : "Arg'garok", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBROGLAIVE" : {name : "Vibro-Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "MORCORTSTAFF" : {name : "Morgukai Cortosis Staff", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "1"},
-    "NEURWHIP" : {name : "Neuronic Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "4"},
-    "TUSKPIKE" : {name : "Tuskbeast Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "AUTOBLAST" : {name : "Auto-Blaster", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "5"},
-    "BLASTCANLT" : {name : "Light Blaster Cannon", d : 4, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "BLASTCANHVY" : {name : "Heavy Blaster Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "CML" : {name : "Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "AFCML" : {name : "Alternating-Fire Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "ACML" : {name : "Assault Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "CMLHK" : {name : "Hunter Killer Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "IONLT" : {name : "Light Ion Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "IONMED" : {name : "Medium Ion Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
-    "IONHVY" : {name : "Heavy Ion Cannon", d : 7, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "IONLONG" : {name : "Long-Barrelled Ion Cannon", d : 9, r : "wrLong", s : "Gunnery (Ag)", c : "4"},
-    "IONBATT" : {name : "Battleship Ion Cannon", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "LASERLT" : {name : "Light Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "LASERMED" : {name : "Medium Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "LASERHVY" : {name : "Heavy Laser Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "LASERPTDEF" : {name : "Point Defense Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "LASERLONG" : {name : "Long-Nosed Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "PTL" : {name : "Proton Torpedo Launcher", d : 8, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
-    "LASERQUAD" : {name : "Quad Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "TRACTLT" : {name : "Light Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "TRACTMED" : {name : "Medium Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "TRACTHVY" : {name : "Heavy Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "TURBOLT" : {name : "Light Turbolaser", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "TURBOMED" : {name : "Medium Turbolaser", d : 10, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
-    "TURBOHVY" : {name : "Heavy Turbolaser", d : 11, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
-    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "SUPPRESSCANNON" : {name : "Light Suppression Cannon", d : 10, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "ELECHARPOON" : {name : "Electromagnetic Harpoon", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "CONGRENLAUNCH" : {name : "Concussion Grenade Launcher", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
-    "PROTONBOMB" : {name : "Proton Bomb Release Chute", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "PROTONBAY" : {name : "Proton Bomb Bay", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "2"},
-    "BEAMDRILHVY" : {name : "Heavy Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "BEAMDRIL" : {name : "Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "MINIROCKET" : {name : "Mini-Rocket Launcher", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "MASSDRIVMSL" : {name : "Mass Driver Missile Launchers", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "MISSILEPACK" : {name : "Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
-    "MISSILEPACKMINI" : {name : "Mini-Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
-    "MINIMISSILETUBE" : {name : "MM-XT Mini-Missile Tube", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
-    "TRACTOR213" : {name : "Grappler 213 Tactical Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "MISSCONCMINI" : {name : "Concussion Missile (Mini)", d : 4, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
-    "MISSJAM" : {name : "Jammer Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "MISSDECOY" : {name : "Decoy Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "MISSJAMMINI" : {name : "Jammer Missile (Mini)", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "MISSUNGROCK" : {name : "Unguided Rocket", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "MISSUNGROCKMINI" : {name : "Unguided Rocket (Mini)", d : 3, r : "wrEngaged", s : "Gunnery (Ag)", c : "4"},
-    "ROTREPBLASTCAN" : {name : "Rotary Repeating Blaster Cannon", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "LASCAN" : {name : "Laser Cannon", d : 9, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "FLAKLT" : {name : "Light Flak Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "FLAKMED" : {name : "Medium Flak Cannon", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "FLAKHVY" : {name : "Heavy Flak Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "VL6" : {name : "VL-6 Warhead Launcher System", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "A95STING" : {name : "A95 Stingbeam", d : 5, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
-    "L7LIGHTPISTOL" : {name : "L7 Light Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "411HOLDOUT" : {name : "411 Holdout Blaster", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "M53QUICKTRIGGER" : {name : "Model 53 'Quicktrigger' Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "M1NOVAVIPER" : {name : "Model-1 'Nova Viper' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "C10DRAGONEYE" : {name : "C-10 'Dragoneye Reaper' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "RENHEAVYBLAST" : {name : "'Renegade' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "HBT4HUNTING" : {name : "HBt-4 Hunting Blaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "VES700PULSE" : {name : "VES-700 Pulse Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "FDROIDDISABLER" : {name : "Droid Disabler", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "FWG5FLECHETTE" : {name : "FWG-5 Flechette Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "8GAUGESCATTER" : {name : "8-Gauge Scatter Gun", d : 7, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "6"},
-    "ASCIANTHROWDAG" : {name : "Ascian Throwing Dagger", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "KNOCKOUTGRENADE" : {name : "Knockout Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "TAGCRYOPROJ" : {name : "Cryoban Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
-    "SSB1STATIC" : {name : "SSB-1 Static Pistol", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "SHOCKBOOTS" : {name : "Shock Boots", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "PUNCHDAGGER" : {name : "Punch Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "BLADEBREAKER" : {name : "Blade-Breaker", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "VIBRORAPIER" : {name : "Vibrorapier", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "LTTRACTCOUPLE" : {name : "Light Tractor Beam Coupler", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "1"},
-    "TORPLAUNCH" : {name : "Torpedo Launcher", d : 6, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "PROTTORPHVY" : {name : "Heavy Proton Torpedo Launcher", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
-    "CLUSTERBOMB" : {name : "Cluster Bomb Launcher", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "IONTHRUST" : {name : "Ion Thruster Gun", d : 5, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
-    "MULTIGOO" : {name : "Multi-Goo Gun", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "REPULSORGUN" : {name : "Repulsor Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
-    "RIVETGUN" : {name : "Rivet Gun", d : 4, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
-    "HANDGRID" : {name : "Hand Grinder", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "WELDINGROD" : {name : "Welding Rod", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "BMWEAPTEMP1" : {name : "Fist Weapon (Template)", d : 3, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "BMWEAPTEMP2" : {name : "Blunt Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "BMWEAPTEMP3" : {name : "Shield (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "BMWEAPTEMP4" : {name : "Bladed Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "BMWEAPTEMP5" : {name : "Vibro-weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "BMWEAPTEMP6" : {name : "Powered Melee Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "RWEAPTEMP1" : {name : "Simple Projectile Weapon (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "RWEAPTEMP2" : {name : "Solid Projectile Pistol (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "RWEAPTEMP3" : {name : "Solid Projectile Rifle (Template)", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
-    "RWEAPTEMP4" : {name : "Energy Pistol (Template)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "RWEAPTEMP5" : {name : "Energy Rifle (Template)", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "RWEAPTEMP6" : {name : "Heavy Energy Rifle (Template)", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "RWEAPTEMP7" : {name : "Missile Launcher (Template)", d : 0, r : "wrEngaged", s : "Gunnery (Ag)", c : "0"},
-    "RWEAPTEMP8" : {name : "Missile (Template)", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "RWEAPTEMP9" : {name : "Grenade (Template)", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "RWEAPTEMP10" : {name : "Mine (Template)", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
-  };
-
-  var armor = {
-    "AEG" : {name : "Adverse Environmental Gear", s : 1},
-    "AC" : {name : "Armored Clothing", s : 1},
-    "ARMROBE" : {name : "Armored Robes", s : 2},
-    "CONROBE" : {name : "Concealing Robes", s : 1},
-    "HBA" : {name : "Heavy Battle Armor", s : 2},
-    "HC" : {name : "Heavy Clothing", s : 1},
-    "LAM" : {name : "Laminate", s : 2},
-    "PDS" : {name : "Personal Deflector Shield", s : 0},
-    "PAD" : {name : "Padded Armor", s : 2},
-    "ENVIROSUIT" : {name : "Enviro-suit", s : 2},
-    "CRASHSUIT" : {name : "A/KT Shockrider Crash Suit", s : 2},
-    "UTILITYVEST" : {name : "A/KT Tracker Utility Vest", s : 0},
-    "MOUNTARMOR" : {name : "A/KT Mountaineer Armor", s : 1},
-    "CATCHVEST" : {name : "Catch Vest", s : 1},
-    "NOMADCOAT" : {name : "Nomad Greatcoat", s : 1},
-    "MODARMORIII" : {name : "Type III 'Berethron' Personal Modular Armor", s : 1},
-    "FLIGHTTX3" : {name : "TX-3 Combat Flight Suit", s : 0},
-    "BEASTHIDE" : {name : "Beast-Hide Armor", s : 1},
-    "CHARGESUIT" : {name : "'Storm' Charge Suit", s : 2},
-    "FLAKVEST" : {name : "Mk. III Flak Vest", s : 1},
-    "PROTECTOR" : {name : "Protector 1 Combat Armor", s : 2},
-    "STEELSKIN" : {name : "Mk.II 'Steelskin' Anti-Concussive Armor", s : 3},
-    "POWARMOR" : {name : "PX-11 'Battlement' Powered Armor", s : 3},
-    "TAILOREDJACKET" : {name : "Tailored Armored Jacket", s : 2},
-    "REINFENVIRO" : {name : "Reinforced Environment Gear", s : 1},
-    "RIOTARMOR" : {name : "Mk.IV Riot Armor", s : 1},
-    "WINGCOMMANDER" : {name : "A/KT Wing Commander Armored Flight Suit", s : 1},
-    "RIDINGTACK" : {name : "Caballerin-Series Riding Tack", s : 0},
-    "CAPARIBEAST" : {name : "Capari-Series Padded Beast Armor", s : 2},
-    "DESTRIBEAST" : {name : "Destri-Series Laminated Beast Armor", s : 4},
-    "MEGAFAUNA" : {name : "H-Series Megafauna Carriage", s : 0},
-    "HUTTSHELLARMOR" : {name : "Hutt Shell Armor", s : 2},
-    "SAKSHADOW" : {name : "Sakiyan Shadowsuit", s : 1},
-    "BLASTVEST" : {name : "Blast Vest", s : 1},
-    "MIMETICSUIT" : {name : "Mimetic Suit", s : 1},
-    "SMUGGLERSTRENCHCOAT" : {name : "Smuggler's Trenchcoat", s : 1},
-    "BANAL" : {name : "Banal Apparel", s : 0},
-    "CARGOCL" : {name : "Cargo Apparel", s : 0},
-    "DIPROBE" : {name : "Diplomat's Robes", s : 0},
-    "FLAREJACK" : {name : "Flare Jacket", s : 1},
-    "HAULHARN" : {name : "Hauling Harness", s : 1},
-    "HOLOCOST" : {name : "Holographic Costume", s : 0},
-    "LECOUT" : {name : "Lector's Outfit", s : 1},
-    "NOBREG" : {name : "Noble Regalia", s : 0},
-    "PERFATT" : {name : "Performer's Attire", s : 0},
-    "POWCAPARM" : {name : "Powered Capacitive Armor", s : 1},
-    "RESPROBES" : {name : "Resplendent Robes", s : 1},
-    "SECSKIN" : {name : "Second Skin Armor", s : 1},
-    "BODYSUIT" : {name : "Polis Masson Bodysuit", s : 1},
-    "LEVPOWARM" : {name : "Leviathan Power Armor", s : 2},
-    "VERPFIBUARM" : {name : "Verpine Fiber Ultramesh Armor", s : 1},
-    "CRESHARMOR" : {name : "Cresh 'Luck' Armor", s : 2},
-    "JEDIBA" : {name : "Jedi Battle Armor", s : 2},
-    "JEDITEMGUAARM" : {name : "Jedi Temple Guard Armor", s : 1},
-    "JEDITRAINSUITW" : {name : "Jedi Training Suit (Weighted)", s : 2},
-    "JEDITRAINSUIT" : {name : "Jedi Training Suit (Unweighted)", s : 2},
-    "KAVDANNPA" : {name : "Kav-Dann Power Armor", s : 2},
-    "KOROHALFVEST" : {name : "Koromondian Half-Vest", s : 1},
-    "RIOTARM" : {name : "Riot Armor", s : 2},
-    "ARMTEMP1" : {name : "Reinforced Clothing (Template)", s : 1},
-    "ARMTEMP2" : {name : "Light Armor (Template)", s : 2},
-    "ARMTEMP3" : {name : "Customizable Armor (Template)", s : 1},
-    "ARMTEMP4" : {name : "Deflective Armor (Template)", s : 1},
-    "ARMTEMP5" : {name : "Combat Armor (Template)", s : 2},
-    "ARMTEMP6" : {name : "Segmented Armor (Template)", s : 2},
-    "ARMTEMP7" : {name : "Augmentaive Armor (Template)", s : 2},
-    "CLOAKCOAT" : {name : "Cloaking Coat", s : 1},
-    "MECHUTILSUIT" : {name : "Mechanic's Utility Suit", s : 2},
-    "N57" : {name : "N-57 Armor", s : 2},
-    "P14" : {name : "P-14 Hazardous Industry Suit", s : 2},
-  };
-
-  searchObj["Weapons"] = function(src, output) {
-    for (var key in src.CharWeapon) {
-      // each skill
-      if (src["CharWeapon"][key] && src["CharWeapon"][key]["ItemKey"] && src["CharWeapon"][key]["ItemKey"]["#text"]) {
-        var item = JSON.parse(JSON.stringify(game.templates.item));
-        if (weapon[src["CharWeapon"][key]["ItemKey"]["#text"]]) {
-          item.info.name.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].name;
-          item.info.skill.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].s;
-          item.weapon.damage.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].d;
-          item.weapon.range.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].r;
-          item.weapon.crit.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].c;
-          output.inventory.push(item);
-        }
-        else {
-          item.info.name.current = src["CharWeapon"][key]["ItemKey"]["#text"];
-          output.inventory.push(item);
-        }
-      }
-    }
-  }
-  searchObj["Armor"] = function(src, output) {
-    for (var key in src.CharArmor) {
-      if (src["CharArmor"][key] && src["CharArmor"][key]["ItemKey"] && src["CharArmor"][key]["ItemKey"]["#text"]) {
-        var item = JSON.parse(JSON.stringify(game.templates.item));
-        if (armor[src["CharArmor"][key]["ItemKey"]["#text"]]) {
-          item.info.name.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].name;
-          item.equip.armor.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].s;
-          output.inventory.push(item);
-        }
-        else {
-          item.info.name.current = src["CharArmor"][key]["ItemKey"]["#text"];
-          output.inventory.push(item);
-        }
-      }
-    }
-  }
-  searchObj["Gear"] = function(src, output) {
-    for (var key in src.CharGear) {
-      if (src["CharGear"][key] && src["CharGear"][key]["ItemKey"] && src["CharGear"][key]["ItemKey"]["#text"]) {
-        var item = JSON.parse(JSON.stringify(game.templates.item));
-        item.info.name.current = src["CharGear"][key]["ItemKey"]["#text"];
-        output.inventory.push(item);
-      }
-    }
-  }
-
-  // create it right here
-  function recurseSearch(src, keys, output) {
-    for (var key in src) {
-      if (src[key] instanceof Object) {
-        if (src[key] && keys[key]) {
-          keys[key](src[key], output);
-        }
-        else {
-          recurseSearch(src[key], keys, output);
-        }
-      }
-    }
-  }
-  recurseSearch(xml, searchObj, override);
-}
-
-function pcgen_import(xml, override) {
-  var table = {};
-  var list = xml.nodehandler.nodehandler;
-  for (var key in list) {
-    var data = list[key]["@attributes"];
-    table[data.name] = list[key]["nodehandler"];
-  }
-  var importRule = {};
-  importRule["Combat"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data["@attributes"]) {
-        if (data["@attributes"].name.toLowerCase().match("current hp")) {
-          sync.rawVal(override.counters.hp, eval(data["@attributes"].name.match(diceNumber)[0]));
-          override.counters.hp.max = eval(data["@attributes"].name.match(diceNumber)[0]);
-        }
-        else if (data["@attributes"].name.toLowerCase().match(" Saving Throw")) {
-          var options = data.list.option;
-          var saving = sync.rawVal(override.counters.saving);
-          for (var i in options) {
-            for (var j in saving) {
-              var match = options[i]["#text"].toLowerCase().match(saving[j].name.toLowerCase());
-              if (match) {
-                var firstNumber = /[+-]\d+/;
-                var d = firstNumber.exec(options[i]["#text"]);
-                sync.rawVal(saving[j], eval(d[0]));
-              }
-            }
-          }
-          sync.rawVal(override.counters.saving, saving);
-        }
-        else if (data["@attributes"].name.toLowerCase() == "weapons") {
-          for (var j in data.nodehandler) {
-            var item = data.nodehandler[j];
-
-            var newItem = duplicate(game.templates.item);
-            sync.val(newItem.info.name, item["@attributes"].name);
-            var dmgreg = /Damage\s*\[(\d*d\d+\+\d*)/i
-            var weaponInf = item.nodehandler[0].nodehandler.text["#text"].match(dmgreg);
-
-            if (weaponInf) {
-              sync.rawVal(newItem.weapon.damage, weaponInf[1]);
-            }
-            override.inventory.push(newItem);
-          }
-        }
-      }
-    }
-  }
-  importRule["Description"] = function(src, override) {
-    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
-
-    for (var key in src) {
-      var data = src[key];
-      if (data.text["#text"]) {
-        override.info.notes.current = (override.info.notes.current || "") + "<p>" + data.text["#text"] + "</p>";
-      }
-    }
-  }
-  importRule["Details"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      for (var j in override.info) {
-        if (data["@attributes"].name.toLowerCase().match(override.info[j].name.toLowerCase())) {
-          if (j == "name") {
-            sync.rawVal(override.info[j], data.text["#text"]);
-          }
-          else {
-            sync.rawVal(override.info[j], (sync.rawVal(override.info[j]) || "") + " " + data.text["#text"]);
-          }
-        }
-        else if (data["@attributes"].name.toLowerCase() == "speed") {
-          var firstNumber = /[+-]*\d+/;
-          var match = firstNumber.exec(data.text["#text"]);
-          if (match) {
-            sync.rawVal(override.counters.speed, eval(match[0]));
-          }
-        }
-        else if (data["@attributes"].name.toLowerCase() == "abilities") {
-          for (var i in data.grid.row) {
-            var stt = data.grid.row[i];
-            for (var s in override.stats) {
-              if (s.toLowerCase() == stt.cell[0]["#text"].toLowerCase().trim()) {
-                sync.rawVal(override.stats[s], parseInt(stt.cell[1]["#text"]));
-                sync.modifier(override.stats[s], "Stat-Bonus", Math.floor(sync.rawVal(override.stats[s])/30*15) + -5);
-              }
-            }
-          }
-        }
-        else if (data["@attributes"].name.toLowerCase() == "skills") {
-          for (var i in data.grid.row) {
-            var stt = data.grid.row[i];
-            for (var j in override.skills) {
-              if (override.skills[j].name.toLowerCase().match(stt.cell[0]["#text"].toLowerCase().trim())) {
-                if (eval(stt.cell[2]["#text"])) {
-                  sync.rawVal(override.skills[j], 1);
-                  sync.modifier(override.skills[j], "rank", eval(stt.cell[2]["#text"]));
-                }
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  importRule["Equipment"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      var newItem = duplicate(game.templates.item);
-      sync.val(newItem.info.name, data["@attributes"].name);
-      sync.rawVal(newItem.info.notes, data.text["#text"]);
-      var weaponInf = data.text["#text"].split("\n");
-      var push = true;
-      for (var i in weaponInf) {
-        if (weaponInf[i].toLowerCase().match("damage")) {
-          // all weapons are taken care of in combat section
-          push = false;
-          break;
-        }
-      }
-      if (push) {
-        override.inventory.push(newItem);
-      }
-    }
-  }
-  importRule["Magic"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data.nodehandler) {
-        var spells = data.nodehandler.nodehandler;
-        for (var j in spells) {
-          var firstNumber = /\d+/;
-          var spellLevel = spells[j]["@attributes"].name.match(firstNumber);
-          var actualSpells = spells[j].text["#text"].split("\n");
-
-          actualSpells.splice(0, 1);
-          actualSpells.splice(actualSpells.length, 1);
-          for (var b=0; b<actualSpells.length; b=b+4) {
-            if (actualSpells[b+3] != null) {
-              var newItem = duplicate(game.templates.item);
-              sync.val(newItem.info.name, actualSpells[b+0]);
-              sync.modifier(newItem.spell.required, "level", spellLevel[0]);
-              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+1]);
-              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+2]);
-              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+3]);
-              override.spellbook.push(newItem);
-            }
-            else {
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-  importRule["Misc."] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data["@attributes"].name.toLowerCase().match("languages")) {
-        var lang = data.text["#text"].split(",");
-        for (var k in lang) {
-          if (lang[k].trim()) {
-            override.proficient["Language "+lang[k].trim()] = true;
-          }
-        }
-      }
-      else if(data["@attributes"].name && data.text && data.text["#text"]) {
-        sync.rawVal(override.info.notes, (sync.rawVal(override.info.notes) || "") + data["@attributes"].name + " : " + data.text["#text"] + "\n");
-      }
-    }
-  }
-  importRule["Special Abilities"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data.text) {
-        var split = (data.text["#text"] || "").split("\n");
-        for (var i in split) {
-          if (split[i] && split[i].trim()) {
-            override.talents.push(sync.newValue(split[i]));
-          }
-        }
-      }
-    }
-  }
-  importRule["Weapon Summary"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      var newItem = duplicate(game.templates.item);
-      sync.val(newItem.info.name, data["@attributes"].name);
-      sync.rawVal(newItem.info.notes, data.text["#text"]);
-      var weaponInf = data.text["#text"].split("\n");
-      var push = true;
-      for (var i in weaponInf) {
-        if (weaponInf[i].toLowerCase().match("damage")) {
-          // all weapons are taken care of in combat section
-          push = false;
-          break;
-        }
-      }
-      if (push) {
-        override.inventory.push(newItem);
-      }
-    }
-  }
-  console.log(table);
-  for (var key in table) {
-    if (importRule[key]) {
-      importRule[key](table[key], override);
-    }
-  }
-}
-
 sync.render("ui_armorValue", function(obj, app, scope) {
   var itemData = scope.itemData || obj.data;
   var char;
@@ -29028,7 +27939,6 @@ sync.render("ui_entryList", function(obj, app, scope){
       }
       else if (ignore instanceof Object) {
         ignoring = util.contains(ignore, index);
-        console.log(ignoring);
       }
     }
     if (!ignoring) {
@@ -31037,6 +29947,1302 @@ sync.render("ui_tagList", function(obj, app, scope){
   return div;
 });
 
+function ogg_import(xml, override) {
+  searchObj = {};
+  searchObj["Skills"] = function(src, output) {
+
+    var skillKeys = {
+      "RANGHVY" : "raH",
+      "RANGLT" : "raL",
+      "SW" : "str",
+      "LTSABER" : "lig",
+      "PILOTSP" : "pls",
+      "PILOTPL" : "plp",
+    }
+
+    src = src.CharSkill;
+
+    for (var key in src) {
+      // each skill
+      var current = 0;
+      var mods = {};
+
+      if (src[key]["isCareer"] && src[key]["isCareer"]["#text"]) {
+        current = 1;
+      }
+      if (src[key]["Rank"]) {
+        for (var rIndex in src[key]["Rank"]) {
+          if (rIndex != "#text") {
+            if (rIndex == "PurchasedRanks") {
+              mods["rank"] = (mods["ranks"] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
+            }
+            else if (rIndex != "NonCareerRanks") {
+              mods[rIndex] = (mods[rIndex] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
+            }
+          }
+        }
+      }
+      if (src[key]["Key"] && src[key]["Key"]["#text"] != null) {
+        if (src[key]["Key"]["#text"].length > 2 && !skillKeys[src[key]["Key"]["#text"]]) {
+          var matched = false;
+          for (var i in output.skills) {
+            if (output.skills[i].name.toLowerCase().match(src[key]["Key"]["#text"].toLowerCase())) {
+              output.skills[i].current = current;
+              output.skills[i].modifiers = mods;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) {
+            output.skills[src[key]["Key"]["#text"]] = output.skills[src[key]["Key"]["#text"]] || sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
+          }
+        }
+        else {
+          output.skills[skillKeys[src[key]["Key"]["#text"]]].current = current;
+          output.skills[skillKeys[src[key]["Key"]["#text"]]].modifiers = mods;
+        }
+      }
+      else {
+        var skillVal = sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
+        output.skills[src[key]["Key"]["#text"]] = (skillVal);
+      }
+    }
+  };
+
+  searchObj["Career"] = function(src, output) {
+    var current;
+    var mods = {};
+    if (src["CareerKey"]) {
+      current = src["CareerKey"]["#text"];
+    }
+    if (src["StartingSpecKey"]) {
+      current = current + " - " + src["StartingSpecKey"]["#text"];
+    }
+    output.info.career.current = current;
+  };
+
+  searchObj["Experience"] = function(src, output) {
+    var current;
+    var mods = {};
+    for (var key in src["ExperienceRanks"]) {
+      // each additon
+      if (src["ExperienceRanks"][key]) {
+        mods[key] = parseInt(src["ExperienceRanks"][key]["#text"] || 0);
+      }
+    }
+    output.counters.exp.modifiers = mods;
+    for (var key in src["UsedExperience"]) {
+      // each additon
+      if (src["UsedExperience"][key]) {
+        current = (current || 0) + parseInt(src["UsedExperience"][key]["#text"] || 0);
+      }
+    }
+    output.counters.exp.current = current;
+  };
+
+  searchObj["Characteristics"] = function(src, output) {
+    for (var key in src["CharCharacteristic"]) {
+      var statData = src["CharCharacteristic"][key];
+      if (statData) {
+        var stat = statData["Key"]["#text"].charAt(0) + statData["Key"]["#text"].substring(1,statData["Key"]["#text"].length).toLowerCase();
+
+        var current = 0;
+        var mods = {};
+        var rank = statData["Rank"];
+        if (!output.stats[stat]) {
+          for (var statIndex in output.stats) {
+            if (output.stats[statIndex].name == statData["Name"]["#text"]) {
+            stat = statIndex;
+              break;
+            }
+          }
+        }
+        for (var rIndex in rank) {
+          if (rank[rIndex] && rank[rIndex]["#text"]) {
+            if (!current) {
+              current = parseInt(rank[rIndex]["#text"]);
+            }
+            else {
+              mods[rIndex] = parseInt(rank[rIndex]["#text"]);
+            }
+          }
+        }
+        output.stats[stat].current = current;
+        output.stats[stat].modifiers = mods;
+      }
+    }
+  };
+  searchObj["Species"] = function(src, output) {
+    if (src["SpeciesKey"]) {
+      output.info.race.current = src["SpeciesKey"]["#text"];
+    }
+  };
+  searchObj["Description"] = function(src, output) {
+    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
+    if (src["CharName"]) {
+      output.info.name.current = src["CharName"]["#text"];
+    }
+    for (var index in src) {
+      if (index != "CharName" && src[index] && src[index]["#text"]) {
+        output.info.notes.current = (output.info.notes.current || "") + "<p><b>"+index + "&nbsp;-&nbsp;</b>" + src[index]["#text"] + "</p>";
+      }
+    }
+  };
+  searchObj["Credits"] = function(src, output) {
+    if (src["#text"]) {
+      var item = JSON.parse(JSON.stringify(game.templates.item));
+      sync.rawVal(item.info.name, "Credits");
+      sync.rawVal(item.info.quantity, parseInt(src["#text"]));
+    }
+  };
+
+  searchObj["Specializations"] = function(src, output) {
+    var obj = {
+      "ADV" : "Adversary",
+      "ANAT" : "Anatomy Lessons",
+      "ALLTERDRIV" : "All-Terrain Driver",
+      "ARM" : "Armor Master",
+      "ARMIMP" : "Armor Master (Improved)",
+      "BACT" : "Bacta Specialist",
+      "BADM" : "Bad Motivator",
+      "BAL" : "Balance",
+      "BAR" : "Barrage",
+      "BASICTRAIN" : "Basic Combat Training",
+      "BLA" : "Black Market Contacts",
+      "BLO" : "Blooded",
+      "BOD" : "Body Guard",
+      "BOUGHT" : "Bought Info",
+      "BRA" : "Brace",
+      "BRI" : "Brilliant Evasion",
+      "BYP" : "Bypass Security",
+      "CAREPLAN" : "Careful Planning",
+      "CLEVERSOLN" : "Clever Solution",
+      "COD" : "Codebreaker",
+      "COM" : "Command",
+      "COMMPRES" : "Commanding Presence",
+      "CONF" : "Confidence",
+      "CONT" : "Contraption",
+      "CONV" : "Convincing Demeanor",
+      "COORDASS" : "Coordinated Assault",
+      "CREATKILL" : "Creative Killer",
+      "CRIPV" : "Crippling Blow",
+      "DEAD" : "Dead to Rights",
+      "DEADIMP" : "Dead to Rights (Improved)",
+      "DEADACC" : "Deadly Accuracy",
+      "DEPSHOT" : "Debilitating Shot",
+      "DEDI" : "Dedication",
+      "DEFDRI" : "Defensive Driving",
+      "DEFSLI" : "Defensive Slicing",
+      "DEFSLIIMP" : "Defensive Slicing (Improved)",
+      "DEFSTA" : "Defensive Stance",
+      "DISOR" : "Disorient",
+      "DODGE" : "Dodge",
+      "DURA" : "Durable",
+      "DYNFIRE" : "Dynamic Fire",
+      "ENDUR" : "Enduring",
+      "EXHPORT" : "Exhaust Port",
+      "EXTRACK" : "Expert Tracker",
+      "FAMSUNS" : "Familiar Suns",
+      "FERSTR" : "Feral Strength",
+      "FLDCOMM" : "Field Commander",
+      "FLDCOMMIMP" : "Field Commander (Improved)",
+      "FINETUN" : "Fine Tuning",
+      "FIRECON" : "Fire Control",
+      "FORAG" : "Forager",
+      "FORCEWILL" : "Force of Will",
+      "FORCERAT" : "Force Rating",
+      "FORMONME" : "Form On Me",
+      "FRENZ" : "Frenzied Attack",
+      "FULLSTOP" : "Full Stop",
+      "FULLTH" : "Full Throttle",
+      "FULLTHIMP" : "Full Throttle (Improved)",
+      "FULLTHSUP" : "Full Throttle (Supreme)",
+      "GALMAP" : "Galaxy Mapper",
+      "GEARHD" : "Gearhead",
+      "GREASE" : "Greased Palms",
+      "GRIT" : "Grit",
+      "HARDHD" : "Hard Headed",
+      "HARDHDIMP" : "Hard Headed (Improved)",
+      "HEIGHT" : "Heightened Awareness",
+      "HERO" : "Heroic Fortitude",
+      "HIDD" : "Hidden Storage",
+      "HOLDTOG" : "Hold Together",
+      "HUNT" : "Hunter",
+      "INCITE" : "Incite Rebellion",
+      "INDIS" : "Indistinguishable",
+      "INSIGHT" : "Insight",
+      "INSPRHET" : "Inspiring Rhetoric",
+      "INSPRHETIMP" : "Inspiring Rhetoric (Improved)",
+      "INSPRHETSUP" : "Inspiring Rhetoric (Supreme)",
+      "INTENSFOC" : "Intense Focus",
+      "INTENSPRE" : "Intense Presence",
+      "INTIM" : "Intimidating",
+      "INVENT" : "Inventor",
+      "INVIG" : "Invigorate",
+      "ITSNOTTHATBAD" : "It's Not that Bad",
+      "JUMP" : "Jump Up",
+      "JURY" : "Jury Rigged",
+      "KILL" : "Kill With Kindness",
+      "KNOCK" : "Knockdown",
+      "KNOWSOM" : "Know Somebody",
+      "KNOWSPEC" : "Knowledge Specialization",
+      "KNOWSCH" : "Known Schematic",
+      "LETSRIDE" : "Let's Ride",
+      "LETHALBL" : "Lethal Blows",
+      "MASDOC" : "Master Doctor",
+      "MASDRIV" : "Master Driver",
+      "MASGREN" : "Master Grenadier",
+      "MASLEAD" : "Master Leader",
+      "MASMERC" : "Master Merchant",
+      "MASSHAD" : "Master of Shadows",
+      "MASPIL" : "Master Pilot",
+      "MASSLIC" : "Master Slicer",
+      "MASSTAR" : "Master Starhopper",
+      "MENTFOR" : "Mental Fortress",
+      "NATBRAW" : "Natural Brawler",
+      "NATCHARM" : "Natural Charmer",
+      "NATDOC" : "Natural Doctor",
+      "NATDRIV" : "Natural Driver",
+      "NATENF" : "Natural Enforcer",
+      "NATHUN" : "Natural Hunter",
+      "NATLEAD" : "Natural Leader",
+      "NATMAR" : "Natural Marksman",
+      "NATNEG" : "Natural Negotiator",
+      "NATOUT" : "Natural Outdoorsman",
+      "NATPIL" : "Natural Pilot",
+      "NATPRO" : "Natural Programmer",
+      "NATROG" : "Natural Rogue",
+      "NATSCH" : "Natural Scholar",
+      "NATTIN" : "Natural Tinkerer",
+      "NOBFOOL" : "Nobody's Fool",
+      "OUTDOOR" : "Outdoorsman",
+      "OVEREM" : "Overwhelm Emotions",
+      "OVERDEF" : "Overwhelm Defenses",
+      "PHYSTRAIN" : "Physical Training",
+      "PLAUSDEN" : "Plausible Deniability",
+      "POINTBL" : "Point Blank",
+      "PWRBLST" : "Powerful Blast",
+      "PRECAIM" : "Precise Aim",
+      "PRESPNT" : "Pressure Point",
+      "QUICKDR" : "Quick Draw",
+      "QUICKFIX" : "Quick Fix",
+      "QUICKST" : "Quick Strike",
+      "RAPREA" : "Rapid Reaction",
+      "RAPREC" : "Rapid Recovery",
+      "REDUNSYS" : "Redundant Systems",
+      "RESEARCH" : "Researcher",
+      "RESOLVE" : "Resolve",
+      "RESPSCHOL" : "Respected Scholar",
+      "SCATH" : "Scathing Tirade",
+      "SCATHIMP" : "Scathing Tirade (Improved)",
+      "SCATHSUP" : "Scathing Tirade (Supreme)",
+      "SECWIND" : "Second Wind",
+      "SELDETON" : "Selective Detonation",
+      "SENSDANG" : "Sense Danger",
+      "SENSDEMO" : "Sense Emotions",
+      "SHORTCUT" : "Short Cut",
+      "SIDESTEP" : "Side Step",
+      "SITAWARE" : "Situational Awareness",
+      "SIXSENSE" : "Sixth Sense",
+      "SKILLJOCK" : "Skilled Jockey",
+      "SKILLSLIC" : "Skilled Slicer",
+      "SLEIGHTMIND" : "Sleight of Mind",
+      "SMOOTHTALK" : "Smooth Talker",
+      "SNIPSHOT" : "Sniper Shot",
+      "SOFTSP" : "Soft Spot",
+      "SOLREP" : "Solid Repairs",
+      "SOUNDINV" : "Sound Investments",
+      "SPARECL" : "Spare Clip",
+      "SPKBIN" : "Speaks Binary",
+      "STALK" : "Stalker",
+      "STNERV" : "Steely Nerves",
+      "STIMAP" : "Stim Application",
+      "STIMAPIMP" : "Stim Application (Improved)",
+      "STIMAPSUP" : "Stim Application (Supreme)",
+      "STIMSPEC" : "Stimpack Specialization",
+      "STRSMART" : "Street Smarts",
+      "STRGEN" : "Stroke of Genius",
+      "STRONG" : "Strong Arm",
+      "STUNBL" : "Stunning Blow",
+      "STUNBLIMP" : "Stunning Blow (Improved)",
+      "SUPREF" : "Superior Reflexes",
+      "SURG" : "Surgeon",
+      "SWIFT" : "Swift",
+      "TACTTRAIN" : "Tactical Combat Training",
+      "TARGBL" : "Targeted Blow",
+      "TECHAPT" : "Technical Aptitude",
+      "TIME2GO" : "Time to Go",
+      "TIME2GOIMP" : "Time to Go (Improved)",
+      "TINK" : "Tinkerer",
+      "TOUCH" : "Touch of Fate",
+      "TOUGH" : "Toughened",
+      "TRICK" : "Tricky Target",
+      "TRUEAIM" : "True Aim",
+      "UNCANREAC" : "Uncanny Reactions",
+      "UNCANSENS" : "Uncanny Senses",
+      "UNSTOP" : "Unstoppable",
+      "UTIL" : "Utility Belt",
+      "UTINNI" : "Utinni!",
+      "VEHTRAIN" : "Vehicle Combat Training",
+      "WELLROUND" : "Well Rounded",
+      "WELLTRAV" : "Well Travelled",
+      "WHEEL" : "Wheel and Deal",
+      "WORKLIKECHARM" : "Works Like A Charm",
+      "PIN" : "Pin",
+      "MUSEUMWORTHY" : "Museum Worthy",
+      "BRNGITDWN" : "Bring It Down",
+      "HUNTERQUARRY" : "Hunter's Quarry",
+      "HUNTQIMP" : "Hunter's Quarry (Improved)",
+      "BURLY" : "Burly",
+      "FEARSOME" : "Fearsome",
+      "HEAVYHITTER" : "Heavy Hitter",
+      "HEROICRES" : "Heroic Resilience",
+      "IMPDET" : "Improvised Detonation",
+      "IMPDETIMP" : "Improvised Detonation (Improved)",
+      "LOOM" : "Loom",
+      "RAINDEATH" : "Rain of Death",
+      "STEADYNERVES" : "Steady Nerves",
+      "TALKTALK" : "Talk the Talk",
+      "WALKWALK" : "Walk the Walk",
+      "IDEALIST" : "Idealist",
+      "AAO" : "Against All Odds",
+      "ANIMALBOND" : "Animal Bond",
+      "ANIMALEMP" : "Animal Empathy",
+      "ATARU" : "Ataru Technique",
+      "BODIMP" : "Body Guard (Improved)",
+      "CALMAURA" : "Calming Aura",
+      "CALMAURAIMP" : "Calming Aura (Improved)",
+      "CENTBEING" : "Center of Being",
+      "CENTBEINGIMP" : "Center of Being (Improved)",
+      "CIRCLESHELTER" : "Circle of Shelter",
+      "COMPTECH" : "Comprehend Technology",
+      "CONDITIONED" : "Conditioned",
+      "CONTPLAN" : "Contingency Plan",
+      "COUNTERST" : "Counterstrike",
+      "DEFCIRCLE" : "Defensive Circle",
+      "DEFTRAIN" : "Defensive Training",
+      "DISRUPSTRIKE" : "Disruptive Strike",
+      "DJEMSODEFL" : "Djem So Deflection",
+      "DRAWCLOSER" : "Draw Closer",
+      "DUELTRAIN" : "Duelist's Training",
+      "ENHLEAD" : "Enhanced Leader",
+      "FALLAVAL" : "Falling Avalanche",
+      "FEINT" : "Feint",
+      "FORCEASSAULT" : "Force Assault",
+      "FORCEPROT" : "Force Protection",
+      "FOREWARN" : "Forewarning",
+      "HAWKSWOOP" : "Hawk Bat Swoop",
+      "HEALTRANCE" : "Healing Trance",
+      "HEALTRANCEIMP" : "Healing Trance (Improved)",
+      "IMBUEITEM" : "Imbue Item",
+      "INTUITEVA" : "Intuitive Evasion",
+      "INTUITIMP" : "Intuitive Improvements",
+      "INTUITSHOT" : "Intuitive Shot",
+      "INTUITSTRIKE" : "Intuitive Strike",
+      "KEENEYED" : "Keen Eyed",
+      "KNOWPOW" : "Knowledge is Power",
+      "KNOWHEAL" : "Knowledgeable Healing",
+      "MAKFIN" : "Makashi Finish",
+      "MAKFLOUR" : "Makashi Flourish",
+      "MAKTECH" : "Makashi Technique",
+      "MASTART" : "Master Artisan",
+      "MENTBOND" : "Mental Bond",
+      "MENTTOOLS" : "Mental Tools",
+      "MULTOPP" : "Multiple Opponents",
+      "NATBLADE" : "Natural Blademaster",
+      "NATMYSTIC" : "Natural Mystic",
+      "NIMTECH" : "Niman Technique",
+      "NOWYOUSEE" : "Now You See Me",
+      "ONEUNI" : "One With The Universe",
+      "PARRY" : "Parry",
+      "PARRYIMP" : "Parry (Improved)",
+      "PARRYSUP" : "Parry (Supreme)",
+      "PHYSICIAN" : "Physician",
+      "PREEMAVOID" : "Preemptive Avoidance",
+      "PREYWEAK" : "Prey on the Weak",
+      "QUICKMOVE" : "Quick Movement",
+      "REFLECT" : "Reflect",
+      "REFLECTIMP" : "Reflect (Improved)",
+      "REFLECTSUP" : "Reflect (Supreme)",
+      "RESDISARM" : "Resist Disarm",
+      "SABERSW" : "Saber Swarm",
+      "SABERTHROW" : "Saber Throw",
+      "SARSWEEP" : "Sarlacc Sweep",
+      "SENSEADV" : "Sense Advantage",
+      "SHAREPAIN" : "Share Pain",
+      "SHIENTECH" : "Shien Technique",
+      "SHROUD" : "Shroud",
+      "SLIPMIND" : "Slippery Minded",
+      "SORESUTECH" : "Soresu Technique",
+      "STRATFORM" : "Strategic Form",
+      "SUMDJEM" : "Sum Djem",
+      "TERRIFY" : "Terrify",
+      "TERRIFYIMP" : "Terrify (Improved)",
+      "FORCEALLY" : "The Force Is My Ally",
+      "UNITYASSAULT" : "Unity Assault",
+      "VALFACT" : "Valuable Facts",
+      "BADCOP" : "Bad Cop",
+      "BIGGESTFAN" : "Biggest Fan",
+      "CONGENIAL" : "Congenial",
+      "COORDODGE" : "Coordination Dodge",
+      "DISBEH" : "Distracting Behavior",
+      "DISBEHIMP" : "Distracting Behavior (Improved)",
+      "DECEPTAUNT" : "Deceptive Taunt",
+      "GOODCOP" : "Good Cop",
+      "NATATHL" : "Natural Athlete",
+      "NATMERCH" : "Natural Merchant",
+      "THROWCRED" : "Throwing Credits",
+      "UNRELSKEP" : "Unrelenting Skeptic",
+      "UNRELSKEPIMP" : "Unrelenting Skeptic (Improved)",
+      "BEASTWRANG" : "Beast Wrangler",
+      "BOLSTARMOR" : "Bolstered Armor",
+      "CORSEND" : "Corellian Sendoff",
+      "CORSENDIMP" : "Corellian Sendoff (Improved)",
+      "CUSTCOOL" : "Customized Cooling Unit",
+      "EXHANDLER" : "Expert Handler",
+      "FANCPAINT" : "Fancy Paint Job",
+      "FORTVAC" : "Fortified Vacuum Seal",
+      "HIGHGTRAIN" : "High-G Training",
+      "KOITURN" : "Koiogran Turn",
+      "LARGEPROJ" : "Larger Project",
+      "NOTTODAY" : "Not Today",
+      "OVERAMMO" : "Overstocked Ammo",
+      "REINFRAME" : "Reinforced Frame",
+      "SHOWBOAT" : "Showboat",
+      "SIGVEH" : "Signature Vehicle",
+      "SOOTHTONE" : "Soothing Tone",
+      "SPUR" : "Spur",
+      "SPURIMP" : "Spur (Improved)",
+      "SPURSUP" : "Spur (Supreme)",
+      "TUNEDTHRUST" : "Tuned Maneuvering Thrusters",
+      "CALLEM" : "Call 'Em",
+      "DISARMSMILE" : "Disarming Smile",
+      "DONTSHOOT" : "Don't Shoot!",
+      "DOUBLEORNOTHING" : "Double or Nothing",
+      "DOUBLEORNOTHINGIMP" : "Double or Nothing (Improved)",
+      "DOUBLEORNOTHINGSUP" : "Double or Nothing (Supreme)",
+      "FORTFAVORBOLD" : "Fortune Favors the Bold",
+      "GUNSBLAZING" : "Guns Blazing",
+      "JUSTKID" : "Just Kidding!",
+      "QUICKDRIMP" : "Quickdraw (Improved)",
+      "SECCHANCE" : "Second Chances",
+      "SORRYMESS" : "Sorry About the Mess",
+      "SPITFIRE" : "Spitfire",
+      "UPANTE" : "Up the Ante",
+      "WORKLIKECHARM" : "Works Like a Charm",
+      "BADPRESS" : "Bad Press",
+      "BLACKMAIL" : "Blackmail",
+      "CUTQUEST" : "Cutting Question",
+      "DISCREDIT" : "Discredit",
+      "ENCCOMM" : "Encoded Communique",
+      "ENCWORD" : "Encouraging Words",
+      "INKNOW" : "In The Know",
+      "INKNOWIMP" : "In The Know (Improved)",
+      "INFORM" : "Informant",
+      "INTERJECT" : "Interjection",
+      "KNOWALL" : "Know-It-All",
+      "PLAUSDENIMP" : "Plausible Deniability (Improved)",
+      "POSSPIN" : "Positive Spin",
+      "POSSPINIMP" : "Positive Spin (Improved)",
+      "RESEARCHIMP" : "Researcher (Improved)",
+      "SUPPEVI" : "Supporting Evidence",
+      "THORASS" : "Thorough Assessment",
+      "TWISTWORD" : "Twisted Words",
+      "DRIVEBACK" : "Drive Back",
+      "ARMSUP" : "Armor Master (Supreme)",
+      "BALEGAZE" : "Baleful Gaze",
+      "BLINDSPOT" : "Blind Spot",
+      "GRAPPLE" : "Grapple",
+      "NOESC" : "No Escape",
+      "OVERBAL" : "Overbalance",
+      "PRECSTR" : "Precision Strike",
+      "PRIMEPOS" : "Prime Positions",
+      "PRESSHOT" : "Prescient Shot",
+      "PROPAIM" : "Prophetic Aim",
+      "REINITEM" : "Reinforce Item",
+      "SUPPRFIRE" : "Suppressing Fire",
+      "CALMCOMM" : "Calm Commander",
+      "CLEVCOMM" : "Clever Commander",
+      "COMMPRESIMP" : "Commanding Presence (Improved)",
+      "CONFIMP" : "Confidence (Improved)",
+      "MASINST" : "Master Instructor",
+      "MASSTRAT" : "Master Strategist",
+      "NATINST" : "Natural Instructor",
+      "READANY" : "Ready for Anything",
+      "READANYIMP" : "Ready for Anything (Improved)",
+      "THATHOWDONE" : "That's How It's Done",
+      "WELLREAD" : "Well Read",
+      "CUSTLOAD" : "Custom Loadout",
+      "CYBERNETICIST" : "Cyberneticist",
+      "DEFTMAKER" : "Deft Maker",
+      "ENGREDUN" : "Engineered Redundancies",
+      "EYEDET" : "Eye for Detail",
+      "ENERGTRANS" : "Energy Transfer",
+      "MACHMEND" : "Machine Mender",
+      "MOREMACH" : "More Machine Than Man",
+      "OVERCHARGE" : "Overcharge",
+      "OVERCHARGEIMP" : "Improved Overcharge",
+      "OVERCHARGESUP" : "Supreme Overcharge",
+      "REROUTEPROC" : "Reroute Processors",
+      "RESOURCEREFIT" : "Resourceful Refit",
+      "SPKBINIMP" : "Improved Speaks Binary",
+      "SPKBINSUP" : "Supreme Speaks Binary",
+    }
+
+    var charSpec = src["CharSpecialization"];
+    for (var _ in charSpec["Talents"]) {
+      for (var index in charSpec["Talents"][_]) {
+        var charTalent = charSpec["Talents"][_][index];
+        if (charTalent["Key"] && charTalent["Key"]["#text"]) {
+          var selected = "";
+          if (charTalent["SelectedSkills"]) {
+            for (var key in charTalent["SelectedSkills"]) {
+              if (charTalent["SelectedSkills"][key] && charTalent["SelectedSkills"][key]["#text"]) {
+                if (skillRef[charTalent["SelectedSkills"][key]["#text"]]) {
+                  selected = selected + game.templates.character.skills[skillRef[charTalent["SelectedSkills"][key]["#text"]]].name + "\n";
+                }
+                else {
+                  selected = selected + charTalent["SelectedSkills"][key]["#text"] + "\n";
+                }
+              }
+            }
+          }
+          if (charTalent["Purchased"]) {
+            var insert = true;
+            for (var tIndex in output.talents) {
+              if (output.talents[tIndex].name == obj[charTalent["Key"]["#text"]]) {
+                output.talents[tIndex] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
+                insert = false;
+                break;
+              }
+            }
+            if (insert) {
+              output.talents[obj[charTalent["Key"]["#text"]]] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
+            }
+          }
+        }
+      }
+    }
+  }
+
+  searchObj["Attributes"] = function(src, output) {
+    var wTotal = 0;
+    for (var key in src["WoundThreshold"]) {
+      if (src["WoundThreshold"][key] && src["WoundThreshold"][key]["#text"]) {
+        wTotal = parseInt(wTotal) + parseInt(src["WoundThreshold"][key]["#text"]);
+      }
+    }
+    output.counters.wounds.current = wTotal;
+    output.counters.wounds.max = wTotal;
+
+    var sTotal = 0;
+    for (var key in src["StrainThreshold"]) {
+      if (src["StrainThreshold"][key] && src["StrainThreshold"][key]["#text"]) {
+        sTotal = parseInt(sTotal) + parseInt(src["StrainThreshold"][key]["#text"]);
+      }
+    }
+    output.counters.stress.current = sTotal;
+    output.counters.stress.max = sTotal;
+
+    if (src["DefenseRanged"]) {
+      output.counters.rdf.current = parseInt(src["DefenseRanged"]["#text"] || 0);
+    }
+    if (src["DefenseMelee"]) {
+      output.counters.mdf.current = parseInt(["DefenseMelee"]["#text"] || 0);
+    }
+  }
+
+  var weapon = {
+    "BLASTHOLD" : {name : "Holdout Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTHOLDTT24" : {name : "TT24 Holdout Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "MILHOLDBLAST" : {name : "Military Holdout Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "VARHOLDBLAST" : {name : "Variable Holdout Blaster", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "QUICKFIRE" : {name : "Model Q4 Quickfire", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "12DEFEND" : {name : "12 Defender", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "DEFSPBLAST" : {name : "Defender Sporting Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "ELG3ABLAST" : {name : "ELG-3A Blaster Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTLT" : {name : "Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTLTHL27" : {name : "HL-27 Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "POCKPIS" : {name : "Pocket Blaster Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPIS" : {name : "Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISCDEF" : {name : "CDEF Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTPISK23" : {name : "Relby-K23 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "DUELPIS" : {name : "Dueling Pistol", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "BLASTPISXL2" : {name : "XL-2 'Flashfire' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISH7" : {name : "H-7 'Equalizer' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
+    "BLASTPISDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTCARBDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster (Carbine Mode)", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTBOONTA" : {name : "Boonta Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTATAPULSE" : {name : "Greff-Timms ATA Pulse-Wave Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHVY" : {name : "Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHVYGEO" : {name : "Geonosian Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
+    "SECURITYS5" : {name : "Security S-5 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "KO-2HSP" : {name : "KO-2 Heavy Stun Pistol", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "MODEL44BLASTPIST" : {name : "Model 44 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "MODEL80BLASTPIST" : {name : "Model 80 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
+    "IR5BLASTPIST" : {name : "IR-5 'Intimidator' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHVYCR2" : {name : "CR-2 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "SITE145PISTOL" : {name : "Site-145 Replica Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "X30LANCER" : {name : "x-30 Lancer", d : 5, r : "wrLong", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTPISTDL19C" : {name : "DL-19C Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "DL7HBLASTPISTHVY" : {name : "DL-7h Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHH50" : {name : "HH-50 Heavy Blaster Pistol", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "MONCALBAT" : {name : "Mon Calamari Battle Baton", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "ENSLING" : {name : "Energy Slingshot", d : 3, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "BLASTCARB" : {name : "Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTCARBGEO" : {name : "Geonosian Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "2"},
+    "OK98BLASTCARB" : {name : "OK-98 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTCARBE5" : {name : "E5 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BOLACARB" : {name : "Bola Carbine", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "DLS12HBR" : {name : "DLS-12 Heavy Blaster Carbine", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTRIF" : {name : "Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTRIFGEO" : {name : "Geonosian Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "BLASTRIFSKZ" : {name : "SKZ Sporting Blaster Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
+    "BLASTLANCE" : {name : "Weequay Blaster Lance", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTRIFDDCMR6" : {name : "DDC-MR6 Modular Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "ACPREPEATER" : {name : "ACP Repeater Gun", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "ACPARRAYGUN" : {name : "ACP Array Gun", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
+    "SWE2SONIC" : {name : "SWE/2 Sonic Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "6"},
+    "BLASTRIFHVY" : {name : "Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "DHXBLASTRIFHVY" : {name : "DH-X Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "E11SNIPER" : {name : "E-11S Sniper Rifle", d : 10, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "LBR9STUNRIFLE" : {name : "LBR-9 Stun Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "BLASTLTREP" : {name : "Light Repeating Blaster", d : 11, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "SE14RBLASTLTREP" : {name : "SE-14r Light Repeating Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTHVYREP" : {name : "Heavy Repeating Blaster", d : 15, r : "wrLong", s : "Gunnery (Ag)", c : "2"},
+    "VXBLASTREP" : {name : "VX 'Sidewinder' Repeating Blaster", d : 12, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
+    "HOBBLASTREPHVY" : {name : "HOB Heavy Repeating Blaster", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "D29REPULSOR" : {name : "D-29 Repulsor Rifle", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "MONCALSPBLAST" : {name : "Mon Calamari Spear Blaster (Blaster)", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MONCALSPBLASTSP" : {name : "Mon Calamari Spear Blaster (Spear)", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ELECTPULSEDIS" : {name : "Electromag-Pulse Disruptor", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "BOWCAST" : {name : "Bowcaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTION" : {name : "Ion Blaster", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "DROIDDIS" : {name : "Droid Disruptor", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "DISRPIS" : {name : "Disruptor Pistol", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "DISRRIF" : {name : "Disruptor Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "SLUGPIS" : {name : "Slugthrower Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "SLUGPISASP9" : {name : "ASP-9 'Vrelt' Autopistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "FIVERSLUGPIST" : {name : "Model C 'Fiver' Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "SLUGKD30" : {name : "KD-30 'Dissuader' Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "STEALTH2VX" : {name : "Stealth-2VX Palm Shooter", d : 1, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "VODRANRIFLE" : {name : "Vodran Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
+    "SLUGRIF" : {name : "Slugthrower Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
+    "SLUGRIFMKV" : {name : "Mark V 'Sand Panther' Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
+    "ASSAULTSLUGCARB" : {name : "FYR Assault Carbine", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
+    "SLUGRIFSELSHARD" : {name : "Selonian Shard Shooter", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MODEL77" : {name : "Model 77 Air Rifle", d : 6, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "MODEL38" : {name : "Model 38 Sharpshooter's Rifle", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MODEL38DET" : {name : "Model 38 Sharpshooter's Rifle (Detonator Round)", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "HAMMER" : {name : "KS-23 Hammer", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
+    "DFD1" : {name : "DF-D1 Duo-Flechette Rifle", d : 9, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
+    "VERPSHATPIS" : {name : "Verpine Shatter Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "VERPSHATRIF" : {name : "Verpine Shatter Rifle", d : 12, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "VERPSHATHVYRIF" : {name : "Verpine Heavy Shatter Rifle", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "BOLA" : {name : "Bola/Net", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "ELECTRONET" : {name : "Electronet", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "FLAME" : {name : "Flame Projector", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MISS" : {name : "Missile Tube", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "L70ACID" : {name : "L70 Acid Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
+    "NETGUN" : {name : "AO14 'Aranea' Net Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "0"},
+    "STOKHLI" : {name : "Stokhli Spray Stick", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "RIOTRIFLE" : {name : "R-88 Supressor Riot Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
+    "TANGLEGUN" : {name : "Tangle Gun", d : 1, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
+    "FRAGGR" : {name : "Frag Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "STUNGR" : {name : "Stun Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "THERMDET" : {name : "Thermal Detonator", d : 20, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "THERMDETMINI" : {name : "Mini Thermal Detonator", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "APGREN" : {name : "Armor Piercing Grenade", d : 13, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "N4NOISEGREN" : {name : "N-4 Noise Grenade", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "6"},
+    "WIPE3GREN" : {name : "Wipe-3 Data-Purge Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "HICMERCYGREN" : {name : "HIC 'Mercy' Grenade", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "SPOREBSTUNGREN" : {name : "Spore/B Stun Grenade", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "AVMINE" : {name : "Anti-Vehicle Mine", d : 25, r : "wrEngaged", s : "Mechanics (Int)", c : "2"},
+    "APMINE" : {name : "Anti-Personnel Mine", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
+    "KNOCKMINE" : {name : "Knockout Mine", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "GLOPGRND" : {name : "Glop Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "INFERGREND" : {name : "D-24 Inferno Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "CONCGREND" : {name : "G2 Concussion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "IONGREND" : {name : "Lightning 22 Ion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "PLASGREND" : {name : "NOVA40 Plasma Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "HVYFRGGREND" : {name : "Mk.4 Heavy Frag Grenade", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "POISONGR" : {name : "Poison Gas Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "CONCMISSILEMK10" : {name : "Mk.10 Concussion Missile", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
+    "FRAGMISSILEC88" : {name : "C-88 Fragmentation Missile", d : 12, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
+    "PLASMISSILESK44" : {name : "SK-44 Plasma Missile", d : 16, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "INCENMISSILEC908" : {name : "C-908 Incendiary Missile", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "BARADIUMCHRG" : {name : "Baradium Charge", d : 3, r : "wrLong", s : "Mechanics (Int)", c : "0"},
+    "DETONITECHRG" : {name : "Detonite Charge", d : 15, r : "wrShort", s : "Mechanics (Int)", c : "0"},
+    "PLASMACHRG" : {name : "Plasma Charge", d : 9, r : "wrMedium", s : "Mechanics (Int)", c : "0"},
+    "PROTONGRNAD" : {name : "Proton Grenade", d : 10, r : "wrShort", s : "Mechanics (Int)", c : "0"},
+    "COMPBOW" : {name : "Corellian Compound Bow", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
+    "COMPBOWEXP" : {name : "Corellian Compound Bow (Explosive Tipped)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "COMPBOWSTUN" : {name : "Corellian Compound Bow (Stun)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "0"},
+    "STYANAX" : {name : "Styanax Lance", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
+    "CZ28FLAME" : {name : "CZ-28 Flamestrike", d : 9, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
+    "FC1FLECHETTE" : {name : "FC1 Flechette Launcher (Anti-Infantry)", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "FC1FLECHETTEVEH" : {name : "FC1 Flechette Launcher (Anti-Vehicle)", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
+    "GRENADLAUNCHZ50" : {name : "Z50 Grenade Launcher", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "MINTORPLAUNCH" : {name : "Mini-Torpedo Launcher", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MINTORPAP" : {name : "Mini-Torpedo, Anti-Personnel", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MINTORPARMP" : {name : "Mini-Torpedo, Armor Piercing", d : 12, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MINTORPINK" : {name : "Mini-Torpedo, Ink", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "MINTORPION" : {name : "Mini-Torpedo, Ion", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MINTORPNET" : {name : "Mini-Torpedo, Net", d : 0, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
+    "MINTORPSTUN" : {name : "Mini-Torpedo, Stun", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "AURBOOM" : {name : "Aurateran Boomerang", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "5"},
+    "GUNGATL" : {name : "Gungan Atlatl", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "GUNGPLAS" : {name : "Gungan Plasma Ball", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "LONGBOW" : {name : "Long Bow", d : 5, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
+    "BRASS" : {name : "Brass Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "SHOCKGL" : {name : "Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "REFCORTCAUNT" : {name : "Refined Cortosis Gauntlets", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "BLSTKNUK" : {name : "Blast Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "VAMBLADES1" : {name : "S-1 Vamblade (Single)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "VAMBLADE2S1" : {name : "S-1 Vamblade (Paired)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "VIBROKNUK" : {name : "Vibroknucklers", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "2"},
+    "BACKHANDSHKGLV" : {name : "Backhand Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "NEEDLEGLOVES" : {name : "Needle Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "SHIELDGAUNT" : {name : "Shield Gauntlet", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "KNIFE" : {name : "Combat Knife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "CUTLASSCOR" : {name : "Corellian Cutlass", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "LONGWHIP" : {name : "Longeing Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "5"},
+    "PERSUADER" : {name : "Sorosuub 'Persuader' Shock Prod", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "CERBLADE" : {name : "Ceremonial Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "STAFFOFF" : {name : "Staff of Office", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "ANCIENTSWORD" : {name : "Ancient Sword", d : 0, r : "wrEngaged", s : "LTSABER", c : "3"},
+    "CORTSHIELD" : {name : "Cortosis Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "CORTSWORD" : {name : "Cortosis Sword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ELECSTAFF" : {name : "Electrostaff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "REFCORTSTAFF" : {name : "Refined Cortosis Staff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "GAFF" : {name : "Gaffi Stick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "FLASHSTICK" : {name : "Drall Flashstick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "0"},
+    "FORCEP" : {name : "Force Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "DIIRO" : {name : "Diiro", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "CORALPIKE" : {name : "Coral Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "ENERGYLANCE" : {name : "Energy Lance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "CS12STUNMAST" : {name : "CS-12 Stun Master", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ENERGYBUCK" : {name : "Energy Buckler", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "PARRVIBRO" : {name : "Parrying Vibroblade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "PARRDAGG" : {name : "Parrying Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "CRYOWHIP" : {name : "Rodian Cryogen Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "3"},
+    "SITHSHIELD" : {name : "Sith Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "SNAPBATON" : {name : "Snap Baton", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "BARDLANCE" : {name : "Bardottan Electrolance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "GUNGPOLE" : {name : "Gungan Electropole", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "GUNGPOLET" : {name : "Gungan Electropole (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "GUNGPES" : {name : "Gungan Personal Energy Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "TRAINSTICK" : {name : "Training Stick", d : 0, r : "wrEngaged", s : "LTSABER", c : "5"},
+    "VOSSWARSP" : {name : "Voss Warspear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "VOSSWARSPT" : {name : "Voss Warspear (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "WEIKGS" : {name : "Weik Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "THERMCUTW" : {name : "Thermal Cutter", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "SVT300" : {name : "SVT-300 Stun Cloak", d : 7, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "LTSABER" : {name : "Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
+    "LTSABERBASIC" : {name : "Basic Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERDBL" : {name : "Double-Bladed Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERPIKE" : {name : "Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERSHOTO" : {name : "Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERTRAIN" : {name : "Training Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERGUASH" : {name : "Guard Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERTEMGUAPIKE" : {name : "Temple Guard Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERBASICHILT" : {name : "Basic Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERDBLHILT" : {name : "Double-Bladed Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERPIKEHILT" : {name : "Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERSHOTOHILT" : {name : "Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERTEMGUAPIKEHILT" : {name : "Temple Guard Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERGUASHHILT" : {name : "Guard Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERLODAKA" : {name : "Master Lodaka's Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
+    "TRUNCH" : {name : "Truncheon", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "STUNCLUB" : {name : "Stun Club", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "PULSEDRILL" : {name : "G9-GP Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "PULSEDRILLGX" : {name : "G9-GX Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "BEAMDRILLJ7B" : {name : "J-7b Beamdrill", d : 9, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "ENTRENCHTOOL" : {name : "Entrenching Tool (Improvised)", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "GLAIVESEL" : {name : "Selonian Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBAX" : {name : "Vibro-ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "VIBKN" : {name : "Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "STVIBKN" : {name : "Stealth Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "VIBSW" : {name : "Vibrosword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "SWORDCANE" : {name : "Sword Cane", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBROSPR" : {name : "Huntsman Vibrospear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBROSAW" : {name : "Mk. VIII Vibrosaw", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "FUSCUT" : {name : "Fusion Cutter", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "RYYKBLADE" : {name : "Ryyk Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "VIBROGRTSWRDVX" : {name : "VX 'Czerhander' Vibro-Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "THERMAXMOD7" : {name : "Model 7 Therm-Ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ARGGAROK" : {name : "Arg'garok", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBROGLAIVE" : {name : "Vibro-Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "MORCORTSTAFF" : {name : "Morgukai Cortosis Staff", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "1"},
+    "NEURWHIP" : {name : "Neuronic Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "4"},
+    "TUSKPIKE" : {name : "Tuskbeast Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "AUTOBLAST" : {name : "Auto-Blaster", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "5"},
+    "BLASTCANLT" : {name : "Light Blaster Cannon", d : 4, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "BLASTCANHVY" : {name : "Heavy Blaster Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "CML" : {name : "Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "AFCML" : {name : "Alternating-Fire Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "ACML" : {name : "Assault Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "CMLHK" : {name : "Hunter Killer Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "IONLT" : {name : "Light Ion Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "IONMED" : {name : "Medium Ion Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
+    "IONHVY" : {name : "Heavy Ion Cannon", d : 7, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "IONLONG" : {name : "Long-Barrelled Ion Cannon", d : 9, r : "wrLong", s : "Gunnery (Ag)", c : "4"},
+    "IONBATT" : {name : "Battleship Ion Cannon", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "LASERLT" : {name : "Light Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "LASERMED" : {name : "Medium Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "LASERHVY" : {name : "Heavy Laser Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "LASERPTDEF" : {name : "Point Defense Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "LASERLONG" : {name : "Long-Nosed Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "PTL" : {name : "Proton Torpedo Launcher", d : 8, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
+    "LASERQUAD" : {name : "Quad Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "TRACTLT" : {name : "Light Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "TRACTMED" : {name : "Medium Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "TRACTHVY" : {name : "Heavy Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "TURBOLT" : {name : "Light Turbolaser", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "TURBOMED" : {name : "Medium Turbolaser", d : 10, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
+    "TURBOHVY" : {name : "Heavy Turbolaser", d : 11, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
+    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "SUPPRESSCANNON" : {name : "Light Suppression Cannon", d : 10, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "ELECHARPOON" : {name : "Electromagnetic Harpoon", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "CONGRENLAUNCH" : {name : "Concussion Grenade Launcher", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
+    "PROTONBOMB" : {name : "Proton Bomb Release Chute", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "PROTONBAY" : {name : "Proton Bomb Bay", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "2"},
+    "BEAMDRILHVY" : {name : "Heavy Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "BEAMDRIL" : {name : "Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "MINIROCKET" : {name : "Mini-Rocket Launcher", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "MASSDRIVMSL" : {name : "Mass Driver Missile Launchers", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "MISSILEPACK" : {name : "Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
+    "MISSILEPACKMINI" : {name : "Mini-Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
+    "MINIMISSILETUBE" : {name : "MM-XT Mini-Missile Tube", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
+    "TRACTOR213" : {name : "Grappler 213 Tactical Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "MISSCONCMINI" : {name : "Concussion Missile (Mini)", d : 4, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
+    "MISSJAM" : {name : "Jammer Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "MISSDECOY" : {name : "Decoy Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "MISSJAMMINI" : {name : "Jammer Missile (Mini)", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "MISSUNGROCK" : {name : "Unguided Rocket", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "MISSUNGROCKMINI" : {name : "Unguided Rocket (Mini)", d : 3, r : "wrEngaged", s : "Gunnery (Ag)", c : "4"},
+    "ROTREPBLASTCAN" : {name : "Rotary Repeating Blaster Cannon", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "LASCAN" : {name : "Laser Cannon", d : 9, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "FLAKLT" : {name : "Light Flak Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "FLAKMED" : {name : "Medium Flak Cannon", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "FLAKHVY" : {name : "Heavy Flak Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "VL6" : {name : "VL-6 Warhead Launcher System", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "A95STING" : {name : "A95 Stingbeam", d : 5, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
+    "L7LIGHTPISTOL" : {name : "L7 Light Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "411HOLDOUT" : {name : "411 Holdout Blaster", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "M53QUICKTRIGGER" : {name : "Model 53 'Quicktrigger' Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "M1NOVAVIPER" : {name : "Model-1 'Nova Viper' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "C10DRAGONEYE" : {name : "C-10 'Dragoneye Reaper' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "RENHEAVYBLAST" : {name : "'Renegade' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "HBT4HUNTING" : {name : "HBt-4 Hunting Blaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "VES700PULSE" : {name : "VES-700 Pulse Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "FDROIDDISABLER" : {name : "Droid Disabler", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "FWG5FLECHETTE" : {name : "FWG-5 Flechette Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "8GAUGESCATTER" : {name : "8-Gauge Scatter Gun", d : 7, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "6"},
+    "ASCIANTHROWDAG" : {name : "Ascian Throwing Dagger", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "KNOCKOUTGRENADE" : {name : "Knockout Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "TAGCRYOPROJ" : {name : "Cryoban Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
+    "SSB1STATIC" : {name : "SSB-1 Static Pistol", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "SHOCKBOOTS" : {name : "Shock Boots", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "PUNCHDAGGER" : {name : "Punch Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "BLADEBREAKER" : {name : "Blade-Breaker", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "VIBRORAPIER" : {name : "Vibrorapier", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "LTTRACTCOUPLE" : {name : "Light Tractor Beam Coupler", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "1"},
+    "TORPLAUNCH" : {name : "Torpedo Launcher", d : 6, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "PROTTORPHVY" : {name : "Heavy Proton Torpedo Launcher", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
+    "CLUSTERBOMB" : {name : "Cluster Bomb Launcher", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "IONTHRUST" : {name : "Ion Thruster Gun", d : 5, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
+    "MULTIGOO" : {name : "Multi-Goo Gun", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "REPULSORGUN" : {name : "Repulsor Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
+    "RIVETGUN" : {name : "Rivet Gun", d : 4, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
+    "HANDGRID" : {name : "Hand Grinder", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "WELDINGROD" : {name : "Welding Rod", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "BMWEAPTEMP1" : {name : "Fist Weapon (Template)", d : 3, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "BMWEAPTEMP2" : {name : "Blunt Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "BMWEAPTEMP3" : {name : "Shield (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "BMWEAPTEMP4" : {name : "Bladed Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "BMWEAPTEMP5" : {name : "Vibro-weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "BMWEAPTEMP6" : {name : "Powered Melee Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "RWEAPTEMP1" : {name : "Simple Projectile Weapon (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "RWEAPTEMP2" : {name : "Solid Projectile Pistol (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "RWEAPTEMP3" : {name : "Solid Projectile Rifle (Template)", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
+    "RWEAPTEMP4" : {name : "Energy Pistol (Template)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "RWEAPTEMP5" : {name : "Energy Rifle (Template)", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "RWEAPTEMP6" : {name : "Heavy Energy Rifle (Template)", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "RWEAPTEMP7" : {name : "Missile Launcher (Template)", d : 0, r : "wrEngaged", s : "Gunnery (Ag)", c : "0"},
+    "RWEAPTEMP8" : {name : "Missile (Template)", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "RWEAPTEMP9" : {name : "Grenade (Template)", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "RWEAPTEMP10" : {name : "Mine (Template)", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
+  };
+
+  var armor = {
+    "AEG" : {name : "Adverse Environmental Gear", s : 1},
+    "AC" : {name : "Armored Clothing", s : 1},
+    "ARMROBE" : {name : "Armored Robes", s : 2},
+    "CONROBE" : {name : "Concealing Robes", s : 1},
+    "HBA" : {name : "Heavy Battle Armor", s : 2},
+    "HC" : {name : "Heavy Clothing", s : 1},
+    "LAM" : {name : "Laminate", s : 2},
+    "PDS" : {name : "Personal Deflector Shield", s : 0},
+    "PAD" : {name : "Padded Armor", s : 2},
+    "ENVIROSUIT" : {name : "Enviro-suit", s : 2},
+    "CRASHSUIT" : {name : "A/KT Shockrider Crash Suit", s : 2},
+    "UTILITYVEST" : {name : "A/KT Tracker Utility Vest", s : 0},
+    "MOUNTARMOR" : {name : "A/KT Mountaineer Armor", s : 1},
+    "CATCHVEST" : {name : "Catch Vest", s : 1},
+    "NOMADCOAT" : {name : "Nomad Greatcoat", s : 1},
+    "MODARMORIII" : {name : "Type III 'Berethron' Personal Modular Armor", s : 1},
+    "FLIGHTTX3" : {name : "TX-3 Combat Flight Suit", s : 0},
+    "BEASTHIDE" : {name : "Beast-Hide Armor", s : 1},
+    "CHARGESUIT" : {name : "'Storm' Charge Suit", s : 2},
+    "FLAKVEST" : {name : "Mk. III Flak Vest", s : 1},
+    "PROTECTOR" : {name : "Protector 1 Combat Armor", s : 2},
+    "STEELSKIN" : {name : "Mk.II 'Steelskin' Anti-Concussive Armor", s : 3},
+    "POWARMOR" : {name : "PX-11 'Battlement' Powered Armor", s : 3},
+    "TAILOREDJACKET" : {name : "Tailored Armored Jacket", s : 2},
+    "REINFENVIRO" : {name : "Reinforced Environment Gear", s : 1},
+    "RIOTARMOR" : {name : "Mk.IV Riot Armor", s : 1},
+    "WINGCOMMANDER" : {name : "A/KT Wing Commander Armored Flight Suit", s : 1},
+    "RIDINGTACK" : {name : "Caballerin-Series Riding Tack", s : 0},
+    "CAPARIBEAST" : {name : "Capari-Series Padded Beast Armor", s : 2},
+    "DESTRIBEAST" : {name : "Destri-Series Laminated Beast Armor", s : 4},
+    "MEGAFAUNA" : {name : "H-Series Megafauna Carriage", s : 0},
+    "HUTTSHELLARMOR" : {name : "Hutt Shell Armor", s : 2},
+    "SAKSHADOW" : {name : "Sakiyan Shadowsuit", s : 1},
+    "BLASTVEST" : {name : "Blast Vest", s : 1},
+    "MIMETICSUIT" : {name : "Mimetic Suit", s : 1},
+    "SMUGGLERSTRENCHCOAT" : {name : "Smuggler's Trenchcoat", s : 1},
+    "BANAL" : {name : "Banal Apparel", s : 0},
+    "CARGOCL" : {name : "Cargo Apparel", s : 0},
+    "DIPROBE" : {name : "Diplomat's Robes", s : 0},
+    "FLAREJACK" : {name : "Flare Jacket", s : 1},
+    "HAULHARN" : {name : "Hauling Harness", s : 1},
+    "HOLOCOST" : {name : "Holographic Costume", s : 0},
+    "LECOUT" : {name : "Lector's Outfit", s : 1},
+    "NOBREG" : {name : "Noble Regalia", s : 0},
+    "PERFATT" : {name : "Performer's Attire", s : 0},
+    "POWCAPARM" : {name : "Powered Capacitive Armor", s : 1},
+    "RESPROBES" : {name : "Resplendent Robes", s : 1},
+    "SECSKIN" : {name : "Second Skin Armor", s : 1},
+    "BODYSUIT" : {name : "Polis Masson Bodysuit", s : 1},
+    "LEVPOWARM" : {name : "Leviathan Power Armor", s : 2},
+    "VERPFIBUARM" : {name : "Verpine Fiber Ultramesh Armor", s : 1},
+    "CRESHARMOR" : {name : "Cresh 'Luck' Armor", s : 2},
+    "JEDIBA" : {name : "Jedi Battle Armor", s : 2},
+    "JEDITEMGUAARM" : {name : "Jedi Temple Guard Armor", s : 1},
+    "JEDITRAINSUITW" : {name : "Jedi Training Suit (Weighted)", s : 2},
+    "JEDITRAINSUIT" : {name : "Jedi Training Suit (Unweighted)", s : 2},
+    "KAVDANNPA" : {name : "Kav-Dann Power Armor", s : 2},
+    "KOROHALFVEST" : {name : "Koromondian Half-Vest", s : 1},
+    "RIOTARM" : {name : "Riot Armor", s : 2},
+    "ARMTEMP1" : {name : "Reinforced Clothing (Template)", s : 1},
+    "ARMTEMP2" : {name : "Light Armor (Template)", s : 2},
+    "ARMTEMP3" : {name : "Customizable Armor (Template)", s : 1},
+    "ARMTEMP4" : {name : "Deflective Armor (Template)", s : 1},
+    "ARMTEMP5" : {name : "Combat Armor (Template)", s : 2},
+    "ARMTEMP6" : {name : "Segmented Armor (Template)", s : 2},
+    "ARMTEMP7" : {name : "Augmentaive Armor (Template)", s : 2},
+    "CLOAKCOAT" : {name : "Cloaking Coat", s : 1},
+    "MECHUTILSUIT" : {name : "Mechanic's Utility Suit", s : 2},
+    "N57" : {name : "N-57 Armor", s : 2},
+    "P14" : {name : "P-14 Hazardous Industry Suit", s : 2},
+  };
+
+  searchObj["Weapons"] = function(src, output) {
+    for (var key in src.CharWeapon) {
+      // each skill
+      if (src["CharWeapon"][key] && src["CharWeapon"][key]["ItemKey"] && src["CharWeapon"][key]["ItemKey"]["#text"]) {
+        var item = JSON.parse(JSON.stringify(game.templates.item));
+        if (weapon[src["CharWeapon"][key]["ItemKey"]["#text"]]) {
+          item.info.name.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].name;
+          item.info.skill.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].s;
+          item.weapon.damage.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].d;
+          item.weapon.range.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].r;
+          item.weapon.crit.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].c;
+          output.inventory.push(item);
+        }
+        else {
+          item.info.name.current = src["CharWeapon"][key]["ItemKey"]["#text"];
+          output.inventory.push(item);
+        }
+      }
+    }
+  }
+  searchObj["Armor"] = function(src, output) {
+    for (var key in src.CharArmor) {
+      if (src["CharArmor"][key] && src["CharArmor"][key]["ItemKey"] && src["CharArmor"][key]["ItemKey"]["#text"]) {
+        var item = JSON.parse(JSON.stringify(game.templates.item));
+        if (armor[src["CharArmor"][key]["ItemKey"]["#text"]]) {
+          item.info.name.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].name;
+          item.equip.armor.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].s;
+          output.inventory.push(item);
+        }
+        else {
+          item.info.name.current = src["CharArmor"][key]["ItemKey"]["#text"];
+          output.inventory.push(item);
+        }
+      }
+    }
+  }
+  searchObj["Gear"] = function(src, output) {
+    for (var key in src.CharGear) {
+      if (src["CharGear"][key] && src["CharGear"][key]["ItemKey"] && src["CharGear"][key]["ItemKey"]["#text"]) {
+        var item = JSON.parse(JSON.stringify(game.templates.item));
+        item.info.name.current = src["CharGear"][key]["ItemKey"]["#text"];
+        output.inventory.push(item);
+      }
+    }
+  }
+
+  // create it right here
+  function recurseSearch(src, keys, output) {
+    for (var key in src) {
+      if (src[key] instanceof Object) {
+        if (src[key] && keys[key]) {
+          keys[key](src[key], output);
+        }
+        else {
+          recurseSearch(src[key], keys, output);
+        }
+      }
+    }
+  }
+  recurseSearch(xml, searchObj, override);
+}
+
+function pcgen_import(xml, override) {
+  var table = {};
+  var list = xml.nodehandler.nodehandler;
+  for (var key in list) {
+    var data = list[key]["@attributes"];
+    table[data.name] = list[key]["nodehandler"];
+  }
+  var importRule = {};
+  importRule["Combat"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data["@attributes"]) {
+        if (data["@attributes"].name.toLowerCase().match("current hp")) {
+          sync.rawVal(override.counters.hp, eval(data["@attributes"].name.match(diceNumber)[0]));
+          override.counters.hp.max = eval(data["@attributes"].name.match(diceNumber)[0]);
+        }
+        else if (data["@attributes"].name.toLowerCase().match(" Saving Throw")) {
+          var options = data.list.option;
+          var saving = sync.rawVal(override.counters.saving);
+          for (var i in options) {
+            for (var j in saving) {
+              var match = options[i]["#text"].toLowerCase().match(saving[j].name.toLowerCase());
+              if (match) {
+                var firstNumber = /[+-]\d+/;
+                var d = firstNumber.exec(options[i]["#text"]);
+                sync.rawVal(saving[j], eval(d[0]));
+              }
+            }
+          }
+          sync.rawVal(override.counters.saving, saving);
+        }
+        else if (data["@attributes"].name.toLowerCase() == "weapons") {
+          for (var j in data.nodehandler) {
+            var item = data.nodehandler[j];
+
+            var newItem = duplicate(game.templates.item);
+            sync.val(newItem.info.name, item["@attributes"].name);
+            var dmgreg = /Damage\s*\[(\d*d\d+\+\d*)/i
+            var weaponInf = item.nodehandler[0].nodehandler.text["#text"].match(dmgreg);
+
+            if (weaponInf) {
+              sync.rawVal(newItem.weapon.damage, weaponInf[1]);
+            }
+            override.inventory.push(newItem);
+          }
+        }
+      }
+    }
+  }
+  importRule["Description"] = function(src, override) {
+    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
+
+    for (var key in src) {
+      var data = src[key];
+      if (data.text["#text"]) {
+        override.info.notes.current = (override.info.notes.current || "") + "<p>" + data.text["#text"] + "</p>";
+      }
+    }
+  }
+  importRule["Details"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      for (var j in override.info) {
+        if (data["@attributes"].name.toLowerCase().match(override.info[j].name.toLowerCase())) {
+          if (j == "name") {
+            sync.rawVal(override.info[j], data.text["#text"]);
+          }
+          else {
+            sync.rawVal(override.info[j], (sync.rawVal(override.info[j]) || "") + " " + data.text["#text"]);
+          }
+        }
+        else if (data["@attributes"].name.toLowerCase() == "speed") {
+          var firstNumber = /[+-]*\d+/;
+          var match = firstNumber.exec(data.text["#text"]);
+          if (match) {
+            sync.rawVal(override.counters.speed, eval(match[0]));
+          }
+        }
+        else if (data["@attributes"].name.toLowerCase() == "abilities") {
+          for (var i in data.grid.row) {
+            var stt = data.grid.row[i];
+            for (var s in override.stats) {
+              if (s.toLowerCase() == stt.cell[0]["#text"].toLowerCase().trim()) {
+                sync.rawVal(override.stats[s], parseInt(stt.cell[1]["#text"]));
+                sync.modifier(override.stats[s], "Stat-Bonus", Math.floor(sync.rawVal(override.stats[s])/30*15) + -5);
+              }
+            }
+          }
+        }
+        else if (data["@attributes"].name.toLowerCase() == "skills") {
+          for (var i in data.grid.row) {
+            var stt = data.grid.row[i];
+            for (var j in override.skills) {
+              if (override.skills[j].name.toLowerCase().match(stt.cell[0]["#text"].toLowerCase().trim())) {
+                if (eval(stt.cell[2]["#text"])) {
+                  sync.rawVal(override.skills[j], 1);
+                  sync.modifier(override.skills[j], "rank", eval(stt.cell[2]["#text"]));
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  importRule["Equipment"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      var newItem = duplicate(game.templates.item);
+      sync.val(newItem.info.name, data["@attributes"].name);
+      sync.rawVal(newItem.info.notes, data.text["#text"]);
+      var weaponInf = data.text["#text"].split("\n");
+      var push = true;
+      for (var i in weaponInf) {
+        if (weaponInf[i].toLowerCase().match("damage")) {
+          // all weapons are taken care of in combat section
+          push = false;
+          break;
+        }
+      }
+      if (push) {
+        override.inventory.push(newItem);
+      }
+    }
+  }
+  importRule["Magic"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data.nodehandler) {
+        var spells = data.nodehandler.nodehandler;
+        for (var j in spells) {
+          var firstNumber = /\d+/;
+          var spellLevel = spells[j]["@attributes"].name.match(firstNumber);
+          var actualSpells = spells[j].text["#text"].split("\n");
+
+          actualSpells.splice(0, 1);
+          actualSpells.splice(actualSpells.length, 1);
+          for (var b=0; b<actualSpells.length; b=b+4) {
+            if (actualSpells[b+3] != null) {
+              var newItem = duplicate(game.templates.item);
+              sync.val(newItem.info.name, actualSpells[b+0]);
+              sync.modifier(newItem.spell.required, "level", spellLevel[0]);
+              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+1]);
+              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+2]);
+              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+3]);
+              override.spellbook.push(newItem);
+            }
+            else {
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  importRule["Misc."] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data["@attributes"].name.toLowerCase().match("languages")) {
+        var lang = data.text["#text"].split(",");
+        for (var k in lang) {
+          if (lang[k].trim()) {
+            override.proficient["Language "+lang[k].trim()] = true;
+          }
+        }
+      }
+      else if(data["@attributes"].name && data.text && data.text["#text"]) {
+        sync.rawVal(override.info.notes, (sync.rawVal(override.info.notes) || "") + data["@attributes"].name + " : " + data.text["#text"] + "\n");
+      }
+    }
+  }
+  importRule["Special Abilities"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data.text) {
+        var split = (data.text["#text"] || "").split("\n");
+        for (var i in split) {
+          if (split[i] && split[i].trim()) {
+            override.talents.push(sync.newValue(split[i]));
+          }
+        }
+      }
+    }
+  }
+  importRule["Weapon Summary"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      var newItem = duplicate(game.templates.item);
+      sync.val(newItem.info.name, data["@attributes"].name);
+      sync.rawVal(newItem.info.notes, data.text["#text"]);
+      var weaponInf = data.text["#text"].split("\n");
+      var push = true;
+      for (var i in weaponInf) {
+        if (weaponInf[i].toLowerCase().match("damage")) {
+          // all weapons are taken care of in combat section
+          push = false;
+          break;
+        }
+      }
+      if (push) {
+        override.inventory.push(newItem);
+      }
+    }
+  }
+  console.log(table);
+  for (var key in table) {
+    if (importRule[key]) {
+      importRule[key](table[key], override);
+    }
+  }
+}
+
+sync.render("ui_renderHelp", function(obj, app, scope){
+  var div = $("<div>");
+  div.addClass("fit-xy flexcolumn");
+  div.load("https://files.gmforge.io/file/help/main.html", function( response, status, xhr ) {
+    if (status == "error") {
+      var reload = $("<button>").appendTo(div);
+      reload.append("Unable to load docs");
+    }
+  });
+
+  return div;
+});
+
 var _actions = {
   "Actions" : {
     click : function(ev, ui, obj, app, scope) {
@@ -31354,6 +31560,7 @@ sync.render("ui_editAction", function(obj, app, scope){
     textarea.val(data.eventData.data);
     textarea.change(function(){
       obj.data.eventData.data = $(this).val();
+      obj.update();
     });
   }
   else if (scope.mode == "Choices") {
@@ -31422,7 +31629,9 @@ sync.render("ui_editAction", function(obj, app, scope){
             "Input Name" : {type : "list", list : "edit-action-context-"+app.attr("id")}
           },
           click : function(ev, inputs){
-            var name = inputs["Input Name"].val()
+            var name = inputs["Input Name"].val();
+            console.log(inputs);
+            inputs["Input Name"].attr("list");
             if (name) {
               name = replaceAll(name, " ", "_");
               name = replaceAll(name, "@", "");
@@ -31434,7 +31643,8 @@ sync.render("ui_editAction", function(obj, app, scope){
               name = replaceAll(name, "#", "_");
               name = replaceAll(name, "$", "_");
               obj.data.choices[index] = obj.data.choices[index] || {};
-              obj.data.choices[index][name] = true;
+              console.log(name);
+              obj.data.choices[index][name] = "0";
               obj.update();
             }
           }
@@ -33163,19 +33373,18 @@ sync.render("ui_renderAction", function(obj, app, scope){
   obj.data.options = obj.data.options || {};
   var actionKey = obj.data.action;
   var actionData = obj.data.actionData;
-
+  var itemData;
+  var spellData;
   function buildContext(){
     var ctx = sync.defaultContext();
     var ent = getEnt(obj.data.context.c);
     if (ent) {
-      var itemData;
       if (obj.data.context.i instanceof Object) {
         itemData = obj.data.context.i;
       }
       else if (obj.data.context.i) {
         itemData = ent.data.inventory[obj.data.context.i];
       }
-      var spellData;
       if (obj.data.context.spl instanceof Object) {
         spellData = obj.data.context.spl;
       }
@@ -33206,7 +33415,16 @@ sync.render("ui_renderAction", function(obj, app, scope){
 
   var saveNewRoll = $("<div>").appendTo(saveNewRollWrap);
   saveNewRoll.addClass("lrmargin background padding outline bold smooth hover2 alttext flexcolumn flexmiddle");
-  saveNewRoll.text(actionKey);
+  if (itemData) {
+    saveNewRoll.text(sync.rawVal(itemData.info.name) + ":" + actionKey);
+  }
+  else if (spellData) {
+    saveNewRoll.text(sync.rawVal(spellData.info.name) + ":" + actionKey);
+  }
+  else {
+    saveNewRoll.text(actionKey);
+  }
+
 
   if (actionData.choices) {
     saveNewRollWrap.removeClass("spadding");
@@ -33607,7 +33825,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
-          if (JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
+          if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey] || JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
             obj.data._a = obj.data._a || {};
             obj.data._a[actionKey] = duplicate(orgObj.data);
           }
@@ -33661,7 +33879,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
-          if (JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
+          if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey] || JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
             obj.data._a = obj.data._a || {};
             obj.data._a[actionKey] = duplicate(orgObj.data);
           }
@@ -33675,7 +33893,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   }
 
   for (var actionKey in obj.data._a) {
-    if (!game.templates.actions[obj.data._t][actionKey]) {
+    if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey]) {
       var saveNewRollWrap = $("<div>").appendTo(div);
       saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
 
@@ -33718,7 +33936,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
-          if (JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
+          if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey] || JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
             obj.data._a = obj.data._a || {};
             obj.data._a[actionKey] = duplicate(orgObj.data);
           }
@@ -33737,7 +33955,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   var addAction = genIcon("plus", "New Action").appendTo(addActionWrap);
   addAction.attr("title", "Add a New Action");
   addAction.click(function(){
-    if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
+    if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || !obj.data._s) {
       ui_prompt({
         target : $(this),
         inputs : {
@@ -33796,7 +34014,7 @@ sync.render("ui_hotActions", function(char, app, scope){
   }
 
   for (var actionKey in char.data._a) {
-    if (!game.templates.actions.c[actionKey] && char.data._a[actionKey].hot) {
+    if (char.data._a[actionKey].hot) {
       var actionData = duplicate(char.data._a[actionKey]);
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
@@ -33839,7 +34057,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.inventory[itemKey]._a) {
-      if (!game.templates.actions.i[actionKey] && char.data.inventory[itemKey]._a[actionKey].hot) {
+      if (char.data.inventory[itemKey]._a[actionKey].hot) {
         var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
@@ -33885,7 +34103,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.spellbook[itemKey]._a) {
-      if (!game.templates.actions.i[actionKey] && char.data.spellbook[itemKey]._a[actionKey].hot) {
+      if (char.data.spellbook[itemKey]._a[actionKey].hot) {
         var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
@@ -39056,7 +39274,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       obj.update();
     });
 
-    if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
+    if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
       var confirm = $("<button>").appendTo(buttonList);
       confirm.addClass("background alttext flexmiddle");
       confirm.text("Confirm Calculations");
@@ -48226,7 +48444,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
                     var newP = {
                       x : xPos, y : yPos,
                       w : Math.min(this.naturalWidth, (data.pW || data.gridW || 64)), h : Math.min(this.naturalHeight, (data.pH || data.gridH || 64)),
-                      i : img.src
+                      i : value
                     };
                     boardApi.pix.addObject(newP, scope.layer, "p", obj);
                     layout.coverlay("icons-picker");
@@ -64053,6672 +64271,6 @@ sync.render("ui_triggerBuilder", function(obj, app, scope){
       obj.update();
     });
   }
-
-  return div;
-});
-
-sync.render("ui_choices", function(obj, app, scope){
-  var div = $("<div>");
-  if (obj && obj.data) {
-    var data = obj.data;
-    div.addClass("fluid");
-
-    for (var index in data.choices) {
-      var button = $("<button>").appendTo(div);
-      button.css("width", 100/data.choices.length+"%");
-      button.attr("ref", index);
-      button.text(data.choices[index]);
-      button.click(function() {
-        runCommand("performChoice", {id : obj.id(), data : {choice : $(this).attr("ref")}});
-
-        layout.coverlay(app.parent().parent(), 500);
-      });
-    }
-  }
-  return div
-});
-
-sync.render("ui_editor", function(obj, data, scope) {
-  var div = $("<div>");
-
-  var navBar = genNavBar();
-  navBar.appendTo(div);
-  navBar.generateTab("Character Sheet", "", function(parent) {
-    var row = $("<div>").appendTo(parent);
-    row.addClass("flexrow");
-
-    var editor = $("<div>").appendTo(row);
-    editor.css("width", "50%");
-
-    var textArea = $("<textarea>").appendTo(editor);
-    textArea.css("width", "100%");
-    textArea.css("height", "100%");
-    textArea.val(JSON.stringify(obj.data.sheet));
-
-    var preview = $("<div>").appendTo(row);
-    preview.css("width", "50%");
-
-    var dummy = sync.dummyObj();
-    dummy.data = duplicate(game.templates.character);
-    for (var i in dummy.data.stats) {
-
-      dummy.data.stats[i].current = 16;
-    }
-
-    sync.render("ui_fakeSheet")(dummy, preview, {viewOnly : true, sheet : obj.data.sheet}).appendTo(preview);
-  });
-  navBar.selectTab("Character Sheet");
-
-  navBar.generateTab("Character Data", "", function(parent) {
-    var row = $("<div>").appendTo(parent);
-    row.addClass("flexrow");
-
-    var editor = $("<div>").appendTo(row);
-    editor.css("width", "50%");
-
-    var preview = $("<div>").appendTo(row);
-    preview.css("width", "50%");
-  });
-
-  navBar.generateTab("Character Summary", "", function(parent) {
-    var row = $("<div>").appendTo(parent);
-    row.addClass("flexrow");
-
-    var editor = $("<div>").appendTo(row);
-    editor.css("width", "50%");
-
-    var preview = $("<div>").appendTo(row);
-    preview.css("width", "50%");
-  });
-
-  return div;
-});
-
-sync.render("ui_genEditor", function(obj, data, scope) {
-  var div = $("<div>");
-  var data = obj.data;
-  obj.data.template = obj.data.template || {name : "[No Name]", choices : []};
-  obj.data.options = obj.data.options || {};
-
-  function newChoiceUI(state, depth, section) {
-    var body = $("<div>"); // this is where the names go
-    body.css("font-size", Math.max(22 - depth*2, 11));
-
-    var containerT = $("<div>").appendTo(body);
-    containerT.addClass("flexrow fit-x");
-
-    var margin = $("<div>").appendTo(containerT);
-    margin.addClass("secondary");
-    margin.css("width", 15*depth+"px");
-
-    var nonmargin = $("<div>").appendTo(containerT);
-    nonmargin.addClass("flexbetween fit-x flex");
-    nonmargin.css("border", "1px solid black")
-
-    var container = $("<div>").appendTo(nonmargin);
-    container.addClass("flexmiddle");
-    container.css("width", "auto");
-    if (!scope.viewOnly) {
-      if (section) {
-        var newChoice = genIcon("plus", "New Sub-Category").appendTo(container);
-        newChoice.addClass("outline focus flex");
-        newChoice.css("padding", "4px");
-        newChoice.click(function(){
-          var arr = state.split(".");
-          var lookup = "";
-          for (var i=0; i<arr.length; i++) {
-            lookup += "choices." + arr[i] + ".";
-          }
-          var ref = sync.traverse(data.template, lookup.substring(0, lookup.length-1));
-          function cb(entry) {
-            ref.choices.push(entry);
-            obj.update();
-          }
-          newEntry(ref, null, true, cb);
-        });
-      }
-      else {
-        var namePlate = genIcon("plus", "New Choice").appendTo(container);
-        namePlate.click(function(){
-          var arr = state.split(".");
-          var lookup = "";
-          for (var i in arr) {
-            lookup += "choices."+arr[i] + ".";
-          }
-          var ref = sync.traverse(data.template, lookup.substring(0, lookup.length-1));
-          function cb(entry) {
-            ref.choices.push(entry);
-            obj.update();
-          }
-          newEntry(ref, null, null, cb);
-        });
-      }
-    }
-
-    return body;
-  }
-
-  function buildUI(choice, state, depth, parent) {
-    var body = $("<div>"); // this is where the names go
-    body.css("font-size", Math.max(22 - depth*2, 11));
-
-    var containerT = $("<div>").appendTo(body);
-    containerT.addClass("flexrow fit-x");
-
-    var margin = $("<div>").appendTo(containerT);
-    margin.addClass("secondary");
-    margin.css("width", 15*depth+"px");
-
-    var nonmargin = $("<div>").appendTo(containerT);
-    nonmargin.addClass("flexbetween fit-x flex");
-
-    var container = $("<div>").appendTo(nonmargin);
-    container.addClass("flexmiddle");
-    container.css("width", "auto");
-
-    var namePlate = $("<b>").appendTo(container);
-    namePlate.text(choice.name);
-
-    if (choice.tip) {
-      var icon = genIcon("info-sign").appendTo(namePlate);
-      icon.attr("tip", choice.tip);
-      icon.css("padding-left", "10px");
-      icon.click(function(ev) {
-        if ($("#template-hint").length > 0) {
-          layout.coverlay($("#template-hint"));
-        }
-        else {
-          var popFrame = ui_popOut({
-            target: $(this),
-            id: "template-hint",
-            hideclose : true,
-            align : "top",
-            style: {"z-index": 2000}
-          }, $("<p style='text-align:center; margin: 0;'>"+$(this).attr("tip")+"</p>"));
-        }
-        ev.stopPropagation();
-        return false;
-      });
-    }
-
-    if (choice.data && depth != 0) {
-      if (!scope.viewOnly) {
-        var edit = genIcon("pencil").appendTo(container);
-        edit.click(function(){
-          var arr = state.split(".");
-          var lookup = "";
-          var secondLookup = "";
-          for (var i=0; i<arr.length; i++) {
-            lookup += "choices." + arr[i] + ".";
-            if (i < arr.length) {
-              secondLookup += "choices." + arr[i] + ".";
-            }
-          }
-          var ref = sync.traverse(data.template, lookup.substring(0, lookup.length-1));
-          var ref2 = sync.traverse(data.template, secondLookup.substring(0, secondLookup.length-1));
-          var index = arr[arr.length-1];
-          function cb(entry, del) {
-            if (del) {
-              ref2.choices.splice(index);
-            }
-            else {
-              ref.name = entry.name;
-              ref.tip = entry.tip;
-              ref.data = entry.data;
-              ref.number = entry.number;
-              ref.exclusive = entry.exclusive;
-            }
-            obj.update();
-          }
-          newEntry(ref, true, null, cb);
-        });
-      }
-
-      containerT.attr("title", "Right Click for details");
-      containerT.contextmenu(function(ev){
-        var content = $("<div>");
-        content.addClass("flexcolumn subtitle lpadding");
-        content.css("text-align", "left");
-        content.append("<i>This choice gives you<i>");
-        var reg = /(traits|counters|talents|feats|inventory|gear|equipment|skills|stats|info|spells|spellbook|spellslots|psychic|aptitudes|apts|proficiency|other|description|notes|specials|proficiencies|proficient)\s*[-|:|=|;]\s*/ig
-        var cleanup = replaceAll(replaceAll(choice.data.trim(), "\t", ""), "\n", "<br>");
-        var arr = cleanup.match(reg);
-        for (var i=0; i<arr.length; i++) {
-          cleanup = cleanup.replace(arr[i], "<b style='font-size : 1.5em; font-family : bolsterbold'>"+arr[i].substring(0,arr[i].length-2)+"</b>");
-        }
-        content.append("<p>"+cleanup+"</p>");
-        content.css("max-height", "25vh");
-        content.css("overflow-y", "auto");
-
-        ui_popOut({
-          target : $(this),
-          align : "right",
-          id : "option-preview"
-        }, content);
-
-        ev.stopPropagation();
-        return false;
-      });
-      nonmargin.addClass("outlinebottom");
-      namePlate.css("font-weight", "normal");
-      container.css("padding-left", "4px");
-
-      nonmargin.addClass("hover2");
-      nonmargin.css("cursor", "pointer");
-
-      var check = genInput({
-        type : "checkbox",
-        state : state,
-        data : choice.data,
-        style : {"margin" : "0", "width" : "12px", "height" : "12px"},
-      });
-      namePlate.before(check);
-      if (parent.cData.number && !parent.cData.exclusive) {
-        for (var i=0; i<parent.cData.number-1; i++) {
-          var check = genInput({
-            type : "checkbox",
-            state : state,
-            data : choice.data,
-            style : {"margin" : "0", "width" : "12px", "height" : "12px"},
-          });
-          namePlate.before(check);
-        }
-      }
-    }
-    else {
-      if (depth < 2) {
-        nonmargin.addClass("highlight2");
-      }
-      else {
-        nonmargin.addClass("highlight");
-      }
-      nonmargin.css("text-shadow", "0 0 0.25em black")
-      nonmargin.css("border", "1px solid black")
-      nonmargin.css("color", "white");
-      nonmargin.css("padding", "4px");
-
-      if (choice.exclusive && choice.number) {
-        namePlate.text(namePlate.text() + " ("+choice.number+")")
-      }
-      if (!choice.exclusive && choice.number) {
-        namePlate.text(namePlate.text() + " ["+choice.number+"]")
-      }
-      if (!scope.viewOnly) {
-        var edit = genIcon("pencil").appendTo(container);
-        edit.click(function(){
-          var arr = state.split(".");
-          var lookup = "";
-          var secondLookup = "";
-          for (var i=0; i<arr.length; i++) {
-            lookup += "choices." + arr[i] + ".";
-            if (i < arr.length-1) {
-              secondLookup += "choices." + arr[i] + ".";
-            }
-          }
-          var ref = sync.traverse(data.template, lookup.substring(0, lookup.length-1));
-          var ref2 = sync.traverse(data.template, secondLookup.substring(0, secondLookup.length-1));
-          var index = arr[arr.length-1];
-          function cb(entry, del) {
-            if (del) {
-              ref2.choices.splice(index);
-            }
-            else {
-              ref.name = entry.name;
-              ref.tip = entry.tip;
-              ref.number = entry.number;
-              ref.exclusive = entry.exclusive;
-            }
-            obj.update();
-          }
-          newEntry(ref, {target : ref2, index : index}, true, cb);
-        });
-      }
-    }
-
-    if (!choice.data) {
-      newChoiceUI(state, depth+1).appendTo(body);
-    }
-    for (var index in choice.choices) {
-      var nextChoice = choice.choices[index];
-      if ((nextChoice.choices || nextChoice.data)) {
-        var show = true;
-        var number = 0;
-        var ui = buildUI(nextChoice, state+"."+index, depth+1, {cData : choice, left : choice.number-number}).appendTo(body);
-        if (nextChoice.data) {
-          newChoiceUI(state+"."+index, depth+2, true).appendTo(body);
-        }
-      }
-    }
-
-    return body;
-  }
-
-  if (!scope.viewOnly) {
-    var editorOptions = $("<div>").appendTo(div);
-    editorOptions.addClass("flexaround");
-
-    var icon = genIcon("plus", "Add Section").appendTo(editorOptions);
-    icon.click(function(){
-      function cb(entry, del) {
-        obj.data.template.choices.push(entry);
-        obj.update();
-      }
-
-      newEntry(obj.data.template, false, true, cb);
-    });
-
-    var icon = genIcon("pencil", "Rename").appendTo(editorOptions);
-    icon.click(function(){
-      ui_prompt({
-        target : $(this),
-        id : "rename-template",
-        inputs : {
-          "Name" : ""
-        },
-        click : function(ui, inputs) {
-          obj.data.template.name = inputs["Name"].val();
-          obj.update();
-        }
-      });
-    });
-
-    var icon = genIcon("trash", "Clear").appendTo(editorOptions);
-    icon.click(function(){
-      obj.data.template = {name : "[No Name]", choices : []};
-    });
-  }
-
-  function newEntry(target, edit, section, callback){
-    var options = $("<div>");
-    options.addClass("flexcolumn");
-
-    options.append("<b>Name</b>");
-    var name = genInput({
-      parent : options,
-    });
-    options.append("<b>Tip</b>");
-    var tip = genInput({
-      parent : options,
-    });
-    var text;
-    var number;
-    var stacking;
-
-    if (edit) {
-      name.val(target.name);
-      tip.val(target.tip);
-    }
-
-    if (!section) {
-      options.append("<b>Character Data</b>");
-
-      text = $("<textarea>").appendTo(options);
-      text.attr("placeholder", "Use the same rules as the importer");
-      text.css("width", "30vw");
-      text.css("height", "15vh");
-      text.css("resize", "both");
-      if (edit) {
-        text.val(target.data);
-      }
-    }
-    else {
-      options.append("<b>Sub-Choices</b>");
-      var choiceWrap = $("<div>").appendTo(options);
-      choiceWrap.addClass("flexrow subtitle");
-
-      var choiceWrap = $("<div>").appendTo(options);
-      choiceWrap.addClass("flexrow flexaround lrpadding subtitle");
-
-      number = genInput({
-        parent : choiceWrap,
-        type : "number",
-        placeholder : "# of Selections",
-        value : 1,
-        min : 1,
-        style : {"width" : "75px"}
-      });
-
-      var checkWrap = $("<div>").appendTo(choiceWrap);
-      checkWrap.addClass("flexmiddle");
-      stacking = genInput({
-        parent : checkWrap,
-        type : "checkbox",
-        style : {"margin-top" : "0px"}
-      });
-      if (edit) {
-        number.val(target.number || 1);
-        stacking.prop("checked", !target.exclusive);
-      }
-      checkWrap.append("<b>Choice Stacking</b>");
-    }
-    var buttonOptions = $("<div>").appendTo(options);
-    buttonOptions.addClass("fit-x flexrow");
-
-    var button = $("<button>").appendTo(buttonOptions);
-    button.addClass("flex");
-    button.append("Confirm");
-    button.click(function(){
-      var entry = {
-        name : name.val() || "[No Name]",
-        tip : tip.val(),
-        choices : [],
-        exclusive : true,
-      };
-      if (section) {
-        if (number.val() > 1) {
-          entry.number = number.val();
-          if (stacking.prop("checked") == true) {
-            entry.exclusive = false;
-          }
-        }
-      }
-      else {
-        entry.data = text.val() || "INFO-\n";
-      }
-      callback(entry);
-      layout.coverlay("new-section");
-    });
-    if (edit) {
-      var button = $("<button>").appendTo(buttonOptions);
-      button.addClass("focus");
-      button.append("Delete");
-      button.click(function(){
-        callback(null, true);
-        layout.coverlay("new-section");
-      });
-    }
-    var pop = ui_popOut({
-      target : icon,
-      id : "new-section",
-    }, options);
-  }
-
-  var title = $("<b>").appendTo(div);
-  title.addClass("flexmiddle");
-  title.append(data.template.name);
-  title.css("font-size", "1.5em");
-
-  var choiceColumn = $("<div>").appendTo(div);
-  choiceColumn.addClass("flexrow flexaround flex");
-  choiceColumn.css("overflow", "auto");
-  /*choiceColumn.scroll(function() {
-    app.attr("_lastScrollTop_opt", $(this).scrollTop());
-  });*/
-  for (var i in data.template.choices) {
-    var category = data.template.choices[i]; // each one gets a column
-    var choiceList = $("<div>").css("display", "inline-block").appendTo(choiceColumn);
-    buildUI(category, i, 0).addClass("outline").appendTo(choiceList);
-  }
-
-  return div;
-});
-
-
-function openEditor(){
-  var frame = layout.page({title: "Build", blur: 0.5, id : "action-join-combat", width : "90%"});
-  game.locals["editor"] = sync.obj();
-  game.locals["editor"].data = {sheet : duplicate(game.templates.display.sheet), item : duplicate(game.templates.display.item)};
-
-  frame.append(sync.render("ui_editor")(game.locals["editor"], frame, {}));
-}
-
-
-function openGenEditor(){
-  var frame = layout.page({title: "Build", blur: 0.5, id : "action-join-combat", width : "90%"});
-  game.locals["genEditor"] = sync.obj();
-  game.locals["genEditor"].data = {template : {name : "Test", choices : []}, options : {free : true, all : true}};
-
-  var newApp = sync.newApp("ui_genEditor");
-  newApp.appendTo(frame);
-  game.locals["genEditor"].addApp(newApp);
-}
-
-sync.render("ui_fakeSummary", function(obj, app, scope) {
-  if (!obj) {
-    return $("<div>");
-  }
-  var data = obj.data;
-  var info = data.info;
-  scope = scope || {viewOnly: (app.attr("viewOnly") == "true"), displayMode : parseInt(app.attr("displayMode") || 0)};
-
-  var sheet = scope.sheet || game.templates.display.sheet;
-  var vehicle = scope.vehicle || game.templates.display.vehicle;
-
-  var div = $("<div>");
-  div.addClass("flexcolumn outline");
-
-  var namePlate = $("<div>").appendTo(div);
-  namePlate.addClass("flexbetween");
-
-  var img = $("<img>").appendTo(namePlate);
-  img.attr("src" , (sync.val(info.img) || "/content/icons/blankchar.png"));
-  img.css("width", scope.width || "auto");
-  img.css("height", scope.height || "30px");
-
-  var name = $("<b>").appendTo(namePlate);
-  name.addClass("flexmiddle");
-  name.text(sync.val(info.name));
-  if (scope.hide) {
-    img.attr("src" , "/content/icons/blankchar.png");
-    name.text("(Hidden)");
-    if (hasSecurity(getCookie("UserID"), "Visible", obj.data)) {
-      name.text(sync.val(info.name)+" (Hidden)");
-    }
-    else {
-      name.text("(Hidden)");
-    }
-  }
-  if (scope.minimized) {return div;}
-
-  if (!scope.viewOnly) {
-    var optionsBack = $("<div>").appendTo(div);
-    optionsBack.addClass("alttext background outline");
-
-    var optionsBar = $("<div>").appendTo(optionsBack);
-    optionsBar.addClass("flexwrap");
-
-    var security = genIcon("lock");
-    security.attr("title", "Edit who has access to this character");
-    security.appendTo(optionsBar);
-    security.click(function(){
-      var content = sync.newApp("ui_rights");
-      obj.addApp(content);
-
-      var frame = ui_popOut({
-        target : $(this),
-        align : "top",
-        id : "ui-rights-dialog",
-      }, content);
-    });
-
-    if (hasSecurity(getCookie("UserID"), "Rights", data)) {
-      var icon = genIcon("heart");
-      icon.css("margin-left", "8px");
-      icon.attr("title", "Change wounds");
-      if (sheet.altStat) {
-        icon.attr("title", "Change wounds, ctrl for "+obj.data.counters[sheet.altStat].name);
-      }
-      icon.appendTo(optionsBar);
-      icon.click(function(e) {
-        var target = sync.traverse(obj.data, sheet.health || "counters.wounds");
-
-        if (e.ctrlKey && sheet.altStat) {
-         target = sync.traverse(obj.data, sheet.altStat);
-        }
-        var text = {};
-        text[(target.name + " Amount")] = {type : "number", value : 1};
-        ui_prompt({
-          target : $(this),
-          inputs : text,
-          click : function(ev, inputs) {
-            sync.val(target, sync.rawVal(target)+parseInt(inputs[(target.name + " Amount")].val() || 0));
-            obj.sync("updateAsset");
-          }
-        });
-      });
-
-      var icon = genIcon("cog");
-      icon.css("margin-left", "8px");
-      icon.attr("title", "Actions");
-      icon.appendTo(optionsBar);
-      icon.click(function() {
-        var iconRef = $(this);
-        var commands = [];
-        for (var key in _actions) {
-          if (!_actions[key].condition || _actions[key].condition(obj)) {
-            commands.push(
-              {name : _actions[key].name || key,
-                attr : {key : key},
-                click : function(ev, ui){
-                  if (_actions[ui.attr("key")].click) {
-                    _actions[ui.attr("key")].click(ev, iconRef, obj, app, scope);
-                    //sendAlert({text : "Action Executed"});
-                  }
-                }
-              }
-            );
-          }
-        }
-        ui_dropMenu($(this), commands, {id : "c-actions"});
-      });
-
-      var icon = genIcon("heart-empty");
-      icon.css("margin-left", "8px");
-      icon.attr("title", "Change wounds");
-      if (sheet.altStat) {
-        icon.attr("title", "Change wounds, ctrl for "+obj.data.counters[sheet.altStat].name);
-      }
-      icon.appendTo(optionsBar);
-      icon.click(function(e) {
-        var target = sync.traverse(obj.data, sheet.health || "counters.wounds");
-
-        if (e.ctrlKey && sheet.altStat) {
-         target = sync.traverse(obj.data, sheet.altStat);
-        }
-        var text = {};
-        text[(target.name + " Amount")] = {type : "number", value : -1};
-        ui_prompt({
-          target : $(this),
-          inputs : text,
-          click : function(ev, inputs) {
-            sync.val(target, sync.rawVal(target)+parseInt(inputs[(target.name + " Amount")].val() || 0));
-            obj.sync("updateAsset");
-          }
-        });
-      });
-
-      for (var i in sheet.summary) {
-        var tabData = sheet.summary[i];
-        var tab = genIcon(tabData.icon).appendTo(optionsBar);
-        tab.attr("title", tabData.name);
-        tab.css("margin-left", "8px");
-        tab.attr("index", i);
-        tab.click(function(){
-          if ($(this).attr("index") < 0) {
-            app.attr("displayMode", sheet.summary.length-1);
-          }
-          else if ($(this).attr("index") >= sheet.summary.length) {
-            app.attr("displayMode", 0);
-          }
-          else {
-            app.attr("displayMode", $(this).attr("index"));
-          }
-          obj.update();
-        });
-      }
-
-      var expand = genIcon("new-window").appendTo(optionsBar);
-      expand.css("margin-left", "8px");
-      expand.click(function(){
-        app.attr("from", app.attr("ui-name"));
-        app.attr("ui-name", "ui_characterSheet");
-        app.css("max-width", assetTypes["c"].width);
-        app.css("max-height", assetTypes["c"].height);
-        obj.update();
-      });
-    }
-  }
-
-  var infoPanel = $("<div>").appendTo(div);
-  infoPanel.addClass("flexcolumn");
-  if (sheet.summary[scope.displayMode]) {
-    var newScope = duplicate(scope);
-    newScope.display = sheet.summary[scope.displayMode].display;
-    newScope.markup = "summary";
-    infoPanel.append(sync.render("ui_processUI")(obj, app, newScope));
-  }
-
-  return div;
-});
-
-sync.render("ui_fakeVehicle", function(obj, app, scope) {
-  scope = scope || {
-    viewOnly: (app.attr("viewOnly") == "true"),
-    displayMode : parseInt(app.attr("displayMode") || 0),
-    editable: (app.attr("editable") == "true")
-  };
-  var data = obj.data;
-
-  var div = $("<div>");
-  div.addClass("flexcolumn outline");
-
-  var sheet = scope.sheet || game.templates.display.vehicle;
-  for (var i in sheet.style) {
-    div.css(i, sheet.style[i]);
-  }
-
-  if (!scope.viewOnly) {
-    div.on("dragover", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
-    		var olay = layout.overlay({
-          target : app,
-          id : app.attr("id")+"-drag-overlay",
-          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none"}
-        });
-        olay.addClass("flexcolumn flexmiddle alttext");
-        olay.css("font-size", "2em");
-        olay.append("<b>Drop to Create</b>");
-      }
-  	});
-    div.on('drop', function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
-      if (dt.getData("Text").match("{")) {
-        var ent = JSON.parse(dt.getData("Text"));
-        if (ent._t == "i") {
-          if (!dt.getData("spell")) {
-            obj.data.inventory.push(ent);
-            obj.sync("updateAsset");
-          }
-        }
-      }
-
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-    });
-
-  	div.on("dragleave", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-  	});
-  }
-
-  var optionsBack = $("<div>").appendTo(div);
-  optionsBack.addClass("alttext background outline");
-
-  var optionsBar = $("<div>").appendTo(optionsBack);
-  optionsBar.addClass("flexwrap");
-  if (!scope.viewOnly) {
-    var security = genIcon("lock");
-    security.attr("title", "Edit who has access to this character");
-    security.appendTo(optionsBar);
-    security.click(function(){
-      var content = sync.newApp("ui_rights");
-      obj.addApp(content);
-
-      var frame = ui_popOut({
-        target : $(this),
-        align : "top",
-        id : "ui-rights-dialog",
-      }, content);
-    });
-
-
-    if (hasSecurity(getCookie("UserID"), "Rights", data)) {
-      var icon = genIcon("heart");
-      icon.css("margin-left", "8px");
-      icon.attr("title", "Change wounds");
-      if (sheet.altStat) {
-        icon.attr("title", "Change wounds, ctrl for "+obj.data.counters[sheet.altStat].name);
-      }
-      icon.appendTo(optionsBar);
-      icon.click(function(e) {
-        var target = sync.traverse(obj.data, sheet.health || "counters.wounds");
-
-        if (e.ctrlKey && sheet.altStat) {
-         target = sync.traverse(obj.data, sheet.altStat);
-        }
-        var text = {};
-        text[(target.name + " Amount")] = {type : "number", value : 1};
-        ui_prompt({
-          target : $(this),
-          inputs : text,
-          click : function(ev, inputs) {
-            sync.val(target, sync.rawVal(target)+parseInt(inputs[(target.name + " Amount")].val() || 0));
-            obj.sync("updateAsset");
-          }
-        });
-      });
-
-      var icon = genIcon("heart-empty");
-      icon.css("margin-left", "8px");
-      icon.attr("title", "Change wounds");
-      if (sheet.altStat) {
-        icon.attr("title", "Change wounds, ctrl for "+obj.data.counters[sheet.altStat].name);
-      }
-      icon.appendTo(optionsBar);
-      icon.click(function(e) {
-        var target = sync.traverse(obj.data, sheet.health || "counters.wounds");
-
-        if (e.ctrlKey && sheet.altStat) {
-         target = sync.traverse(obj.data, sheet.altStat);
-        }
-        var text = {};
-        text[(target.name + " Amount")] = {type : "number", value : -1};
-        ui_prompt({
-          target : $(this),
-          inputs : text,
-          click : function(ev, inputs) {
-            sync.val(target, sync.rawVal(target)+parseInt(inputs[(target.name + " Amount")].val() || 0));
-            obj.sync("updateAsset");
-          }
-        });
-      });
-    }
-
-    for (var i in sheet.summary) {
-      var tabData = sheet.summary[i];
-      var tab = genIcon(tabData.icon, tabData.name + "").appendTo(optionsBar);
-      tab.attr("title", tabData.name);
-      tab.css("margin-left", "8px");
-      tab.attr("index", i);
-      tab.click(function(){
-        if ($(this).attr("index") < 0) {
-          app.attr("displayMode", sheet.summary.length-1);
-        }
-        else if ($(this).attr("index") >= sheet.summary.length) {
-          app.attr("displayMode", 0);
-        }
-        else {
-          app.attr("displayMode", $(this).attr("index"));
-        }
-        obj.update();
-      });
-    }
-  }
-
-  var infoPanel = $("<div>").appendTo(div);
-  infoPanel.addClass("flexcolumn");
-
-  var newScope = duplicate(scope);
-  newScope.display = sheet.summary[scope.displayMode].display;
-  newScope.markup = "content";
-  infoPanel.append(sync.render("ui_processUI")(obj, app, newScope));
-
-  return div;
-});
-
-sync.render("ui_fakeVehicle_wrap", function(obj, app, scope) {
-  var fakeSheet = sync.render("ui_vehicle")(obj.data.previewVeh, app, {
-    sheet : obj.data.templates.display.vehicle,
-    displayMode : app.attr("displayMode"),
-    markup : true,
-  });
-
-  return fakeSheet;
-});
-
-sync.render("ui_fakeSummary_wrap", function(obj, app, scope) {
-  var fakeSheet = sync.render("ui_characterSummary")(obj.data.previewChar, app, {
-    sheet : obj.data.templates.display.sheet,
-    displayMode : parseInt(app.attr("displayMode") || 0),
-    markup : true,
-  });
-
-  return fakeSheet;
-});
-
-sync.render("ui_fakeSheet_wrap", function(obj, app, scope) {
-  console.log("Here");
-  var fakeSheet = sync.render("ui_characterSheet")(obj.data.previewChar, app, {
-    sheet : obj.data.templates.display.sheet,
-    markup : true,
-  });
-
-  return fakeSheet;
-});
-
-sync.render("ui_fakeItem_wrap", function(obj, app, scope) {
-  var fakeSheet = sync.render("ui_renderItem")(obj.data.previewItem, app, {
-    templates : obj.data.templates,
-    markup : true,
-  }).addClass("flex");
-
-  return fakeSheet;
-});
-
-sync.render("ui_fakeSheet", function(obj, app, scope) {
-  var div = $("<div>");
-
-  var sheet = scope.sheet || game.templates.display.sheet;
-  var vehicle = scope.vehicle || game.templates.display.vehicle;
-  for (var i in sheet.style) {
-    div.css(i, sheet.style[i]);
-  }
-
-  var charWrapper = $("<div>").appendTo(div);
-  charWrapper.addClass("flexcolumn flex");
-  charWrapper.css("overflow-y", "auto");
-  charWrapper.attr("_lastScrollTop", app.attr("_lastScrollTop"));
-  charWrapper.scroll(function(){
-    app.attr("_lastScrollTop", charWrapper.scrollTop());
-    app.attr("_lastScrollLeft", charWrapper.scrollLeft());
-  });
-  var charContents = $("<div>").appendTo(charWrapper);
-
-  var list = $("<div>").appendTo(charContents);
-  list.addClass("fit-x flexaround flexwrap");
-
-  var newScope = duplicate(scope);
-  newScope.display = sheet.content;
-  newScope.markup = "content";
-  charContents.append(sync.render("ui_processUI")(obj, app, newScope));
-
-  var tabContent = genNavBar("flexmiddle background alttext");
-
-  function tabWrap(importData, index) {
-    tabContent.generateTab(importData.name, importData.icon, function(parent) {
-      var newScope = duplicate(scope);
-      newScope.display = importData.display;
-      newScope.markup = "tabs";
-      parent.append(sync.render("ui_processUI")(obj, app, newScope));
-
-      if (app) {
-        app.attr("char_tab", importData.name);
-      }
-    });
-  }
-
-  for (var index in sheet.tabs) {
-    tabWrap(sheet.tabs[index], index);
-  }
-
-  if (app) {
-    if (!app.attr("char_tab")) {
-      app.attr("char_tab", sheet.tabs[0].name);
-    }
-    tabContent.selectTab(app.attr("char_tab"));
-  }
-  else {
-    tabContent.selectTab(sheet.tabs[0].name);
-  }
-
-  tabContent.appendTo(charContents);
-
-  return div;
-});
-
-sync.render("ui_JSON", function(obj, app, scope) {
-  scope = scope || {
-    viewOnly: (app.attr("viewOnly") == "true"),
-    lookup : app.attr("lookup"),
-    textEdit : app.attr("textEdit") == "true",
-    hideConfirm : app.attr("hideConfirm") == "true",
-    closeTarget : app.attr("closeTarget"),
-    width : app.attr("width"),
-    height : app.attr("height")
-  };
-
-  var div = $("<div>");
-  div.addClass("flexcolumn flex");
-
-  var data = obj.data;
-  var value = obj.data;
-  if (scope.lookup) {
-    value = sync.traverse(data, scope.lookup || "");
-  }
-  var errorFeedback = $("<div>").appendTo(div);
-  errorFeedback.addClass("flexmiddle destroy");
-
-  var inputTest = $("<textarea>").appendTo(div);
-  inputTest.addClass("flex subtitle");
-  if (scope.viewOnly) {
-    inputTest.attr("disabled", true);
-  }
-  inputTest.css("min-width", scope.width || "300px");
-  inputTest.css("min-height", scope.height || "300px");
-  inputTest.text(JSON.stringify(value, null, 2));
-  inputTest.attr("_lastScrollTop", app.attr("_lastScrollTop"));
-  inputTest.attr("_lastScrollLeft", app.attr("_lastScrollTop"));
-  inputTest.scroll(function(){
-    app.attr("_lastScrollTop", $(this).scrollTop());
-    app.attr("_lastScrollLeft", $(this).scrollLeft());
-  });
-  inputTest.change(function(){
-    errorFeedback.empty();
-    try {
-      var newData = eval("var variable = "+$(this).val()+"; variable");
-      if (scope.lookup) {
-        sync.traverse(obj.data, scope.lookup || "", newData);
-      }
-      else {
-        obj.data = newData;
-      }
-      obj.update();
-      if (app.attr("closeTarget")) {
-        layout.coverlay(app.attr("closeTarget"));
-      }
-    }
-    catch(err) {
-      errorFeedback.append("<b>Error Parsing Data</b>");
-    }
-  });
-  if (!scope.hideConfirm) {
-    var button = $("<button>").appendTo(div);
-    button.append("Confirm");
-  }
-  return div;
-});
-
-sync.render("ui_tableEditor", function(obj, app, scope) {
-  scope = scope || {viewOnly: (app.attr("viewOnly") == "true"), lookup : app.attr("lookup"), structure : app.attr("structure"), textEdit : app.attr("textEdit") == "true"};
-
-  var div = $("<div>");
-  div.addClass("flexcolumn flex padding");
-
-  for (var key in obj.data.templates.tables) {
-    var table = obj.data.templates.tables[key];
-
-    var tableWrap = $("<div>").appendTo(div);
-    tableWrap.addClass("flexcolumn");
-
-    var tableDiv = $("<div>").appendTo(tableWrap);
-    tableDiv.addClass("flexcolumn");
-
-    var headerRow = $("<div>").appendTo(tableDiv);
-    headerRow.addClass("flexrow flexmiddle");
-
-    var label = $("<div class='flexrow outlinebottom flex lrpadding'><b class='flex'>"+key+"</b></div>").appendTo(headerRow);
-    var remove = genIcon("remove").appendTo(label);
-    remove.addClass("destroy flexmiddle");
-    remove.attr("table", key);
-    remove.click(function(){
-      delete obj.data.templates.tables[$(this).attr("table")];
-      obj.update();
-    });
-
-    for (var i in table) {
-      var entryRow = $("<div>").appendTo(tableDiv);
-      entryRow.addClass("flexrow flexaround smooth padding subtitle");
-
-      entryRow.append("<b class='lrpadding flexmiddle' style='min-width : 65px;'>"+i+"</b>");
-
-      var entryMarco = genInput({
-        parent : entryRow,
-        placeholder : "Enter macro value",
-        value : table[i],
-        key : i,
-        table : key,
-      }).addClass("flex");
-      entryMarco.change(function(){
-        obj.data.templates.tables[$(this).attr("table")][$(this).attr("key")] = $(this).val();
-      });
-      var remove = genIcon("remove").appendTo(entryRow);
-      remove.addClass("destroy flexmiddle lrpadding");
-      remove.attr("table", key);
-      remove.attr("key", i);
-      remove.click(function(){
-        delete obj.data.templates.tables[$(this).attr("table")][$(this).attr("key")];
-        obj.update();
-      });
-    }
-
-    var newRow = genIcon("plus", "New row").appendTo(tableDiv);
-    newRow.addClass("create");
-    newRow.attr("index", key);
-    newRow.click(function(){
-      var index = $(this).attr("index");
-      obj.data.templates.tables[index] = obj.data.templates.tables[index] || {};
-      ui_prompt({
-        target : $(this),
-        inputs : {
-          "Lookup Key" : {placeholder : "Key or Range (ex. 53-56)"}
-        },
-        click : function(ev, inputs) {
-          if (inputs["Lookup Key"].val()) {
-            obj.data.templates.tables[index][inputs["Lookup Key"].val()] = "";
-            obj.update();
-          }
-          else {
-            sendAlert({text : "Lookup Key must be defined"});
-          }
-        }
-      });
-    });
-  }
-
-  var newTable = genIcon("plus", "New table").appendTo(div);
-  newTable.addClass("create fit-x flexmiddle");
-  newTable.click(function(){
-    obj.data.templates.tables = obj.data.templates.tables || {};
-    ui_prompt({
-      target : $(this),
-      inputs : {
-        "Table Key" : "",
-      },
-      click : function(ev, inputs) {
-        if (inputs["Table Key"].val()) {
-          if (!obj.data.templates.tables[inputs["Table Key"].val()]) {
-            obj.data.templates.tables[inputs["Table Key"].val()] = {};
-            obj.update();
-          }
-          else {
-            sendAlert({text : "Table Key must be unique"});
-          }
-        }
-        else {
-          sendAlert({text : "Table Key must be valid"});
-        }
-      }
-    });
-  });
-
-  return div;
-});
-
-sync.render("ui_calcEditor", function(obj, app, scope) {
-  scope = scope || {viewOnly: (app.attr("viewOnly") == "true"), lookup : app.attr("lookup"), structure : app.attr("structure"), textEdit : app.attr("textEdit") == "true"};
-
-  var div = $("<div>");
-  div.addClass("flexcolumn flex");
-
-  var data = obj.data;
-
-  var structure = obj.data;
-  if (scope.structure) {
-    structure = sync.traverse(data, scope.structure || "");
-  }
-
-  var value = obj.data;
-  if (scope.lookup) {
-    value = sync.traverse(data, scope.lookup || "");
-  }
-
-  var calcList = $("<div>").appendTo(div);
-  calcList.addClass("lpadding");
-  calcList.sortable({
-    update : function(ev, ui) {
-      var newIndex;
-      var count = 0;
-      $(ui.item).attr("ignore", true);
-      calcList.children().each(function(){
-        if ($(this).attr("ignore")){
-          newIndex = count;
-        }
-        count += 1;
-      });
-      var old = value.splice($(ui.item).attr("index"), 1);
-      util.insert(value, newIndex, old[0]);
-      obj.update();
-    }
-  });
-
-  var dataList = $("<datalist>").appendTo(calcList);
-  dataList.attr("id", "homebrew-calc-edit");
-  var template = {stats : "", info : "", counters : ""};
-  for (var key in template) {
-    var path = key;
-    for (var subKey in game.templates.character[key]) {
-      path = key + "." + subKey;
-      var option = $("<option>").appendTo(dataList);
-      option.attr("value", path);
-    }
-  }
-
-  for (var i in value) {
-    var calcWrap = $("<div>").appendTo(calcList);
-    calcWrap.addClass("flexcolumn padding outline smooth hover2");
-    calcWrap.attr("index", i);
-    if (value[i].name && i != 0) {
-      calcWrap.css("margin-top", "3em");
-    }
-    var titlePlate = $("<div>").appendTo(calcWrap);
-    titlePlate.addClass("flexrow spadding");
-
-    function wrapF(index) {
-      titlePlate.append("<b class='lrpadding'>#"+index+"</b>");
-
-      var targetName = genIcon("", ((value[index].name)?(value[index].name):(""))).appendTo(titlePlate);
-      targetName.addClass("subtitle bold flexmiddle lrpadding outlinebottom");
-      targetName.css("min-width", "30px");
-      targetName.attr("index", index);
-      targetName.click(function(){
-        var index = $(this).attr("index");
-        var popout = ui_prompt({
-          target :  $(this),
-          inputs : {"Name" : value[index].name},
-          click : function(ev, inputs){
-            if (inputs["Name"].val()) {
-              value[index].name = inputs["Name"].val();
-            }
-            else {
-              delete value[index].name;
-            }
-            obj.update();
-          }
-        });
-      });
-      titlePlate.append("<text class='flex'></text>");
-      titlePlate.append("<text class='subtitle lrpadding flexmiddle'>Target : </text>");
-
-      var target = genInput({
-        type : "list",
-        list : "homebrew-calc-edit",
-        parent : titlePlate,
-        index : index,
-        value : value[index].target,
-        placeholder : "Target to Overwrite",
-        style : {color : "#333"}
-      }).addClass("subtitle flex lrpadding");
-
-      target.change(function(){
-        if ($(this).val()) {
-          value[$(this).attr("index")].target = $(this).val();
-          obj.update();
-        }
-      });
-
-      var remove = genIcon("remove").appendTo(titlePlate);
-      remove.addClass("destroy");
-      remove.attr("index", index);
-      remove.click(function(){
-        value.splice($(this).attr("index"), 1);
-        obj.update();
-      });
-    }
-    wrapF(i);
-
-    var wrap = $("<div>").appendTo(calcWrap);
-    wrap.addClass("flexrow flexaround spadding");
-    var macro = $("<text class='subtitle flexmiddle lrpadding'>Value Macro</text>").appendTo(wrap);
-    var equation = genInput({
-      parent : wrap,
-      index : i,
-      value : value[i].eq,
-      placeholder : "Assign value (Can be equation)",
-      style : {"font-size" : "0.8em", color : "#333"}
-    });
-    equation.addClass("flex lrpadding");
-    equation.change(function(){
-      value[$(this).attr("index")].eq = $(this).val();
-      obj.update();
-    });
-
-    var wrap = $("<div>").appendTo(calcWrap);
-    wrap.addClass("flexrow flexaround spadding");
-    var macro = $("<text class='subtitle flexmiddle lrpadding'>Condition Macro</text>").appendTo(wrap);
-    var cond = genInput({
-      parent : wrap,
-      index : i,
-      value : value[i].cond,
-      placeholder : "Condition (ex. 1<0)",
-      style : {"font-size" : "0.8em", color : "#333"}
-    });
-    cond.addClass("flex lrpadding");
-    cond.change(function(){
-      value[$(this).attr("index")].cond = $(this).val();
-      obj.update();
-    });
-  }
-
-  var addCalc = genIcon("plus", "Add").appendTo(div);
-  addCalc.addClass("create spadding");
-  addCalc.click(function(){
-    value = value || [];
-    value.push({}),
-    obj.update();
-  });
-
-  return div;
-});
-
-sync.render("ui_previewUI", function(obj, app, scope){
-  return sync.render("ui_processUI")(obj.data.previewChar, app, {display : obj.data.dummyData, context : sync.defaultContext()}).addClass("fit-xy padding");
-});
-
-sync.render("ui_displayTree", function(obj, app, scope) {
-  scope = scope || {app : app.attr("targetApp") || app.attr("id"), markup : app.attr("markup"), display : sync.traverse(obj.data, app.attr("display")), path : app.attr("path")};
-  var div = $("<div>");
-
-  function build(sData, lastLookup) {
-    var section = $("<div>").appendTo(div);
-    section.addClass("flexcolumn");
-    section.css("padding-left", "1em");
-    section.css("padding-right", "1em");
-    var first = false;
-    if (!lastLookup) {
-      lastLookup = scope.app+"_0";
-      first = true;
-    }
-    var name = lastLookup;
-    var icon = "";
-    if (sData.classes && sData.classes.match("flexcolumn")) {
-      icon = 'resize-vertical';
-      name = "Columns";
-    }
-    else if (sData.classes && sData.classes.match("flexrow")) {
-      name = "Rows";
-      icon = "resize-horizontal";
-    }
-    if (sData.ui) {
-      name = sData.ui;
-      icon = "edit";
-    }
-    if (sData.apps) {
-      name = "Apps";
-      icon = "th-large";
-    }
-    if (sData.link) {
-      name = sData.link;
-      icon = "link"
-    }
-    if (sData.icon) {
-      name = sData.icon;
-      icon = "exclamation-sign"
-    }
-
-    if (sData.name) {
-      name = sData.name;
-      icon = "text-color"
-    }
-    if (sData.target) {
-      name = sData.target;
-      icon = "";
-    }
-    var row = $("<div>").appendTo(section);
-    row.addClass("flexrow");
-    row.attr("target", lastLookup);
-    row.hover(function(){
-      $("#"+(scope.markup || "")+$(this).attr("target")).addClass("selected");
-    },
-    function(){
-      $("#"+(scope.markup || "")+$(this).attr("target")).removeClass("selected");
-    });
-
-    var link = genIcon(icon, name).appendTo(row);
-    link.attr("target", lastLookup);
-    link.addClass("spadding hover2");
-    if (!first) {
-      link.click(function(){
-        var replace = $(this).attr("target").replace(scope.app+"_0-", "");
-        while (replace.match("-")) {
-          replace = replace.replace("-", ".");
-        }
-        var select = sync.newApp("ui_JSON");
-        select.attr("lookup", (scope.path || "templates.display.sheet.content.")+replace);
-        obj.addApp(select);
-
-        var popout = ui_popOut({
-          target : $(this),
-          id : "json-editor"
-        }, select);
-        popout.resizable();
-      });
-
-      function clickWrap(scope, lastLookup) {
-        setTimeout(function(){
-          $("#"+(scope.markup || "")+lastLookup).hover(function(ev){
-            $(this).addClass("selected");
-            ev.stopPropagation();
-            ev.preventDefault();
-          },
-          function(){
-            $(this).removeClass("selected");
-          });
-          $("#"+(scope.markup || "")+lastLookup).attr("target", lastLookup);
-          $("#"+(scope.markup || "")+lastLookup).unbind("click");
-          $("#"+(scope.markup || "")+lastLookup).css("cursor", "pointer");
-          $("#"+(scope.markup || "")+lastLookup).click(function(ev){
-            ev.stopPropagation();
-            ev.preventDefault();
-            var replace = $(this).attr("target").replace(scope.app+"_0-", "");
-            while (replace.match("-")) {
-              replace = replace.replace("-", ".");
-            }
-            var select = sync.newApp("ui_JSON");
-            select.attr("lookup", (scope.path || "templates.display.sheet.content.")+replace);
-            obj.addApp(select);
-
-            var popout = ui_popOut({
-              target : $(this),
-              id : "json-editor",
-              align : "bottom"
-            }, select);
-            popout.resizable();
-          });
-        }, 10);
-      }
-      clickWrap(scope, lastLookup);
-    }
-    else {
-
-      function clickWrap(scope, lastLookup) {
-        setTimeout(function(){
-          $("#"+(scope.markup || "")+lastLookup).hover(function(ev){
-            $(this).addClass("selected");
-            ev.stopPropagation();
-            ev.preventDefault();
-          },
-          function(){
-            $(this).removeClass("selected");
-          });
-          $("#"+(scope.markup || "")+lastLookup).attr("target", lastLookup);
-          $("#"+(scope.markup || "")+lastLookup).unbind("click");
-          $("#"+(scope.markup || "")+lastLookup).css("cursor", "pointer");
-          $("#"+(scope.markup || "")+lastLookup).click(function(ev){
-            ev.stopPropagation();
-            ev.preventDefault();
-            var replace = $(this).attr("target").replace(scope.app+"_0-", "");
-            while (replace.match("-")) {
-              replace = replace.replace("-", ".");
-            }
-            var select = sync.newApp("ui_JSON");
-            if (scope.path) {
-              select.attr("lookup", scope.path.substring(0, scope.path.length-1));
-            }
-            else {
-              select.attr("lookup", "templates.display.sheet.content");
-            }
-            obj.addApp(select);
-
-            var popout = ui_popOut({
-              target : $(this),
-              id : "json-editor",
-              align : "bottom"
-            }, select);
-            popout.resizable();
-          });
-        }, 10);
-      }
-      clickWrap(scope, lastLookup);
-
-      link.click(function(){
-        var replace = $(this).attr("target").replace(scope.app+"_0-", "");
-        while (replace.match("-")) {
-          replace = replace.replace("-", ".");
-        }
-        var select = sync.newApp("ui_JSON");
-        if (scope.path) {
-          select.attr("lookup", scope.path.substring(0, scope.path.length-1));
-        }
-        else {
-          select.attr("lookup", "templates.display.sheet.content");
-        }
-        obj.addApp(select);
-
-        var popout = ui_popOut({
-          target : $(this),
-          id : "json-editor"
-        }, select);
-        popout.resizable();
-      });
-    }
-
-    if (sData.display) {
-      if (!scope.viewOnly) {
-        var newSection = $("<div>").appendTo(section);
-        newSection.css("padding-left", "1em");
-
-        var add = genIcon("plus").appendTo(row);
-        add.addClass("create flexmiddle lrpadding");
-        add.attr("target", lastLookup);
-        add.css("font-size", "1.2em");
-        add.hover(function(){
-          $("#"+(scope.markup || "")+$(this).attr("target")).addClass("selected");
-        },
-        function(){
-          $("#"+(scope.markup || "")+$(this).attr("target")).removeClass("selected");
-        });
-        add.click(function(){
-          obj.data.dummyData = {};
-
-          var content = $("<div>");
-          content.addClass("flexcolumn fit-xy");
-
-          var navBar = genNavBar("background alttext", "flex", "4px");
-          navBar.addClass("flex");
-          navBar.generateTab("Advanced", "cog", function(parent){
-            var newApp = sync.newApp("ui_JSON").appendTo(parent);
-            newApp.attr("textEdit", true);
-            newApp.attr("lookup", "dummyData");
-            obj.addApp(newApp);
-
-            var confirm = $("<button>").appendTo(parent);
-            confirm.append("Confirm");
-            confirm.click(function(){
-              var pushObj = {
-                classes : classes.val(),
-                target : target.val(),
-                name : name.val(),
-              };
-              sData.display.push(pushObj);
-              obj.update();
-              layout.coverlay("add");
-            });
-          });
-          navBar.generateTab("Basic", "ok", function(parent){
-            var row = $("<div>").appendTo(parent);
-            row.addClass("flexrow flex");
-
-            var styling = $("<div>").appendTo(row);
-            styling.addClass("flexcolumn flex");
-            styling.append("<div class='flexmiddle background alttext'><b>Styling</b></div>");
-
-            var layouts = [
-              {classes : "", name : "Default"},
-              {classes : "flexrow flexaround", name : "Balanced Row Layout"},
-              {classes : "flexrow flexmiddle", name : "Centered Row Layout"},
-              {classes : "flexrow", name : "Flat Row Layout"},
-              {classes : "flexrow flexbetween", name : "Spaced Row Layout"},
-              {classes : "flexcolumn flexaround", name : "Balanced Column Layout"},
-              {classes : "flexcolumn flexmiddle", name : "Centered Column Layout"},
-              {classes : "flexcolumn", name : "Flat Column Layout"},
-              {classes : "flexcolumn flexbetween", name : "Spaced Column Layout"},
-            ];
-
-            var layoutDiv = $("<div>").appendTo(styling);
-            layoutDiv.addClass("flexcolumn flex");
-            layoutDiv.css("position", "relative");
-            layoutDiv.css("overflow", "auto");
-
-            var list = $("<div>").appendTo(layoutDiv);
-            list.addClass("fit-x padding");
-            list.css("position", "absolute");
-
-            for (var i in layouts) {
-              var layoutWrapper = $("<div>").appendTo(list);
-              layoutWrapper.addClass("flex outlinebottom hover2 subtitle spadding");
-              layoutWrapper.attr("index", i);
-              layoutWrapper.append(layouts[i].name);
-              layoutWrapper.click(function(){
-                obj.data.dummyData.classes = layouts[$(this).attr("index")].classes;
-                obj.update();
-              });
-            }
-
-            var labeling = $("<div>").appendTo(row);
-            labeling.addClass("flexcolumn flex");
-            labeling.append("<div class='flexmiddle background alttext'><b>Labeling</b></div>");
-
-            var labelDiv = $("<div>").appendTo(labeling);
-            labelDiv.addClass("flexcolumn flex");
-
-            var labelDiv = $("<div>").appendTo(labelDiv);
-            labelDiv.addClass("flexcolumn padding");
-            labelDiv.append("<b>Name</b>");
-            var name = genInput({
-              parent : labelDiv,
-              placeholder : "Name (Macro)",
-            });
-            name.change(function(){
-              obj.data.dummyData.name = $(this).val();
-              obj.update();
-            });
-
-            labelDiv.append("<b>Value</b>");
-            var value = genInput({
-              parent : labelDiv,
-              placeholder : "Value (Macro)",
-            });
-            value.change(function(){
-              obj.data.dummyData.value = $(this).val();
-              obj.update();
-            });
-            labelDiv.append("<b>Target</b>");
-
-            var dataList = $("<datalist>").appendTo(labelDiv);
-            dataList.attr("id", "homebrew-list-edit");
-            var template = {stats : "", info : "", counters : ""};
-            for (var key in template) {
-              var path = key;
-              for (var subKey in game.templates.character[key]) {
-                path = key + "." + subKey;
-                var option = $("<option>").appendTo(dataList);
-                option.attr("value", path);
-              }
-            }
-
-            var input = genInput({
-              parent : labelDiv,
-              type : "list",
-              list : "homebrew-list-edit",
-              id : "homebrew-target-input",
-              placeholder : "Target to edit",
-            });
-            input.change(function() {
-              obj.data.dummyData.target = $(this).val();
-              obj.data.dummyData.edit = {cmd : "updateAsset"};
-              delete obj.data.dummyData.scope;
-              delete obj.data.dummyData.ui;
-              obj.update();
-              layout.coverlay("roll-stat-list");
-            });
-
-            labelDiv.append("<a class='fit-x flexmiddle subtitle' href='https://getbootstrap.com/docs/3.3/components/' target='_blank'>Icon List</a>");
-            labelDiv.append("<b>Link</b>");
-            var link = genInput({
-              parent : labelDiv,
-              placeholder : "Link Icon (Hyperlink)",
-            });
-            link.change(function(){
-              obj.data.dummyData.link = $(this).val();
-              obj.update();
-            });
-
-            labelDiv.append("<b>Icon</b>");
-            var icon = genInput({
-              parent : labelDiv,
-              placeholder : "Icon (Plain)",
-            });
-            icon.change(function(){
-              obj.data.dummyData.icon = $(this).val();
-              obj.update();
-            });
-
-            var confirm = $("<button>").appendTo(parent);
-            confirm.append("Confirm");
-            confirm.click(function(){
-              if (!obj.data.dummyData.ui && !obj.data.dummyData.edit && !obj.data.dummyData.scope && !obj.data.dummyData.apps
-                  && !obj.data.dummyData.applyUI && !obj.data.dummyData.value && !obj.data.dummyData.name) {
-                obj.data.dummyData.display = [];
-              }
-              sData.display.push(obj.data.dummyData);
-              obj.update();
-              layout.coverlay("add");
-            });
-          });
-          navBar.generateTab("Special Interface", "list-alt", function(parent) {
-            var uiDiv = $("<div>").appendTo(parent);
-            uiDiv.addClass("flexrow flex");
-            uiDiv.css("height", "30vh");
-
-            var uiWrap = $("<div>").appendTo(uiDiv);
-            uiWrap.addClass("flexcolumn flex");
-            uiWrap.css("position", "relative");
-            uiWrap.css("overflow", "auto");
-
-            var uiPreview = sync.newApp("ui_previewUI").appendTo(uiDiv);
-            obj.addApp(uiPreview);
-
-            var ui = [
-              {
-                value : sync.newValue("Maxbox Name", 0, 0, 10),
-                scope : {ui : "ui_maxbox", target : "", scope : {title : "Maxbox Title"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {title : {value : "Default Title", hint : "Descriptive Title"}}
-                }
-              },
-              {
-                value : {value : sync.newValue("Editable Name", 3, 0, 10)},
-                scope : {ui : "ui_editable", scope : {increment : 1, bar : true, ui : "ui_maxbox", lookup : "value"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    increment : {value : 1, hint : "Increment value -/+"},
-                    bar : {value : [true, false], hint : "Progress Bar?"},
-                    ui : {value : "ui_maxbox", hint : "UI element to appear when clicked"},
-                  }
-                }
-              },
-              {
-                value : {value : sync.newValue("Progress Bar", 3, 0, 10)},
-                scope : {ui : "ui_progressBar", scope : {lookup : "value"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    percentage : {value : 0, hint : "Current Value (Macro)"},
-                    max : {value : 10, hint : "Maximum Value (Macro)"},
-                    height : {hint : "Height of the bar"},
-                    col : {hint : "Macro that returns the color of the bar"}
-                  }
-                }
-              },
-              {
-                value : {checked : sync.newValue("New Checkbox")},
-                scope : {ui : "ui_checkbox", scope : {cond : "true", lookup : "checked", title : "'Checkbox Title'"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    cond : {value : "true", hint : "Macro that determines if checked/unchecked"},
-                    title : {value : "Default Title", hint : "Descriptive Title"},
-                    checked : {value : "", hint : "If checked, save this evaluated macro"},
-                    saveInto : {value : "", hint : "Reference Location to save this into"},
-                    unchecked : {value : "", hint : "If unchecked, save this evaluated macro"},
-                  }
-                }
-              },
-              {
-                value : {roll : sync.newValue("Dice-Rollable Name", "2d10")},
-                scope : {ui : "ui_diceable", scope : {name : "'Dice-Rollable Title'", value : "'Diceable Value'"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    name : {value : "", hint : "Macro that gets used as the title"},
-                    value : {value : "", hint : "Value that gets used as when rolled"}
-                  }
-                }
-              },
-              {
-                value : {stats : {stat : sync.newValue("Stat Name", "2d10")}},
-                scope : {ui : "ui_plainStat", scope : {lookup : "stats.stat", name : "'Plain Title'"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    name : {value : "", hint : "Macro that gets used as the title"},
-                  }
-                }
-              },
-              {
-                value : {stats : {stat : sync.newValue("Stat Name", "2d10")}},
-                scope : {ui : "ui_fantasyStat", scope : {lookup : "stats.stat", name : "'Fantasy Title'"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    name : {value : "", hint : "Macro that gets used as the title"},
-                  }
-                }
-              },
-              {
-                value : {stats : {stat : sync.newValue("Stat Name", "2d10")}},
-                scope : {ui : "ui_rankedStat", scope : {lookup : "stats.stat", name : "'Ranked Title'"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    name : {value : "", hint : "Macro that gets used as the title"},
-                  }
-                }
-              },
-              {
-                value : {stat : sync.newValue("Stat Name", "2d10")},
-                scope : {ui : "ui_characterArmor", scope : {width : "50px", height : "50px", armor : "ui_armorValue"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    width : {value : "50px", hint : "Width of the display"},
-                    height : {value : "50px", hint : "Height of the display"},
-                    name : {value : "", hint : "Macro that gets used as the title"},
-                  }
-                }
-              },
-              {
-                value : {counters : {exp : sync.newValue("Exp Name", 30, null, null, {added : 50}), level : sync.newValue("Level", 3)}},
-                scope : {ui : "ui_expCounter", scope : {level : "counters.level", lookup : "counters.exp"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    level : {hint : "Optionally reference a variable for levels"},
-                  }
-                }
-              },
-              {
-                value : {image : sync.newValue("Image", "/content/icons/"+util.art.icons[Math.floor(util.art.icons.length * Math.random())])},
-                scope : {ui : "ui_icon", scope : {lookup : "image", width : "100px", height : "100px"}},
-                options : {
-                  target : {hint : "Reference Value"},
-                  scope : {
-                    width : {value : "100px", hint : "Width of the display"},
-                    height : {value : "100px", hint : "Height of the display"},
-                  }
-                }
-              },
-            ];
-
-            var uiList = $("<div>").appendTo(uiWrap);
-            uiList.addClass("flexcolumn flexmiddle fit-x padding");
-            uiList.css("position", "absolute");
-
-            for (var i in ui) {
-              var newApp = $("<div>").appendTo(uiList);
-              newApp.addClass("lightoutline lrpadding fit-x");
-              newApp.attr("title", ui[i].scope.ui);
-              newApp.css("padding", "1em");
-              newApp.css("cursor", "pointer");
-              newApp.attr("index", i);
-              newApp.hover(
-                function(){
-                  $(this).addClass("focus");
-                },
-                function(){
-                  $(this).removeClass("focus");
-                }
-              );
-              newApp.click(function(){
-                var content = $("<div>");
-                content.addClass("flexcolumn");
-
-                var data = ui[$(this).attr("index")];
-                var newData = {ui : data.scope.ui};
-                for (var i in data.options) {
-                  content.append("<b>"+i+"</b>");
-                  var optionWrap = $("<div>").appendTo(content);
-                  optionWrap.addClass("padding");
-                  if (i == "target") {
-                    optionWrap.append("<i class='subtitle'>"+data.options[i].hint+"</i>");
-                    var optionWrap = $("<div>").appendTo(content);
-                    var dataList = $("<datalist>").appendTo(optionWrap);
-                    dataList.attr("id", "homebrew-list-"+i);
-
-                    if (Array.isArray(data.options[i].value)) {
-                      for (var j in data.options[i].value) {
-                        var option = $("<option>").appendTo(dataList);
-                        if (data.options[i].value[j] instanceof Object) {
-                          option.attr("value", JSON.stringify(data.options[i].value[j]));
-                        }
-                        else {
-                          option.attr("value", data.options[i].value[j]);
-                        }
-                      }
-                    }
-                    else {
-                      var template = {stats : "", info : "", counters : ""};
-                      for (var key in template) {
-                        var path = key;
-                        for (var subKey in game.templates.character[key]) {
-                          path = key + "." + subKey;
-                          var option = $("<option>").appendTo(dataList);
-                          option.attr("value", path);
-                        }
-                      }
-                    }
-
-                    var input = genInput({
-                      parent : optionWrap,
-                      type : "list",
-                      list : "homebrew-list-"+i,
-                      id : "homebrew-target-input"+i,
-                      key : i,
-                    });
-                    input.change(function(){
-                      sync.traverse(newData, $(this).attr("key"), $(this).val());
-                    });
-
-                    if (Array.isArray(data.options[i].value)) {
-                      input.val(data.options[i].value[0]);
-                    }
-                    else {
-                      input.val(data.options[i].value);
-                    }
-                    sync.traverse(newData, i, input.val());
-                  }
-                  else if (data.options[i] instanceof Object) {
-                    var optionWrap = $("<div>").appendTo(content);
-                    optionWrap.addClass("flexcolumn padding");
-
-                    for (var k in data.options[i]) {
-                      var dataList = $("<datalist>").appendTo(optionWrap);
-                      dataList.attr("id", "homebrew-list-"+i+"-"+k);
-                      if (Array.isArray(data.options[i][k].value)) {
-                        for (var j in data.options[i][k].value) {
-                          var option = $("<option>").appendTo(dataList);
-                          if (data.options[i][k].value[j] instanceof Object) {
-                            option.attr("value", JSON.stringify(data.options[i][k].value[j]));
-                          }
-                          else {
-                            option.attr("value", data.options[i][k].value[j]);
-                          }
-                        }
-                      }
-                      optionWrap.append("<i class='subtitle'>"+data.options[i][k].hint+"</i>");
-                      var input = genInput({
-                        parent : optionWrap,
-                        type : "list",
-                        list : "homebrew-list-"+i+"-"+k,
-                        key : i+"."+k,
-                      });
-                      input.change(function(){
-                        sync.traverse(newData, $(this).attr("key"), $(this).val());
-                      });
-                      if (Array.isArray(data.options[i][k].value)) {
-                        input.val(data.options[i][k].value[0]);
-                      }
-                      else {
-                        input.val(data.options[i][k].value);
-                      }
-                      sync.traverse(newData, i+"."+k, input.val());
-                    }
-                  }
-                }
-
-                var button = $("<button>").appendTo(content);
-                button.append("Confirm");
-                button.click(function(){
-                  obj.data.dummyData = newData;
-                  obj.update();
-                  layout.coverlay("ui-builder");
-                });
-
-                ui_popOut({
-                  target : $(this),
-                  id : "ui-builder",
-                }, content);
-              });
-              var dummyObj = sync.dummyObj();
-              dummyObj.data = duplicate(ui[i].value);
-              sync.render(ui[i].scope.ui)(dummyObj, newApp, ui[i].scope.scope).css("pointer-events", "none").appendTo(newApp);
-            }
-
-            var button = $("<button>").appendTo(parent);
-            button.append("Confirm");
-            button.click(function(){
-              if (!obj.data.dummyData.ui && !obj.data.dummyData.edit && !obj.data.dummyData.scope && !obj.data.dummyData.apps
-                  && !obj.data.dummyData.applyUI && !obj.data.dummyData.value && !obj.data.dummyData.name) {
-                obj.data.dummyData.display = [];
-              }
-              sData.display.push(obj.data.dummyData);
-              obj.update();
-              layout.coverlay("add");
-            });
-          });
-          navBar.appendTo(content);
-          navBar.selectTab("Basic");
-
-          var preview = $("<div>").appendTo(content);
-          preview.addClass("flexcolumn");
-          preview.css("height", "200px");
-          preview.append("<div class='flexmiddle background alttext'><b>Preview</b></div>");
-
-          var uiPreview = sync.newApp("ui_previewUI").appendTo(preview);
-          obj.addApp(uiPreview);
-
-          var popout = ui_popOut({
-            target : $(this),
-            id : "add",
-            style : {width : "600px", height : "600px"}
-          }, content);
-          popout.resizable();
-        });
-      }
-    }
-
-    if (sData.display) {
-      var sectionDisplay = $("<div>").appendTo(section);
-      sectionDisplay.addClass("flexcolumn");
-      sectionDisplay.sortable({
-        update : function(ev, ui) {
-          var newIndex;
-          var count = 0;
-          $(ui.item).attr("ignore", true);
-          sectionDisplay.children().each(function(){
-            if ($(this).attr("ignore")){
-              newIndex = count;
-            }
-            count += 1;
-          });
-          var old = sData.display.splice($(ui.item).attr("index"), 1);
-          util.insert(sData.display, newIndex, old[0]);
-          obj.update();
-        }
-      });
-      for (var i in sData.display) {
-        if (sData.display[i]) {
-          var tempSection = build(sData.display[i], lastLookup+"-display-"+i).appendTo(sectionDisplay);
-          tempSection.addClass("flexrow");
-          tempSection.attr("index", i);
-
-          var delWrap = $("<div>");
-          delWrap.addClass("flexmiddle");
-
-          var del = genIcon("trash").appendTo(delWrap);
-          del.attr("index", i);
-          del.addClass("destroy lrpadding");
-          del.click(function(){
-            sData.display.splice($(this).attr("index"), 1);
-            obj.update();
-          });
-          $(tempSection.children()[0]).prepend(delWrap);
-        }
-      }
-    }
-    return section;
-  }
-  build(scope.display);
-  return div;
-});
-
-sync.render("ui_diceDisplayBuilder", function(obj, app, scope){
-  scope = scope || {viewOnly : app.attr("viewOnly") == "true", display : app.attr("diceKey")};
-  var div = $("<div>");
-  div.addClass("flexrow flex");
-
-  var colWrap = $("<div>").appendTo(div);
-  colWrap.addClass("flexcolumn flex");
-
-  var col = $("<div>").appendTo(colWrap);
-  col.addClass("flexrow flexwrap padding");
-
-  for (var i in obj.data.templates.display.ui) {
-    var button = $("<button>").appendTo(col);
-    if (scope.display == i) {
-      button.addClass("highlight alttext");
-    }
-    button.attr("key", i);
-    button.append(i);
-    button.click(function(){
-      app.attr("diceKey", $(this).attr("key"));
-      obj.update();
-    });
-  }
-
-  var plus = $("<button>").appendTo(col);
-  plus.addClass("background alttext");
-  plus.append("New Display");
-  plus.click(function(){
-    ui_prompt({
-      target : $(this),
-      inputs : {
-        "Identifier" : {placeholder : "The unique identifier"}
-      },
-      click : function(ev, inputs) {
-        if (inputs["Identifier"].val()) {
-          obj.data.templates.display.ui[inputs["Identifier"].val()] = {
-            classes : "",
-            style : {},
-            dice : {},
-            displays : {},
-            results : {},
-          };
-          obj.update();
-        }
-      }
-    });
-  });
-
-  if (scope.display) {
-    app.attr("lookup", "templates.display.ui."+scope.display);
-
-    var select = sync.render("ui_JSON")(obj, app, null).appendTo(colWrap);
-    select.addClass("flex padding");
-
-    var dataRollWrap = $("<div>").appendTo(div);
-    dataRollWrap.addClass("flexcolumn flex");
-    dataRollWrap.append("<b class='underline'>Test your Display</b>");
-
-    var dataDiv = $("<div>").appendTo(dataRollWrap);
-    dataDiv.addClass("flexrow flex padding");
-
-    var flavorText = $("<textarea>").appendTo(dataDiv);
-    flavorText.addClass("flex");
-    flavorText.val(app.attr("flavor") || "");
-    flavorText.attr("placeholder", "Flavor Text");
-    flavorText.change(function(){
-      app.attr("flavor", $(this).val());
-      obj.update();
-    });
-
-    var eqText = $("<textarea>").appendTo(dataDiv);
-    eqText.addClass("flex");
-    eqText.val(app.attr("equation") || "d20");
-    eqText.attr("placeholder", "Equation");
-    eqText.change(function(){
-      app.attr("equation", $(this).val());
-      obj.update();
-    });
-
-    var dataRoll = $("<div>").appendTo(dataRollWrap);
-    dataRoll.addClass("flexcolumn flexmiddle flex padding");
-
-    var wrapObj = sync.dummyObj();
-    wrapObj.data = {data : sync.executeQuery((app.attr("equation") || "d20"), sync.defaultContext()), msg : "Flavor Text"};
-
-    dataRoll.append("<b class='underline'>Result</b>");
-
-    dataRoll.append("<b>"+(sync.eval(app.attr("flavor"), sync.defaultContext()) || "")+"</b>");
-
-    var display = sync.render("ui_newDiceResults")(wrapObj, app, {display : obj.data.templates.display.ui[scope.display]}).appendTo(dataRoll);
-    display.css("width", "350px");
-    display.css("min-height", "200px");
-
-    dataRoll.append("<b class='flex'></b>");
-  }
-
-  return div;
-});
-
-sync.render("ui_gameLibraries", function(obj, app, scope) {
-  var div = $("<div>");
-  div.addClass("flexcolumn");
-  div.append("<b class='flex flexmiddle'>Library</b>");
-  for (var i in obj.data.templates.library) {
-    sync.render("ui_ent")(getEnt(obj.data.templates.library[i]), app, {
-      click : function(ev, ui, ent) {
-        obj.data.templates.library = obj.data.templates.library || [];
-        for (var i in obj.data.templates.library) {
-          if (obj.data.templates.library[i] == ent.id()) {
-            obj.data.templates.library.splice(i, 1);
-            obj.update();
-            break;
-          }
-        }
-      }
-    }).appendTo(div);
-  }
-  if (!obj.data.templates.library.length) {
-    div.append("<i class='flex flexmiddle subtitle'>No Pacakges</i>");
-  }
-
-  div.append("<b class='flex flexmiddle'>Packages in Personal Storage</b>");
-  var empty = true;
-  for (var i in game.locals["storage"].data.l) {
-    var lData = game.locals["storage"].data.l[i];
-    if (lData.a == "pk") {
-      if (isNaN(lData._uid)) {
-        if (!util.contains(obj.data.templates.library, lData._uid)) {
-          empty = false;
-          sync.render("ui_ent")(getEnt(lData._uid), app, {
-            click : function(ev, ui, ent) {
-              obj.data.templates.library = obj.data.templates.library || [];
-              obj.data.templates.library.push(ent.id());
-              obj.update();
-            }
-          }).appendTo(div);
-        }
-      }
-      else {
-        if (!util.contains(obj.data.templates.library, getCookie("UserID")+"_"+lData._uid)) {
-          empty = false;
-          sync.render("ui_ent")(game.locals["storage"].data.s[lData._uid], app, {
-            click : function(ev, ui, ent) {
-              obj.data.templates.library = obj.data.templates.library || [];
-              obj.data.templates.library.push(ent.id());
-              obj.update();
-            }
-          }).appendTo(div);
-        }
-      }
-    }
-  }
-  if (empty) {
-    div.append("<i class='flex flexmiddle subtitle'>No Pacakges</i>");
-  }
-  return div;
-});
-
-sync.render("ui_dataModel", function(obj, app, scope) {
-  scope = scope || {path : app.attr("path"), blacklist : JSON.parse(app.attr("blacklist"))};
-
-  var dataModel = sync.traverse(obj.data, scope.path);
-
-  var characterWrap = $("<div>");
-  characterWrap.addClass("flexrow flexwrap flexaround flex");
-
-  var blacklist = scope.blacklist || {
-    "info" : {blacklist : ["name", "img", "notes"]},
-    "stats" : {blacklist : []},
-    "counters" : {blacklist : []},
-    "skills" : {blacklist : []},
-  }
-
-  for (var key in dataModel) {
-    if (key.charAt(0) != "_" && blacklist[key]) {
-      var target = dataModel[key];
-      var wrap = $("<div>").appendTo(characterWrap);
-      wrap.addClass("flexcolumn flex padding outline smooth");
-      wrap.css("min-width", "25%");
-      var title = $("<b class='outlinebottom'>"+key+"</b>").appendTo(wrap);
-
-      var addNew = genIcon("plus").appendTo(title);
-      addNew.addClass("create spadding");
-      addNew.attr("index", key);
-      addNew.click(function(){
-        var index = $(this).attr("index");
-        var target = dataModel[index];
-        if (blacklist[index].array) {
-          target.push(sync.newValue("New Value", ""));
-          obj.update();
-        }
-        else {
-          ui_prompt({
-            target : $(this),
-            id : "add-data-structure",
-            inputs : {
-              "Key" : "",
-            },
-            click : function(ev, inputs) {
-              if (inputs["Key"].val()) {
-                target[inputs["Key"].val()] = sync.newValue("New Value", "");
-                obj.update();
-              }
-            }
-          });
-        }
-      });
-
-      var dataWrap = $("<div>").appendTo(wrap);
-
-      if (blacklist[key].array) {
-        dataWrap.sortable({
-          filter : ".data",
-          update : function(ev, ui) {
-            var newIndex;
-            var count = 0;
-            $(ui.item).attr("ignore", true);
-            $(ui.item).parent().children().each(function(){
-              if ($(this).attr("ignore")){
-                newIndex = count;
-              }
-              count += 1;
-            });
-            var old = dataModel[$(ui.item).attr("key")].splice($(ui.item).attr("index"), 1);
-            util.insert(dataModel[$(ui.item).attr("key")], newIndex, old[0]);
-            obj.update();
-          }
-        });
-      }
-
-      for (var index in target) {
-        var wrap = $("<div>").appendTo(dataWrap);
-        wrap.addClass("flexrow flexbetween spadding");
-        wrap.attr("index", index);
-        wrap.attr("key", key);
-
-        var link = genIcon("", index + " - " + target[index].name).appendTo(wrap);
-        link.addClass("data");
-        link.attr("index", index);
-        link.attr("key", key);
-        link.click(function(){
-          var index = $(this).attr("index");
-          var key = $(this).attr("key");
-          var select = sync.newApp("ui_JSON");
-          select.attr("lookup", "templates.character."+key+"."+index);
-          obj.addApp(select);
-
-          var popout = ui_popOut({
-            target : $(this),
-            id : "json-editor"
-          }, select);
-          popout.resizable();
-        });
-
-        if (!util.contains(blacklist[key].blacklist, index)) {
-          var del = genIcon("trash").appendTo(wrap);
-          del.addClass("destroy");
-          del.attr("index", index);
-          del.attr("key", key);
-          del.click(function(){
-            var index = $(this).attr("index");
-            var key = $(this).attr("key");
-            if (blacklist[key].array) {
-              dataModel[key].splice(index,1);
-            }
-            else {
-              delete dataModel[key][index];
-            }
-            obj.update();
-          });
-        }
-      }
-    }
-  }
-
-  return characterWrap;
-});
-
-
-sync.render("ui_homebrew", function(obj, app, scope) {
-  var div = $("<div>");
-  div.addClass("flex flexcolumn");
-  if (!game.locals["homebrew"]) {
-    game.locals["homebrew"] = game.locals["homebrew"] || sync.obj();
-    game.locals["homebrew"].data = game.locals["homebrew"].data || {
-      templates : duplicate(game.templates),
-      previewChar : sync.dummyObj(),
-      previewItem : sync.dummyObj(),
-      previewVeh : sync.dummyObj(),
-    };
-    game.locals["homebrew"].data.previewChar.data = createCharacter(duplicate(game.templates.character), null, true, true, true, true);
-    game.locals["homebrew"].data.previewChar.sync = function(){game.locals["homebrew"].data.previewChar.update()};
-    game.locals["homebrew"].data.previewChar.update = function(rObj, newObj, target){
-      game.locals["homebrew"].update();
-      sync.update(game.locals["homebrew"].data.previewChar, newObj, target);
-    };
-
-    game.locals["homebrew"].data.previewItem.data = duplicate(game.templates.item);
-    game.locals["homebrew"].data.previewItem.sync = function(){game.locals["homebrew"].data.previewItem.update()};
-    game.locals["homebrew"].data.previewItem.update = function(rObj, newObj, target){
-      game.locals["homebrew"].update();
-      sync.update(game.locals["homebrew"].data.previewItem, newObj, target);
-    };
-
-    game.locals["homebrew"].data.previewVeh.data = duplicate(game.templates.vehicle);
-    game.locals["homebrew"].data.previewVeh.sync = function(){game.locals["homebrew"].data.previewVeh.update()};
-    game.locals["homebrew"].data.previewVeh.update = function(rObj, newObj, target){
-      game.locals["homebrew"].update();
-      sync.update(game.locals["homebrew"].data.previewVeh, newObj, target);
-    };
-  }
-  var obj = game.locals["homebrew"];
-
-  var test = {
-    apps  :  "ui_characterArmor, ui_characterSavesProf, ui_calc, ui_characterSaves",
-    classes  :  "",
-    edit  :  "",
-    icon  :  "user, education, screenshot, gift",
-    minimized  :  "",
-    name  :  "Dice, Stats, , Summary, Skills, Talents, Special Rules",
-    style  :  "",
-    target  :  "",
-    ui  :  "ui_fantasyStat, ui_maxbox, ui_expCounter, ui_rankedStat",
-  };
-  var uis = {
-    "ui_expCounter" : {
-      cmd : "updateAsset",
-      level : true
-    },
-    "ui_fantasyStat" : {
-      cmd : "updateAsset",
-      eventData : {
-        data : "$die=d20;#roll=d20;{roll}+M{c:stats:Str}",
-        msg : "@me.name+' tested {c:stats:Str:name}'",
-        ui : "ui_statTest",
-      }
-    },
-    "ui_maxbox" : {cmd : "updateAsset"},
-    "ui_plainStat" : {cmd : "updateAsset"},
-    "ui_rankedStat" : {
-      cmd :"updateAsset",
-      eventData : {
-        data : "$die=d100;#threshold=@c.stats.WS;#roll=d100;@roll",
-        msg : "@me.name+' tested @c.stats.WS.name'",
-        ui : "ui_statTest"
-      }
-    }
-  };
-  var apps = {
-    "ui_calc" : {
-      classes : "flexrow lrpadding",
-      displays : [{"touchArmor" : {name : "Touch:"}}]
-    },
-    "ui_characterArmor" : {
-      armor : "ui_armorValue",
-      height : "50px",
-      width : "50px"
-    }
-  };
-
-  var data = obj.data;
-  var sheet = obj.data.templates.display.sheet;
-  var vehicle = obj.data.templates.display.vehicle;
-  var item = obj.data.templates.display.item;
-
-  var row = $("<div>").appendTo(div);
-  row.addClass("flex flexrow");
-
-  var sidebar = $("<div>").appendTo(row);
-  sidebar.addClass("fit-y flexcolumn background outline alttext spadding");
-  sidebar.css("font-size", "1.5em");
-
-  $("<b class='highlight smooth spadding outline alttext flexmiddle' title='This feature is in beta'>Beta</b>").appendTo(sidebar);
-
-  var character = genIcon("user", "Character Data").appendTo(sidebar);
-  character.click(function(){
-    optionsLabel.text("Character Data");
-    optionsMenu.empty();
-
-    var blacklist = {
-      "info" : {blacklist : ["name", "img", "notes"]},
-      "stats" : {blacklist : []},
-      "counters" : {blacklist : []},
-      "skills" : {blacklist : []},
-    }
-
-    var characterWrap = sync.newApp("ui_dataModel").appendTo(optionsMenu);
-    characterWrap.addClass("fit-xy");
-    characterWrap.attr("blacklist", JSON.stringify(blacklist));
-    characterWrap.attr("path", "templates.character");
-    characterWrap.css("position", "absolute");
-    characterWrap.css("left", "0");
-    characterWrap.css("top", "0");
-
-    obj.addApp(characterWrap);
-  });
-
-  var actions = genIcon("certificate", "Actions").appendTo(sidebar);
-  actions.css("margin-left", "1.5em");
-  actions.css("font-size", "0.6em");
-  actions.click(function(){
-    optionsLabel.text("Actions");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.actions.c");
-    obj.addApp(select);
-  });
-
-  var calc = genIcon("wrench", "Calculations").appendTo(sidebar);
-  calc.css("margin-left", "1.5em");
-  calc.css("font-size", "0.6em");
-  calc.click(function(){
-    optionsLabel.text("Calculations");
-    optionsMenu.empty();
-    obj.data.templates.display.sheet.calc = obj.data.templates.display.sheet.calc || [];
-
-    var select = sync.newApp("ui_calcEditor").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.display.sheet.calc");
-    select.attr("structure", "templates.character");
-    obj.addApp(select);
-  });
-
-  var init = genIcon("fire", "Initiative").appendTo(sidebar);
-  init.css("margin-left", "1.5em");
-  init.css("font-size", "0.6em");
-  init.click(function(){
-    optionsLabel.text("Initiative");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.initiative");
-    obj.addApp(select);
-  });
-
-  var skills = genIcon("wrench", "Skill Configuration").appendTo(sidebar);
-  skills.css("margin-left", "1.5em");
-  skills.css("font-size", "0.6em");
-  skills.click(function(){
-    optionsLabel.text("Rules");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.display.sheet.skills");
-    obj.addApp(select);
-  });
-
-  var display = genIcon("list-alt", "Sheet").appendTo(sidebar);
-  display.css("margin-left", "1.5em");
-  display.css("font-size", "0.6em");
-  display.click(function(){
-    optionsLabel.empty();
-
-    optionsMenu.empty();
-    sheetWrap.empty();
-
-    var fakeSheet = sync.newApp("ui_fakeSheet_wrap").appendTo(sheetWrap);
-    obj.addApp(fakeSheet);
-
-    /*var optionsSort = $("<div>").appendTo(optionsLabel);
-    optionsSort.addClass("flexrow flexwrap");
-    optionsSort.sortable({
-      update : function(ev, ui) {
-        var finalList = [];
-        optionsSort.children().each(function(){
-          if ($(this).attr("id") != null) {
-            finalList.push(obj.data.templates.display.sheet.tabs[$(this).attr("id")]);
-          }
-        });
-        obj.data.templates.display.sheet.tabs = finalList;
-        obj.update();
-      }
-    });*/
-
-    var button = $("<button>").appendTo(optionsLabel);
-    button.addClass("highlight alttext");
-    button.append("Sheet");
-    button.click(function(){
-      optionsLabel.children().each(function(){
-        $(this).removeClass("highlight alttext");
-        $(this).addClass("background");
-      });
-      $(this).addClass("highlight alttext");
-      $(this).removeClass("background");
-
-      optionsMenu.empty();
-
-      var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-      display.addClass("fit-x");
-      display.attr("targetApp", fakeSheet.attr("id"));
-      display.attr("display", "templates.display.sheet.content");
-      display.attr("path", "templates.display.sheet.content.");
-      display.attr("markup", "content");
-      display.css("position", "absolute");
-      display.css("left", "0");
-      display.css("top", "0");
-
-      obj.addApp(display);
-    });
-
-    for (var i in obj.data.templates.display.sheet.tabs) {
-      var tabData = obj.data.templates.display.sheet.tabs[i];
-      var button = $("<button>").appendTo(optionsLabel);
-      button.addClass("background");
-      button.append(tabData.name);
-
-      var remove = genIcon("remove").appendTo(button);
-      remove.addClass("destroy lrpadding");
-      remove.attr("index", i);
-      remove.click(function(){
-        var button = $(this).parent();
-        var index = $(this).attr("index");
-        ui_prompt({
-          target : $(this),
-          id : "remove-tab",
-          confirm : "Delete Tab",
-          click : function(ev, ui, inputs){
-            obj.data.templates.display.sheet.tabs.splice(index, 1);
-            obj.update();
-          }
-        });
-      });
-
-      button.attr("id", i);
-      button.click(function(){
-        var tabData = obj.data.templates.display.sheet.tabs[$(this).attr("id")];
-        optionsLabel.children().each(function(){
-          $(this).removeClass("highlight alttext");
-          $(this).addClass("background");
-        });
-        $(this).addClass("highlight alttext");
-        $(this).removeClass("background");
-
-        optionsMenu.empty();
-
-        var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-        display.addClass("fit-x");
-        display.attr("targetApp", fakeSheet.attr("id"));
-        display.attr("display", "templates.display.sheet.tabs."+$(this).attr("id")+".display");
-        display.attr("path", "templates.display.sheet.tabs."+$(this).attr("id")+".display.");
-        display.attr("markup", "tabs"+$(this).attr("id"));
-        display.css("position", "absolute");
-        display.css("left", "0");
-        display.css("top", "0");
-
-        obj.addApp(display);
-      });
-    }
-
-    var addNew = genIcon("plus", "Add New Tab").appendTo(optionsLabel);
-    addNew.addClass("lrpadding");
-    addNew.click(function(){
-      var before = $(this);
-
-      var content = $("<div>");
-      content.addClass("flexcolumn");
-
-      content.append("<b>Name</b>");
-      var name = genInput({
-        parent : content,
-        placeholder : "Enter Tab Name",
-      });
-
-      content.append("<b>Icon</b>");
-
-      var icons = genInput({
-        parent : content,
-        placeholder : "Enter Icon Name",
-      });
-      icons.keyup(function(){
-        icons.val(icons.val().replace("glyphicon", "").replace("glyphicon-", ""));
-      });
-
-      content.append("<a class='fit-x flexmiddle subtitle' href='https://getbootstrap.com/docs/3.3/components/' target='_blank'>Icon List</a>");
-
-      var button = $("<button>").appendTo(content);
-      button.append("Confirm");
-      button.click(function(){
-        if (name.val() || icons.val()) {
-          obj.data.templates.display.sheet.tabs.push({
-            name : name.val(),
-            icon : icons.val(),
-            display : []
-          });
-
-          var tabData = obj.data.templates.display.sheet.tabs[obj.data.templates.display.sheet.tabs.length-1];
-          var button = $("<button>");
-          before.before(button);
-          button.addClass("background");
-          button.append(tabData.name);
-          button.attr("id", i);
-
-          var remove = genIcon("remove").appendTo(button);
-          remove.addClass("destroy");
-          remove.attr("index", i);
-          remove.click(function(){
-            var button = $(this).parent();
-            var index = $(this).attr("index");
-            ui_prompt({
-              target : $(this),
-              id : "remove-tab",
-              confirm : "Delete Tab",
-              click : function(ev, ui, inputs){
-                button.remove();
-                obj.data.templates.display.sheet.tabs.splice(index, 1);
-                obj.update();
-              }
-            });
-          });
-
-          button.click(function(){
-            var tabData = obj.data.templates.display.sheet.tabs[$(this).attr("id")];
-            optionsLabel.children().each(function(){
-              $(this).removeClass("highlight alttext");
-              $(this).addClass("background");
-            });
-            $(this).addClass("highlight alttext");
-            $(this).removeClass("background");
-
-            optionsMenu.empty();
-            var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-            display.addClass("fit-x");
-            display.attr("targetApp", fakeSheet.attr("id"));
-            display.attr("display", "templates.display.vehicle.summary."+$(this).attr("id")+".display");
-            display.attr("path", "templates.display.vehicle.summary."+$(this).attr("id")+".display.");
-            display.attr("markup", "vehicle"+$(this).attr("id"));
-            display.css("position", "absolute");
-            display.css("left", "0");
-            display.css("top", "0");
-
-            obj.addApp(display);
-          });
-          obj.update();
-        }
-        layout.coverlay("add-tab");
-      });
-      var pop = ui_popOut({
-        target : $(this),
-        id : "add-tab",
-      }, content);
-    });
-
-    var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-    display.addClass("fit-x");
-    display.attr("targetApp", fakeSheet.attr("id"));
-    display.attr("display", "templates.display.sheet.content");
-    display.attr("path", "templates.display.sheet.content.");
-    display.attr("markup", "content");
-    display.css("position", "absolute");
-    display.css("left", "0");
-    display.css("top", "0");
-
-    obj.addApp(display);
-  });
-
-  var display = genIcon("user", "Summary").appendTo(sidebar);
-  display.css("margin-left", "1.5em");
-  display.css("font-size", "0.6em");
-  display.click(function(){
-    optionsLabel.empty();
-
-    optionsMenu.empty();
-    sheetWrap.empty();
-
-    var fakeSheet = sync.newApp("ui_fakeSummary_wrap").appendTo(sheetWrap);
-    obj.addApp(fakeSheet);
-
-    for (var i in obj.data.templates.display.sheet.summary) {
-      var tabData = obj.data.templates.display.sheet.summary[i];
-      var button = $("<button>").appendTo(optionsLabel);
-      button.addClass("background");
-      button.append(tabData.name);
-      button.attr("id", i);
-
-      var remove = genIcon("remove").appendTo(button);
-      remove.addClass("destroy");
-      remove.attr("index", i);
-      remove.click(function(){
-        var button = $(this).parent();
-        var index = $(this).attr("index");
-        ui_prompt({
-          target : $(this),
-          id : "remove-tab",
-          confirm : "Delete Tab",
-          click : function(ev, ui, inputs){
-            obj.data.templates.display.sheet.summary.splice(index, 1);
-            obj.update();
-          }
-        });
-      });
-
-      button.click(function(){
-        var tabData = obj.data.templates.display.sheet.summary[$(this).attr("id")];
-        optionsLabel.children().each(function(){
-          $(this).removeClass("highlight alttext");
-          $(this).addClass("background");
-        });
-        $(this).addClass("highlight alttext");
-        $(this).removeClass("background");
-
-        optionsMenu.empty();
-        var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-        display.addClass("fit-x");
-        display.attr("targetApp", fakeSheet.attr("id"));
-        display.attr("display", "templates.display.sheet.summary."+$(this).attr("id")+".display");
-        display.attr("path", "templates.display.sheet.summary."+$(this).attr("id")+".display.");
-        display.attr("markup", "summary"+$(this).attr("id"));
-        display.css("position", "absolute");
-        display.css("left", "0");
-        display.css("top", "0");
-
-        obj.addApp(display);
-      });
-    }
-
-    var addNew = genIcon("plus", "Add New Tab").appendTo(optionsLabel);
-    addNew.click(function(){
-      var before = $(this);
-
-      var content = $("<div>");
-      content.addClass("flexcolumn");
-
-      content.append("<b>Name</b>");
-      var name = genInput({
-        parent : content,
-        placeholder : "Enter Tab Name",
-      });
-
-      content.append("<b>Icon</b>");
-
-      var icons = genInput({
-        parent : content,
-        placeholder : "Enter Icon Name",
-      });
-      icons.keyup(function(){
-        icons.val(icons.val().replace("glyphicon", "").replace("glyphicon-", ""));
-      });
-
-      content.append("<a class='fit-x flexmiddle subtitle' href='https://getbootstrap.com/docs/3.3/components/' target='_blank'>Icon List</a>");
-
-      var button = $("<button>").appendTo(content);
-      button.append("Confirm");
-      button.click(function(){
-        if (name.val() || icons.val()) {
-          obj.data.templates.display.sheet.summary.push({
-            name : name.val(),
-            icon : icons.val(),
-            display : []
-          });
-
-          var tabData = obj.data.templates.display.sheet.summary[obj.data.templates.display.sheet.summary.length-1];
-          var button = $("<button>");
-          before.before(button);
-          button.addClass("background");
-          button.append(tabData.name);
-          button.attr("id", i);
-
-          var remove = genIcon("remove").appendTo(button);
-          remove.addClass("destroy");
-          remove.attr("index", i);
-          remove.click(function(){
-            var button = $(this).parent();
-            var index = $(this).attr("index");
-            ui_prompt({
-              target : $(this),
-              id : "remove-tab",
-              confirm : "Delete Tab",
-              click : function(ev, ui, inputs){
-                button.remove();
-                obj.data.templates.display.sheet.summary.splice(index, 1);
-                obj.update();
-              }
-            });
-          });
-
-          button.click(function(){
-            var tabData = obj.data.templates.display.sheet.summary[$(this).attr("id")];
-            optionsLabel.children().each(function(){
-              $(this).removeClass("highlight alttext");
-              $(this).addClass("background");
-            });
-            $(this).addClass("highlight alttext");
-            $(this).removeClass("background");
-
-            optionsMenu.empty();
-            var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-            display.addClass("fit-x");
-            display.attr("targetApp", fakeSheet.attr("id"));
-            display.attr("display", "templates.display.vehicle.summary."+$(this).attr("id")+".display");
-            display.attr("path", "templates.display.vehicle.summary."+$(this).attr("id")+".display.");
-            display.attr("markup", "vehicle"+$(this).attr("id"));
-            display.css("position", "absolute");
-            display.css("left", "0");
-            display.css("top", "0");
-
-            obj.addApp(display);
-          });
-          obj.update();
-        }
-        layout.coverlay("add-tab");
-      });
-      var pop = ui_popOut({
-        target : $(this),
-        id : "add-tab",
-      }, content);
-    });
-
-    $(optionsLabel.children()[0]).click();
-  });
-
-
-  var dice = genIcon("registration-mark", "Dice Data").appendTo(sidebar);
-  dice.click(function(){
-    optionsLabel.text("Dice Data");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.dice");
-    obj.addApp(select);
-  });
-
-  var actions = genIcon("picture", "Event Log Displays").appendTo(sidebar);
-  actions.css("margin-left", "1.5em");
-  actions.css("font-size", "0.6em");
-  actions.click(function(){
-    optionsLabel.text("Event Log Displays");
-
-    var content = sync.newApp("ui_diceDisplayBuilder");
-    content.addClass("fit-xy");
-    obj.addApp(content);
-
-    optionsMenu.empty();
-    content.appendTo(optionsMenu);
-    content.css("position", "absolute");
-    content.css("top", "0");
-    content.css("left", "0");
-  });
-
-  var actions = genIcon("certificate", "Dice Effects").appendTo(sidebar);
-  actions.css("margin-left", "1.5em");
-  actions.css("font-size", "0.6em");
-  actions.click(function(){
-    optionsLabel.text("Dice Effects");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.effects");
-    obj.addApp(select);
-  });
-
-  var item = genIcon("briefcase", "Item Data").appendTo(sidebar);
-  item.click(function(){
-    optionsLabel.text("Item Data");
-    optionsMenu.empty();
-    sheetWrap.empty();
-
-    var fakeSheet = sync.newApp("ui_fakeItem_wrap").appendTo(sheetWrap);
-    fakeSheet.css("width", "600px");
-    fakeSheet.css("min-height", "500px");
-    obj.addApp(fakeSheet);
-
-    var blacklist = {
-      "info" : {blacklist : ["name", "img", "notes", "weight", "quantity"]},
-      "equip" : {blacklist : ["armor"]},
-      "weapon" : {blacklist : []},
-      "spell" : {blacklist : []},
-    }
-
-    var characterWrap = sync.newApp("ui_dataModel").appendTo(optionsMenu);
-    characterWrap.addClass("fit-xy");
-    characterWrap.attr("blacklist", JSON.stringify(blacklist));
-    characterWrap.attr("path", "templates.item");
-    characterWrap.css("position", "absolute");
-    characterWrap.css("left", "0");
-    characterWrap.css("top", "0");
-    obj.addApp(characterWrap);
-  });
-
-  var actions = genIcon("certificate", "Actions").appendTo(sidebar);
-  actions.css("margin-left", "1.5em");
-  actions.css("font-size", "0.6em");
-  actions.click(function(){
-    optionsLabel.text("Actions");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.actions.i");
-    obj.addApp(select);
-  });
-
-  var calc = genIcon("wrench", "Parameters").appendTo(sidebar);
-  calc.css("margin-left", "1.5em");
-  calc.css("font-size", "0.6em");
-  calc.click(function(){
-    optionsLabel.text("Item Parameters");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.item.params");
-    obj.addApp(select);
-  });
-
-  var display = genIcon("list-alt", "Sheet").appendTo(sidebar);
-  display.css("margin-left", "1.5em");
-  display.css("font-size", "0.6em");
-  display.click(function(){
-    optionsLabel.text("Item Sheet");
-    optionsMenu.empty();
-    sheetWrap.empty();
-
-    var fakeSheet = sync.newApp("ui_fakeItem_wrap").appendTo(sheetWrap);
-    fakeSheet.css("width", "600px");
-    fakeSheet.css("min-height", "500px");
-    obj.addApp(fakeSheet);
-
-    var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-    display.addClass("fit-x");
-    display.attr("targetApp", fakeSheet.attr("id"));
-    display.attr("display", "templates.display.item.summary");
-    display.attr("path", "templates.display.item.summary.");
-    display.attr("markup", "summary"+fakeSheet.attr("id"));
-    display.css("position", "absolute");
-    display.css("left", "0");
-    display.css("top", "0");
-
-    obj.addApp(display);
-  });
-
-
-  var page = genIcon("duplicate", "Page Data").appendTo(sidebar);
-  page.addClass("dull");
-
-  var actions = genIcon("tint", "Default Styling").appendTo(sidebar);
-  actions.css("margin-left", "1.5em");
-  actions.css("font-size", "0.6em");
-  actions.click(function(){
-    obj.data.templates.page.info.img.modifiers = obj.data.templates.page.info.img.modifiers || {};
-    optionsLabel.text("Page Styling");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.page.info.notes.modifiers");
-    obj.addApp(select);
-  });
-
-/*
-  var vehicle = genIcon("plane", "Vehicle Data").appendTo(sidebar);
-  vehicle.click(function(){
-    optionsLabel.text("Vehicle Data");
-    optionsMenu.empty();
-
-    var blacklist = {
-      "info" : {blacklist : ["name", "img", "notes"]},
-      "stats" : {blacklist : []},
-      "counters" : {blacklist : []},
-    }
-    var characterWrap = sync.newApp("ui_dataModel").appendTo(optionsMenu);
-    characterWrap.addClass("fit-xy");
-    characterWrap.attr("blacklist", JSON.stringify(blacklist));
-    characterWrap.attr("path", "templates.vehicle");
-    characterWrap.css("position", "absolute");
-    characterWrap.css("left", "0");
-    characterWrap.css("top", "0");
-
-    obj.addApp(characterWrap);
-  });
-
-  var actions = genIcon("certificate", "Actions").appendTo(sidebar);
-  actions.css("margin-left", "1.5em");
-  actions.css("font-size", "0.6em");
-  actions.click(function(){
-    optionsLabel.text("Actions");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.actions.v");
-    obj.addApp(select);
-  });
-
-  var calc = genIcon("wrench", "Calculations").appendTo(sidebar);
-  calc.css("margin-left", "1.5em");
-  calc.css("font-size", "0.6em");
-  calc.click(function(){
-    optionsLabel.text("Calculations");
-    optionsMenu.empty();
-
-    obj.data.templates.display.sheet.calc = obj.data.templates.display.sheet.calc || [];
-
-    var select = sync.newApp("ui_calcEditor").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.display.vehicle.calc");
-    select.attr("structure", "templates.vehicle");
-    obj.addApp(select);
-  });
-
-  var rules = genIcon("wrench", "Rules").appendTo(sidebar);
-  rules.css("margin-left", "1.5em");
-  rules.css("font-size", "0.6em");
-  rules.click(function(){
-    optionsLabel.text("Rules");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.display.vehicle.rules");
-    obj.addApp(select);
-  });
-
-  var display = genIcon("plane", "Sheet").appendTo(sidebar);
-  display.css("margin-left", "1.5em");
-  display.css("font-size", "0.6em");
-  display.click(function(){
-    optionsLabel.empty();
-    optionsMenu.empty();
-    sheetWrap.empty();
-
-    var fakeSheet = sync.newApp("ui_fakeVehicle_wrap").appendTo(sheetWrap);
-    fakeSheet.attr("displayMode", 0);
-    obj.addApp(fakeSheet);
-
-    for (var i in obj.data.templates.display.vehicle.summary) {
-      var tabData = obj.data.templates.display.vehicle.summary[i];
-      var button = $("<button>").appendTo(optionsLabel);
-      button.addClass("background");
-      button.append(tabData.name);
-      button.attr("id", i);
-
-      var remove = genIcon("remove").appendTo(button);
-      remove.addClass("destroy");
-      remove.attr("index", i);
-      remove.click(function(){
-        var button = $(this).parent();
-        var index = $(this).attr("index");
-        ui_prompt({
-          target : $(this),
-          id : "remove-tab",
-          confirm : "Delete Tab",
-          click : function(ev, ui, inputs){
-            obj.data.templates.display.vehicle.summary.splice(index, 1);
-            obj.update();
-          }
-        });
-      });
-
-      button.click(function(){
-        var tabData = obj.data.templates.display.vehicle.summary[$(this).attr("id")];
-        optionsLabel.children().each(function(){
-          $(this).removeClass("highlight alttext");
-          $(this).addClass("background");
-        });
-        $(this).addClass("highlight alttext");
-        $(this).removeClass("background");
-
-        optionsMenu.empty();
-        var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-        display.addClass("fit-x");
-        display.attr("targetApp", fakeSheet.attr("id"));
-        display.attr("display", "templates.display.vehicle.summary."+$(this).attr("id")+".display");
-        display.attr("path", "templates.display.vehicle.summary."+$(this).attr("id")+".display.");
-        display.attr("markup", "vehicle"+$(this).attr("id"));
-        display.css("position", "absolute");
-        display.css("left", "0");
-        display.css("top", "0");
-
-        obj.addApp(display);
-      });
-    }
-
-    var addNew = genIcon("plus", "Add New Tab").appendTo(optionsLabel);
-    addNew.addClass("lrpadding");
-    addNew.click(function(){
-      var before = $(this);
-
-      var content = $("<div>");
-      content.addClass("flexcolumn");
-
-      content.append("<b>Name</b>");
-      var name = genInput({
-        parent : content,
-        placeholder : "Enter Tab Name",
-      });
-
-      content.append("<b>Icon</b>");
-
-      var icons = genInput({
-        parent : content,
-        placeholder : "Enter Icon Name",
-      });
-      icons.keyup(function(){
-        icons.val(icons.val().replace("glyphicon", "").replace("glyphicon-", ""));
-      });
-
-      content.append("<a class='fit-x flexmiddle subtitle' href='https://getbootstrap.com/docs/3.3/components/' target='_blank'>Icon List</a>");
-
-      var button = $("<button>").appendTo(content);
-      button.append("Confirm");
-      button.click(function(){
-        if (name.val() || icons.val()) {
-          obj.data.templates.display.vehicle.summary.push({
-            name : name.val(),
-            icon : icons.val(),
-            display : []
-          });
-
-          var tabData = obj.data.templates.display.vehicle.summary[obj.data.templates.display.vehicle.summary.length-1];
-          var button = $("<button>");
-          before.before(button);
-          button.addClass("background");
-          button.append(tabData.name);
-          button.attr("id", i);
-
-          var remove = genIcon("remove").appendTo(button);
-          remove.addClass("destroy");
-          remove.attr("index", i);
-          remove.click(function(){
-            var button = $(this).parent();
-            var index = $(this).attr("index");
-            ui_prompt({
-              target : $(this),
-              id : "remove-tab",
-              confirm : "Delete Tab",
-              click : function(ev, ui, inputs){
-                button.remove();
-                obj.data.templates.display.vehicle.summary.splice(index, 1);
-                obj.update();
-              }
-            });
-          });
-
-          button.click(function(){
-            var tabData = obj.data.templates.display.vehicle.summary[$(this).attr("id")];
-            optionsLabel.children().each(function(){
-              $(this).removeClass("highlight alttext");
-              $(this).addClass("background");
-            });
-            $(this).addClass("highlight alttext");
-            $(this).removeClass("background");
-
-            optionsMenu.empty();
-            var display = sync.newApp("ui_displayTree").appendTo(optionsMenu);
-            display.addClass("fit-x");
-            display.attr("targetApp", fakeSheet.attr("id"));
-            display.attr("display", "templates.display.vehicle.summary."+$(this).attr("id")+".display");
-            display.attr("path", "templates.display.vehicle.summary."+$(this).attr("id")+".display.");
-            display.attr("markup", "vehicle"+$(this).attr("id"));
-            display.css("position", "absolute");
-            display.css("left", "0");
-            display.css("top", "0");
-
-            obj.addApp(display);
-          });
-
-          obj.update();
-        }
-        layout.coverlay("add-tab");
-      });
-      var pop = ui_popOut({
-        target : $(this),
-        id : "add-tab",
-      }, content);
-    });
-
-    $(optionsLabel.children()[0]).click();
-  });
-*/
-  var gameData = genIcon("cog", "Game Data").appendTo(sidebar);
-  gameData.addClass("destroy");
-  gameData.click(function(){
-    ui_prompt({
-      target : $(this),
-      confirm : "Turn back! Unless you know what you are doing",
-      click : function(){
-        optionsLabel.text("Code Editor");
-        optionsMenu.empty();
-
-        var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-        select.addClass("fit-xy");
-        select.attr("lookup", "templates");
-        obj.addApp(select);
-      }
-    });
-  });
-
-  var library = genIcon("list-alt", "Content Library")//.appendTo(sidebar);
-  library.css("margin-left", "1.5em");
-  library.css("font-size", "0.6em");
-  library.click(function(){
-    optionsLabel.text("Content Library");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_gameLibraries").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    obj.addApp(select);
-  });
-
-  var tags = genIcon("tags", "Tags").appendTo(sidebar);
-  tags.css("margin-left", "1.5em");
-  tags.css("font-size", "0.6em");
-  tags.click(function(){
-    optionsLabel.text("Tags");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_manageTags").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    obj.addApp(select);
-  });
-
-  var gameCssStyling = genIcon("tint", "Layout Styling").appendTo(sidebar);
-  gameCssStyling.css("margin-left", "1.5em");
-  gameCssStyling.css("font-size", "0.6em");
-  gameCssStyling.click(function(){
-    optionsLabel.text("Layout Styling");
-    optionsMenu.empty();
-
-    var content = $("<div>").appendTo(optionsMenu);
-    content.addClass("flexcolumn fit-xy");
-
-    var temp = obj.data.templates.styling || {
-      foreground : "rgb(33,46,55)",
-      background : "rgb(44,57,66)",
-      highlight : "rgb(190,4,15)",
-      highlight2 : "rgb(230,44,55)",
-      hover1 : "rgb(190,4,15)",
-      hover2 : "rgb(230,44,55)",
-      focus : "rgb(230,44,55)",
-      create : "rgb(66,138,66)",
-      destroy : "rgb(190,4,15)",
-    };
-
-    var navBar = genNavBar(null, "flex");
-    navBar.addClass("fit-x flex");
-    navBar.appendTo(content);
-    navBar.generateTab("Basic", "user", function(parent) {
-      temp = {
-        foreground : "rgb(33,46,55)",
-        background : "rgb(44,57,66)",
-        highlight : "rgb(190,4,15)",
-        highlight2 : "rgb(230,44,55)",
-        hover1 : "rgb(190,4,15)",
-        hover2 : "rgb(230,44,55)",
-        focus : "rgb(230,44,55)",
-        create : "rgb(66,138,66)",
-        destroy : "rgb(190,4,15)",
-      }
-
-      function update(color, key) {
-        if (key == "foreground") {
-          color.attr("style", `
-          background: none;
-          background-color: `+temp["foreground"]+`;
-          `);
-        }
-        else if (key == "background") {
-          color.attr("style", `background: linear-gradient(to top, `+temp["foreground"]+`, `+temp["background"]+`);`);
-        }
-        else if (key == "highlight") {
-          color.attr("style", `background: linear-gradient(to top, `+temp["highlight"]+`, `+temp["highlight2"]+`);`);
-        }
-        else if (key == "highlight2") {
-          color.attr("style", `background-color: `+temp["highlight2"]+`;`);
-        }
-        else if (key == "hover1") {
-          color.attr("style", `            	color: white;
-                        border-radius: 2px;
-                        background-color: `+temp["hover1"]+`;
-                        outline-color: `+temp["hover1"]+`;
-                        cursor : pointer;`);
-        }
-        else if (key == "hover2") {
-          color.attr("style", `            	color: white;
-                        border-radius: 2px;
-                        background-color: `+temp["hover2"]+`;
-                        outline-color: `+temp["hover2"]+`;
-                        cursor : pointer;`);
-        }
-        else if (key == "focus") {
-          color.attr("style", `box-shadow: inset 0 0 0.5em `+temp["focus"]+`;`);
-        }
-        else if (key == "create") {
-          color.attr("style", `color: `+temp["create"]+`;
-          -webkit-text-fill-color: `+temp["create"]+`;`);
-        }
-        else if (key == "combat") {
-          color.attr("style", `            	color: `+temp["combat"]+`;
-                        -webkit-text-stroke-color: rgb(255,255,255);
-                        -webkit-text-fill-color: `+temp["combat"]+`;`);
-        }
-        else if (key == "destroy") {
-          color.attr("style", `            	color: `+temp["destroy"]+`;
-                        -webkit-text-fill-color: `+temp["destroy"]+`;`);
-        }
-      }
-
-      var optionsWrap = $("<div>").appendTo(parent);
-      optionsWrap.addClass("padding flexrow flexwrap flexaround");
-
-      for (var key in temp) {
-        var option = $("<div>").appendTo(optionsWrap);
-        option.addClass("spadding outline flexcolumn flexmiddle");
-
-        var b = $("<b>").appendTo(option);
-        b.text(key);
-
-        var color = $("<div>").appendTo(option);
-        color.attr("key", key);
-        color.addClass("smooth lpadding hover");
-        color.text("text");
-        update(color, key);
-        color.click(function(){
-          var key = $(this).attr("key");
-          var col = $(this);
-
-          var colorPicker = sync.render("ui_colorPicker")(obj, app, {
-            hideColor : true,
-            update : true,
-            colorChange : function(ev, ui, col){
-              temp[key] = col;
-              optionsWrap.children().each(function(){
-                update($($(this).children()[1]), $($(this).children()[1]).attr("key"));
-              });
-            }
-          }).addClass("flexmiddle flex");
-          var pop = ui_popOut({
-            target : $(this),
-            id : "color",
-            align : "bottom",
-          }, colorPicker);
-        });
-      }
-    });
-
-    navBar.generateTab("Advanced", "cog", function(parent) {
-      var textarea = $("<textarea>").appendTo(parent);
-      textarea.addClass("flex");
-      if (temp instanceof Object) {
-        temp = obj.data.templates.styling || `
-        .foreground {
-          background: none;
-          background-color: `+temp["foreground"]+`;
-        }
-
-        .background {
-          background: linear-gradient(to top, `+temp["foreground"]+`, `+temp["background"]+`);
-        }
-
-        .highlight {
-          background: linear-gradient(to top, `+temp["highlight"]+`, `+temp["highlight2"]+`);
-        }
-
-        .highlight2 {
-          background-color: `+temp["highlight2"]+`;
-        }
-
-        .create {
-          color: `+temp["create"]+`;
-          -webkit-text-fill-color: `+temp["create"]+`;
-        }
-
-        .combat {
-          color: `+temp["combat"]+`;
-          -webkit-text-stroke-color: rgb(255,255,255);
-          -webkit-text-fill-color: `+temp["combat"]+`;
-        }
-
-        .destroy {
-          color: `+temp["destroy"]+`;
-          -webkit-text-fill-color: `+temp["destroy"]+`;
-        }
-
-        .focus {
-          box-shadow: inset 0 0 0.5em `+temp["focus"]+`;
-        }
-
-        .hover1:hover {
-          color: white;
-          border-radius: 2px;
-          background-color: `+temp["hover1"]+`;
-          outline-color: `+temp["hover1"]+`;
-          cursor : pointer;
-        }
-
-        .hover2:hover {
-          color: white;
-          border-radius: 2px;
-          background-color: `+temp["hover2"]+`;
-          outline-color: `+temp["hover2"]+`;
-          cursor : pointer;
-        }
-        `;
-      }
-      textarea.val(temp);
-      textarea.change(function(){
-        temp = textarea.val();
-      });
-    });
-
-    navBar.selectTab("Basic");
-
-    var button = $("<button>").appendTo(content);
-    button.append("<b>Confirm</b>");
-    button.click(function(){
-      if (temp instanceof Object) {
-        temp = obj.data.templates.styling || `
-        .foreground {
-          background: none;
-          background-color: `+temp["foreground"]+`;
-        }
-
-        .background {
-          background: linear-gradient(to top, `+temp["foreground"]+`, `+temp["background"]+`);
-        }
-
-        .highlight {
-          background: linear-gradient(to top, `+temp["highlight"]+`, `+temp["highlight2"]+`);
-        }
-
-        .highlight2 {
-          background-color: `+temp["highlight2"]+`;
-        }
-
-        .create {
-          color: `+temp["create"]+`;
-          -webkit-text-fill-color: `+temp["create"]+`;
-        }
-
-        .combat {
-          color: `+temp["combat"]+`;
-          -webkit-text-stroke-color: rgb(255,255,255);
-          -webkit-text-fill-color: `+temp["combat"]+`;
-        }
-
-        .destroy {
-          color: `+temp["destroy"]+`;
-          -webkit-text-fill-color: `+temp["destroy"]+`;
-        }
-
-        .focus {
-          box-shadow: inset 0 0 0.5em `+temp["focus"]+`;
-        }
-
-        .hover1:hover {
-          color: white;
-          border-radius: 2px;
-          background-color: `+temp["hover1"]+`;
-          outline-color: `+temp["hover1"]+`;
-          cursor : pointer;
-        }
-
-        .hover2:hover {
-          color: white;
-          border-radius: 2px;
-          background-color: `+temp["hover2"]+`;
-          outline-color: `+temp["hover2"]+`;
-          cursor : pointer;
-        }
-        `;
-      }
-      obj.data.templates.styling = temp;
-    });
-  });
-
-  var tables = genIcon("th-list", "Tables").appendTo(sidebar);
-  tables.css("margin-left", "1.5em");
-  tables.css("font-size", "0.6em");
-  tables.click(function(){
-    optionsLabel.text("Table Editor");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_tableEditor").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    obj.addApp(select);
-  });
-
-  var tables = genIcon("th-list", "Constants").appendTo(sidebar);
-  tables.css("margin-left", "1.5em");
-  tables.css("font-size", "0.6em");
-  tables.click(function(){
-    optionsLabel.text("Constants");
-    optionsMenu.empty();
-
-    var select = sync.newApp("ui_JSON").appendTo(optionsMenu);
-    select.addClass("fit-xy");
-    select.attr("lookup", "templates.constants");
-    obj.addApp(select);
-  });
-
-  $("<div>").addClass("flex").appendTo(sidebar);
-
-  var optionsBar = $("<div>").appendTo(sidebar);
-  optionsBar.addClass("flexcolumn");
-  optionsBar.css("color", "#333");
-  optionsBar.css("font-size", "0.5em");
-
-  var button = $("<button>").appendTo(optionsBar);
-  button.append("Update Existing Assets");
-  button.click(function(){
-    var content = $("<div>");
-    content.addClass("flexcolumn flexmiddle");
-    content.append("<div class='flexmiddle'><b>This will alter all existing characters, are you sure?</b></div>");
-
-    var button = $("<button>").appendTo(content);
-    button.append("Yes");
-    button.click(function(){
-      game.templates;
-      for (var i in game.entities.data) {
-        var ent = game.entities.data[i];
-        if (ent.data && ent.data._t == "c") {
-
-          if (game.templates.display.sheet.health) {
-            sync.traverse(ent.data, game.templates.display.sheet.health, ent.data.counters.wounds);
-          }
-
-          merge(ent.data.info, game.templates.character.info);
-          merge(ent.data.counters, game.templates.character.counters);
-          merge(ent.data.stats, game.templates.character.stats);
-          for (var j in ent.data.inventory) {
-            merge(ent.data.inventory[j], game.templates.item);
-          }
-          var newTalents = {};
-          for (var j in ent.data.talents) {
-            ent.data.talents = ent.data.talents || {};
-            newTalents[j] = ent.data.talents[j];
-          }
-          game.entities.data[i].data.talents = newTalents;
-
-          var newSpecials = {};
-          for (var j in ent.data.specials) {
-            ent.data.specials = ent.data.specials || {};
-            newSpecials[j] = ent.data.specials[j];
-          }
-          game.entities.data[i].data.specials = newSpecials;
-
-          var newSkills = duplicate(game.templates.character.skills);
-          for (var j in ent.data.skills) {
-            ent.data.skills = ent.data.skills || {};
-            var found = false;
-            for (var k in newSkills) {
-              if (ent.data.skills[j].name.toLowerCase() == newSkills[k].name.toLowerCase()) {
-                newSkills[k] = ent.data.skills[j];
-                found = true;
-                break;
-              }
-            }
-            if (!found) {
-              newSkills[(Object.keys(newSkills).length || 0)] = ent.data.skills[j];
-            }
-          }
-          game.entities.data[i].data.skills = newSkills;
-
-          for (var j in ent.data.traits) {
-            ent.data.tags = ent.data.tags || {};
-            ent.data.tags["trait_"+ent.data.traits[j].name] = 1;
-          }
-          for (var j in ent.data.proficient) {
-            ent.data.tags = ent.data.tags || {};
-            ent.data.tags["prof_"+j] = 1;
-          }
-          ent.sync("updateAsset");
-        }
-        else if (ent.data && ent.data._t == "g") {
-          ent.sync("deleteAsset");
-        }
-        else if (ent.data && ent.data._t == "v") {
-          merge(ent.data.info, game.templates.vehicle.info);
-          merge(ent.data.counters, game.templates.vehicle.counters);
-          merge(ent.data.stats, game.templates.vehicle.stats);
-          for (var j in ent.data.inventory) {
-            merge(ent.data.inventory[j], game.templates.item);
-          }
-          ent.sync("updateAsset");
-        }
-      }
-      layout.coverlay("confirm-template");
-    });
-
-    var button = $("<button>").appendTo(content);
-    button.append("No");
-    button.click(function(){
-      layout.coverlay("confirm-template");
-    });
-
-    ui_popOut({
-      target : $(this),
-      id : "confirm-template",
-    }, content);
-  });
-
-  var button = $("<button>").appendTo(optionsBar);
-  button.addClass("highlight alttext");
-  button.append("Save New Templates");
-  button.click(function(){
-    var button = $("<button>");
-    button.append("Confirm (Can't be undone)");
-    button.click(function(){
-      runCommand("updateTemplate", duplicate(obj.data.templates));
-      layout.coverlay("confirm-template");
-    });
-
-    ui_popOut({
-      target : $(this),
-      id : "confirm-template",
-    }, button);
-  });
-
-  var button = $("<button>").appendTo(optionsBar);
-  button.addClass("focus");
-  button.append("RESTORE ORIGNAL TEMPLATES");
-  button.click(function(){
-    if (game.locals["gameList"][game.config.data.game]) {
-      runCommand("updateTemplate", duplicate(game.locals["gameList"][game.config.data.game].templates));
-    }
-    else {
-      sendAlert({text : "This is a custom game, can't restore templates(still being built)"});
-    }
-  });
-
-  var curButton = $("<button>")//.appendTo(optionsBar);
-  curButton.addClass("alttext highlight");
-  var download = genIcon("cloud-download", (data.name || "[Unnamed Template]")).appendTo(curButton);
-  download.css("pointer-events", "none");
-  curButton.click(function(){
-    var content = $("<div>");
-    content.addClass("flexcolumn");
-    for (var i in game.locals["storage"].data.l) {
-      if (game.locals["storage"].data.l[i] instanceof Object) {
-        if (game.locals["storage"].data.l[i].a == "t") {
-          var template = $("<button>").appendTo(content);
-          template.text((game.locals["storage"].data.l[i].n || "[Unnamed Template]"));
-          template.attr("index", i);
-          template.attr("name", (game.locals["storage"].data.l[i].n || "[Unnamed Template]"));
-          template.attr("_uid", game.locals["storage"].data.l[i]._uid);
-          template.click(function(){
-            curButton.empty();
-            var icon = genIcon("cloud-download", $(this).attr("name")).appendTo(curButton);
-            icon.css("pointer-events", "none");
-            data.templates = game.locals["storage"].data.s[$(this).attr("_uid")].data;
-            data._uid = $(this).attr("_uid");
-            data.name = $(this).attr("name");
-            obj.update();
-            layout.coverlay("template-list");
-          });
-        }
-      }
-    }
-
-    var popout = ui_popOut({
-      target : $(this),
-      align : "top",
-      id : "template-list"
-    }, content);
-  });
-
-  var button = $("<button>")//.appendTo(optionsBar);
-  button.addClass("alttext highlight");
-  if (!data._uid) {
-    button.append(genIcon("cloud-upload", "Save Into Asset Storage").css("pointer-events", "none"));
-  }
-  else {
-    button.append(genIcon("cloud-upload", "Update Template").css("pointer-events", "none"));
-  }
-  button.click(function(){
-    ui_prompt({
-      target : $(this),
-      inputs : {"Template Name" : data.name || ""},
-      click : function(ev, inputs) {
-        data.templates.name = inputs["Template Name"].val();
-        data.templates._uid = data._uid;
-        runCommand("storeTemplate", duplicate(data.templates));
-      }
-    });
-
-    //runCommand("updateTemplate", duplicate(data.templates));
-  });
-  if (data._uid) {
-    var exportWrap = $("<div>").appendTo(optionsBar);
-    exportWrap.addClass("flexmiddle");
-
-    var exportLink = genIcon("cloud-upload", "Share Homebrew Game").appendTo(exportWrap);
-    exportLink.addClass("alttext");
-    exportLink.click(function(){
-      var options = $("<div>");
-      options.addClass("flexcolumn flex");
-
-      game.locals["marketSubmission"] = sync.dummyObj();
-      game.locals["marketSubmission"].data = {info : {
-        name : sync.newValue("Name", data.name),
-        img : sync.newValue("Image"),
-        notes : sync.newValue("Notes", "Enter your entry details here")}
-      };
-
-      var dummy = game.locals["marketSubmission"];
-
-      var newApp = sync.newApp("ui_editPage");
-      newApp.addClass("flex");
-      newApp.css("padding", "1em");
-      newApp.appendTo(options);
-      dummy.addApp(newApp);
-
-      var form = $("<div>").appendTo(options);
-      form.addClass("flexcolumn");
-      form.append("<b>iframe redirect?</b>");
-
-      var url = genInput({
-        parent : form,
-        placeholder : "Leave blank to use the description above or enter URL",
-      });
-      url.change(function(){
-        expanded.empty();
-        if ($(this).val()) {
-          game.locals["marketSubmission"].data.info.notes.name = "url";
-          expanded.append("<iframe src='"+$(this).val()+"' width='"+expanded.width()+"' height='"+($(document).height() * 0.65)+"'>");
-          game.locals["marketSubmission"].update();
-        }
-        else if (cObj.data.info.notes.name != "url") {
-          game.locals["marketSubmission"].data.info.notes.name = "Notes";
-          expanded.append(sync.render("ui_renderPage")(cObj, app, {viewOnly : true}).removeClass("outline"));
-          game.locals["marketSubmission"].update();
-        }
-      });
-
-      form.append("<p style='font-size:0.8em;'>URL redirect can move users to your own site, or show something more complicated than what the page editor can support.</p>");
-
-      var wrap = $("<div>").appendTo(form);
-      wrap.addClass("flexmiddle");
-      wrap.css("display", "inline-block");
-
-      var checkbox = genInput({
-        parent : wrap,
-        type : "checkbox",
-        style : {"margin" : "0"},
-        disabled : "true",
-      }).appendTo(wrap);
-      wrap.append("<b>Quality Content</b>");
-
-      var wrap = $("<div>").appendTo(form);
-      wrap.addClass("flexmiddle");
-      wrap.css("display", "inline-block");
-
-      var checkbox = genInput({
-        parent : wrap,
-        type : "checkbox",
-        style : {"margin" : "0"}
-      }).appendTo(wrap);
-      checkbox.attr("checked", "true");
-      wrap.append("<b>Community Content</b>");
-
-      var butt = $("<button>").appendTo(form);
-      butt.append("Confirm Submission");
-      butt.addClass("flexmiddle");
-      butt.click(function(){
-        // converts to an actual inventory (has to be done this way)
-        runCommand("listAsset", {id : getCookie("UserID")+"_"+data._uid, data : game.locals["marketSubmission"].data});
-        //layout.coverlay("market-submission", 500);
-      });
-      var popout = ui_popOut({
-        id : "market-submission",
-        target : $(this),
-        style : {"width" : "30vw"},
-      }, options);
-    });
-  }
-
-  var preview = $("<div>").appendTo(row);
-  preview.addClass("flexcolumn");
-
-  var sheetWrap = $("<div>").appendTo(preview);
-  sheetWrap.css("overflow", "auto");
-  sheetWrap.css("position", "relative");
-
-  var fakeSheet = sync.newApp("ui_fakeSheet_wrap").appendTo(sheetWrap);
-  obj.addApp(fakeSheet);
-
-  var options = $("<div>").appendTo(row);
-  options.addClass("flex flexcolumn padding foreground");
-
-  var optionsLabel = $("<b class='alttext'>Options</b>").appendTo(options);
-
-  var optionsMenu = $("<div>").appendTo(options);
-  optionsMenu.addClass("flex white smooth");
-  optionsMenu.css("position", "relative");
-  optionsMenu.css("overflow", "auto");
-
-  return div;
-});
-
-/*{
-  die : "d20",
-  terms : [
-    {value : 5},
-    {lookup : "stats:Str", value : 0, min : 0, max : 10, type : "rawVal"}
-    {lookup : "stats:Str", value : 0, min : 0, max : 10, type : "val"}
-    {lookup : "stats:Str", value : 0, min : 0, max : 10, type : "modified"}
-    {lookup : "stats:Str:modifiers:Stat-Bonus", min : 0, max : 10} // raw value
-  ]
-}*/
-
-/*sync.render("ui_savedEquations", function(obj, app, scope) {
-  var div = $("<div>");
-  div.addClass("flexcolumn");
-
-  var eqList = obj.data;
-
-  var newEquation = $("<button>Save New Equation</button>").appendTo(div);
-  newEquation.click(function(){
-    ui_prompt({
-      target : $(this),
-      inputs : {
-        "Name" : "",
-        "Equation" : "",
-      },
-      confirm : "Save Equation",
-      click : function(ev, inputs) {
-        if (inputs["Name"].val() && inputs["Equation"].val()) {
-          eqList[inputs["Name"].val()] = inputs["Equation"].val();
-          localStorage.setItem("saved-equations", JSON.stringify(eqList));
-        }
-      }
-    });
-  });
-
-  if (Object.keys(eqList).length) {
-    for (var key in eqList) {
-      var link = genIcon("", key).appendTo(div);
-      link.attr("value", eqList[key]);
-      link.click(function(){
-        var val = $(this).attr("value");
-        $(this).val(obj.data.eventData.data.equations);
-        obj.data.eventData.data.equations = val;
-        obj.update();
-      });
-    }
-  }
-
-  return div;
-});*/
-
-sync.render("ui_savedEquations", function(obj, app, scope) {
-  var div = $("<div>");
-  div.addClass("flexcolumn");
-
-  var eqList = localStorage.getItem("saved-equations");
-  if (eqList) {
-    eqList = JSON.parse(eqList);
-  }
-  else {
-    eqList = {};
-  }
-
-  var tabBar = genNavBar("background alttext");
-  tabBar.appendTo(div);
-  for (var gameKey in eqList) {
-    function tabWrap(gameKey) {
-      tabBar.generateTab(gameKey, "book", function(container) {
-        if (Object.keys(eqList[gameKey]).length) {
-          for (var key in eqList[gameKey]) {
-            var titleWrapper = $("<div>").appendTo(container);
-            titleWrapper.addClass("fit-x hover2");
-            titleWrapper.append("<b class='outlinebottom'>"+key+"</b>");
-            titleWrapper.attr("value", eqList[gameKey][key]);
-            titleWrapper.click(function(){
-              var val = $(this).attr("value");
-              $(this).val(obj.data.str);
-              obj.data.str = val;
-              obj.update();
-            });
-
-            var wrapper = $("<div>").appendTo(titleWrapper);
-            wrapper.addClass("flexbetween");
-
-            var link = genIcon("", eqList[gameKey][key]).appendTo(wrapper);
-
-            var removeEq = genIcon("remove").appendTo(wrapper);
-            removeEq.addClass("destroy");
-            removeEq.attr("index", key);
-            removeEq.click(function(ev) {
-              delete eqList[gameKey][$(this).attr("index")];
-              localStorage.setItem("saved-equations", JSON.stringify(eqList));
-              removeEq.parent().parent().remove();
-              ev.stopPropagation();
-            });
-          }
-        }
-      });
-    }
-    tabWrap(gameKey);
-  }
-  tabBar.selectTab(game.config.data.game);
-
-  var newEquation = $("<button>New Equation</button>").appendTo(div);
-  newEquation.click(function(){
-    ui_prompt({
-      target : $(this),
-      inputs : {
-        "Name" : "",
-        "Equation" : "",
-        "Category" : {placholder : "optional"},
-      },
-      confirm : "Save Equation",
-      click : function(ev, inputs) {
-        if (inputs["Name"].val() && inputs["Equation"].val()) {
-          eqList = eqList || {};
-          eqList[inputs["Category"].val() || game.config.data.game] = eqList[inputs["Category"].val() || game.config.data.game] || {};
-          eqList[inputs["Category"].val() || game.config.data.game][inputs["Name"].val()] = inputs["Equation"].val();
-          localStorage.setItem("saved-equations", JSON.stringify(eqList));
-          var parent = div.parent();
-          parent.empty()
-          parent.append(sync.render("ui_savedEquations")(obj, app, scope));
-        }
-      }
-    });
-  });
-
-  return div;
-});
-
-sync.render("ui_equationBuilder", function(obj, app, scope) {
-  scope = scope || {viewOnly : app.attr("viewOnly"), local : app.attr("local") == "true", noRoll : app.attr("noRoll") == "true"};
-  var data = obj.data;
-
-  var div = $("<div>");
-
-  var eqButton = $("<div>").appendTo(div);
-  eqButton.addClass("flexbetween");
-  eqButton.append("<b>Equation Builder</b>");
-
-  var saveEqWrap = $("<div>").appendTo(eqButton);
-  saveEqWrap.addClass("flexmiddle");
-
-  var savedEq = genIcon("book", "Saved Equations");
-  savedEq.appendTo(saveEqWrap);
-  savedEq.addClass("subtitle");
-
-  savedEq.click(function(){
-    var newApp = sync.render("ui_savedEquations")(obj, app, scope);
-    var popOut = ui_popOut({
-      id : "saved-equations",
-      target : $(this),
-      align : "top",
-    }, newApp);
-  });
-
-  var input = genInput({
-    parent : div,
-    value : obj.data.str,
-    style : {"width": "100%", "font-size" : "0.8em"},
-    title : "Enter Modifier Amount"
-  });
-  input.change(function(){
-    var val = $(this).val();
-    $(this).val(obj.data.str);
-    obj.data.str = val;
-    obj.update();
-  });
-
-  var preview = $("<div>").appendTo(div);
-  preview.addClass("flexmiddle");
-  var ctx = duplicate(obj.data.context);
-  var context = sync.context(obj.data.str, ctx, true);
-  merge(ctx, context.ctx);
-  preview.append("<i>"+sync.reduce(context.str, ctx, true)+"</i>");
-
-  if (!scope.noRoll) {
-    var button = $("<button>").appendTo(div);
-    button.append("Roll Equation!");
-    button.addClass("fit-x");
-    button.click(function(){
-      snd_diceRoll.play();
-      var ctx = duplicate(obj.data.context);
-      var context = sync.context(obj.data.str, ctx, true);
-      merge(ctx, context.ctx);
-
-      var eq = data.str;
-      var copy = duplicate(data.eventData);
-      copy.data.equations = sync.executeQuery(eq, ctx);
-      runCommand("diceCheck", copy);
-    });
-  }
-  return div;
-});
-
-function ui_buildthing(click){
-  var div = $("<div>");
-  div.css("padding-right", "8px");
-  div.css("overflow", "auto");
-
-  function navigate(target, key) {
-    var wrapper = $("<div>");
-    wrapper.css("padding-left", "8px");
-    if (target[key] instanceof Object && Object.keys(target[key]).length) {
-      if (target[key].current || target[key].current != null || target[key].modifiers != null) {
-
-      }
-      else {
-        wrapper.append("<b class='outlinebottom'>"+key+"</b>");
-        for (var k in target[key]) {
-          var wrap = navigate(target[key][k], k);
-          if (target[key][k]) {
-            if (target[key][k].name) {
-              wrap.append("<b>"+target[key][k].name+"</b>");
-            }
-            else {
-              wrap.append("<b>"+k+"</b>");
-            }
-
-            if (target[key][k].current != null || target[key][k].modifiers != null) {
-              var choices = $("<div>").appendTo(wrap);
-              choices.addClass("flexcolumn subtitle");
-              choices.css("padding-left", "8px");
-
-              var rawVal = $("<button>").appendTo(choices);
-              rawVal.attr("target", key + "." + k);
-              rawVal.append("Raw Value");
-              rawVal.click(function(ev){
-                click(ev, $(this));
-              });
-
-              var val = $("<button>").appendTo(choices);
-              val.attr("target", key + "." + k);
-              val.append("Value");
-              val.click(function(ev){
-                click(ev, $(this));
-              });
-
-              var modified = $("<button>").appendTo(choices);
-              modified.attr("target", key + "." + k);
-              modified.append("Modified");
-              modified.click(function(ev){
-                click(ev, $(this));
-              });
-            }
-          }
-          wrapper.append(wrap);
-        }
-      }
-    }
-    return wrapper;
-  }
-  div.addClass("flexrow");
-  for (var key in game.templates.character) {
-    if (key.charAt(0) != "_" && (key == "stats" || key == "counters")) {
-      div.append(navigate(game.templates.character, key));
-    }
-  }
-
-  return div;
-}
-
-var equation = sync.newValue("Equation");
-function buildEquations() {
-  var target = $("#preview");
-  target.empty();
-  for (var i in equation.modifiers) {
-    target.append("<b>+</b>");
-    var button = $("<button>").appendTo(target);
-    button.append(equation.modifiers[i]);
-    var diceData = game.templates.dice.pool[equation.modifiers[i]];
-    if (diceData) {
-      button.addClass("dice alttext");
-      for (var key in diceData.display) {
-        button.css(key, diceData.display[key]);
-      }
-    }
-    button.attr("index", i);
-    button.click(function(){
-      var mods = duplicate(equation.modifiers);
-      delete mods[$(this).attr("index")];
-      equation.modifiers = {};
-      for (var key in mods) {
-        equation.modifiers[Object.keys(equation.modifiers).length] = mods[key];
-      }
-      buildEquations();
-    });
-  }
-  $(target.children()[0]).remove();
-}
-
-
-function equationBuilder() {
-  var div = $("<div>");
-  div.append("<b>Equation Builder</b>");
-
-  var preview = $("<div>").appendTo(div);
-  preview.attr("id", "preview");
-
-  var option = $("<div>").appendTo(div);
-  option.append("<b>Add Term</b>");
-
-  var optionsBar = $("<div>").appendTo(option);
-
-  var button = $("<button>Dice</button>").appendTo(optionsBar);
-  button.click(function(){
-    var extraDice = $("<div>");
-
-    for (var index in game.templates.dice.pool) {
-      var diceData = game.templates.dice.pool[index];
-
-      var extraDiceContainer = $("<div>").appendTo(extraDice);
-      extraDiceContainer.css("width", "auto");
-      extraDiceContainer.css("display", "inline-block");
-
-      var dice = $("<button>").appendTo(extraDiceContainer);
-      dice.attr("index", index);
-      dice.css("display", "flex");
-      dice.css("background-color", "#333");
-      dice.css("color", "white");
-      dice.css("border", "1px solid black");
-      dice.css("border-radius", "4px");
-      dice.css("display", "inline-block");
-      dice.css("width", "3em");
-      dice.css("height", "3em");
-      dice.css("font-weight", "bold");
-      dice.addClass("flexmiddle");
-
-      var label = $("<div>").appendTo(dice);
-      label.css("text-align", "center");
-      label.css("font-size", "1em");
-      label.css("font-weight", "bold");
-      label.css("width", "auto");
-      label.css("height", "auto");
-      label.css("pointer-events", "none");
-      label.text(diceData.value);
-
-      dice.append(label);
-
-      for (var key in diceData.display) {
-        dice.css(key, diceData.display[key]);
-      }
-
-      dice.click(function() {
-        sync.modifier(equation, Object.keys(equation.modifiers || {}).length, $(this).attr("index"));
-        layout.coverlay("add-dice", 500);
-        buildEquations();
-      });
-    }
-
-    var input = genInput({
-      parent : extraDice,
-      placeholder : "Custom Equation",
-      style : {"width": "100%"},
-      index : index,
-      title : "Enter any dice d<sides>, eg 1d433 or D5000"
-    });
-
-    input.change(function() {
-      sync.modifier(equation, Object.keys(equation.modifiers || {}).length, $(this).val());
-      layout.coverlay("add-dice", 500);
-      buildEquations();
-    });
-
-    ui_popOut({
-      id : "add-dice",
-      target : $(this),
-      align : "bottom",
-      style : {"width": "10.5em"},
-    }, extraDice);
-  });
-
-  var button = $("<button>Reference</button>").appendTo(optionsBar);
-  button.click(function(){
-    function click(ev, ui) {
-      sync.modifier(equation, Object.keys(equation.modifiers || {}).length, ui.attr("target"));
-      layout.coverlay("popout");
-      buildEquations();
-    }
-
-    ui_popOut({
-      id : "popout",
-      target : div,
-      align : "right",
-    }, ui_buildthing(click));
-  });
-
-  ui_popOut({
-    id : "dd",
-    target : $("body"),
-  }, div);
-}
-
-sync.render("ui_marketEntry", function(obj, app, scope) {
-  var expanded = $("<div>");
-  expanded.addClass("flex flexcolumn");
-
-  var entry = scope.list[scope.index];
-
-  $.ajax({
-    url: '/retrieveUser?id='+entry.owner,
-    error: function(code) {
-      console.log(code);
-    },
-    dataType: 'json',
-    success: function(data) {
-      var usrPfl = sync.obj();
-      usrPfl.data = data;
-
-      var navBar = genNavBar("background alttext", "flex");
-      navBar.addClass("flex fit-x");
-
-      navBar.generateTab("Description", "book", function(parent){
-        var tempObj = sync.dummyObj();
-        tempObj.data = duplicate(entry.data);
-        if (tempObj.data.info.notes.name != "url") {
-          var viewPort = $("<div>").appendTo(parent);
-          viewPort.addClass("flexcolumn flex padding");
-          viewPort.css("overflow", "auto");
-
-          var page = sync.render("ui_renderPage")(tempObj, app, {viewOnly : true});
-          page.appendTo(viewPort);
-        }
-        else {
-          setTimeout(function(){parent.append("<iframe src='"+sync.val(tempObj.data.info.notes)+"' width='"+(parent.width())+"' height='"+(parent.height())+"'>")}, 10);
-        }
-      });
-      navBar.selectTab("Description");
-      navBar.addClass("outlinebottom");
-      navBar.appendTo(expanded);
-
-      var iconWrap = $("<div>").appendTo(expanded);
-      iconWrap.addClass("flexcolumn");
-      iconWrap.append("<div class='background alttext'><b class='lrpadding'>Support this creator!</b></div>");
-
-      var newApp = sync.newApp("ui_userProfile");
-      newApp.attr("viewOnly", "true");
-      newApp.attr("width", "64px");
-      newApp.attr("height", "64px");
-      newApp.attr("minimized", "true");
-      newApp.addClass("fit-x");
-      usrPfl.addApp(newApp);
-      iconWrap.append(newApp);
-
-      navBar.generateTab("Comments", "comment", function(parent){
-        var commentList = $("<div>").appendTo(parent);
-        commentList.addClass("flex flexcolumn flexmiddle");
-        commentList.append("<b style='color : rgba(235,235,228)'>Loading Comments</b>");
-        $.ajax({
-          url: '/thread',
-          error: function(code) {
-            console.log(code);
-            commentList.empty();
-            commentList.append("<b style='color : rgba(235,235,228)'>No Comments Yet</b>");
-          },
-          dataType: 'json',
-          data : {id : entry._uid},
-          success: function(cData) {
-            buildComments(cData)
-          },
-          type: 'GET'
-        });
-
-        function buildComments(cData) {
-          commentList.empty();
-          if (cData) {
-            commentList.removeClass("flexmiddle");
-            commentList.css("padding", "2em");
-
-            var ratingDiv = $("<div>").appendTo(commentList)
-            ratingDiv.addClass("flexbetween");
-            ratingDiv.append("<b>Overall Rating</b>");
-            ratingDiv.css("font-size", "1.5em");
-
-            var rating = $("<i>No Rating</i>").appendTo(ratingDiv);
-            var rTotal = 0;
-            var upVotes = 0;
-            var downVotes = 0;
-            for (var user in cData.r) {
-              rTotal += parseInt(cData.r[user]);
-              if (parseInt(cData.r[user]) > 0) {
-                upVotes++;
-              }
-              else if (parseInt(cData.r[user]) < 0) {
-                downVotes++;
-              }
-            }
-            if (rTotal > 0) {
-              rating.text("Positive");
-              rating.addClass("lrpadding outline highlight2 alttext");
-            }
-            else if (rTotal < 0) {
-              rating.text("Negative");
-            }
-
-            for (var i in cData.c) {
-              var commentData = cData.c[i];
-              var commentWrap = $("<div>").appendTo(commentList);
-              commentWrap.addClass("lightoutline");
-
-              var name = $("<div class='flexbetween'><b>"+commentData.n+"</b></div>").appendTo(commentWrap);
-              if (cData.r[commentData.o] == 1) {
-                name.append(genIcon("thumbs-up", "Liked this"));
-              }
-              else if (cData.r[commentData.o] == -1) {
-                name.append(genIcon("thumbs-down"));
-              }
-              commentWrap.append("<p class='lrpadding' style='font-size:0.8em;'>"+commentData.t+"</p>");
-            }
-          }
-          else {
-            commentList.append("<b style='color : rgba(235,235,228)'>No Comments Yet</b>");
-          }
-        }
-
-        if (getCookie("UserID")) {
-          var replyDiv = $("<div>").appendTo(parent);
-          replyDiv.addClass("flexcolumn lightoutline");
-
-          var titleDiv = $("<div>").appendTo(replyDiv);
-          titleDiv.addClass("flexbetween");
-
-          var comment = $("<b>Leave a Comment</b>").appendTo(titleDiv);
-
-          var ratingDiv = $("<div>").appendTo(titleDiv);
-          var thumbdown = genIcon("thumbs-down").appendTo(ratingDiv);
-          thumbdown.click(function(){
-            $.ajax({
-              url: '/comment',
-              error: function(code) {
-                console.log(code);
-              },
-              dataType: 'json',
-              data : {id : entry._uid, r : -1},
-              success: function(cData) {
-                buildComments(cData);
-              },
-              type: 'GET'
-            });
-          });
-
-          var thumbup = genIcon("thumbs-up").appendTo(ratingDiv);
-          thumbup.click(function(){
-            $.ajax({
-              url: '/comment',
-              error: function(code) {
-                console.log(code);
-              },
-              dataType: 'json',
-              data : {id : entry._uid, r : 1},
-              success: function(cData) {
-                buildComments(cData);
-              },
-              type: 'GET'
-            });
-          });
-
-          var textArea = $("<textarea>").appendTo(replyDiv);
-          textArea.attr("placeholder", "");
-          textArea.attr("maxlength", "255");
-          textArea.css("width", "100%");
-          textArea.css("height", "100px");
-
-          var button = $("<button>").appendTo(replyDiv);
-          button.addClass("fit-x");
-          button.append("Post Comment");
-          button.click(function(){
-            if (textArea.val()) {
-              $.ajax({
-                url: '/comment',
-                error: function(code) {
-                  console.log(code);
-                },
-                dataType: 'json',
-                data : {id : entry._uid, t : textArea.val()},
-                success: function(cData) {
-                  buildComments(cData);
-                },
-                type: 'GET'
-              });
-            }
-          });
-        }
-      });
-      navBar.generateTab("Suggestions", "link", function(parent){
-        var commentList = $("<div>").appendTo(parent);
-        commentList.addClass("flex flexcolumn");
-        commentList.css("padding", "1em");
-
-        $("<b>The Author Suggests</b>").appendTo(commentList);
-
-        var suggestDiv = $("<div>").appendTo(commentList);
-        suggestDiv.addClass("flexcolumn flexmiddle lightoutline");
-        suggestDiv.css("padding", "2em");
-        suggestDiv.append("<i>No Suggestions Yet</i>");
-      });
-    },
-    type: 'GET'
-  });
-
-  return expanded;
-});
-
-sync.render("ui_marketListing", function(obj, app, scope) {
-  var data = obj.data;
-  var listing = data.listing;
-
-  var marketDiv = $("<div>");
-  marketDiv.addClass("flexrow outline");
-  if (scope.mode == "list") {
-    marketDiv.addClass("flexaround flexwrap");
-  }
-  marketDiv.css("overflow", "auto");
-
-  for (var i in listing) {
-    if (!scope.filter || listing[i].a == scope.filter && !listing[i].delist) {
-      var obj = sync.dummyObj();
-      obj.data = duplicate(listing[i].data);
-
-      var wrapper = $("<div>").appendTo(marketDiv);
-      wrapper.attr("index", i);
-      if (!scope.mode) {
-        wrapper.addClass("lrpadding");
-      }
-
-      if (!scope.ignoreGame) {
-        var iconDiv = $("<div>");
-        iconDiv.addClass("flexcolumn");
-
-        for (var keyy in listing[i].g) {
-          if (listing[i].g[keyy]) {
-            var icon = $("<div>").appendTo(iconDiv);
-            icon.addClass("outline");
-            icon.css("min-width", "4em");
-            if (game.locals["gameList"][listing[i].g[keyy]]) {
-              icon.css("background-image", "url('"+game.locals["gameList"][listing[i].g[keyy]].info.img.current+"')");
-            }
-            else {
-              icon.css("background-image", "url('/content/lock.png')");
-            }
-            icon.css("background-size", "contain");
-            icon.css("background-repeat", "no-repeat");
-            icon.css("background-position", "center");
-            icon.css("width", "100%");
-            icon.css("height", "2em");
-          }
-        }
-        if (iconDiv.children().length == 0) {
-          iconDiv.remove();
-        }
-      }
-
-      var item = sync.render("ui_adventureCard")(obj, app, {label : iconDiv, mode : scope.mode}).appendTo(wrapper);
-      item.attr("index", i);
-      item.css("background-color", "white");
-      item.click(function(){
-        var ind = $(this).attr("index");
-
-        marketDiv.children().each(function(){
-          $($(this).children()[1]).remove();
-          $(this).removeClass("highlight2");
-        });
-        $(this).parent().addClass("highlight2");
-        var buttonDiv = $("<div>").appendTo($(this).parent());
-        buttonDiv.addClass("flexrow fit-x");
-
-        if (listing[ind].owner == getCookie("UserID")) {
-          var del = $("<button class='focus flex'>De-List</button>").appendTo(buttonDiv);
-          del.attr("title", "Removes this entry from the listing, this will cause all subscribers to lose access to their content");
-          del.attr("id", listing[ind]._uid);
-          del.attr("index", ind);
-          del.click(function(){
-            runCommand("deListAsset", {index : $(this).attr("index"), _t : listing[$(this).attr("index")].a});
-            layout.coverlay("community-chest");
-          });
-        }
-        var marketWrap = $("<div>");
-        marketWrap.addClass("flexcolumn flex");
-
-        var marketEntry = sync.render("ui_marketEntry")(obj, app, {index : ind, parent : marketDiv, list : listing, mode : scope.mode}).appendTo(marketWrap);
-        marketEntry.addClass("flex");
-
-        var download = $("<button>Download Asset</button>").appendTo(marketWrap);
-        if (scope.filter == "pk") {
-          download.text("Subscribe to Content");
-        }
-        else if (scope.filter == "st") {
-          download.text("Download Collection");
-        }
-        download.attr("title", "Moves into your storage for use");
-        download.attr("id", ind);
-        download.click(function(){
-          runCommand("downloadAsset", {index : $(this).attr("id"), _t : listing[$(this).attr("id")].a, market : scope.market});
-          layout.coverlay("market-listing");
-        });
-        var popOut = ui_popOut({
-          target : $(this),
-          id : "market-listing",
-          minimize : true,
-          title : sync.rawVal(listing[ind].data.info.name),
-          dragThickness : "0.5em",
-          style : {"width" : "640px", height : "75vh"},
-        }, marketWrap);
-        popOut.resizable();
-      });
-    }
-  }
-
-  return marketDiv;
-});
-
-sync.render("ui_marketPlace", function(obj, app, scope) {
-  var tabBar = genNavBar("background alttext", "fit-y");
-  tabBar.addClass("fit-y");
-
-  if (hasSecurity(getCookie("UserID"), "Game Master")) {
-    tabBar.generateTab("Starter Adventures", "book", function(parent) {
-      $.ajax({
-        url: '/retrieveMarket?id=oa',
-        error: function(code) {
-          console.log(code);
-        },
-        dataType: 'json',
-        success: function(data) {
-          sync.render("ui_marketListing")(data, app, {filter : "a", market : "o"}).appendTo(parent);
-        },
-        type: 'GET'
-      });
-    });
-  }
-
-  tabBar.generateTab("Official Content", "certificate", function(parent) {
-    var confirm = $("<div>").appendTo(parent);
-    confirm.addClass("flexcolumn flexmiddle");
-
-    var warning = $("<p>").appendTo(confirm);
-    warning.append("This section is for official content produced by Game Master, or directly from companies who own roleplaying games.");
-
-    $.ajax({
-      url: '/retrieveMarket?id=opk',
-      error: function(code) {
-        console.log(code);
-      },
-      dataType: 'json',
-      success: function(data) {
-        sync.render("ui_marketListing")(data, app, {filter : "pk", market : "o"}).appendTo(parent);
-      },
-      type: 'GET'
-    });
-  });
-  /*tabBar.generateTab("Quality Content", "usd", function(parent) {
-    var confirm = $("<div>").appendTo(parent);
-    confirm.addClass("flexcolumn flexmiddle");
-
-    var warning = $("<p>").appendTo(confirm);
-    warning.append("This section is for content that has been through an approval process and contains quality content.");
-  });*/
-  tabBar.generateTab("Community Creations", "fire", function(parent) {
-    var confirm = $("<div>").appendTo(parent);
-    confirm.addClass("flexcolumn flex flexmiddle");
-
-    var warning = $("<p>").appendTo(confirm);
-    warning.append("This section contains contains <b>FREE</b> content and could contain adult content. Content here is not officially sponsored by Game Master, therefor by proceeding you acknowledge that you are of age(18 in the US) to view this content.");
-
-    var butt = $("<button>").appendTo(confirm);
-    butt.append("Confirm");
-    butt.addClass("flexmiddle");
-    butt.click(function(){
-      parent.empty();
-
-      var tabContent = genNavBar(null, null, "8px");
-      tabContent.addClass("fit-y");
-      tabContent.appendTo(parent);
-
-      tabContent.generateTab("Adventures", "book", function(parent) {
-        parent.addClass("flex");
-        $.ajax({
-          url: '/retrieveMarket?id=ca',
-          error: function(code) {
-            console.log(code);
-          },
-          dataType: 'json',
-          success: function(data) {
-            sync.render("ui_marketListing")(data, app, {filter : "a"}).appendTo(parent);
-          },
-          type : "GET",
-        });
-        if (app) {
-          app.attr("cc_tab", "Adventures");
-        }
-      });
-      tabContent.generateTab("Boards", "globe", function(parent) {
-        parent.addClass("flex");
-        $.ajax({
-          url: '/retrieveMarket?id=cb',
-          error: function(code) {
-            console.log(code);
-          },
-          dataType: 'json',
-          success: function(data) {
-            sync.render("ui_marketListing")(data, app, {filter : "b", ignoreGame : true}).appendTo(parent);
-          },
-          type : "GET",
-        });
-        if (app) {
-          app.attr("cc_tab", "Boards");
-        }
-      });
-      /*tabContent.generateTab("Actors", "user", function(parent) {
-        sync.render("ui_storageList")(obj, app, {filter : "c"}).appendTo(parent);
-        if (app) {
-          app.attr("cc_tab", "Actors");
-        }
-      });*/
-      tabContent.generateTab("Content Packs", "envelope", function(parent) {
-        parent.addClass("flex");
-        $.ajax({
-          url: '/retrieveMarket?id=cpk',
-          error: function(code) {
-            console.log(code);
-          },
-          dataType: 'json',
-          success: function(data) {
-            sync.render("ui_marketListing")(data, app, {filter : "pk"}).appendTo(parent);
-          },
-          type : "GET",
-        });
-        if (app) {
-          app.attr("cc_tab", "Content Packs");
-        }
-      });
-      /*tabContent.generateTab("Resources", "duplicate", function(parent) {
-        sync.render("ui_storageList")(obj, app, {filter : "p"}).appendTo(parent);
-        if (app) {
-          app.attr("cc_tab", "Resources");
-        }
-      });
-      tabContent.generateTab("Vehicles", "plane", function(parent) {
-        parent.addClass("flex");
-        sync.render("ui_marketListing")(data, app, {filter : "v"}).appendTo(parent);
-        if (app) {
-          app.attr("cc_tab", "Vehicles");
-        }
-      });*/
-
-      if (app) {
-        if (!app.attr("cc_tab")) {
-          app.attr("cc_tab", "Adventures");
-        }
-        tabContent.selectTab(app.attr("cc_tab"));
-      }
-      else {
-        tabContent.selectTab("Adventures");
-      }
-    });
-  });
-
-  tabBar.selectTab("Starter Adventures");
-
-  return tabBar;
-});
-
-sync.render("ui_shareMarket", function(obj, app, scope) {
-  var marketDiv = $("<div>");
-  marketDiv.addClass("flexrow flex");
-
-  var listWrapper = $("<div>").appendTo(marketDiv);
-  listWrapper.addClass("flexcolumn flex");
-
-  var expanded = $("<div>").appendTo(marketDiv);
-  expanded.addClass("fit-y outline");
-  expanded.css("max-width", "50%");
-  expanded.css("overflow", "auto");
-
-  function openPopout(cObj, listing, collection) {
-    var options = $("<div>");
-    options.addClass("flexcolumn flex");
-
-    game.locals["marketSubmission"] = sync.dummyObj();
-    game.locals["marketSubmission"].data = {
-      info : {
-        name : sync.newValue("Name", "Click to Enter Title"),
-        img : sync.newValue("Image"),
-        notes : sync.newValue("Notes", "Enter your entry details here")
-      },
-      tags : [],
-    };
-    if (cObj.data && cObj.data.name) {
-      sync.val(game.locals["marketSubmission"].data.info.name, cObj.data.name);
-    }
-
-    if (cObj.data && cObj.data.info) {
-      if (cObj.data.info.name) {
-        game.locals["marketSubmission"].data.info.name = duplicate(cObj.data.info.name);
-      }
-      if (cObj.data.info.img) {
-        game.locals["marketSubmission"].data.info.img = duplicate(cObj.data.info.img);
-      }
-      if (cObj.data.info.notes) {
-        game.locals["marketSubmission"].data.info.notes = duplicate(cObj.data.info.notes);
-      }
-    }
-    if (!collection) {
-      var uniqueID;
-      if (cObj && cObj.data && cObj.data._uid) {
-        uniqueID = cObj.data._uid;
-        for (var i in listing) {
-          if (listing[i]._uid == getCookie("UserID")+"_"+uniqueID && !listing[i].delist) {
-            options.append("<div><i>CURRENTLY LISTED</i></div>");
-            break;
-          }
-        }
-      }
-    }
-
-    var dummy = game.locals["marketSubmission"];
-
-    var newApp = sync.newApp("ui_editPage");
-    newApp.addClass("flex");
-    newApp.css("padding", "1em");
-    newApp.appendTo(options);
-    dummy.addApp(newApp);
-
-    var form = $("<div>").appendTo(options);
-    form.addClass("flexcolumn");
-    form.append("<b>iframe redirect?</b>");
-
-    var url = genInput({
-      parent : form,
-      placeholder : "Leave blank to use the description above or enter URL",
-    });
-    url.change(function(){
-      expanded.empty();
-      if ($(this).val()) {
-        game.locals["marketSubmission"].data.info.notes.name = "url";
-        expanded.append("<iframe src='"+$(this).val()+"' width='"+expanded.width()+"' height='"+($(document).height() * 0.65)+"'>");
-        game.locals["marketSubmission"].update();
-      }
-      else if (cObj.data.info.notes.name != "url") {
-        game.locals["marketSubmission"].data.info.notes.name = "Notes";
-        expanded.append(sync.render("ui_renderPage")(cObj, app, {viewOnly : true}).removeClass("outline"));
-        game.locals["marketSubmission"].update();
-      }
-    });
-
-    form.append("<p style='font-size:0.8em;'>URL redirect can move users to your own site, or show something more complicated than what the page editor can support.</p>");
-
-    var row = $("<div>").appendTo(form);
-    row.addClass("flexrow");
-
-    var column = $("<div>").appendTo(row);
-    column.addClass("flexcolumn");
-
-    var wrap = $("<div>").appendTo(column);
-    wrap.addClass("flexmiddle");
-    wrap.css("display", "inline-block");
-
-    var checkbox = genInput({
-      parent : wrap,
-      type : "checkbox",
-      style : {"margin" : "0"},
-      disabled : "true",
-    }).appendTo(wrap);
-    wrap.append("<b>Official Content</b>");
-
-    var wrap = $("<div>").appendTo(column);
-    wrap.addClass("flexmiddle");
-    wrap.css("display", "inline-block");
-
-    var checkbox = genInput({
-      parent : wrap,
-      type : "checkbox",
-      style : {"margin" : "0"}
-    }).appendTo(wrap);
-    checkbox.attr("checked", "true");
-    wrap.append("<b>Community Content</b>");
-
-    var tagWrap = $("<div>").appendTo(form);
-    tagWrap.addClass("flexcolumn");
-    tagWrap.append("<b>Tags</b>");
-
-    var tagList = $("<div>").appendTo(form);
-
-    var butt = $("<button>").appendTo(form);
-    butt.append("Confirm Submission");
-    butt.addClass("flexmiddle");
-    butt.click(function(){
-      if (collection) {
-        game.locals["marketSubmission"].data.set = collection;
-        game.locals["marketSubmission"].data._t = "st";
-        runCommand("listCollection", game.locals["marketSubmission"].data);
-      }
-      else {
-        runCommand("listAsset", {id : getCookie("UserID")+"_"+cObj.data._uid, data : game.locals["marketSubmission"].data});
-      }
-      //layout.coverlay("market-submission", 500);
-    });
-    return options;
-  }
-
-  var submitNav = genNavBar(null, null, "8px");
-  submitNav.addClass("flex");
-  submitNav.appendTo(listWrapper);
-  var storageList = {};
-  for (var i in game.locals["storage"].data.l) {
-    var listing = game.locals["storage"].data.l[i];
-    if (game.locals["storage"].data.s[listing._uid]) {
-      storageList[listing._uid] = game.locals["storage"].data.s[listing._uid];
-    }
-  }
-  $.ajax({
-    url: '/retrieveMarket?id=ca',
-    error: function(code) {
-      console.log(code);
-    },
-    dataType: 'json',
-    success: function(data) {
-      submitNav.generateTab("Adventures", "book", function(parent) {
-        parent.addClass("flex");
-        parent.css("height", "300px");
-        parent.css("overflow", "auto");
-        var list = $("<div>").appendTo(parent);
-        if (game.locals["storage"]) {
-          var pkList = sync.render("ui_entList")(obj, app, {
-            list : storageList,
-            filter : "a",
-            click : function(ev, ui, cObj){
-              list.find(".highlight2").removeClass("highlight2");
-              ui.addClass("highlight2");
-              expanded.empty();
-              expanded.css("width", "50%");
-
-              var newApp = sync.newApp("ui_renderPage").appendTo(expanded);
-              newApp.addClass("fit-xy");
-              newApp.attr("viewOnly", "true");
-              newApp.attr("local", "true");
-              cObj.addApp(newApp);
-
-              if (cObj.data._uid) {
-                if (cObj.data._c == getCookie("UserID")) {
-                  var popout = ui_popOut({
-                    id : "market-submission",
-                    target : ui,
-                    style : {"width" : "30vw"},
-                  }, openPopout(cObj, data));
-                  popout.resizable();
-                }
-                else {
-                  sendAlert({text : "You do not own the asset"});
-                }
-              }
-              else {
-                sendAlert({text : "No Unique ID, please re-upload asset"});
-              }
-            }
-          }).appendTo(list);
-          pkList.css("padding", "1em");
-        }
-        if (app) {
-          app.attr("cc_tab", "Adventures");
-        }
-      });
-    },
-    type : "GET"
-  });
-  $.ajax({
-    url: '/retrieveMarket?id=cb',
-    error: function(code) {
-      console.log(code);
-    },
-    dataType: 'json',
-    success: function(data) {
-      submitNav.generateTab("Boards", "globe", function(parent) {
-        parent.addClass("flex");
-        parent.css("height", "300px");
-        parent.css("overflow", "auto");
-        var list = $("<div>").appendTo(parent);
-        if (game.locals["storage"]) {
-          var pkList = sync.render("ui_entList")(obj, app, {
-            list : storageList,
-            filter : "b",
-            click : function(ev, ui, cObj){
-              list.find(".highlight2").removeClass("highlight2");
-              ui.addClass("highlight2");
-              expanded.empty();
-              expanded.css("width", "50%");
-
-              var newApp = sync.newApp("ui_board").appendTo(expanded);
-              newApp.addClass("fit-xy");
-              newApp.attr("viewOnly", "true");
-              newApp.attr("local", "true");
-              cObj.addApp(newApp);
-
-              if (cObj.data._uid) {
-                if (cObj.data._c == getCookie("UserID")) {
-                  var popout = ui_popOut({
-                    id : "market-submission",
-                    target : ui,
-                    style : {"width" : "30vw"},
-                  }, openPopout(cObj, data));
-                  popout.resizable();
-                }
-                else {
-                  sendAlert({text : "You do not own the asset"});
-                }
-              }
-              else {
-                sendAlert({text : "No unique ID, please re-upload asset"});
-              }
-            }
-          }).appendTo(list);
-          pkList.css("padding", "1em");
-        }
-        if (app) {
-          app.attr("cc_tab", "Boards");
-        }
-      });
-    },
-    type : "GET"
-  });
-  $.ajax({
-    url: '/retrieveMarket?id=cpk',
-    error: function(code) {
-      console.log(code);
-    },
-    dataType: 'json',
-    success: function(data) {
-      submitNav.generateTab("Content Packs", "envelope", function(parent) {
-        parent.addClass("flex");
-        parent.css("height", "300px");
-        parent.css("overflow", "auto");
-        var list = $("<div>").appendTo(parent);
-        if (game.locals["storage"]) {
-          var pkList = sync.render("ui_entList")(obj, app, {
-            list : storageList,
-            filter : "pk",
-            click : function(ev, ui, cObj){
-              list.find(".highlight2").removeClass("highlight2");
-              ui.addClass("highlight2");
-              expanded.empty();
-              expanded.css("width", "50%");
-
-              var newApp = sync.newApp("ui_contentEditor").appendTo(expanded);
-              newApp.addClass("fit-xy");
-              newApp.attr("viewOnly", "true");
-              newApp.attr("local", "true");
-              cObj.addApp(newApp);
-
-              if (cObj.data._uid) {
-                if (cObj.data._c == getCookie("UserID") || (isNaN(cObj.id()) && cObj.id().match(getCookie("UserID")))) {
-                  var popout = ui_popOut({
-                    id : "market-submission",
-                    target : ui,
-                    style : {"width" : "30vw"},
-                  }, openPopout(cObj));
-                  popout.resizable();
-                }
-                else {
-                  sendAlert({text : "You do not own the asset"});
-                }
-              }
-              else {
-                sendAlert({text : "No unique ID, please re-upload asset"});
-              }
-            }
-          }).appendTo(list);
-          pkList.css("padding", "1em");
-        }
-        if (app) {
-          app.attr("cc_tab", "Content Packs");
-        }
-      });
-    },
-    type: 'GET'
-  });
-  sync.newApp("ui_boardStamps", null, {});
-  $.ajax({
-    url: '/retrieveMarket?id=cst',
-    error: function(code) {
-      console.log(code);
-    },
-    dataType: 'json',
-    success: function(data) {
-      submitNav.generateTab("Collections", "inbox", function(parent) {
-        parent.addClass("flex");
-        parent.css("height", "300px");
-        parent.css("overflow", "auto");
-        var list = $("<div>").appendTo(parent);
-        if (game.locals["stamps"]) {
-          for (var key in game.locals["stamps"].data.sets) {
-            if (key > 0) {
-              var collection = $("<div>").appendTo(list);
-              collection.addClass("flexmiddle outline hover2");
-              collection.append("<b>"+game.locals["stamps"].data.sets[key].name+"</b>");
-              collection.attr("key", key);
-              collection.click(function(){
-                list.find(".highlight2").removeClass("highlight2");
-                $(this).addClass("highlight2");
-                expanded.empty();
-                expanded.css("width", "50%");
-
-                var set = game.locals["stamps"].data.sets[$(this).attr("key")];
-
-                var popout = ui_popOut({
-                  id : "market-submission",
-                  target : $(this),
-                  style : {"width" : "30vw"},
-                }, openPopout(game.locals["stamps"].data, data, set));
-                popout.resizable();
-
-                var stamps = $("<div>").appendTo(expanded);
-                stamps.append("<b>Stamps</b>");
-
-                var stampList = $("<div>").appendTo(stamps);
-                stampList.addClass("flexrow flexaround flexwrap lightoutline");
-                for (var i in set.stamps) {
-                  var sheet = $("<div>").appendTo(stampList);
-                  sheet.addClass("lrpadding hover2");
-                  sheet.attr("img", set.stamps[i].i);
-                  sheet.css("width", "4em");
-                  sheet.css("height", "4em");
-                  sheet.css("position", "relative");
-                  sheet.css("background-image", "url('"+ set.stamps[i].i +"')");
-                  sheet.css("background-repeat", "no-repeat");
-                  sheet.click(function(){
-                    var img = $(this).attr("img");
-                    var wrap = $("<div>");
-                    wrap.addClass("flexcolumn");
-                    wrap.css("position", "relative");
-                    wrap.css("padding-top", "1em");
-
-                    var image = $("<img src='"+img+"'></img>").appendTo(wrap);
-                    image.css("position", "absolute");
-                    image.bind("load", function(){
-                      wrap.css("max-width", "30vw");
-                      wrap.css("max-height", "30vh");
-                      wrap.css("width", $(this).width());
-                      wrap.css("height", $(this).height());
-                      image.css("width", $(this).width() * ((Math.random()/10) + 0.8));
-                      image.css("height", $(this).height() * ((Math.random()/10) + 0.8));
-                    });
-                    image.contextmenu(function(){
-                      return false;
-                    });
-                    var pop = ui_popOut({
-                      target : $("body"),
-                      id : "sheet-preview",
-                      title : "Image is higher resolution when downloaded",
-                    }, wrap);
-                    pop.css("z-index", "1000000");
-                  });
-                }
-
-                var sheets = $("<div>").appendTo(expanded);
-                sheets.append("<b>Tiles</b>");
-
-                var sheetList = $("<div>").appendTo(sheets);
-                sheetList.addClass("flexrow flexaround flexwrap lightoutline");
-                for (var i in set.sheets) {
-                  var sheet = $("<div>").appendTo(sheetList);
-                  sheet.addClass("lrpadding hover2");
-                  sheet.attr("img", set.sheets[i].i);
-                  sheet.css("width", "4em");
-                  sheet.css("height", "4em");
-                  sheet.css("position", "relative");
-                  sheet.css("background-image", "url('"+ set.sheets[i].i +"')");
-                  sheet.css("background-repeat", "no-repeat");
-                  sheet.click(function(){
-                    var img = $(this).attr("img");
-                    var wrap = $("<div>");
-                    wrap.addClass("flexcolumn");
-                    wrap.css("position", "relative");
-                    wrap.css("padding-top", "1em");
-
-                    var image = $("<img src='"+img+"'></img>").appendTo(wrap);
-                    image.css("position", "absolute");
-                    image.bind("load", function(){
-                      wrap.css("max-width", "30vw");
-                      wrap.css("max-height", "30vh");
-                      wrap.css("width", $(this).width());
-                      wrap.css("height", $(this).height());
-                      image.css("width", $(this).width() * ((Math.random()/10) + 0.8));
-                      image.css("height", $(this).height() * ((Math.random()/10) + 0.8));
-                    });
-                    image.contextmenu(function(){
-                      return false;
-                    });
-                    var pop = ui_popOut({
-                      target : $("body"),
-                      id : "sheet-preview",
-                      title : "Image is higher resolution when downloaded",
-                    }, wrap);
-                    pop.css("z-index", "1000000");
-                  });
-                }
-              });
-            }
-          }
-        }
-        if (app) {
-          app.attr("cc_tab", "Collections");
-        }
-      });
-    },
-    type: 'GET'
-  });
-  return marketDiv;
-});
-
-sync.render("ui_newMarket", function(obj, app, scope) {
-  var div = $("<div>");
-  div.addClass("flex flexrow");
-
-  var options = $("<div>").appendTo(div);
-  options.addClass("flexcolumn");
-  options.css("min-width", "150px");
-
-  var search = genInput({
-    parent : options,
-    placeholder : "Keyword Search",
-  }, 1);
-  search.change(function(e) {
-    var searchStr = search.val();
-    if (searchStr) {
-      listings.children().each(function(){
-        var listWrap = $(this);
-        if (listWrap.is(":visible")) {
-          var listingData = game.locals["listings"][listWrap.attr("m")+listWrap.attr("f")];
-          var listing = $($($(this).children()[1]).children()[0]);
-          listing.children().each(function(){
-            var listData = listingData.data.listing[$(this).attr("index")];
-            if (listData) {
-              if ((sync.rawVal(listData.data.info.name || "")).toLowerCase().match(searchStr.toLowerCase())) {
-                $(this).show();
-              }
-              else {
-                $(this).hide();
-              }
-            }
-          });
-        }
-      });
-    }
-    else {
-      listings.children().each(function(){
-        var listWrap = $(this);
-        if (listWrap.is(":visible")) {
-          var listing = $($($(this).children()[1]).children()[0]);
-          listing.children().each(function(){
-            $(this).show();
-          });
-        }
-      });
-    }
-  });
-
-  options.append("<b>Type</b>");
-  var assetTypes = $("<div>").appendTo(options);
-  assetTypes.addClass("flexrow");
-  assetTypes.css("padding-left", "1em");
-
-  var checkWrap = $("<div>").appendTo(assetTypes);
-  checkWrap.addClass("flexmiddle");
-
-  var check = genInput({
-    parent : checkWrap,
-    type : "checkbox",
-    style : {"margin-top" : "0px"},
-    filter : "o",
-  });
-  check.prop("checked", true);
-  check.change(function(){
-    if ($(this).prop("checked") == true) {
-      listings.find("div[t~='"+$(this).attr("filter")+"']").fadeOut();
-      if (!listings.find("div[t='"+$(this).attr("filter")+"']").is(":visible")) {
-        listings.find("div[t='"+$(this).attr("filter")+"']").fadeIn();
-      }
-    }
-    else {
-      listings.find("div[t='"+$(this).attr("filter")+"']").fadeOut();
-    }
-  });
-
-  $("<text>Official</text>").appendTo(checkWrap);
-
-  var assetTypes = $("<div>").appendTo(options);
-  assetTypes.addClass("flexrow");
-  assetTypes.css("padding-left", "1em");
-
-  var checkWrap = $("<div>").appendTo(assetTypes);
-  checkWrap.addClass("flexmiddle");
-
-  var check = genInput({
-    parent : checkWrap,
-    type : "checkbox",
-    style : {"margin-top" : "0px"},
-    filter : "c",
-  });
-  check.prop("checked", true);
-  check.change(function(){
-    if ($(this).prop("checked") == true) {
-      listings.find("div[t~='"+$(this).attr("filter")+"']").fadeOut();
-      if (!listings.find("div[t='"+$(this).attr("filter")+"']").is(":visible")) {
-        listings.find("div[t='"+$(this).attr("filter")+"']").fadeIn();
-      }
-    }
-    else {
-      listings.find("div[t='"+$(this).attr("filter")+"']").fadeOut();
-    }
-  });
-
-  $("<text>Community Chest</text>").appendTo(checkWrap);
-
-  var categories = {
-    //"a" : {n : "Adventures", i : "book", ui : "ui_planner", width : "60vw", height : "40vh"},
-    "c" : {n : "Actors", i : "user", ui : "ui_characterSheet"},
-    "st" : {n : "Collections", i : "picture", ui : "ui_characterSheet", ignoreGame : true},
-    //"pk" : {n : "Content Packages", i : "envelope", ui : "ui_contentEditor"},
-    "b" : {n : "Maps", i : "globe", ui : "ui_board", width : "60vw", height : "60vh"},
-    "p" : {n : "Resources", i : "file", ui : "ui_renderPage", width : "40vw", height : "30vh"},
-    //"v" : {n : "Vehicles", i : "plane", ui : "ui_vehicle"},
-  };
-
-  options.append("<b>Asset Type</b>");
-  for (var i in categories) {
-    var assetTypes = $("<div>").appendTo(options);
-    assetTypes.addClass("flexrow");
-    assetTypes.css("padding-left", "1em");
-
-    var checkWrap = $("<div>").appendTo(assetTypes);
-    checkWrap.addClass("flexmiddle");
-
-    var check = genInput({
-      parent : checkWrap,
-      type : "checkbox",
-      style : {"margin-top" : "0px"},
-      filter : i,
-    });
-    check.prop("checked", true);
-    check.change(function(){
-      if ($(this).prop("checked") == true) {
-        listings.find("div[f~='"+$(this).attr("filter")+"']").fadeOut();
-        if (!listings.find("div[f='"+$(this).attr("filter")+"']").is(":visible")) {
-          listings.find("div[f='"+$(this).attr("filter")+"']").fadeIn();
-        }
-      }
-      else {
-        listings.find("div[f='"+$(this).attr("filter")+"']").fadeOut();
-      }
-    });
-    genIcon(categories[i].i, categories[i].n).appendTo(checkWrap);
-  }
-
-  options.append("<b>Tags</b>");
-
-  game.locals["listings"] = {};
-
-  var tagList = $("<div>").appendTo(options);
-  tagList.addClass("flexrow flexwrap");
-  tagList.css("width", "150px");
-
-  var tags = [];
-
-  function updateTags(){
-    var selectedTags = [];
-    tagList.children().each(function(){
-      if ($(this).hasClass("highlight alttext")) {
-        selectedTags.push(tags[$(this).attr("index")]);
-      }
-    });
-    listings.children().each(function(){
-      var listWrap = $(this);
-      if (listWrap.is(":visible")) {
-        var listingData = game.locals["listings"][listWrap.attr("m")+listWrap.attr("f")];
-        var listing = $($($(this).children()[1]).children()[0]);
-        listing.children().each(function(){
-          var listData = listingData.data.listing[$(this).attr("index")];
-          if (listData) {
-            if (selectedTags.length) {
-              $(this).hide();
-              for (var i in selectedTags) {
-                var tag = selectedTags[i];
-                if (util.contains(listData.t, tag)) {
-                  $(this).show();
-                }
-              }
-            }
-            else {
-              $(this).show();
-            }
-          }
-        });
-      }
-    });
-  }
-  function rebuildTags() {
-    tagList.empty();
-    for (var i in tags) {
-      var button = $("<button>").appendTo(tagList);
-      button.css("margin-left", "4px");
-      button.css("margin-right", "4px");
-      button.append(tags[i]);
-      button.attr("index", i);
-      button.click(function(){
-        if (!$(this).hasClass("highlight alttext")) {
-          $(this).addClass("highlight alttext");
-        }
-        else {
-          $(this).removeClass("highlight alttext");
-        }
-        updateTags();
-      });
-    }
-  }
-
-  var buffer = $("<div>").appendTo(options);
-  buffer.addClass("flex");
-
-  var share = $("<button>");//.appendTo(options);
-  share.addClass("highlight alttext");
-  share.append(genIcon("cloud-upload", "Share My Creations").css("color","white"));
-  share.click(function(){
-    var frame = layout.page({title: "Share My Creations", blur : 0.5, width: "90%", id: "community-chest"});
-    if (layout.mobile) {
-      frame.css("width", "95vw");
-    }
-    var newApp = sync.newApp("ui_shareMarket", null, {});
-    newApp.appendTo(frame);
-    newApp.css("height", "80vh");
-  });
-
-  var viewPort = $("<div>").appendTo(div);
-  viewPort.addClass("flex fit-y outline");
-  viewPort.css("overflow", "auto");
-
-  var listings = $("<div>").appendTo(viewPort);
-  listings.addClass("flexcolumn fit-x");
-
-  var cates = [
-    //{n : "Featured Content", f : "pk", m : "opk", t : "o"},
-    //{n : "Official Adventures", f : "a", m : "oa", t : "o"},
-    //{n : "Official Collections", f : "st", m : "ost", t : "o", ignoreGame : true},
-    {n : "Official Content", f : "pk", m : "opk", t : "o"},
-    //{n : "Newest Additions", f : "pk", m : "opk", t : "o"},
-
-    //{n : "Community Adventures", f : "a", m : "ca", t : "c"},
-    {n : "Community Maps", f : "b", m : "cb", t : "c"},
-    //{n : "Community Collections", f : "st", m : "cst", t : "c", ignoreGame : true},
-    {n : "Community Content", f : "pk", m : "cpk", t : "c"},
-  ];
-  for (var i in cates) {
-    function loadCategory(catData, index) {
-      var listWrap = $("<div>").appendTo(listings);
-      listWrap.attr("index", index);
-      listWrap.attr("f", catData.f);
-      listWrap.attr("m", catData.m);
-      listWrap.attr("t", catData.t);
-      listWrap.css("margin-bottom", "1em");
-      listWrap.css("background-color", "rgb(235,235,228)");
-
-      $.ajax({
-        url: '/retrieveMarket?id='+catData.m,
-        error: function(code) {
-          console.log(code);
-        },
-        dataType: 'json',
-        success: function(data) {
-          if (Object.keys(data.data.listing).length) {
-            var rebuild = false;
-            for (var i in data.data.listing) {
-              var listData = data.data.listing[i];
-              for (var tg in listData.t) {
-                if (!util.contains(tags, listData.t[tg])) {
-                  tags.push(listData.t[tg]);
-                  rebuild = true;
-                }
-              }
-            }
-            if (rebuild) {
-              rebuildTags();
-            }
-            game.locals["listings"][catData.m+catData.f] = data;
-            var category = $("<div>").appendTo(listWrap);
-            category.addClass("outline alttext flexaround");
-            category.append("<b>"+catData.n+"</b>");
-
-            var listMode = genIcon("th-list").appendTo(category);
-            listMode.click(function(){
-              listing.empty();
-              listing.addClass("flexcolumn");
-              listing.removeClass("flexrow");
-              var list = sync.render("ui_marketListing")(data, app, {filter : catData.f, market : catData.m, mode : "list", ignoreGame : catData.ignoreGame}).appendTo(listing);
-              list.removeClass("outline flexrow flexaround flexmiddle flexwrap");
-              list.addClass("flexcolumn");
-            });
-            var textMode = genIcon("th").appendTo(category);
-            textMode.click(function(){
-              listing.empty();
-              listing.addClass("flexrow");
-              listing.removeClass("flexcolumn");
-              var list = sync.render("ui_marketListing")(data, app, {filter : catData.f, market : catData.m, ignoreGame : catData.ignoreGame}).appendTo(listing);
-              list.removeClass("outline");
-            });
-            var iconMode = genIcon("th-large").appendTo(category);
-            iconMode.click(function(){
-              listing.empty();
-              listing.addClass("flexrow");
-              listing.removeClass("flexcolumn");
-              var list = sync.render("ui_marketListing")(data, app, {filter : catData.f, market : catData.m, mode : "large", ignoreGame : catData.ignoreGame}).appendTo(listing);
-              list.removeClass("outline");
-            });
-
-            if (catData.t == "c") {
-              category.addClass("background");
-            }
-            else {
-              category.css("font-size", "1.2em");
-              category.addClass("highlight");
-              iconMode.css("color", "white");
-              listMode.css("color", "white");
-              textMode.css("color", "white");
-            }
-            var listing = $("<div>").appendTo(listWrap);
-            listing.addClass("flexrow outline");
-            listing.css("overflow-x");
-            listing.append("<div class='flexmiddle' style='min-height : 100px'><i>Loading...</i></div>");
-
-            listWrap.fadeIn();
-            listWrap.hover(function(){
-              if ($(this).attr("done") != "true") {
-                listing.children().children().show();
-                $(this).attr("done", "true");
-              }
-            });
-            setTimeout(function(){
-              if (listWrap.is(":visible")) {
-                listing.empty();
-                var list = sync.render("ui_marketListing")(data, app, {filter : catData.f, market : catData.m, ignoreGame : catData.ignoreGame}).appendTo(listing);
-                list.children().hide();
-                list.removeClass("outline");
-                var fade = 0;
-                var endofList = $("<div class='flexmiddle lrpadding'><i>End of Listing</i></div>").appendTo(list);
-                endofList.hide();
-                list.children().each(function(index, ui){
-                  var entry = $(this);
-                  function wrap(entry, index) {
-                    setTimeout(function(){
-                      if (!entry.is(":visible")) {
-                        entry.fadeIn();
-                        if (index == list.children().length-2) {
-                          listWrap.attr("done", "true");
-                        }
-                      }
-                    }, fade);
-                    fade += 500;
-                  }
-                  wrap(entry, index);
-                });
-              }
-            }, 500);
-          }
-          else {
-            listWrap.remove();
-          }
-        },
-        type: 'GET'
-      });
-    }
-    loadCategory(cates[i], i);
-  }
-
-  return div;
-});
-
-sync.render("ui_storyBoard", function(obj, app, scope){
-  var data = obj.data;
-  scope = scope || {viewOnly : app.attr("viewOnly") == "true"};
-
-  var zoom = parseInt(app.attr("zoom")) / 100 || 1;
-
-  var div = $("<div>");
-  div.addClass("fit-xy flexcolumn");
-  if (!scope.viewOnly) {
-    var optionsBar = $("<div>").appendTo(div);
-    optionsBar.addClass("flexaround flexwrap background outline alttext");
-
-    var addAll = genIcon("list", "Insert All Adventure Pages").appendTo(optionsBar);
-    var add = genIcon("plus", "Insert Adventure Page").appendTo(optionsBar);
-    add.click(function(){
-      var ignore = {};
-      for (var i in data.story) {
-        ignore[data.story[i].eID] = true;
-      }
-      var content = sync.render("ui_entList")(obj, app, {
-        filter : "p",
-        list : data.entities,
-        ignore : ignore,
-        click : function(ev, ui, eObj) {
-          obj.data.story.push({
-            eID : eObj.id(),
-            x : 0,
-            y : 0,
-          });
-          obj.sync("updateAsset");
-          layout.coverlay("adventure-insert");
-        }
-      });
-
-      ui_popOut({
-        target : $(this),
-        id : "adventure-insert",
-      }, content);
-    });
-  }
-
-  var editor = $("<div>").appendTo(div);
-  editor.addClass("outline flexcolumn storyDrop");
-  editor.css("flex", "1");
-  editor.css("position", "relative");
-  editor.css("overflow", "scroll");
-  if (!scope.viewOnly) {
-    editor.sortable({
-      update : function(ev, ui){
-        if ($(ui.item).attr("src")) {
-          if ($(ui.item).attr("src") == "state") {
-            game.state.update(); // refresh the list
-          }
-          else if ($(ui.item).attr("src") == "players") {
-            game.players.update(); // refresh the list
-          }
-          else {
-            game.entities.data[$(ui.item).attr("src")].update(); // refresh the list
-          }
-        }
-        else {
-          game.entities.update(); // refresh the list
-        }
-        // create a piece if there is an entity reference
-        if ($(ui.item).attr("index")) {
-          var ent = game.entities.data[$(ui.item).attr("index")];
-          if (ent) {
-            data.story.push({
-              eID : $(ui.item).attr("index"),
-              x : 0,
-              y : 0,
-            });
-          }
-        }
-        obj.sync("updateAsset");
-      }
-    });
-  }
-
-  for (var i in data.story) {
-    var sData = data.story[i];
-    var index = sData.eID;
-    var xPos = sData.x;
-    var yPos = sData.y;
-    var marker = $("<div>").appendTo(editor);
-    marker.addClass("outline storyMarker");
-    marker.css("position", "absolute");
-    marker.css("top", yPos);
-    marker.css("left", xPos);
-    marker.attr("index", i);
-    var zoom = 1;
-    var ent = game.entities.data[index];
-    if (ent && ent.data && ent.data["_t"] == "p") {
-      var optionsBar = $("<div>").appendTo(marker);
-      optionsBar.addClass("fit-x flexaround flexwrap outline background alttext");
-      if (sData.c) {
-        optionsBar.css("background-color", sData.c);
-      }
-      if (scope.viewOnly) {
-        var del = genIcon("trash").appendTo(optionsBar);
-        del.attr("title", "Click to Delete");
-        del.attr("index", i);
-        del.click(function(){
-          data.story.splice($(this).attr("index"));
-          obj.sync("updateAsset");
-        });
-        var edit = genIcon("pencil").appendTo(optionsBar);
-        edit.attr("title", "Click to Edit");
-        edit.attr("index", i);
-        edit.click(function(){
-          var sData = data.story[$(this).attr("index")];
-          var index = sData.eID;
-          var ent = game.entities.data[index];
-
-          var content;
-          if (scope.viewOnly) {
-            content = sync.newApp("ui_renderPage");
-          }
-          else {
-            content = sync.newApp("ui_editPage");
-          }
-
-          content.attr("viewOnly", "true");
-
-          var popout = ui_popOut({
-            title : sync.rawVal(ent.data.info.name),
-            target : $(this),
-            align : "bottom",
-            minimize : true,
-            maximize : true,
-            dragThickness : "0.5em",
-            resizable : true,
-            style : {"max-width" : "none", width : "30vw", height : "30vh"},
-          }, content);
-          popout.css("padding", "0px");
-          popout.addClass("floating-app");
-
-          ent.addApp(content);
-        });
-
-        var status = genIcon("tint").appendTo(optionsBar);
-        status.attr("title", "Click to complete");
-        status.attr("index", i);
-        status.click(function(){
-          var targ = $(this).parent();
-          var content = $("<div>");
-          var title = $("<b>Title</b><br>").appendTo(content);
-
-          var input = genInput({
-            parent : content,
-            value : data.story[$(this).attr("index")].t,
-            style : {"font-size" : "0.8em"},
-            i : $(this).attr("index")
-          });
-          input.change(function(){
-            data.story[$(this).attr("i")].t = ($(this).val() || "").substring(0,25);
-            obj.sync("updateAsset")
-          });
-
-          var colDiv = $("<div>").appendTo(content);
-          colDiv.addClass("flexaround");
-          colDiv.css("padding", "4px");
-
-          var cols = ["#FFFFFF", "#BB0000", "#00BB00", "#000FFF", "#FFF000", "#B000BB", "#333333"];
-          for (var c in cols) {
-            var col = $("<div>").appendTo(colDiv);
-            col.addClass("outline");
-            col.css("cursor", "pointer");
-            col.css("padding", "4px");
-            col.css("background-color", cols[c]);
-            col.attr("index", c);
-            col.attr("i", $(this).attr("index"));
-            col.click(function(){
-              data.story[$(this).attr("i")].c = cols[$(this).attr("index")];
-              obj.sync("updateAsset");
-              layout.coverlay("adventure-page-color");
-            });
-          }
-          ui_popOut({
-            target : targ,
-            id : "adventure-page-color",
-            align : "top"
-          }, content);
-        });
-      }
-      var read = genIcon("book").appendTo(optionsBar);
-      read.attr("title", "Click to Read");
-      read.attr("index", i);
-      read.click(function(){
-        var sData = data.story[$(this).attr("index")];
-        var index = sData.eID;
-        var ent = game.entities.data[index];
-
-        var content = sync.newApp("ui_renderPage");
-
-        var popout = ui_popOut({
-          title : sync.rawVal(ent.data.info.name),
-          target : $(this),
-          align : "bottom",
-          minimize : true,
-          maximize : true,
-          dragThickness : "0.5em",
-          resizable : true,
-          style : {"max-width" : "none", width : "30vw", height : "60vh"},
-        }, content);
-        popout.css("padding", "0px");
-        popout.addClass("floating-app");
-
-        ent.addApp(content);
-      });
-
-      var ref = genIcon("envelope").appendTo(optionsBar);
-      ref.attr("title", "Click to see References");
-
-      var page = sync.render("ui_pageCard")(ent, app, {
-        viewOnly : true,
-        click : function(ev, ui, charObj) {
-          var content = sync.newApp("ui_renderPage");
-
-          var popout = ui_popOut({
-            title : sync.rawVal(charObj.data.info.name),
-            target : app,
-            minimize : true,
-            maximize : true,
-            dragThickness : "0.5em",
-            resizable : true,
-            style : {"max-width" : "none", width : "30vw", height : "60vh"},
-          }, content);
-          popout.css("padding", "0px");
-          popout.addClass("floating-app");
-
-          charObj.addApp(content);
-        }
-      }).appendTo(marker);
-      page.css("background-color", "white");
-
-      if (sData.t) {
-        marker.append("<i class='fit-x flexmiddle' style='font-size: 0.8em'>"+sData.t+"</i>");
-      }
-    }
-    if (!scope.viewOnly) {
-      marker.draggable({
-        containment : "parent",
-        snap: ".storyMarker",
-        snapMode: "both",
-        stop : function(ev, ui){
-          // update everything out
-          var helper = $(ui.helper);
-          var storyData = obj.data.story[helper.attr("index")];
-          var diffX = parseInt(ui.position.left) / zoom - storyData.x;
-          var diffY = parseInt(ui.position.top) / zoom - storyData.y;
-          storyData.x = (storyData.x + diffX);
-          storyData.y = (storyData.y + diffY);
-          obj.sync("updateAsset");
-          ev.stopPropagation();
-        }
-      });
-      marker.contextmenu(function(ev){
-        var selected = $(".marker-selected");
-        var piece = $(this);
-
-        $(".marker-selected").removeClass("marker-selected");
-        if (layout.mobile) {
-          if (piece.hasClass("marker-selected")) {
-
-          }
-          else {
-            piece.addClass("marker-selected");
-          }
-        }
-        else {
-          piece.addClass("marker-selected");
-        }
-        ev.stopPropagation();
-      });
-    }
-  }
-
-  return div;
-});
-
-sync.render("ui_planner", function(obj, app, scope){
-  scope = scope || {viewOnly : app.attr("viewOnly") == "true"};
-  var div = $("<div>");
-  div.addClass("fit-xy flexcolumn");
-
-  if (!obj) {
-    var retDiv = $("<div>");
-
-    var butt = $("<button>Click to Refresh</button>");
-    butt.click(function(){
-      retDiv.empty();
-      retDiv.append(sync.render("ui_planner")(obj, app, scope));
-    });
-    butt.appendTo(retDiv);
-
-    sync.render("ui_entList")(obj, app, {
-      filter : "a",
-      click : function(ev, ui, ent) {
-        ent.addApp(app);
-      }
-    }).appendTo(retDiv);
-
-    return retDiv;
-  }
-
-  var data = obj.data;
-  if (!scope.viewOnly) {
-    var optionsBar = $("<div>").appendTo(div);
-    optionsBar.addClass("background alttext outline flexrow flexaround");
-
-    var trash = genIcon("trash", "Delete Adventure").appendTo(optionsBar);
-    trash.attr("title", "Delete this Adventure");
-    trash.click(function(){
-      ui_prompt({
-        target : $(this),
-        id : "confirm-delete-adventure",
-        click : function(){
-          runCommand("deleteEntity", {id : obj.id()});
-        }
-      });
-    });
-
-    var clear = genIcon("remove", "Clear Adventure").appendTo(optionsBar);
-    clear.attr("title", "Clear the contents of this Adventure");
-    clear.click(function(){
-      ui_prompt({
-        target : $(this),
-        id : "confirm-clear-adventure",
-        click : function(){
-          obj.data = duplicate(game.templates.adventure);
-          obj.sync("updateAsset");
-        }
-      });
-    });
-    if (obj.data._c == getCookie("UserID")) {
-      var store = genIcon("cloud-upload", "Export Adventure");
-      if (obj.data["_uid"]) {
-        store = genIcon("cloud-upload", "Re-Package Adventure");
-      }
-      store.appendTo(optionsBar);
-      store.attr("title", "Save this Adventure as a Package");
-      store.click(function(){
-        runCommand("storeAsset", {id: obj.id()});
-        layout.coverlay("quick-storage-popout");
-      });
-    }
-  }
-
-  var body = genNavBar();
-  body.addClass("fit-x flexcolumn flex");
-  body.appendTo(div);
-
-  body.generateTab("Adventure Info", "info-sign", function(parent){
-    parent.addClass("flexcolumn flex");
-
-    var content = $("<div>").appendTo(parent);
-    content.addClass("flexcolumn");
-    content.css("flex", "1");
-
-    var newApp;
-    if (!scope.viewOnly) {
-      newApp = sync.render("ui_editPage")(obj, app, scope);
-    }
-    else {
-      newApp = sync.render("ui_renderPage")(obj, app, scope);
-    }
-
-    content.append(newApp);
-    if (app) {
-      app.attr("_tab", "Adventure Info");
-    }
-  });
-
-  body.generateTab("Story Board", "book", function(parent){
-    parent.addClass("flexcolumn flex");
-
-    var content = $("<div>").appendTo(parent);
-    content.addClass("flexcolumn");
-    content.css("flex", "1");
-
-    content.append(sync.render("ui_storyBoard")(obj, app, scope));
-    if (app) {
-      app.attr("_tab", "Story Board");
-    }
-  });
-
-  function tabWrap(name, icon, filter, click) {
-    body.generateTab(name, icon, function(parent){
-      parent.addClass("flexcolumn flex");
-
-      var optionsBar = $("<div>").appendTo(parent);
-      optionsBar.addClass("fit-x flexaround outline flexwrap background alttext");
-
-      var wrapper = $("<div>").appendTo(parent);
-      wrapper.addClass("flexcolumn flex");
-
-      //genIcon("list", "Import All "+name+"").appendTo(optionsBar);
-      if (!scope.viewOnly) {
-      var add = genIcon("share-alt", "Insert "+name).appendTo(optionsBar);
-
-        add.click(function(){
-          var ignore = {};
-          for (var i in game.entities.data) {
-            if (isNaN(i)) {
-              ignore[i] = true;
-            }
-          }
-          for (var key in obj.data.entities) {
-            ignore[obj.data.entities[key]] = true;
-          }
-          var content = sync.render("ui_entList")(obj, app, {
-            filter : filter,
-            click : click,
-            ignore : ignore,
-          });
-          if (content.children().length > 0) {
-            ui_popOut({
-              target : $(this),
-              id : "adventure-insert",
-            }, content);
-          }
-        });
-      }
-      var ignore = {};
-      for (var i in game.entities.data) {
-        if (isNaN(i)) {
-          ignore[i] = true;
-        }
-      }
-      for (var key in obj.data.entities) {
-        ignore[obj.data.entities[key]] = true;
-      }
-      var content = $("<div>").appendTo(wrapper);
-      content.addClass("flexaround flexwrap");
-      content.css("flex", "1");
-
-      for (var key in obj.data.entities) {
-        var ent = game.entities.data[obj.data.entities[key]];
-        if (ent && ent.data && ent.data["_t"] == filter) {
-          var wrapper = $("<div>").appendTo(content);
-          wrapper.addClass("flexcolumn");
-
-          if (filter == "b") {
-            wrapper.append(sync.render("ui_boardCard")(ent, app, {viewOnly : true}));
-          }
-          else if (filter == "c") {
-            wrapper.append(sync.render("ui_charCard")(ent, app, {viewOnly : true}));
-          }
-          else if (filter == "g") {
-            wrapper.append(sync.render("ui_groupCard")(ent, app, {viewOnly : true}).addClass("outline"));
-          }
-          else if (filter == "p") {
-            wrapper.append(sync.render("ui_pageCard")(ent, app, {
-              viewOnly : true,
-              click : function(ev, ui, charObj) {
-                var content = sync.newApp("ui_renderPage");
-
-                var popout = ui_popOut({
-                  title : sync.rawVal(charObj.data.info.name),
-                  target : app,
-                  align : "bottom",
-                  minimize : true,
-                  maximize : true,
-                  dragThickness : "0.5em",
-                  resizable : true,
-                  style : {"max-width" : "none", width : "30vw", height : "60vh"},
-                }, content);
-                popout.css("padding", "0px");
-                popout.addClass("floating-app");
-
-                charObj.addApp(content);
-              }
-            }));
-          }
-          else if (filter == "v") {
-            wrapper.append(sync.render("ui_vehicleCard")(ent, app, {viewOnly : true}));
-          }
-          if (!scope.viewOnly) {
-            var optionsBar = $("<div>").appendTo(wrapper);
-            optionsBar.addClass("fit-x flexaround focus flexwrap outline");
-
-            var remove = genIcon("remove").appendTo(optionsBar);
-            remove.addClass("alttext");
-            remove.attr("index", ent.id());
-            remove.click(function(){
-              for (var key in obj.data.entities) {
-                if (obj.data.entities[key] == $(this).attr("index")) {
-                  obj.data.entities.splice(key, 1);
-                  break;
-                }
-              }
-              obj.sync("updateAsset");
-            });
-          }
-        }
-      }
-
-      if (app) {
-        app.attr("_tab", name);
-      }
-    });
-  }
-  tabWrap("Boards", "globe", "b",
-    function(ev, ui, eObj) {
-      if (!util.contains(data.entities, eObj.id())) {
-        data.entities.push(eObj.id());
-      }
-      obj.sync("updateAsset");
-      layout.coverlay("adventure-insert");
-    }
-  );
-  tabWrap("Actors", "user", "c",
-  function(ev, ui, eObj) {
-    if (!util.contains(data.entities, eObj.id())) {
-      data.entities.push(eObj.id());
-    }
-    obj.sync("updateAsset");
-    layout.coverlay("adventure-insert");
-  });
-  tabWrap("Groups", "unchecked", "g",
-  function(ev, ui, eObj) {
-    if (!util.contains(data.entities, eObj.id())) {
-      data.entities.push(eObj.id());
-    }
-    // loop through and add group contents
-    for (var i in eObj.data.list) {
-      if (!util.contains(data.entities, eObj.data.list[i])) {
-        data.entities.push(eObj.data.list[i]);
-      }
-    }
-    obj.sync("updateAsset");
-    layout.coverlay("adventure-insert");
-  });
-  tabWrap("Resources", "duplicate", "p",
-  function(ev, ui, eObj) {
-    if (!util.contains(data.entities, eObj.id())) {
-      data.entities.push(eObj.id());
-    }
-    obj.sync("updateAsset");
-    layout.coverlay("adventure-insert");
-  });
-  tabWrap("Vehicles", "plane", "v",
-  function(ev, ui, eObj) {
-    if (!util.contains(data.entities, eObj.id())) {
-      data.entities.push(eObj.id());
-    }
-    obj.sync("updateAsset");
-    layout.coverlay("adventure-insert");
-  });
-  if (app) {
-    if (!app.attr("_tab")) {
-      app.attr("_tab", "Adventure Info");
-    }
-    body.selectTab(app.attr("_tab"));
-  }
-  else {
-    body.selectTab("Adventure Info");
-  }
-  //body.css("flex", "1");
-  //body.addClass("outline");
-
-  return div;
-});
-
-sync.render("ui_quickCalc", function(obj, app, scope){
-  var div = $("<div>");
-  div.addClass("flexcolumn flex");
-
-  var input = genInput({
-    placeholder : "Enter Math",
-    value : "",
-    parent : div,
-  });
-  input.addClass("fit-x");
-  input.change(function(){
-    input.val("");
-  });
-  var results = $("<div>").appendTo(div);
-  results.addClass("bold flexmiddle");
-  function buildResults(term) {
-    results.empty();
-
-    results.text(sync.eval(term));
-  }
-
-  input.keyup(function(){
-    buildResults($(this).val());
-  });
-
-  return div;
-});
-
-sync.render("ui_quickSearch", function(obj, app, scope){
-  var data = obj.data;
-
-  var div = $("<div>");
-  div.addClass("flexcolumn flex");
-
-  var search = $("<div>").appendTo(div);
-  search.addClass("outlinebottom background fit-x flexaround alttext");
-
-  var searchIcon = genIcon("search").appendTo(search);
-  searchIcon.addClass("lrpadding");
-  searchIcon.attr("title", "Search");
-
-  var searchInput = genInput({
-    parent : search,
-    placeholder : "Search Terms",
-    value : app.attr("lastSearchTerm"),
-  });
-  searchInput.addClass("flex subtitle");
-  searchInput.css("color", "#333");
-
-  var optionsBar = $("<div>").appendTo(div);
-  optionsBar.addClass("flexrow flexaround flexwrap spadding background outline");
-
-  var categories = {
-    "storage" : {n : "Storage", i : "/content/icons/BeltPouch1000p.png"},
-    "game" : {n : "In Session", i : "/content/icons/BeltPouch1000p.png"},
-    //"a" : {n : "Adventures", i : "/content/icons/Book1000p.png", ui : "ui_planner", width : "60vw", height : "40vh"},
-    "c" : {n : "Actors", i : "/content/icons/blankchar.png", ui : "ui_characterSheet", width : assetTypes["c"].width, height : assetTypes["c"].height},
-    "i" : {n : "Items", i : "/content/icons/Sword1000p.png", ui : "ui_renderItem", width : assetTypes["i"].width, height : assetTypes["i"].height},
-    "b" : {n : "Maps", i : "/content/icons/PictureFrame1000p.png", ui : "ui_board", width : assetTypes["b"].width, height : assetTypes["b"].height},
-    "p" : {n : "Resources", i : "/content/icons/Scroll1000p.png", ui : "ui_renderPage", width : assetTypes["p"].width, height : assetTypes["p"].height},
-    "s" : {n : "Spells", i : "/content/icons/Staff1000p.png", ui : "ui_renderItem", width : assetTypes["i"].width, height : assetTypes["i"].height},
-    //"v" : {n : "Vehicles", i : "/content/icons/blankvehicle.png", ui : "ui_vehicle", width : "50vw", height : "40vh"},
-  };
-  var results = $("<div>").appendTo(div);
-  results.addClass("flexrow flex");
-  //put all the recently found stuff here
-
-  for (var index in categories) {
-    var wrap = $("<button>").appendTo(optionsBar);
-    wrap.addClass("outline hover2 flexrow flexmiddle subtitle");
-    wrap.attr("index", index);
-    if (!data.filters[index]) {
-      wrap.addClass("highlight alttext");
-    }
-
-    wrap.append("<img src='"+categories[index].i+"' style='width : 20px; height : 20px;'></img>");
-    wrap.append("<div class='flexmiddle lrpadding'>"+categories[index].n+"</div>");
-    wrap.click(function(){
-      if ($(this).hasClass("highlight")) {
-        $(this).removeClass("highlight alttext");
-        data.filters[$(this).attr("index")] = true;
-      }
-      else {
-        $(this).addClass("highlight alttext");
-        delete data.filters[$(this).attr("index")];
-      }
-      buildResults(searchInput.val());
-    });
-  }
-
-  function buildResults(term) {
-    results.empty();
-    var categories = {
-      //"a" : {n : "Adventures", i : "book", ui : "ui_planner", width : "60vw", height : "40vh"},
-      "c" : {n : "Actors", i : "user", ui : "ui_characterSheet", width : assetTypes["c"].width, height : assetTypes["c"].height},
-      "b" : {n : "Maps", i : "globe", ui : "ui_board", width : assetTypes["b"].width, height : assetTypes["b"].height},
-      "p" : {n : "Resources", i : "file", ui : "ui_renderPage", width : assetTypes["p"].width, height : assetTypes["p"].height},
-      //"v" : {n : "Vehicles", i : "plane", ui : "ui_vehicle", width : "60vw", height : "50vh"},
-    };
-    if (!data.filters["game"]) {
-      for (var i in game.entities.data) {
-        // search through all entities
-        var ent = game.entities.data[i];
-        var proceed = null;
-        var name;
-        if (!data.filters[ent.data._t]) {
-          if (ent.data._t == "b" || ent.data._t == "g") {
-            name = ent.data.name;
-            if (name && name.toLowerCase().match(term.toLowerCase())) {
-              proceed = true;
-            }
-          }
-          else {
-            name = sync.rawVal(ent.data.info.name);
-            if (name && name.toLowerCase().match(term.toLowerCase())) {
-              proceed = true;
-            }
-            if (ent.data._t == "c" || ent.data._t == "v") {
-              if (!data.filters["i"]) {
-                for (var invKey in ent.data.inventory) {
-                  var refData = ent.data.inventory[invKey]
-                  if (sync.rawVal(refData.info.name) && sync.rawVal(refData.info.name).toLowerCase().match(term.toLowerCase())) {
-                    if (!(proceed instanceof Object)) {
-                      proceed = $("<div>");
-                      proceed.addClass("flexcolumn lrpadding subtitle");
-                      proceed.css("padding-left", "1em");
-                      proceed.css("padding-right", "1em");
-                    }
-                    var refPlate = $("<div>").appendTo(proceed);
-                    refPlate.addClass("flexrow outline hover2");
-                    refPlate.attr("index", ent.id());
-
-                    if (sync.rawVal(refData.info.img)) {
-                      var img = $("<img>").appendTo(refPlate);
-                      img.attr("width", "auto");
-                      img.attr("height", "25px");
-                      img.attr("src", sync.rawVal(refData.info.img));
-                    }
-                    var namePlate = $("<b class='flex flexmiddle'>").appendTo(refPlate);
-                    namePlate.append(sync.rawVal(refData.info.name));
-
-                    refPlate.attr("key", invKey);
-                    refPlate.attr("draggable", true);
-                    refPlate.on("dragstart", function(ev){
-                      var ent = game.entities.data[$(this).attr("index")];
-                      var dt = ev.originalEvent.dataTransfer;
-                      dt.setData("OBJ", JSON.stringify(ent.data.inventory[$(this).attr("key")]));
-                    });
-
-                    refPlate.click(function(){
-                      var ent = game.entities.data[$(this).attr("index")];
-                      var newApp = sync.newApp(categories[ent.data._t].ui);
-                      if (isNaN(ent.id()) && ent.id().match("_")) {
-                        newApp.attr("viewOnly", "true");
-                        newApp.attr("local", "true");
-                      }
-                      else if (!hasSecurity(getCookie("UserID"), "Rights", ent.data)) {
-                        newApp.attr("viewOnly", "true");
-                      }
-                      if (ent.data._t == "c") {
-                        newApp.attr("char_tab", "Inventory");
-                        if (_down[16]) {
-                          newApp.attr("ui-name", "ui_characterSummary");
-                        }
-                        else {
-                          newApp.attr("from", "ui_characterSummary");
-                        }
-                      }
-                      ent.addApp(newApp);
-
-                      var popOut = ui_popOut({
-                        target : $(this),
-                        minimize : true,
-                        dragThickness : "0.5em",
-                        style : {"width" : categories[ent.data._t].width || "", "height" : categories[ent.data._t].height || ""},
-                      }, newApp);
-                      popOut.resizable();
-                    });
-                  }
-                }
-              }
-              if (!data.filters["s"]) {
-                for (var invKey in ent.data.spellbook) {
-                  var refData = ent.data.spellbook[invKey];
-                  if (sync.rawVal(refData.info.name) && sync.rawVal(refData.info.name).toLowerCase().match(term.toLowerCase())) {
-                    if (!(proceed instanceof Object)) {
-                      proceed = $("<div>");
-                      proceed.addClass("flexcolumn subtitle");
-                      proceed.css("padding-left", "1em");
-                      proceed.css("padding-right", "1em");
-                    }
-                    var refPlate = $("<div>").appendTo(proceed);
-                    refPlate.addClass("flexrow outline hover2");
-                    refPlate.attr("index", ent.id());
-                    if (sync.rawVal(refData.info.img)) {
-                      var img = $("<img>").appendTo(refPlate);
-                      img.attr("width", "auto");
-                      img.attr("height", "25px");
-                      img.attr("src", sync.rawVal(refData.info.img));
-                    }
-                    var namePlate = $("<b class='flex flexmiddle'>").appendTo(refPlate);
-                    namePlate.append(sync.rawVal(refData.info.name));
-
-
-                    refPlate.attr("key", invKey);
-                    refPlate.attr("draggable", true);
-                    refPlate.on("dragstart", function(ev){
-                      var ent = game.entities.data[$(this).attr("index")];
-                      var dt = ev.originalEvent.dataTransfer;
-                      dt.setData("OBJ", JSON.stringify(ent.data.spellbook[$(this).attr("key")]));
-                      dt.setData("spell", true);
-                    });
-                    refPlate.click(function(){
-                      var ent = game.entities.data[$(this).attr("index")];
-                      var newApp = sync.newApp(categories[ent.data._t].ui);
-                      if (isNaN(ent.id()) && ent.id().match("_")) {
-                        newApp.attr("viewOnly", "true");
-                        newApp.attr("local", "true");
-                      }
-                      else if (!hasSecurity(getCookie("UserID"), "Rights", ent.data)) {
-                        newApp.attr("viewOnly", "true");
-                      }
-                      if (ent.data._t == "c") {
-                        newApp.attr("char_tab", "Spell Book");
-                        if (_down[16]) {
-                          newApp.attr("ui-name", "ui_characterSummary");
-                        }
-                        else {
-                          newApp.attr("from", "ui_characterSummary");
-                        }
-                      }
-                      ent.addApp(newApp);
-
-                      var popOut = ui_popOut({
-                        target : $(this),
-                        minimize : true,
-                        dragThickness : "0.5em",
-                        style : {"width" : categories[ent.data._t].width || "", "height" : categories[ent.data._t].height || ""},
-                      }, newApp);
-                      popOut.resizable();
-                    });
-                  }
-                }
-              }
-            }
-          }
-
-          if (proceed) {
-            if (!categories[ent.data._t].div) {
-              var col = $("<div>").appendTo(results);
-              col.addClass("flexcolumn flex fit-y");
-              col.css("position", "relative");
-              col.css("overflow-y", "auto");
-
-              var list = $("<div>").appendTo(col);
-              list.addClass("fit-x");
-              list.css("position", "absolute");
-              list.append("<b>"+categories[ent.data._t].n+"</b>");
-
-              categories[ent.data._t].div = list;
-            }
-            var entList = sync.render("ui_ent")(ent, app, {
-              draw : function(plate, ent) {
-                //plate.addClass("_"+ent.data._t+"_"+replaceAll(fIndex, ".", "-"));
-
-                var optionsBar = plate;
-
-                if (isNaN(ent.id()) && ent.id().match("_") && ent.data && ent.data._t != "pk") {
-                  var cloudWrap = $("<div>").appendTo(optionsBar);
-                  cloudWrap.addClass("alttext background outline flexmiddle lrpadding");
-                  cloudWrap.attr("title", "Download Asset");
-                  cloudWrap.append(genIcon("cloud-download"));
-                  cloudWrap.click(function(ev){
-                    if (game.locals["storage"]) {
-                      for (var i in game.locals["storage"].data.l) {
-                        var listEntry = game.locals["storage"].data.l[i];
-                        if (ent.data._c == getCookie("UserID") && listEntry._uid == ent.id().split("_")[1]) {
-                          listEntry.move = true;
-                          runCommand("moveAssets", {l : game.locals["storage"].data.l});
-                          delete listEntry.move;
-                          break;
-                        }
-                      }
-                    }
-                    else {
-                      sendAlert({text : "Asset Storage hasn't loaded yet"});
-                    }
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                  });
-                }
-                else if (!isNaN(ent.id()) && ent.data._uid && ent.data._c == getCookie("UserID")) {
-                  var cloudWrap = $("<div>").appendTo(optionsBar);
-                  cloudWrap.addClass("alttext highlight outline flexmiddle lrpadding");
-                  cloudWrap.attr("title", "Store Asset");
-                  cloudWrap.attr("index", ent.id());
-                  cloudWrap.append(genIcon("cloud-upload"));
-                  cloudWrap.click(function(ev){
-                    if (game.locals["storage"]) {
-                      /*var lookupList = fIndex.split(".");
-                      var lookup = lookupList.splice(0,1);
-                      if (lookupList.length) {
-                        for (var i in lookupList) {
-                          lookup = lookup + ".f."+lookupList[i];
-                        }
-                      }
-                      var target = sync.traverse(obj.data.organized, lookup);
-                      for (var i in target.eIDs) {
-                        if (target.eIDs[i] == ent.id()) {
-                          target.eIDs[i] = getCookie("UserID")+"_"+ent.data._uid;
-                        }
-                      }*/
-                      runCommand("storeAsset", {id : $(this).attr("index"), del : true});
-                      if (!scope.local) {
-                        obj.sync("updateConfig");
-                      }
-                      else {
-                        obj.update();
-                      }
-                    }
-                    else {
-                      sendAlert({text : "Asset Storage hasn't loaded yet"});
-                    }
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    cloudWrap.remove();
-                    return false;
-                  });
-                }
-              },
-              click : function(ev, ui, ent){
-                var newApp = sync.newApp(categories[ent.data._t].ui);
-                if (isNaN(ent.id()) && ent.id().match("_")) {
-                  newApp.attr("viewOnly", "true");
-                  newApp.attr("local", "true");
-                }
-                else if (!hasSecurity(getCookie("UserID"), "Rights", ent.data)) {
-                  newApp.attr("viewOnly", "true");
-                }
-                if (ent.data._t == "c") {
-                  if (_down[16]) {
-                    newApp.attr("ui-name", "ui_characterSummary");
-                  }
-                  else {
-                    newApp.attr("from", "ui_characterSummary");
-                  }
-                }
-                ent.addApp(newApp);
-
-                var popOut = ui_popOut({
-                  target : ui,
-                  minimize : true,
-                  dragThickness : "0.5em",
-                  style : {"width" : categories[ent.data._t].width || "", "height" : categories[ent.data._t].height || ""},
-                }, newApp);
-                popOut.resizable();
-              }
-            }).appendTo(categories[ent.data._t].div);
-            if (proceed instanceof Object) {
-              proceed.appendTo(categories[ent.data._t].div);
-            }
-          }
-        }
-      }
-    }
-    if (!data.filters["storage"]) {
-      for (var i in game.locals["storage"].data.s) {
-        // search through all entities
-        var ent = game.locals["storage"].data.s[i];
-        var proceed = null;
-        var name;
-        if (ent.data._t != "pk" && ent.data._t != "st" && !data.filters[ent.data._t]) {
-          if (ent.data._t == "b" || ent.data._t == "g") {
-            name = ent.data.name;
-            if (name && name.toLowerCase().match(term.toLowerCase())) {
-              proceed = true;
-            }
-          }
-          else {
-            name = sync.rawVal(ent.data.info.name);
-            if (name && name.toLowerCase().match(term.toLowerCase())) {
-              proceed = true;
-            }
-            if (ent.data._t == "c" || ent.data._t == "v") {
-              if (!data.filters["i"]) {
-                for (var invKey in ent.data.inventory) {
-                  var refData = ent.data.inventory[invKey]
-                  if (sync.rawVal(refData.info.name) && sync.rawVal(refData.info.name).toLowerCase().match(term.toLowerCase())) {
-                    if (!(proceed instanceof Object)) {
-                      proceed = $("<div>");
-                      proceed.addClass("flexcolumn lrpadding subtitle");
-                      proceed.css("padding-left", "1em");
-                      proceed.css("padding-right", "1em");
-                    }
-                    var refPlate = $("<div>").appendTo(proceed);
-                    refPlate.addClass("outline hover2");
-                    refPlate.attr("index", i);
-                    if (sync.rawVal(refData.info.img)) {
-                      var img = $("<img>").appendTo(refPlate);
-                      img.attr("width", "auto");
-                      img.attr("height", "25px");
-                      img.attr("src", sync.rawVal(refData.info.img));
-                    }
-                    var namePlate = $("<b>").appendTo(refPlate);
-                    namePlate.append(sync.rawVal(refData.info.name));
-
-                    refPlate.attr("key", invKey);
-                    refPlate.attr("draggable", true);
-                    refPlate.on("dragstart", function(ev){
-                      var ent = game.entities.data[$(this).attr("index")];
-                      var dt = ev.originalEvent.dataTransfer;
-                      dt.setData("OBJ", JSON.stringify(ent.data.inventory[$(this).attr("key")]));
-                    });
-                    refPlate.click(function(){
-                      var ent = game.locals["storage"].data.s[$(this).attr("index")];
-
-                      var newApp = sync.newApp(categories[ent.data._t].ui);
-                      newApp.attr("viewOnly", "true");
-                      newApp.attr("local", "true");
-                      if (ent.data._t == "c") {
-                        newApp.attr("char_tab", "Inventory");
-                        if (_down[16]) {
-                          newApp.attr("ui-name", "ui_characterSummary");
-                        }
-                        else {
-                          newApp.attr("from", "ui_characterSummary");
-                        }
-                      }
-                      ent.addApp(newApp);
-
-                      var popOut = ui_popOut({
-                        target : $(this),
-                        minimize : true,
-                        dragThickness : "0.5em",
-                        style : {"width" : categories[ent.data._t].width || "", "height" : categories[ent.data._t].height || ""},
-                      }, newApp);
-                      popOut.resizable();
-                    });
-                  }
-                }
-              }
-              if (!data.filters["s"]) {
-                for (var invKey in ent.data.spellbook) {
-                  var refData = ent.data.spellbook[invKey];
-                  if (sync.rawVal(refData.info.name) && sync.rawVal(refData.info.name).toLowerCase().match(term.toLowerCase())) {
-                    if (!(proceed instanceof Object)) {
-                      proceed = $("<div>");
-                      proceed.addClass("flexcolumn subtitle");
-                      proceed.css("padding-left", "1em");
-                      proceed.css("padding-right", "1em");
-                    }
-                    var refPlate = $("<div>").appendTo(proceed);
-                    refPlate.addClass("outline hover2");
-                    refPlate.attr("index", i);
-                    if (sync.rawVal(refData.info.img)) {
-                      var img = $("<img>").appendTo(refPlate);
-                      img.attr("width", "auto");
-                      img.attr("height", "25px");
-                      img.attr("src", sync.rawVal(refData.info.img));
-                    }
-                    var namePlate = $("<b>").appendTo(refPlate);
-                    namePlate.append(sync.rawVal(refData.info.name));
-
-                    refPlate.attr("key", invKey);
-                    refPlate.attr("draggable", true);
-                    refPlate.on("dragstart", function(ev){
-                      var ent = game.entities.data[$(this).attr("index")];
-                      var dt = ev.originalEvent.dataTransfer;
-                      dt.setData("OBJ", JSON.stringify(ent.data.inventory[$(this).attr("key")]));
-                      dt.setData("spell", true);
-                    });
-                    refPlate.click(function(){
-                      var ent = game.locals["storage"].data.s[$(this).attr("index")];
-
-                      var newApp = sync.newApp(categories[ent.data._t].ui);
-                      newApp.attr("viewOnly", "true");
-                      newApp.attr("local", "true");
-                      if (ent.data._t == "c") {
-                        newApp.attr("char_tab", "Inventory");
-                        if (_down[16]) {
-                          newApp.attr("ui-name", "ui_characterSummary");
-                        }
-                        else {
-                          newApp.attr("from", "ui_characterSummary");
-                        }
-                      }
-                      ent.addApp(newApp);
-
-                      var popOut = ui_popOut({
-                        target : $(this),
-                        minimize : true,
-                        dragThickness : "0.5em",
-                        style : {"width" : categories[ent.data._t].width || "", "height" : categories[ent.data._t].height || ""},
-                      }, newApp);
-                      popOut.resizable();
-                    });
-                  }
-                }
-              }
-            }
-          }
-
-          if (proceed) {
-            if (!categories[ent.data._t].div) {
-              var col = $("<div>").appendTo(results);
-              col.addClass("flexcolumn flex fit-y");
-              col.css("position", "relative");
-              col.css("overflow-y", "auto");
-
-              var list = $("<div>").appendTo(col);
-              list.addClass("fit-x");
-              list.css("position", "absolute");
-              list.append("<b>"+categories[ent.data._t].n+"</b>");
-
-              categories[ent.data._t].div = list;
-            }
-            var entList = sync.render("ui_ent")(ent, app, {
-              draw : function(plate, ent) {
-                //plate.addClass("_"+ent.data._t+"_"+replaceAll(fIndex, ".", "-"));
-
-                var optionsBar = plate;
-
-                if (isNaN(ent.id()) && ent.id().match("_") && ent.data && ent.data._t != "pk") {
-                  var cloudWrap = $("<div>").appendTo(optionsBar);
-                  cloudWrap.addClass("alttext background outline flexmiddle lrpadding");
-                  cloudWrap.attr("title", "Download Asset");
-                  cloudWrap.append(genIcon("cloud-download"));
-                  cloudWrap.click(function(ev){
-                    if (game.locals["storage"]) {
-                      for (var i in game.locals["storage"].data.l) {
-                        var listEntry = game.locals["storage"].data.l[i];
-                        if (ent.data._c == getCookie("UserID") && listEntry._uid == ent.id().split("_")[1]) {
-                          listEntry.move = true;
-                          runCommand("moveAssets", {l : game.locals["storage"].data.l});
-                          delete listEntry.move;
-                          break;
-                        }
-                      }
-                    }
-                    else {
-                      sendAlert({text : "Asset Storage hasn't loaded yet"});
-                    }
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                  });
-                }
-                else if (!isNaN(ent.id()) && ent.data._uid && ent.data._c == getCookie("UserID")) {
-                  var cloudWrap = $("<div>").appendTo(optionsBar);
-                  cloudWrap.addClass("alttext highlight outline flexmiddle lrpadding");
-                  cloudWrap.attr("title", "Store Asset");
-                  cloudWrap.attr("index", ent.id());
-                  cloudWrap.append(genIcon("cloud-upload"));
-                  cloudWrap.click(function(ev){
-                    if (game.locals["storage"]) {
-                      /*var lookupList = fIndex.split(".");
-                      var lookup = lookupList.splice(0,1);
-                      if (lookupList.length) {
-                        for (var i in lookupList) {
-                          lookup = lookup + ".f."+lookupList[i];
-                        }
-                      }
-                      var target = sync.traverse(obj.data.organized, lookup);
-                      for (var i in target.eIDs) {
-                        if (target.eIDs[i] == ent.id()) {
-                          target.eIDs[i] = getCookie("UserID")+"_"+ent.data._uid;
-                        }
-                      }*/
-                      runCommand("storeAsset", {id : $(this).attr("index"), del : true});
-                      if (!scope.local) {
-                        obj.sync("updateConfig");
-                      }
-                      else {
-                        obj.update();
-                      }
-                    }
-                    else {
-                      sendAlert({text : "Asset Storage hasn't loaded yet"});
-                    }
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    cloudWrap.remove();
-                    return false;
-                  });
-                }
-              },
-              click : function(ev, ui, ent){
-                var newApp = sync.newApp(categories[ent.data._t].ui);
-                if (isNaN(ent.id()) && ent.id().match("_")) {
-                  newApp.attr("viewOnly", "true");
-                  newApp.attr("local", "true");
-                }
-                else if (!hasSecurity(getCookie("UserID"), "Rights", ent.data)) {
-                  newApp.attr("viewOnly", "true");
-                }
-                if (ent.data._t == "c") {
-                  if (_down[16]) {
-                    newApp.attr("ui-name", "ui_characterSummary");
-                  }
-                  else {
-                    newApp.attr("from", "ui_characterSummary");
-                  }
-                }
-                ent.addApp(newApp);
-
-                var popOut = ui_popOut({
-                  target : ui,
-                  minimize : true,
-                  dragThickness : "0.5em",
-                  style : {"width" : categories[ent.data._t].width || "", "height" : categories[ent.data._t].height || ""},
-                }, newApp);
-                popOut.resizable();
-              }
-            }).appendTo(categories[ent.data._t].div);
-            if (proceed instanceof Object) {
-              proceed.appendTo(categories[ent.data._t].div);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  searchInput.keyup(function(){
-    buildResults($(this).val());
-  });
-
-  return div;
-});
-
-sync.render("ui_timer", function(obj, app, scope){
-  scope = scope || {};
-  var div = $("<div>");
-
-  $("<b class='lrpadding fit-x hover2' style='padding-right:1.5em;'>It's My Turn!</b>")
-
-  var pop = ui_popOut({
-    id : "my-turn-"+key,
-    target : $("#player-image-plate-"+key),
-    align : "top",
-    noCss : true,
-    style : {"font-size" : "1.4em", background : player.color}
-  }, );
-  pop.addClass("my-turn alttext outline");
-  pop.click(function(){
-    layout.coverlay($(this), 500);
-  });
 
   return div;
 });

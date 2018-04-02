@@ -547,7 +547,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
                     var newP = {
                       x : xPos, y : yPos,
                       w : Math.min(this.naturalWidth, (data.pW || data.gridW || 64)), h : Math.min(this.naturalHeight, (data.pH || data.gridH || 64)),
-                      i : img.src
+                      i : value
                     };
                     boardApi.pix.addObject(newP, scope.layer, "p", obj);
                     layout.coverlay("icons-picker");

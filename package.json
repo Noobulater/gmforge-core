@@ -10,7 +10,7 @@
   "author": "AaronBentley",
   "license": "",
   "devDependencies": {
-    "electron": "1.7.9",
+    "electron": "^1.8.4",
     "electron-packager": "^9.1.0",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",

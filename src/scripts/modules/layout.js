@@ -1990,6 +1990,7 @@ layout.left = function() {
       $("#audio-player").hide();
       $("#game-options").hide();
       $("#quick-combat").hide();
+      $("#quick-help").hide();
       if ($("#cloud-files").length) {
         if ($("#cloud-files").is(":visible")) {
           $("#cloud-files").hide();
@@ -2032,6 +2033,7 @@ layout.left = function() {
     $("#audio-player").hide();
     $("#game-options").hide();
     $("#quick-combat").hide();
+    $("#quick-help").hide();
     if ($("#asset-manager").length) {
       if ($("#asset-manager").is(":visible")) {
         $("#asset-manager").hide();
@@ -2060,8 +2062,6 @@ layout.left = function() {
       pop.resizable();*/
     }
   });
-  media.click();
-
 
   if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
     var media = genIcon("film").appendTo(mediaOptions);
@@ -2076,6 +2076,7 @@ layout.left = function() {
       $("#audio-player").hide();
       $("#game-options").hide();
       $("#quick-combat").hide();
+      $("#quick-help").hide();
       if ($("#media-player").length) {
         if ($("#media-player").is(":visible")) {
           $("#media-player").hide();
@@ -2118,6 +2119,7 @@ layout.left = function() {
       $("#media-player").hide();
       $("#game-options").hide();
       $("#quick-combat").hide();
+      $("#quick-help").hide();
       if ($("#audio-player").length) {
         if ($("#audio-player").is(":visible")) {
           $("#audio-player").hide();
@@ -2161,6 +2163,7 @@ layout.left = function() {
     $("#media-player").hide();
     $("#game-options").hide();
     $("#audio-player").hide();
+    $("#quick-help").hide();
     if ($("#quick-combat").length) {
       if ($("#quick-combat").is(":visible")) {
         $("#quick-combat").hide();
@@ -2191,6 +2194,49 @@ layout.left = function() {
     }
   });
 
+  var media = genIcon("question-sign").appendTo(mediaOptions);
+  media.addClass("lrpadding create");
+  media.attr("title", "Quick Help!");
+  media.attr("id", "help-button");
+  media.css("font-size", "1.4em");
+  media.css("padding-left", "0.5em");
+  media.css("padding-right", "0.5em");
+  media.click(function() {
+    $("#cloud-files").hide();
+    $("#asset-manager").hide();
+    $("#media-player").hide();
+    $("#game-options").hide();
+    $("#audio-player").hide();
+    $("#quick-combat").hide();
+    if ($("#quick-help").length) {
+      if ($("#quick-help").is(":visible")) {
+        $("#quick-help").hide();
+      }
+      else {
+        $("#quick-help").show();
+        var max = util.getMaxZ(".ui-popout");
+        $("#quick-help").css("z-index", max+1);
+      }
+    }
+    else {
+      var newApp = sync.newApp("ui_renderHelp", null, {}).appendTo(menuContent);
+      newApp.css("width", assetTypes["assetPicker"].width);
+      newApp.attr("id", "quick-help");
+      /*var popOut = ui_popOut({
+        target : left,
+        align : "right",
+        title : "Audio Player",
+        id : "audio-player",
+        close : function(ev, ui) {
+          popOut.hide();
+          return false;
+        },
+        style : {"width" : "400px", "height" : "400px"}
+      }, newApp);
+      popOut.resizable();*/
+    }
+  });
+  media.click();
 
   var div = $("<div>").appendTo(leftContent);
   div.addClass("flex");
@@ -2241,6 +2287,7 @@ layout.left = function() {
     $("#media-player").hide();
     $("#music-player").hide();
     $("#quick-combat").hide();
+    $("#quick-help").hide();
     if ($("#game-options").length) {
       $("#game-options").toggle();
       return;

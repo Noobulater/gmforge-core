@@ -1,3 +1,4 @@
+/*
 sync.render("ui_choices", function(obj, app, scope){
   var div = $("<div>");
   if (obj && obj.data) {
@@ -18,3 +19,4 @@ sync.render("ui_choices", function(obj, app, scope){
   }
   return div
 });
+*/

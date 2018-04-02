@@ -315,6 +315,7 @@ sync.render("ui_editAction", function(obj, app, scope){
     textarea.val(data.eventData.data);
     textarea.change(function(){
       obj.data.eventData.data = $(this).val();
+      obj.update();
     });
   }
   else if (scope.mode == "Choices") {
@@ -383,7 +384,9 @@ sync.render("ui_editAction", function(obj, app, scope){
             "Input Name" : {type : "list", list : "edit-action-context-"+app.attr("id")}
           },
           click : function(ev, inputs){
-            var name = inputs["Input Name"].val()
+            var name = inputs["Input Name"].val();
+            console.log(inputs);
+            inputs["Input Name"].attr("list");
             if (name) {
               name = replaceAll(name, " ", "_");
               name = replaceAll(name, "@", "");
@@ -395,7 +398,8 @@ sync.render("ui_editAction", function(obj, app, scope){
               name = replaceAll(name, "#", "_");
               name = replaceAll(name, "$", "_");
               obj.data.choices[index] = obj.data.choices[index] || {};
-              obj.data.choices[index][name] = true;
+              console.log(name);
+              obj.data.choices[index][name] = "0";
               obj.update();
             }
           }
@@ -2124,19 +2128,18 @@ sync.render("ui_renderAction", function(obj, app, scope){
   obj.data.options = obj.data.options || {};
   var actionKey = obj.data.action;
   var actionData = obj.data.actionData;
-
+  var itemData;
+  var spellData;
   function buildContext(){
     var ctx = sync.defaultContext();
     var ent = getEnt(obj.data.context.c);
     if (ent) {
-      var itemData;
       if (obj.data.context.i instanceof Object) {
         itemData = obj.data.context.i;
       }
       else if (obj.data.context.i) {
         itemData = ent.data.inventory[obj.data.context.i];
       }
-      var spellData;
       if (obj.data.context.spl instanceof Object) {
         spellData = obj.data.context.spl;
       }
@@ -2167,7 +2170,16 @@ sync.render("ui_renderAction", function(obj, app, scope){
 
   var saveNewRoll = $("<div>").appendTo(saveNewRollWrap);
   saveNewRoll.addClass("lrmargin background padding outline bold smooth hover2 alttext flexcolumn flexmiddle");
-  saveNewRoll.text(actionKey);
+  if (itemData) {
+    saveNewRoll.text(sync.rawVal(itemData.info.name) + ":" + actionKey);
+  }
+  else if (spellData) {
+    saveNewRoll.text(sync.rawVal(spellData.info.name) + ":" + actionKey);
+  }
+  else {
+    saveNewRoll.text(actionKey);
+  }
+
 
   if (actionData.choices) {
     saveNewRollWrap.removeClass("spadding");
@@ -2568,7 +2580,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
-          if (JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
+          if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey] || JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
             obj.data._a = obj.data._a || {};
             obj.data._a[actionKey] = duplicate(orgObj.data);
           }
@@ -2622,7 +2634,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
-          if (JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
+          if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey] || JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
             obj.data._a = obj.data._a || {};
             obj.data._a[actionKey] = duplicate(orgObj.data);
           }
@@ -2636,7 +2648,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   }
 
   for (var actionKey in obj.data._a) {
-    if (!game.templates.actions[obj.data._t][actionKey]) {
+    if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey]) {
       var saveNewRollWrap = $("<div>").appendTo(div);
       saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
 
@@ -2679,7 +2691,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
-          if (JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
+          if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey] || JSON.stringify(orgObj.data) != JSON.stringify(game.templates.actions[obj.data._t][actionKey])) {
             obj.data._a = obj.data._a || {};
             obj.data._a[actionKey] = duplicate(orgObj.data);
           }
@@ -2698,7 +2710,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   var addAction = genIcon("plus", "New Action").appendTo(addActionWrap);
   addAction.attr("title", "Add a New Action");
   addAction.click(function(){
-    if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
+    if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || !obj.data._s) {
       ui_prompt({
         target : $(this),
         inputs : {
@@ -2757,7 +2769,7 @@ sync.render("ui_hotActions", function(char, app, scope){
   }
 
   for (var actionKey in char.data._a) {
-    if (!game.templates.actions.c[actionKey] && char.data._a[actionKey].hot) {
+    if (char.data._a[actionKey].hot) {
       var actionData = duplicate(char.data._a[actionKey]);
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
@@ -2800,7 +2812,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.inventory[itemKey]._a) {
-      if (!game.templates.actions.i[actionKey] && char.data.inventory[itemKey]._a[actionKey].hot) {
+      if (char.data.inventory[itemKey]._a[actionKey].hot) {
         var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
@@ -2846,7 +2858,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.spellbook[itemKey]._a) {
-      if (!game.templates.actions.i[actionKey] && char.data.spellbook[itemKey]._a[actionKey].hot) {
+      if (char.data.spellbook[itemKey]._a[actionKey].hot) {
         var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};

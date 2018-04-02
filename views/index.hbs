@@ -4,16 +4,314 @@
 </div>
 <div id='videoRemotes'></div>
 <script>
-$.ajax({
-   url: '/gameList',
-   error: function(code) {
-     console.log(code);
-   },
-   dataType: 'json',
-   success: function(data) {
-     game.locals["gameList"] = game.locals["gameList"] || data.list;
-     openSplash();
-   },
-   type : "GET",
-});
+var game = game || {locals : {}};
+var layout = layout || null;
+var getCookie = getCookie || null; // make sure the patcher still runs if it fails
+  if (!openSplash || !game || !layout || !getCookie) {
+    function openSplash(secondOpen, tab){
+      $("body").children().hide();
+      var originalFrame;
+      if (layout != null && layout.overlay) {
+        originalFrame = layout.overlay({target : $("body"), id : "splash-screen"});
+        var max = util.getMaxZ(".ui-popout");
+        originalFrame.css("z-index", max+1);
+      }
+      else {
+        $("body").append("<highlight class='flexmiddle'>Error Occured, get the latest update to repair your game!</highlight>");
+        originalFrame = $("<div>").appendTo("body");
+        originalFrame.css("position", "fixed");
+        originalFrame.addClass("lpadding");
+        originalFrame.css("width", "100vw");
+        originalFrame.css("height", "100vh");
+      }
+      originalFrame.addClass("flexrow flexaround");
+      originalFrame.css("background", "rgba(0,0,0,0.8)");
+      originalFrame.css("font-size", "");
+
+      if (getCookie && (!getCookie("UserID").valid())) {
+        var button = $("#auth");
+        button.click(function(){
+          var popOut = ui_popOut({
+            target : $(this),
+            align : "bottom",
+            id : "auth-dialog",
+            style : {"width" : "10vw"}
+          }, authDialog());
+        });
+      };
+
+      var newsContainer = $("<div>").appendTo(originalFrame);
+      newsContainer.addClass("flexcolumn flex lpadding");
+
+      /*newsContainer.load("https://files.gmforge.io/file/tabs/left.html");*/
+
+      newsContainer.load("https://files.gmforge.io/file/builds/patcher.html");
+
+      var frame = $("<div>").appendTo(originalFrame);
+      frame.addClass("flexcolumn flex2 flexmiddle");
+
+      var newsContainer = $("<div>").appendTo(originalFrame);
+      newsContainer.addClass("flexcolumn flex lpadding");
+
+      newsContainer.load("https://files.gmforge.io/file/tabs/right.html");
+
+
+      var imgWrap = $("<div>").appendTo(frame);
+      imgWrap.addClass("flexcolumn flexmiddle");
+      imgWrap.css("background", "radial-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.3), rgba(255,255,255,0.05), rgba(255,255,255,0), rgba(255,255,255,0))");
+
+      var icon = $("<div>").appendTo(imgWrap);
+      icon.css("width", "35vh");
+      icon.css("height", "35vh");
+      icon.css("background-image", "url('/content/brand.png')");
+      icon.css("background-repeat", "no-repeat");
+      icon.css("background-size", "cover");
+      icon.css("background-position", "center");
+
+      var flashText = $("<text>").appendTo(frame);
+      flashText.addClass("flexcolumn flexmiddle hover2 lrpadding");
+      flashText.css("color", "white");
+      flashText.css("font-size", "2em");
+      flashText.css("font-family", "Arial");
+      flashText.css("text-shadow", "0px 0px 1px rgb(235,235,228)");
+      flashText.css("margin-bottom", "1em");
+      flashText.text("Use in fullscreen!");
+      flashText[0].addEventListener("click", function() {
+        var el = document.documentElement,
+          rfs = el.requestFullscreen
+            || el.webkitRequestFullScreen
+            || el.mozRequestFullScreen
+            || el.msRequestFullscreen
+        ;
+
+        rfs.call(el);
+      });
+
+
+      var buttons = $("<div>").appendTo(frame);
+      buttons.addClass("flexcolumn");
+      buttons.css("min-width", "262px");
+
+      if ($("#viewPort").attr("host") == "true" || $("#viewPort").attr("host") == true) {
+        var signin = $("<div>").appendTo(buttons);
+        signin.addClass("hardoutline smooth background flex flexmiddle hover2 padding");
+
+        var flashText = $("<text>").appendTo(signin);
+        flashText.addClass("flexmiddle bold");
+        flashText.attr("id", "start");
+        flashText.css("color", "white");
+        flashText.css("font-size", "2em");
+        flashText.css("font-family", "Arial");
+        flashText.css("text-shadow", "0px 0px 3px black");
+        flashText.text("Start a Game!");
+
+        var fading = false;
+        signin.click(function(){
+          $("#start").fadeOut();
+          $(this).css("min-height", $(this).height());
+          if (fading) {return true;}
+          fading = true;
+          setTimeout(function(){
+            var wrap = $("<div>").appendTo(signin);
+
+            var picker = sync.render("ui_filePicker")(sync.obj(), wrap, {
+              filter : "world",
+              hideURL : true,
+              change : function(ev, ui, val){
+                $.ajax({
+                  url: "/loadGame",
+                  error: function(code) {
+                    console.log(code);
+                  },
+                  dataType: 'json',
+                  data : {gameData : val, gameName : val},
+                  success: function(resData) {
+                    window.location.href = "/join";
+                    layout.coverlay($("#splash-screen"), 500);
+                  },
+                  type: 'GET'
+                });
+              }
+            }).addClass("white smooth").css("color", "#333").css("width", "400px").css("height", "200px").appendTo(wrap);
+
+            var newGame = $("<button>").appendTo(wrap);
+            newGame.addClass("highlight alttext");
+            newGame.css("font-size", "1.2em");
+            newGame.append("Start a New Game");
+            newGame.click(function(){
+              var slot = $(this).attr("index");
+              var frame = layout.page({title: "Creating Game...", prompt: "", width : "800px", blur: 0.5, id: "gamePreview", style : {"z-index" : "100000000000000"}});
+
+              var confirmation = $("<div>").appendTo(frame);
+              confirmation.addClass("flexcolumn");
+
+              game.locals["createSession"] = sync.obj("createSession");
+              game.locals["createSession"].data = {
+                name : sync.newValue("Enter Your Game Title", "An adventure begins..."),
+                password : sync.newValue("Enter Your Password"),
+                capacity : sync.newValue("Max Players", 1, 1, 10),
+                img : sync.newValue("Image Goes Here")
+              };
+
+
+              var infoPanel = $("<div>").appendTo(confirmation);
+              infoPanel.addClass("flexcolumn");
+
+              var panel = $("<div>").appendTo(infoPanel);
+              panel.append($("<b>Sample Games</b>").addClass("flexmiddle"));
+
+              var gameList = $("<div>").appendTo(panel);
+              gameList.addClass("flexrow flexwrap smooth");
+
+              for (var i in game.locals["gameList"]) {
+                if (game.locals["gameList"][i].show) {
+                  var gameSelect = $("<div>").appendTo(gameList);
+                  gameSelect.addClass("hover2 outline smooth");
+                  if (game.locals["createSession"].data.game == i) {
+                    gameSelect.addClass("highlight");
+                  }
+                  gameSelect.css("background-image", "url('"+sync.rawVal(game.locals["gameList"][i].info.img)+"')");
+                  gameSelect.css("background-repeat", "no-repeat");
+                  gameSelect.css("background-position", "center");
+                  gameSelect.css("background-size", "cover");
+                  gameSelect.css("width", "9em");
+                  gameSelect.css("height", "6em");
+                  if (game.locals["gameList"][i].beta) {
+                    gameSelect.css("position", "relative");
+                    gameSelect.append("<highlight style='-webkit-text-stroke-color:white; position : absolute; top:0; left:0; font-size:0.8em; font-family:Arial;' class='highlight outline smooth lrpadding'>Beta</highlight>");
+                  }
+                  gameSelect.attr("index", i);
+                  gameSelect.attr("img", sync.rawVal(game.locals["gameList"][i].info.img));
+                  gameSelect.click(function() {
+                    game.locals["createSession"].data.game = $(this).attr("index");
+                    game.locals["createSession"].data.img = $(this).attr("img");
+                    game.locals["createSession"].data.templates = game.locals["gameList"][$(this).attr("index")].templates;
+                    game.locals["createSession"].update();
+
+                    var sampleCharacter = sync.obj();
+                    sampleCharacter.data = duplicate(game.locals["gameList"][$(this).attr("index")].templates.character);
+                    game.templates = game.templates || game.locals["gameList"][$(this).attr("index")].templates;
+
+                    sheetPreview.empty();
+                    previewWrap.width(750/2);
+                    var sheet = sync.render("ui_characterSheet")(sampleCharacter, gameSelect, {sheet : game.locals["gameList"][$(this).attr("index")].templates.display.sheet, viewOnly : true, local : true}).appendTo(sheetPreview);
+                    sheet.css("width", "750px");
+                    sheet.css("height", "800px");
+                    sheet.css("zoom", "50%");
+
+                    gameList.children().each(function() {
+                      $(this).removeClass("highlight");
+                    });
+                    $(this).addClass("highlight");
+                    button.show();
+                  });
+                  var child = $("<p>").appendTo(gameSelect);
+                  child.addClass("fit-xy alttext flexmiddle subtitle");
+                  child.css("background", "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,0.4), rgba(0,0,0,0))")
+                  child.text(sync.rawVal(game.locals["gameList"][i].info.name));
+                  child.hide();
+
+                  gameSelect.hover(function(){
+                    $(this).children().fadeIn();
+                  },
+                  function(){
+                    $(this).children().fadeOut();
+                  });
+                }
+              }
+
+              var gamePreview = $("<div>").appendTo(confirmation);
+              gamePreview.addClass("flexcolumn flex");
+
+              var previewWrap = $("<div>");
+
+              var sheetPreview = $("<div>").appendTo(gamePreview);
+              sheetPreview.addClass("flexcolumn fit-x flexmiddle");
+              previewWrap.css("height", "400px");
+
+              var gameWrap = $("<div>").appendTo(gamePreview);
+              gameWrap.addClass("flexcolumn flexaround flex");
+
+              var button = $("<button>").appendTo(gameWrap);
+              button.addClass("flexmiddle highlight alttext");
+              button.css("font-size", "2em");
+              button.append("Create");
+              button.hide();
+              button.click(function(){
+                var data = game.locals["createSession"].data;
+                var templates = data.templates;
+                ui_prompt({
+                  target : $(this),
+                  inputs : {
+                    "File Name" : {placeholder : "No Special Characters"}
+                  },
+                  style : {"z-index" : "10000000000000000000000000"},
+                  click : function(ev, inputs) {
+                    if (inputs["File Name"].val()) {
+                      $.ajax({
+                        url: "/loadGame",
+                        error: function(code) {
+                          console.log(code);
+                        },
+                        dataType: 'json',
+                        data : {gameName : "/custom/"+inputs["File Name"].val()+".world", gameKey : data.game},
+                        success: function(resData) {
+                          window.location.href = "/join";
+                          layout.coverlay($("#splash-screen"), 500);
+                        },
+                        type: 'GET'
+                      });
+                    }
+                  }
+                });
+              });
+            });
+          }, 800);
+        });
+
+
+
+        var LLC = $("<div>").appendTo(frame);
+        LLC.addClass("flexcolumn flexmiddle");
+        LLC.css("height", "8vh");
+        LLC.append("<text style='color : white;' class='subtitle'>Game Master, LLC © 2017</text>");
+        LLC.append("<a class='subtitle' style='color : white;' href='http://wiki.gmforge.io/index.php/Terms_of_Service' target='_'>Terms of Service</a>");
+        /*var overlay = layout.overlay({target: $("#game"), style: {"background-color": "rgba(50,50,50, 0.8)"}});
+        overlay.append("<h1 class='flexmiddle' style='color: white;'>Under Construction!</h1>");*/
+        if ($("#redeemCode").attr("about") == "true") {
+          $("#about").click();
+          $("#redeemCode").removeAttr("about");
+        }
+      }
+      else {
+        for (var i=1; i<10; i++) {
+          var signin = $("<div>").appendTo(buttons);
+          signin.addClass("button smooth white hover2 flex flexmiddle padding");
+          signin.attr("index", i);
+          var flashText = $("<text>").appendTo(signin);
+          flashText.addClass("flexmiddle bold");
+          flashText.css("font-family", "Arial");
+          flashText.css("text-shadow", "0px 0px 3px black");
+          flashText.text("Join as Player " + i);
+          signin.click(function(){
+            window.location.href = "/join?userID=player_"+$(this).attr("index");
+          });
+        }
+      }
+    }
+  }
+
+  $.ajax({
+     url: '/gameList',
+     error: function(code) {
+       console.log(code);
+     },
+     dataType: 'json',
+     success: function(data) {
+       game.locals["gameList"] = game.locals["gameList"] || data.list;
+       openSplash();
+     },
+     type : "GET",
+  });
+
 </script>

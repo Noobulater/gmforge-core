@@ -104,7 +104,6 @@ sync.render("ui_entryList", function(obj, app, scope){
       }
       else if (ignore instanceof Object) {
         ignoring = util.contains(ignore, index);
-        console.log(ignoring);
       }
     }
     if (!ignoring) {

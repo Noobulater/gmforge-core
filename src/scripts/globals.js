@@ -11,7 +11,8 @@ var game = {
   actions : null, // All the actions objects/players can perform
   components : null, // list of all the ui components a player has access to
   actions : null, // list of all the actions a player has access to
-  templates : {} // data structures specific to game
+  templates : {}, // data structures specific to game
+  version : 1 // the version for the patcher to check against
 };
 
 function setupGame() {
