@@ -475,7 +475,7 @@ sync.rawVal = function(valueObj, newVal) {
 // regular Expressions, define them once
 var diceAddRegex = /([0-9]*)[\s]*([+|-])[\s]*([-]*[0-9]*)/; // find addition
 var diceNumber = /\d+/;
-var diceRegex = /(\d*)d(\d+)([k|d][\d+])?/i; // find a <x>d<y>
+var diceRegex = /(\d*)d(\d+)([k|d]([l|h])?[\d+])?/i; // find a <x>d<y>
 var diceQuery = /([^\[]*)\[([^\[^\]]+)\]([\+|-].*)*/i; // how many times will it run
 var queryType = /([\d|\)|}])([B|R|W])([\d|\(|{])?/i;
 var clampRegex =  /\(([^(^)]*)\)([frc])*([_][\d]*)*([|][\d]*)*/i;
@@ -1001,7 +1001,7 @@ var calcAPI = {
     return parseFloat(sync.eval(args[0], targets));
   },
   str : function(args, targets) {
-    return String(sync.eval(args[0], targets));
+    return String(args[0]);
   },
   raw : function(args, targets) {
     return String(sync.reduce(args[0], targets, true, true));
@@ -1184,7 +1184,7 @@ var calcAPI = {
       }
     }
   },
-  explode : function(args, targets) {
+  "!" : function(args, targets) {
     var maxLoop = 1000;
     var loop = 0;
     var cachedTargets = duplicate(targets);
@@ -1374,28 +1374,48 @@ sync.evalDice = function(term) {
       for (var i=0; i<(dice[1] || 1); i++) {
         values.push(Math.ceil(chance.natural({min: 1, max: dice[2]})));
       }
+      console.log(dice);
       if (dice[3]) {
+        //descending order;
+        values.sort(function(a,b){
+          if (b > a) {
+            return -1;
+          }
+          else if (a > b) {
+            return 1;
+          }
+          return 0;
+        });
         if (dice[3][0] == "k") {
-          values.sort(function(a,b){
-            if (b > a) {
-              return -1;
+          console.log(values.toString());
+          if (dice[4]) {
+            var amount = dice[3].substring(2, dice[3].length);
+            if (dice[4] == "h") {
+              values.splice(values.length-amount-1, values.length-amount);
             }
-            else if (a > b) {
-              return 1;
+            else if (dice[4] == "l") {
+              values.splice(amount, values.length-amount);
             }
-            return 0;
-          });
+          }
+          else {
+            var amount = dice[3].substring(1, dice[3].length);
+            values.splice(amount, values.length-amount);
+          }
         }
         else if (dice[3][0] == "d") {
-          values.sort(function(a,b){
-            if (b > a) {
-              return 1;
+          if (dice[4]) {
+            var amount = dice[3].substring(2, dice[3].length);
+            if (dice[4] == "h") {
+              values.splice(0, amount);
             }
-            else if (a > b) {
-              return -1;
+            else if (dice[4] == "l") {
+              values.splice(values.length-amount-1, amount);
             }
-            return 0;
-          });
+          }
+          else {
+            var amount = dice[3].substring(1, dice[3].length);
+            values.splice(values.length-amount-1, amount);
+          }
         }
       }
 
