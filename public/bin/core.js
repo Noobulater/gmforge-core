@@ -16241,6 +16241,12 @@ sync.render("ui_homebrew", function(obj, app, scope){
           delete template._calc;
 
           obj.data.templates.character = template;
+          if (obj.data.previewChar.data._d.tabs) {
+            obj.data.templates.display.sheet.tabs = duplicate(obj.data.previewChar.data._d.tabs);
+          }
+          else {
+            delete obj.data.templates.display.sheet.tabs;
+          }
           obj.data.templates.display.sheet.content = duplicate(obj.data.previewChar.data._d.content);
           obj.data.templates.display.sheet.style = duplicate(obj.data.previewChar.data._d.style);
 
@@ -34062,7 +34068,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.inventory[itemKey]._a) {
-      if (char.data.inventory[itemKey]._a[actionKey].hot) {
+      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && char.data.inventory[itemKey]._a[actionKey].hot)) {
         var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
@@ -34108,7 +34114,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.spellbook[itemKey]._a) {
-      if (char.data.spellbook[itemKey]._a[actionKey].hot) {
+      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && char.data.spellbook[itemKey]._a[actionKey].hot)) {
         var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};

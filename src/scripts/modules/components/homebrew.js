@@ -611,6 +611,12 @@ sync.render("ui_homebrew", function(obj, app, scope){
           delete template._calc;
 
           obj.data.templates.character = template;
+          if (obj.data.previewChar.data._d.tabs) {
+            obj.data.templates.display.sheet.tabs = duplicate(obj.data.previewChar.data._d.tabs);
+          }
+          else {
+            delete obj.data.templates.display.sheet.tabs;
+          }
           obj.data.templates.display.sheet.content = duplicate(obj.data.previewChar.data._d.content);
           obj.data.templates.display.sheet.style = duplicate(obj.data.previewChar.data._d.style);
 

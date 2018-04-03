@@ -2812,7 +2812,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.inventory[itemKey]._a) {
-      if (char.data.inventory[itemKey]._a[actionKey].hot) {
+      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && char.data.inventory[itemKey]._a[actionKey].hot)) {
         var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
@@ -2858,7 +2858,7 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.spellbook[itemKey]._a) {
-      if (char.data.spellbook[itemKey]._a[actionKey].hot) {
+      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && char.data.spellbook[itemKey]._a[actionKey].hot)) {
         var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
         var actionObj = sync.dummyObj();
         actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
