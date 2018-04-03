@@ -253,6 +253,7 @@ sync.render("ui_deck", function(obj, app, scope) {
             click : function(ev, ui){
               var deckData = game.state.data.cards.decks[ui.attr("deck")];
               var start = duplicate(deckData.pool);
+              deckData.pool = [];
               while (start.length) {
                 deckData.pool.push(start.splice(Math.floor(Math.random() * start.length), 1)[0]);
               }

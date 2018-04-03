@@ -981,6 +981,10 @@ function ui_popOut(options, content) {
     overlay.append(content);
   }
 
+  if (options.noCss) {
+    removeWrapper.removeClass("background");
+  }
+
   if (options.maximize) {
     maximize.css("text-shadow", "0px 0px 4px white");
     maximize.click(function(evt) {
