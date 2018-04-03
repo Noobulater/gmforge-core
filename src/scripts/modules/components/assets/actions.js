@@ -2751,9 +2751,12 @@ sync.render("ui_hotActions", function(char, app, scope){
     if (char.data._a && char.data._a[actionKey]) {
       actionData = duplicate(char.data._a[actionKey]);
     }
+    var context = {c : char.id()}
+    var hot = sync.eval(actionData.hot, context);
+
     if (actionData.hot) {
       var actionObj = sync.dummyObj();
-      actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
+      actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
       game.locals["actionsList"] = game.locals["actionsList"] || {};
       game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-"+actionKey] = actionObj;
@@ -2769,8 +2772,10 @@ sync.render("ui_hotActions", function(char, app, scope){
   }
 
   for (var actionKey in char.data._a) {
-    if (char.data._a[actionKey].hot) {
-      var actionData = duplicate(char.data._a[actionKey]);
+    var actionData = duplicate(char.data._a[actionKey]);
+    var context = {c : char.id()}
+    var hot = sync.eval(actionData.hot, context);
+    if (hot) {
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
 
@@ -2786,17 +2791,19 @@ sync.render("ui_hotActions", function(char, app, scope){
       actionObj.addApp(actionApp);
     }
   }
-
   for (var itemKey in char.data.inventory) {
     for (var actionKey in game.templates.actions.i) {
       var actionData = duplicate(game.templates.actions.i[actionKey]);
       if (char.data.inventory[itemKey]._a && char.data.inventory[itemKey]._a[actionKey]) {
         actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
       }
-      if (actionData.hot) {
+      var context = {c : char.id()};
+      context.i = char.data.inventory[itemKey];
+      var hot = sync.eval(actionData.hot, context);
+
+      if (hot) {
         var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.inventory[itemKey];
+        actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
@@ -2812,11 +2819,15 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.inventory[itemKey]._a) {
-      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && char.data.inventory[itemKey]._a[actionKey].hot)) {
-        var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
+      var hot = sync.eval(actionData.range, context)
+      var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
+      var context = {c : char.id()}
+      context.i = char.data.inventory[itemKey];
+      var hot = sync.eval(actionData.hot, context);
+
+      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && hot)) {
         var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.inventory[itemKey];
+        actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
@@ -2832,17 +2843,18 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
   }
-
   for (var itemKey in char.data.spellbook) {
     for (var actionKey in game.templates.actions.i) {
       var actionData = duplicate(game.templates.actions.i[actionKey]);
       if (char.data.spellbook[itemKey]._a && char.data.spellbook[itemKey]._a[actionKey]) {
         actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
       }
-      if (actionData.hot) {
+      var context = {c : char.id()}
+      context.i = char.data.spellbook[itemKey];
+      var hot = sync.eval(actionData.hot, context);
+      if (hot) {
         var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.spellbook[itemKey];
+        actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
@@ -2858,11 +2870,14 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.spellbook[itemKey]._a) {
-      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && char.data.spellbook[itemKey]._a[actionKey].hot)) {
-        var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
+      var context = {c : char.id()}
+      context.i = char.data.spellbook[itemKey];
+      var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
+      var hot = sync.eval(actionData.hot, context);
+
+      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && hot)) {
         var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.spellbook[itemKey];
+        actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
