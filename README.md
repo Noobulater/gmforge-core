@@ -22,13 +22,16 @@ To start testing your code, simply go to the development server @ www.gmforge.io
 
 #### Testing on your local GM Forge server
 
-In order to get your new code running, you must first concatenate your modified 'Scripts' folder together into a single file, 'core.js'.
+1. Install [node.js](https://nodejs.org/en/download/)
+2. Open Power Shell/ CMD /Git Bash in main directory of repository.
+3. Run "node -g install gulp" (this will *globally* install gulp for you so you can use it as a command)
+4. Run "node update" (this will download all modules used by this repository, it may take a while).
+5. Run "gulp all" to generate core.js
+6. Run "node start" to run the application.
 
-#####TODO Write out how to concatenate your files
+Once you make changes you need to repeat step 5 and refresh page afterwards.
 
-Once you have concatenated the files, overwrite the 'core.js' file in your /public/bin folder.
 
-Once you have overwritten the changes, simply refresh using ctrl+R, or restart your server, and you will be able to see the newest changes.
 
 # This Readme is a WIP (Obviously)
 I am doing my best to expand it! Lend me some support https://www.patreon.com/gmforge so I can spend the proper amount of time documenting and explaining how to do things!
