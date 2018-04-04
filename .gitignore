@@ -1,2 +1,4 @@
 node_modules/
 public/custom/
+
+public/bin/core\.js
