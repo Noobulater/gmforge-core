@@ -2692,7 +2692,7 @@ layout.bottom = function(){
   bottomContent.css("position", "relative");
 
   var pin = genIcon("pushpin").appendTo(bottomContent);
-  pin.addClass("spadding alttext smooth");
+  pin.addClass("spadding alttext smooth highlight");
   pin.attr("title", "Lock this menu down");
   pin.css("position", "absolute");
   pin.css("top", "0");
@@ -2910,7 +2910,7 @@ layout.bottom = function(){
     noCss : true,
     hideclose : true,
     style : {"width" : "100vw", "max-width" : "100vw", "transition" : "opacity 0.5s"}
-  }, bottomContent).attr("docked", "bottom").addClass("background").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
+  }, bottomContent).attr("docked", "bottom").addClass("background").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout")).attr("locked", true);
 
   bottom.draggable("disable");
   bottom.addClass("main-dock");

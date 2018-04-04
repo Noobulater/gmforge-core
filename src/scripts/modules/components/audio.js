@@ -219,7 +219,7 @@ sync.render("ui_audioPlayer", function(obj, app, scope) {
     var newSoundPlate = $("<div>").appendTo(trackPlate);
     newSoundPlate.addClass("flexmiddle subtitle flex");
 
-    var newSound = genIcon("volume-up", "New Sound").appendTo(newSoundPlate);
+    var newSound = genIcon("volume-up", "Add Music").appendTo(newSoundPlate);
     newSound.click(function(){
       var picker = sync.render("ui_filePicker")(obj, app, {
         filter : ["audio"],

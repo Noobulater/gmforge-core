@@ -1001,6 +1001,8 @@ sync.render("ui_characterSheet", function(obj, app, scope){
               var dupe = duplicate(ent.data.layers[selectData.layer].p[selectData.index]);
               delete dupe.x;
               delete dupe.y;
+              dupe.w = boardApi.pix.scale(dupe.w, ent, true);
+              dupe.h = boardApi.pix.scale(dupe.h, ent, true);
               delete dupe.l;
               delete dupe.e;
               delete dupe.v;

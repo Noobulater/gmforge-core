@@ -27,7 +27,6 @@ sync.render("ui_board", function(obj, app, scope) {
     app.attr("layer", data.options.pLayer);
     scope.layer = data.options.pLayer;
   }
-  console.log(scope.layer, data.layers.length - 1);
   if (scope.layer >= data.layers.length - 1) {
     // fuck fireffox
     scope.layer = data.layers.length - 1;
@@ -137,6 +136,8 @@ sync.render("ui_board", function(obj, app, scope) {
         boardCanvas.stage.x -= focal.x * (util.lerp(startZoom, boardCanvas.stage.dZoom, 0.2)-startZoom);
         boardCanvas.stage.y -= focal.y * (util.lerp(startZoom, boardCanvas.stage.dZoom, 0.2)-startZoom);
         boardCanvas.stage.scale.set(util.lerp(startZoom, boardCanvas.stage.dZoom, 0.2));
+        app.attr("scrollLeft", boardCanvas.stage.x);
+        app.attr("scrollTop", boardCanvas.stage.y);
       }
       for (var key in boardApi.pix.triggers.flush[obj.id()]) {
         boardApi.pix.triggers.flush[obj.id()][key]();

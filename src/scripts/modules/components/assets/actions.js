@@ -2738,7 +2738,7 @@ sync.render("ui_hotActions", function(char, app, scope){
   scope = scope || {};
 
   var savedRollWrap = $("<div>");
-  savedRollWrap.addClass("flexrow flexwrap flex");
+  savedRollWrap.addClass("flexrow flexwrap fit-xy");
   if (!scope.noAround) {
     savedRollWrap.addClass("flexaround");
   }
@@ -2772,23 +2772,25 @@ sync.render("ui_hotActions", function(char, app, scope){
   }
 
   for (var actionKey in char.data._a) {
-    var actionData = duplicate(char.data._a[actionKey]);
-    var context = {c : char.id()}
-    var hot = sync.eval(actionData.hot, context);
-    if (hot) {
-      var actionObj = sync.dummyObj();
-      actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
+    if (!game.templates.actions[char.data._t] || !game.templates.actions[char.data._t][actionKey]) {
+      var actionData = duplicate(char.data._a[actionKey]);
+      var context = {c : char.id()}
+      var hot = sync.eval(actionData.hot, context);
+      if (hot) {
+        var actionObj = sync.dummyObj();
+        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
 
-      game.locals["actionsList"] = game.locals["actionsList"] || {};
-      game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-"+actionKey] = actionObj;
+        game.locals["actionsList"] = game.locals["actionsList"] || {};
+        game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-"+actionKey] = actionObj;
 
-      var rollWrap = $("<div>").appendTo(savedRollWrap);
+        var rollWrap = $("<div>").appendTo(savedRollWrap);
 
-      var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-      actionApp.attr("minimized", "true");
-      actionApp.css("outline", "none");
-      actionApp.css("border", "none");
-      actionObj.addApp(actionApp);
+        var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+        actionApp.attr("minimized", "true");
+        actionApp.css("outline", "none");
+        actionApp.css("border", "none");
+        actionObj.addApp(actionApp);
+      }
     }
   }
   for (var itemKey in char.data.inventory) {
@@ -2819,27 +2821,28 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.inventory[itemKey]._a) {
-      var hot = sync.eval(actionData.range, context)
-      var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
-      var context = {c : char.id()}
-      context.i = char.data.inventory[itemKey];
-      var hot = sync.eval(actionData.hot, context);
+      if (!game.templates.actions.i || !game.templates.actions.i[actionKey]) {
+        var hot = sync.eval(actionData.range, context)
+        var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
+        var context = {c : char.id()}
+        context.i = char.data.inventory[itemKey];
+        var hot = sync.eval(actionData.hot, context);
+        if (hot) {
+          var actionObj = sync.dummyObj();
+          actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
-      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && hot)) {
-        var actionObj = sync.dummyObj();
-        actionObj.data = {context : context, action : actionKey, actionData : actionData};
+          game.locals["actionsList"] = game.locals["actionsList"] || {};
+          game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
 
-        game.locals["actionsList"] = game.locals["actionsList"] || {};
-        game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
+          var rollWrap = $("<div>").appendTo(savedRollWrap);
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
-
-        var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-        actionApp.attr("minimized", "true");
-        actionApp.attr("title", char.data.inventory[itemKey].info.name.current);
-        actionApp.css("outline", "none");
-        actionApp.css("border", "none");
-        actionObj.addApp(actionApp);
+          var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+          actionApp.attr("minimized", "true");
+          actionApp.attr("title", char.data.inventory[itemKey].info.name.current);
+          actionApp.css("outline", "none");
+          actionApp.css("border", "none");
+          actionObj.addApp(actionApp);
+        }
       }
     }
   }
@@ -2870,26 +2873,28 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
     for (var actionKey in char.data.spellbook[itemKey]._a) {
-      var context = {c : char.id()}
-      context.i = char.data.spellbook[itemKey];
-      var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
-      var hot = sync.eval(actionData.hot, context);
+      if (!game.templates.actions.i || !game.templates.actions.i[actionKey]) {
+        var context = {c : char.id()}
+        context.i = char.data.spellbook[itemKey];
+        var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
+        var hot = sync.eval(actionData.hot, context);
 
-      if ((!game.templates.actions.i) || (!game.templates.actions.i[actionKey] && hot)) {
-        var actionObj = sync.dummyObj();
-        actionObj.data = {context : context, action : actionKey, actionData : actionData};
+        if (hot) {
+          var actionObj = sync.dummyObj();
+          actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
-        game.locals["actionsList"] = game.locals["actionsList"] || {};
-        game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
+          game.locals["actionsList"] = game.locals["actionsList"] || {};
+          game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+          var rollWrap = $("<div>").appendTo(savedRollWrap);
 
-        var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-        actionApp.attr("minimized", "true");
-        actionApp.attr("title", char.data.spellbook[itemKey].info.name.current);
-        actionApp.css("outline", "none");
-        actionApp.css("border", "none");
-        actionObj.addApp(actionApp);
+          var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+          actionApp.attr("minimized", "true");
+          actionApp.attr("title", char.data.spellbook[itemKey].info.name.current);
+          actionApp.css("outline", "none");
+          actionApp.css("border", "none");
+          actionObj.addApp(actionApp);
+        }
       }
     }
   }

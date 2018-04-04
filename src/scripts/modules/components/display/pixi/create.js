@@ -1611,7 +1611,7 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
           if (!obj.data.options.hpMode || obj.data.options.hpMode == 1 && (ent && ent.data && hasSecurity(getCookie("UserID"), "Visible", ent.data))) {
             percentage = sync.traverse(ent.data, game.templates.display.sheet.health);
             if (percentage instanceof Object && percentage.max) {
-              percentage = Number(percentage.current)/Number(percentage.max);
+              percentage = Math.max(Number(percentage.current)/Number(percentage.max), 0);
               if (!objectData.hp) {
                 var hpHeight = 6*Math.min(Math.max(Math.floor(objectData.h/64),1),3);
 
