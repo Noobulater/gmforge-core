@@ -144,7 +144,7 @@ sync.render("ui_easySheets", function(obj1, app, scope) {
     checkbox.click(function(ev){
       ev.stopPropagation();
     });
-    $("<b class'lrmargin lrpadding'>Random Rotation</b>").appendTo(checkWrap);
+    $("<b class'lrmargin lrpadding subtitle'>Random Rotation</b>").appendTo(checkWrap);
 
 
     var showAtlas = $("<button>").appendTo(searchDiv);

@@ -7,6 +7,10 @@ sync.render("ui_layerOptions", function(obj, app, scope){
   optionsDiv.addClass("flexcolumn subtitle");
 
   var layerNameWrap = $("<div>").appendTo(optionsDiv);
+  layerNameWrap.addClass("flexcolumn flexmiddle");
+  layerNameWrap.append("<b class='subtitle'>Layer Name</b>");
+
+  var layerNameWrap = $("<div>").appendTo(optionsDiv);
   layerNameWrap.addClass("flexrow flexbetween");
 
   var layerName = genInput({

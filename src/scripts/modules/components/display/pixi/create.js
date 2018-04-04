@@ -987,6 +987,16 @@ boardApi.pix.createTile = function(options, obj, app, scope){
         var sH = Math.min(((tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p) / aspectH, sheetData.h);
 
         var texture = new PIXI.Texture(PIXI.loader.resources[sheetData.i].texture);
+        console.log(texture.baseTexture.width, sX + sW);
+        console.log(texture.baseTexture.height, sY + sH);
+        if (sX + sW > texture.baseTexture.width) {
+          sW = sW - ((sX + sW)-texture.baseTexture.width);
+        }
+        if ((sY + sH) > texture.baseTexture.height) {
+          sH = sH - ((sY + sH)-texture.baseTexture.height);
+        }
+        console.log(sW,  sX + sW);
+        console.log(sH,  sY + sH);
         texture.frame = new PIXI.Rectangle(sX, sY, sW, sH);
 
         if (tileData.t && (width >= (data.gridW || width) && height >= (data.gridH || height)) && !(isHex)) {

@@ -678,7 +678,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
 
     if (app.attr("background") == "true") {
       var option = $("<div>").appendTo(optionsBar);
-      option.addClass("alttext highlight hover2 fit-x lrpadding flexmiddle");
+      option.addClass("alttext highlight hover2 fit-x spadding flexmiddle");
       option.css("font-size", "1.2em");
       option.text("Exit Builder");
       option.click(function(){
