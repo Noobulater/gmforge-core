@@ -1162,6 +1162,7 @@ function ui_popOut(options, content) {
     var max = Math.max(util.getMaxZ(".ui-popout"), util.getMaxZ(".main-dock"));
     $(this).css("z-index", max+1);
   });
+  $(window).resize(function() { overlay.mouseenter(); });
   return overlay;
 }
 
