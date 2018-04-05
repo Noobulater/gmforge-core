@@ -845,7 +845,7 @@ function ui_popOut(options, content) {
       title.text(options.title);
     }
   }
-  else{
+  else if(!options.noCss){
     title.prepend("&nbsp;");
   }
 
