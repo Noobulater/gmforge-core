@@ -998,7 +998,10 @@ function ui_popOut(options, content) {
     dcTop.contextmenu(function(){
       if (!overlay.attr("_lastDrag") || (Date.now()-Number(overlay.attr("_lastDrag"))) > 500) {
         overlay.attr("_lastDrag", Date.now());
-        removeIcon.click();
+        if(!options.hideclose)
+        {
+          removeIcon.click();
+        }
       }
       return false;
     });
