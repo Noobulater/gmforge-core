@@ -839,7 +839,6 @@ function ui_popOut(options, content) {
 
   var title;
   var title = $("<b>").appendTo(removeWrapper);
-  title.addClass("flex");
   title.css("pointer-events", "auto");
   title.css("overflow", "hidden");
   title.css("white-space", "nowrap");
