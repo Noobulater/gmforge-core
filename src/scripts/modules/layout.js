@@ -744,7 +744,9 @@ layout.anchorInit = function() {
       if (game.config.data.password) {
         input.val(encodeURI(input.val()+"?password="+game.config.data.password));
       }
-
+      if (getCookie("ExternalIP")) {
+        input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+      }
       input.focus();
       input.get(0).setSelectionRange(0, input.val().length);
 
@@ -2270,7 +2272,9 @@ layout.left = function() {
     if (game.config.data.password) {
       input.val(encodeURI(input.val()+"?password="+game.config.data.password));
     }
-
+    if (getCookie("ExternalIP")) {
+      input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+    }
     input.focus();
     input.get(0).setSelectionRange(0, input.val().length);
 
@@ -2364,7 +2368,9 @@ layout.left = function() {
         if (game.config.data.password) {
           input.val(encodeURI(input.val()+"?password="+game.config.data.password));
         }
-
+        if (getCookie("ExternalIP")) {
+          input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+        }
         input.focus();
         input.get(0).setSelectionRange(0, input.val().length);
 

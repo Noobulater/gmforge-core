@@ -325,6 +325,12 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
 
       stage.dZoom = zoom;
 
+      for (var key in boardApi.pix.selections) {
+        if (boardApi.pix.selections[key].app == app.attr("id")) {
+          boardApi.pix.selections[key].wrap.update();
+        }
+      }
+
       zoomIn.attr("title", $(this).val()+"%");
       //boardApi.drawCursors(board, true);
       if (lastZoom == 0.4 && $(this).val() == 40) {
@@ -700,13 +706,13 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
     iconBar.css("background", "rgba(0,0,0,0.8)");
 
     var iconBar = $("<div>").appendTo(optionsBar);
-    iconBar.addClass("flexrow flexbetween flexwrap spadding");
+    iconBar.addClass("flexrow flexbetween spadding");
     iconBar.css("background", "rgba(0,0,0,0.8)");
 
     if ((!scope.local && (data.options && data.options.cursorToggle)) || hasRights) {
       if (app.attr("background") != "true") {
         var option = genIcon("hand-up").appendTo(iconBar);
-        option.addClass("hover2 lrpadding flexmiddle");
+        option.addClass("hover2 flexmiddle");
         option.attr("title", "Hide your Cursor");
         if (app.attr("hideCursor") == "true") {
           option.removeClass("highlight");
@@ -739,9 +745,18 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       }
     }
 
+    var option = genIcon("screenshot").appendTo(iconBar);
+    option.addClass("hover2 alttext flexmiddle");
+    option.attr("title", "Center To Default View");
+    option.click(function(){
+      var portWidth = Number(app.attr("divWidth") || 0);
+      var portHeight = Number(app.attr("divHeight") || 0);
+      boardApi.pix.scrollTo(app, obj.data.vX || 0 + portWidth/2, obj.data.vY || 0 + portHeight/2);
+    });
+
     if (hasRights && !app.attr("background")) {
       var option = $("<div>").appendTo(iconBar);
-      option.addClass("alttext hover2 flexmiddle subtitle option alttext lrpadding outline smooth");
+      option.addClass("alttext hover2 flexmiddle subtitle option alttext spadding outline smooth");
       option.text("Options");
       if (app.attr("configuring") == "advanced") {
         option.addClass("highlight");
@@ -779,11 +794,11 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       var option = $("<div>").appendTo(iconBar);
       if (!app.attr("UserID") && hasRights) {
         option.addClass("hover2 flexmiddle subtitle");
-        option.append("<text class='background flexmiddle alttext lrpadding smooth outline'>Player Vision</text>");
+        option.append("<text class='background flexmiddle alttext spadding smooth outline'>Player Vision</text>");
       }
       else {
         option.addClass("hover2 flexmiddle subtitle");
-        option.append("<text class='highlight flexmiddle alttext lrpadding smooth outline'>Player Vision</text>");
+        option.append("<text class='highlight flexmiddle alttext spadding smooth outline'>Player Vision</text>");
       }
       option.click(function(){
         if (app.attr("UserID")) {

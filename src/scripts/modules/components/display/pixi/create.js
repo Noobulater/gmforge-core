@@ -1041,6 +1041,103 @@ boardApi.pix.createTile = function(options, obj, app, scope){
   return pieceWrap;
 }
 
+boardApi.pix.drawShape = function(objectData, stand, lineStyle){
+  if (objectData.d == null || objectData.d == 0) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawRect(1, 1, objectData.w-1, objectData.h-1);
+    stand.endFill();
+  }
+  else if (objectData.d == 1) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawRoundedRect(1, 1, objectData.w-1, objectData.h-1, Math.min(objectData.w, objectData.h)*0.1);
+    stand.endFill();
+  }
+  else if (objectData.d == 2) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawEllipse(objectData.w/2-1, objectData.w/2-1, objectData.w/2-1, objectData.h/2-1);
+    stand.endFill();
+  }
+  else if (objectData.d == 3) {
+    var path = [
+      0, 0,
+      objectData.w, 0,
+      objectData.w/2, objectData.h,
+      0, 0
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 4) {
+    var path = [
+      objectData.w/2, 0,
+      0, objectData.h,
+      objectData.w, objectData.h,
+      objectData.w/2, 0
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 5) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawStar(objectData.w/2,objectData.h/2,5,objectData.w/2,objectData.w/4);
+    stand.endFill();
+  }
+  else if (objectData.d == 6) {
+    var path = [
+      objectData.w/2, 0,
+      objectData.w, objectData.h * 2/5,
+      objectData.w * 4/5, objectData.h,
+      objectData.w * 1/5, objectData.h,
+      0, objectData.h * 2/5,
+      objectData.w/2, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 7) {
+    var path = [
+      objectData.w * 5/7, 0,
+      objectData.w, objectData.h * 3/6,
+      objectData.w * 5/7, objectData.h,
+      objectData.w * 2/7, objectData.h,
+      0, objectData.h * 3/6,
+      objectData.w * 2/7, 0,
+      objectData.w * 5/7, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 9) {
+    var path = [
+      objectData.w * 4/6, 0,
+      objectData.w, objectData.h * 2/6,
+      objectData.w, objectData.h * 4/6,
+      objectData.w * 4/6, objectData.h,
+      objectData.w * 2/6, objectData.h,
+      0, objectData.h * 4/6,
+      0, objectData.h * 2/6,
+      objectData.w * 2/6, 0,
+      objectData.w * 4/6, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+}
+
 boardApi.pix.createPiece = function(options, obj, app, scope){
   if (options.data == null) {
     console.error("null value");
@@ -1432,104 +1529,15 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
       lineStyle = false;
     }
     stand.clear();
-    if (objectData.d == null || objectData.d == 0) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawRect(1, 1, objectData.w-1, objectData.h-1);
-      stand.endFill();
-    }
-    else if (objectData.d == 1) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawRoundedRect(1, 1, objectData.w-1, objectData.h-1, Math.min(objectData.w, objectData.h)*0.1);
-      stand.endFill();
-    }
-    else if (objectData.d == 2) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawEllipse(objectData.w/2-1, objectData.w/2-1, objectData.w/2-1, objectData.h/2-1);
-      stand.endFill();
-    }
-    else if (objectData.d == 3) {
-      var path = [
-        0, 0,
-        objectData.w, 0,
-        objectData.w/2, objectData.h,
-        0, 0
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 4) {
-      var path = [
-        objectData.w/2, 0,
-        0, objectData.h,
-        objectData.w, objectData.h,
-        objectData.w/2, 0
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 5) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawStar(objectData.w/2,objectData.h/2,5,objectData.w/2,objectData.w/4);
-      stand.endFill();
-    }
-    else if (objectData.d == 6) {
-      var path = [
-        objectData.w/2, 0,
-        objectData.w, objectData.h * 2/5,
-        objectData.w * 4/5, objectData.h,
-        objectData.w * 1/5, objectData.h,
-        0, objectData.h * 2/5,
-        objectData.w/2, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 7) {
-      var path = [
-        objectData.w * 5/7, 0,
-        objectData.w, objectData.h * 3/6,
-        objectData.w * 5/7, objectData.h,
-        objectData.w * 2/7, objectData.h,
-        0, objectData.h * 3/6,
-        objectData.w * 2/7, 0,
-        objectData.w * 5/7, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 9) {
-      var path = [
-        objectData.w * 4/6, 0,
-        objectData.w, objectData.h * 2/6,
-        objectData.w, objectData.h * 4/6,
-        objectData.w * 4/6, objectData.h,
-        objectData.w * 2/6, objectData.h,
-        0, objectData.h * 4/6,
-        0, objectData.h * 2/6,
-        objectData.w * 2/6, 0,
-        objectData.w * 4/6, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
+    boardApi.pix.drawShape(objectData, stand, lineStyle);
+
     var recreate = false;
     if (piece.children && piece.children.length && piece.children[1]) {
       if (piece.children[1].i != objectData.i || piece.children[1].eID != objectData.eID) {
         piece.children[1].destroy(true);
+        if (piece.children[2]) {
+          piece.children[2].destroy(true);
+        }
         recreate = true;
       }
     }
@@ -1563,7 +1571,6 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
         token.i = objectData.i;
         token.eID = duplicate(objectData.eID);
         piece.addChild(token);
-        //delete token.mask;
       }
       else if (objectData.eID) {
         var ent = getEnt(objectData.eID);
@@ -1589,7 +1596,11 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
             token.i = objectData.i;
             token.eID = duplicate(objectData.eID);
             piece.addChild(token);
-            token.mask = stage;
+
+            var mask = new PIXI.Graphics();
+            boardApi.pix.drawShape(objectData, mask, lineStyle);
+            piece.addChild(mask);
+            token.mask = mask;
           }
         }
       }

@@ -6791,7 +6791,9 @@ layout.anchorInit = function() {
       if (game.config.data.password) {
         input.val(encodeURI(input.val()+"?password="+game.config.data.password));
       }
-
+      if (getCookie("ExternalIP")) {
+        input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+      }
       input.focus();
       input.get(0).setSelectionRange(0, input.val().length);
 
@@ -8317,7 +8319,9 @@ layout.left = function() {
     if (game.config.data.password) {
       input.val(encodeURI(input.val()+"?password="+game.config.data.password));
     }
-
+    if (getCookie("ExternalIP")) {
+      input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+    }
     input.focus();
     input.get(0).setSelectionRange(0, input.val().length);
 
@@ -8411,7 +8415,9 @@ layout.left = function() {
         if (game.config.data.password) {
           input.val(encodeURI(input.val()+"?password="+game.config.data.password));
         }
-
+        if (getCookie("ExternalIP")) {
+          input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+        }
         input.focus();
         input.get(0).setSelectionRange(0, input.val().length);
 
@@ -48808,7 +48814,6 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
                 if (pieceData.eID) {
                   var ent = getEnt(pieceData.eID);
                   if (ent && ent.data && ent.data._t == "c") {
-                    console.log(userID);
                     if (hasSecurity(userID, "Visible", ent.data)) {
                       var range;
                       if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
@@ -48820,14 +48825,12 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
                         var auraData = pieceData.o.Sight;
                         range = boardApi.pix.scale(sync.eval(auraData.d, context), board, true);
                       }
-                      console.log("rebuild " + layer+"-"+type+"-"+index, range, boardApi.pix.apps[$(this).attr("id")].views);
-                      boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index] = boardApi.pix.buildDynamicFog(board, $(this), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
-                      boardApi.pix.rebuildDynamicFog(board, $(this));
+                      boardApi.pix.rebuildFog(board, $(this));
                     }
                     else if (boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index]) {
                       boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index].destroy(true);
                       delete boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index];
-                      boardApi.pix.rebuildDynamicFog(board, $(this));
+                      boardApi.pix.rebuildFog(board, $(this));
                     }
                   }
                 }
@@ -65322,16 +65325,12 @@ boardApi.pix.createTile = function(options, obj, app, scope){
         var sH = Math.min(((tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p) / aspectH, sheetData.h);
 
         var texture = new PIXI.Texture(PIXI.loader.resources[sheetData.i].texture);
-        console.log(texture.baseTexture.width, sX + sW);
-        console.log(texture.baseTexture.height, sY + sH);
         if (sX + sW > texture.baseTexture.width) {
           sW = sW - ((sX + sW)-texture.baseTexture.width);
         }
         if ((sY + sH) > texture.baseTexture.height) {
           sH = sH - ((sY + sH)-texture.baseTexture.height);
         }
-        console.log(sW,  sX + sW);
-        console.log(sH,  sY + sH);
         texture.frame = new PIXI.Rectangle(sX, sY, sW, sH);
 
         if (tileData.t && (width >= (data.gridW || width) && height >= (data.gridH || height)) && !(isHex)) {
@@ -65378,6 +65377,103 @@ boardApi.pix.createTile = function(options, obj, app, scope){
   }
   pieceWrap.update(options.data);
   return pieceWrap;
+}
+
+boardApi.pix.drawShape = function(objectData, stand, lineStyle){
+  if (objectData.d == null || objectData.d == 0) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawRect(1, 1, objectData.w-1, objectData.h-1);
+    stand.endFill();
+  }
+  else if (objectData.d == 1) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawRoundedRect(1, 1, objectData.w-1, objectData.h-1, Math.min(objectData.w, objectData.h)*0.1);
+    stand.endFill();
+  }
+  else if (objectData.d == 2) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawEllipse(objectData.w/2-1, objectData.w/2-1, objectData.w/2-1, objectData.h/2-1);
+    stand.endFill();
+  }
+  else if (objectData.d == 3) {
+    var path = [
+      0, 0,
+      objectData.w, 0,
+      objectData.w/2, objectData.h,
+      0, 0
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 4) {
+    var path = [
+      objectData.w/2, 0,
+      0, objectData.h,
+      objectData.w, objectData.h,
+      objectData.w/2, 0
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 5) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawStar(objectData.w/2,objectData.h/2,5,objectData.w/2,objectData.w/4);
+    stand.endFill();
+  }
+  else if (objectData.d == 6) {
+    var path = [
+      objectData.w/2, 0,
+      objectData.w, objectData.h * 2/5,
+      objectData.w * 4/5, objectData.h,
+      objectData.w * 1/5, objectData.h,
+      0, objectData.h * 2/5,
+      objectData.w/2, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 7) {
+    var path = [
+      objectData.w * 5/7, 0,
+      objectData.w, objectData.h * 3/6,
+      objectData.w * 5/7, objectData.h,
+      objectData.w * 2/7, objectData.h,
+      0, objectData.h * 3/6,
+      objectData.w * 2/7, 0,
+      objectData.w * 5/7, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 9) {
+    var path = [
+      objectData.w * 4/6, 0,
+      objectData.w, objectData.h * 2/6,
+      objectData.w, objectData.h * 4/6,
+      objectData.w * 4/6, objectData.h,
+      objectData.w * 2/6, objectData.h,
+      0, objectData.h * 4/6,
+      0, objectData.h * 2/6,
+      objectData.w * 2/6, 0,
+      objectData.w * 4/6, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
 }
 
 boardApi.pix.createPiece = function(options, obj, app, scope){
@@ -65771,104 +65867,15 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
       lineStyle = false;
     }
     stand.clear();
-    if (objectData.d == null || objectData.d == 0) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawRect(1, 1, objectData.w-1, objectData.h-1);
-      stand.endFill();
-    }
-    else if (objectData.d == 1) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawRoundedRect(1, 1, objectData.w-1, objectData.h-1, Math.min(objectData.w, objectData.h)*0.1);
-      stand.endFill();
-    }
-    else if (objectData.d == 2) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawEllipse(objectData.w/2-1, objectData.w/2-1, objectData.w/2-1, objectData.h/2-1);
-      stand.endFill();
-    }
-    else if (objectData.d == 3) {
-      var path = [
-        0, 0,
-        objectData.w, 0,
-        objectData.w/2, objectData.h,
-        0, 0
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 4) {
-      var path = [
-        objectData.w/2, 0,
-        0, objectData.h,
-        objectData.w, objectData.h,
-        objectData.w/2, 0
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 5) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawStar(objectData.w/2,objectData.h/2,5,objectData.w/2,objectData.w/4);
-      stand.endFill();
-    }
-    else if (objectData.d == 6) {
-      var path = [
-        objectData.w/2, 0,
-        objectData.w, objectData.h * 2/5,
-        objectData.w * 4/5, objectData.h,
-        objectData.w * 1/5, objectData.h,
-        0, objectData.h * 2/5,
-        objectData.w/2, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 7) {
-      var path = [
-        objectData.w * 5/7, 0,
-        objectData.w, objectData.h * 3/6,
-        objectData.w * 5/7, objectData.h,
-        objectData.w * 2/7, objectData.h,
-        0, objectData.h * 3/6,
-        objectData.w * 2/7, 0,
-        objectData.w * 5/7, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 9) {
-      var path = [
-        objectData.w * 4/6, 0,
-        objectData.w, objectData.h * 2/6,
-        objectData.w, objectData.h * 4/6,
-        objectData.w * 4/6, objectData.h,
-        objectData.w * 2/6, objectData.h,
-        0, objectData.h * 4/6,
-        0, objectData.h * 2/6,
-        objectData.w * 2/6, 0,
-        objectData.w * 4/6, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
+    boardApi.pix.drawShape(objectData, stand, lineStyle);
+
     var recreate = false;
     if (piece.children && piece.children.length && piece.children[1]) {
       if (piece.children[1].i != objectData.i || piece.children[1].eID != objectData.eID) {
         piece.children[1].destroy(true);
+        if (piece.children[2]) {
+          piece.children[2].destroy(true);
+        }
         recreate = true;
       }
     }
@@ -65902,7 +65909,6 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
         token.i = objectData.i;
         token.eID = duplicate(objectData.eID);
         piece.addChild(token);
-        //delete token.mask;
       }
       else if (objectData.eID) {
         var ent = getEnt(objectData.eID);
@@ -65928,6 +65934,11 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
             token.i = objectData.i;
             token.eID = duplicate(objectData.eID);
             piece.addChild(token);
+
+            var mask = new PIXI.Graphics();
+            boardApi.pix.drawShape(objectData, mask, lineStyle);
+            piece.addChild(mask);
+            token.mask = mask;
           }
         }
       }
@@ -67118,6 +67129,12 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
 
       stage.dZoom = zoom;
 
+      for (var key in boardApi.pix.selections) {
+        if (boardApi.pix.selections[key].app == app.attr("id")) {
+          boardApi.pix.selections[key].wrap.update();
+        }
+      }
+
       zoomIn.attr("title", $(this).val()+"%");
       //boardApi.drawCursors(board, true);
       if (lastZoom == 0.4 && $(this).val() == 40) {
@@ -67493,13 +67510,13 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
     iconBar.css("background", "rgba(0,0,0,0.8)");
 
     var iconBar = $("<div>").appendTo(optionsBar);
-    iconBar.addClass("flexrow flexbetween flexwrap spadding");
+    iconBar.addClass("flexrow flexbetween spadding");
     iconBar.css("background", "rgba(0,0,0,0.8)");
 
     if ((!scope.local && (data.options && data.options.cursorToggle)) || hasRights) {
       if (app.attr("background") != "true") {
         var option = genIcon("hand-up").appendTo(iconBar);
-        option.addClass("hover2 lrpadding flexmiddle");
+        option.addClass("hover2 flexmiddle");
         option.attr("title", "Hide your Cursor");
         if (app.attr("hideCursor") == "true") {
           option.removeClass("highlight");
@@ -67532,9 +67549,18 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       }
     }
 
+    var option = genIcon("screenshot").appendTo(iconBar);
+    option.addClass("hover2 alttext flexmiddle");
+    option.attr("title", "Center To Default View");
+    option.click(function(){
+      var portWidth = Number(app.attr("divWidth") || 0);
+      var portHeight = Number(app.attr("divHeight") || 0);
+      boardApi.pix.scrollTo(app, obj.data.vX || 0 + portWidth/2, obj.data.vY || 0 + portHeight/2);
+    });
+
     if (hasRights && !app.attr("background")) {
       var option = $("<div>").appendTo(iconBar);
-      option.addClass("alttext hover2 flexmiddle subtitle option alttext lrpadding outline smooth");
+      option.addClass("alttext hover2 flexmiddle subtitle option alttext spadding outline smooth");
       option.text("Options");
       if (app.attr("configuring") == "advanced") {
         option.addClass("highlight");
@@ -67572,11 +67598,11 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       var option = $("<div>").appendTo(iconBar);
       if (!app.attr("UserID") && hasRights) {
         option.addClass("hover2 flexmiddle subtitle");
-        option.append("<text class='background flexmiddle alttext lrpadding smooth outline'>Player Vision</text>");
+        option.append("<text class='background flexmiddle alttext spadding smooth outline'>Player Vision</text>");
       }
       else {
         option.addClass("hover2 flexmiddle subtitle");
-        option.append("<text class='highlight flexmiddle alttext lrpadding smooth outline'>Player Vision</text>");
+        option.append("<text class='highlight flexmiddle alttext spadding smooth outline'>Player Vision</text>");
       }
       option.click(function(){
         if (app.attr("UserID")) {

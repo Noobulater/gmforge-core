@@ -858,7 +858,6 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
                 if (pieceData.eID) {
                   var ent = getEnt(pieceData.eID);
                   if (ent && ent.data && ent.data._t == "c") {
-                    console.log(userID);
                     if (hasSecurity(userID, "Visible", ent.data)) {
                       var range;
                       if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
@@ -870,14 +869,12 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
                         var auraData = pieceData.o.Sight;
                         range = boardApi.pix.scale(sync.eval(auraData.d, context), board, true);
                       }
-                      console.log("rebuild " + layer+"-"+type+"-"+index, range, boardApi.pix.apps[$(this).attr("id")].views);
-                      boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index] = boardApi.pix.buildDynamicFog(board, $(this), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
-                      boardApi.pix.rebuildDynamicFog(board, $(this));
+                      boardApi.pix.rebuildFog(board, $(this));
                     }
                     else if (boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index]) {
                       boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index].destroy(true);
                       delete boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index];
-                      boardApi.pix.rebuildDynamicFog(board, $(this));
+                      boardApi.pix.rebuildFog(board, $(this));
                     }
                   }
                 }
