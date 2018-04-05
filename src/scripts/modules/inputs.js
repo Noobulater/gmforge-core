@@ -819,6 +819,13 @@ function ui_popOut(options, content) {
       }
     });
     setTimeout(function(){
+      if (overlay.attr("locked")) {
+        pin.addClass("highlight");
+      }
+      else {
+        pin.removeClass("highlight");
+      }
+
       if(overlay.attr("docked"))
       {
         pin.show();
