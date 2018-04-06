@@ -121,7 +121,7 @@ sync.render("ui_rights", function(obj, app, scope){
         nameWrap.addClass("flexcolumn flexmiddle flex");
 
         if (players[id]) {
-          nameWrap.append("<b>"+players[id].displayName+"</b>");
+          nameWrap.append("<b>"+(players[id].displayName||players[id].name)+"</b>");
 
           for (var key in game.templates.security.player) {
             if (game.templates.security.player[key] == players[id].rank) {

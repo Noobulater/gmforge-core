@@ -2512,6 +2512,7 @@ layout.left = function() {
     align : "left",
     noCss : true,
     hideclose : true,
+    pin: false,
     style : {"height" : "600px", "max-height" : "100vh", "transition" : "opacity 0.5s"}
   }, leftContentWrap).attr("docked", "left").addClass("foreground").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
   left.draggable("disable");
@@ -2645,6 +2646,7 @@ layout.top = function(){
     align : "top",
     noCss : true,
     hideclose : true,
+    pin: false,
     style : {"width" : "100vw", "max-width" : "100vw", "transition" : "opacity 0.5s"}
   }, topContent).attr("docked", "top").addClass("foreground").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
   top.attr("locked", true);
@@ -2682,6 +2684,7 @@ layout.right = function(){
     align : "right",
     noCss : true,
     hideclose : true,
+    pin: false,
     style : {"height" : "80vh", "max-height" : "100vh", "transition" : "opacity 0.5s", "width" : "350px"}
   }, rightContent).attr("docked", "right").addClass("foreground").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
 
@@ -2915,6 +2918,7 @@ layout.bottom = function(){
     align : "bottom",
     noCss : true,
     hideclose : true,
+    pin: false,
     style : {"width" : "100vw", "max-width" : "100vw", "transition" : "opacity 0.5s"}
   }, bottomContent).attr("docked", "bottom").addClass("background").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout")).attr("locked", true);
 
