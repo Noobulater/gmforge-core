@@ -2793,7 +2793,11 @@ sync.render("ui_hotActions", function(char, app, scope){
       }
     }
   }
+  var itemWrap;
   for (var itemKey in char.data.inventory) {
+    itemWrap = itemWrap || $("<div>").appendTo(savedRollWrap);
+    itemWrap.addClass("flex flexrow");
+    var added = false
     for (var actionKey in game.templates.actions.i) {
       var actionData = duplicate(game.templates.actions.i[actionKey]);
       if (char.data.inventory[itemKey]._a && char.data.inventory[itemKey]._a[actionKey]) {
@@ -2804,13 +2808,15 @@ sync.render("ui_hotActions", function(char, app, scope){
       var hot = sync.eval(actionData.hot, context);
 
       if (hot) {
+        added = true;
         var actionObj = sync.dummyObj();
         actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+        var rollWrap = $("<div>").appendTo(itemWrap);
+        rollWrap.addClass("flex");
 
         var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
         actionApp.attr("minimized", "true");
@@ -2828,6 +2834,7 @@ sync.render("ui_hotActions", function(char, app, scope){
         context.i = char.data.inventory[itemKey];
         var hot = sync.eval(actionData.hot, context);
         if (hot) {
+          added = true;
           var actionObj = sync.dummyObj();
           actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
@@ -2835,6 +2842,7 @@ sync.render("ui_hotActions", function(char, app, scope){
           game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
 
           var rollWrap = $("<div>").appendTo(savedRollWrap);
+          rollWrap.addClass("flex");
 
           var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
           actionApp.attr("minimized", "true");
@@ -2845,8 +2853,15 @@ sync.render("ui_hotActions", function(char, app, scope){
         }
       }
     }
+    if(added)
+    {
+      itemWrap = null;
+    }
   }
+
   for (var itemKey in char.data.spellbook) {
+    itemWrap = itemWrap || $("<div>").appendTo(savedRollWrap);
+    itemWrap.addClass("flex flexrow");
     for (var actionKey in game.templates.actions.i) {
       var actionData = duplicate(game.templates.actions.i[actionKey]);
       if (char.data.spellbook[itemKey]._a && char.data.spellbook[itemKey]._a[actionKey]) {
@@ -2856,13 +2871,15 @@ sync.render("ui_hotActions", function(char, app, scope){
       context.i = char.data.spellbook[itemKey];
       var hot = sync.eval(actionData.hot, context);
       if (hot) {
+        added = true;
         var actionObj = sync.dummyObj();
         actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+        var rollWrap = $("<div>").appendTo(itemWrap);
+        rollWrap.addClass("flex");
 
         var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
         actionApp.attr("minimized", "true");
@@ -2880,13 +2897,14 @@ sync.render("ui_hotActions", function(char, app, scope){
         var hot = sync.eval(actionData.hot, context);
 
         if (hot) {
+          added = true;
           var actionObj = sync.dummyObj();
           actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
           game.locals["actionsList"] = game.locals["actionsList"] || {};
           game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
 
-          var rollWrap = $("<div>").appendTo(savedRollWrap);
+          var rollWrap = $("<div>").appendTo(itemWrap);
 
           var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
           actionApp.attr("minimized", "true");
@@ -2897,7 +2915,15 @@ sync.render("ui_hotActions", function(char, app, scope){
         }
       }
     }
+    if(added)
+    {
+      itemWrap = null;
+    }
   }
 
+  if(itemWrap)
+  {
+    itemWrap.remove(); // Remove last one, because it's empty
+  }
   return savedRollWrap;
 });

@@ -365,7 +365,9 @@ sync.render("ui_hotRolls", function(obj, app, scope) {
   div.addClass("flexrow flex");
 
 
+  sync.render("ui_playerToken")(obj, app, {userID : getCookie("UserID"), centered : true, height : "50px"}).appendTo(div);
   var char = getPlayerCharacter(getCookie("UserID"));
+
   if (char && char.data) {
     sync.render("ui_hotActions")(char, app, scope).appendTo(div);
     char.listen["actionUpdate"] = function() {
@@ -376,7 +378,6 @@ sync.render("ui_hotRolls", function(obj, app, scope) {
     }
   }
 
-  sync.render("ui_playerToken")(obj, app, {userID : getCookie("UserID"), centered : true, height : "50px"}).appendTo(div);
 
   return div;
 });
