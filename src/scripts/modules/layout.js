@@ -1,5 +1,8 @@
 var layout = {};
-
+function isValid(elem)
+{
+  return elem.parents().last().is(document.documentElement);
+}
 layout.overlay = function(options) {
   var overlay = $("<div>").appendTo($("body"));
 
@@ -1453,6 +1456,7 @@ layout.anchorInit = function() {
   app.attr("size", "50");
   app.css("overflow-y", "hidden");
   app.css("pointer-events", "none");
+  app.attr("height","32px");
   game.players.addApp(app);
 
   var cardWrap = $("<div>").appendTo($("#bottombar"));
@@ -1882,7 +1886,7 @@ layout.init = function() {
 
   layout.left();
   layout.top();
-  layout.right();
+  //layout.right();
   layout.bottom();
 
   //if (!hasSecurity(getCookie("UserID"), "Game Master")) {
@@ -1944,312 +1948,131 @@ layout.init = function() {
 
 
 layout.left = function() {
+
   var leftContentWrap = $("<div>");
-  leftContentWrap.addClass("flexrow flex");
+  leftContentWrap.addClass("flex flexcolumn");
   leftContentWrap.css("position", "relative");
 
+  var sidebar = ui_popOut({
+    target : $("body"),
+    align : "right",
+    hideclose : true,
+    style : {"height" : "90%","transition" : "opacity 0.5s", "overflow":"hidden"}
+  }, leftContentWrap).attr("docked", "right").addClass("foreground").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
+  leftContentWrap.removeClass("white");
+  sidebar.attr("locked", true);
   var leftContent = $("<div>").appendTo(leftContentWrap);
-  leftContent.addClass("flexcolumn flexaround flex alttext");
+  leftContent.addClass("flexrow flexbetween alttext");
   leftContent.css("position", "relative");
   leftContent.css("padding-top", "1.0em");
   leftContent.css("padding-bottom", "1.0em");
 
   var menuContent = $("<div>").appendTo(leftContentWrap);
-  menuContent.addClass("flexcolumn white");
-
-  var pin = genIcon("pushpin").appendTo(leftContent);
-  pin.addClass("spadding alttext smooth");
-  pin.attr("title", "Lock this menu down");
-  pin.css("position", "absolute");
-  pin.css("font-size", "1.2em")
-  pin.css("top", "0");
-  pin.css("left", "0");
-  pin.click(function(){
-    if (left.attr("locked")) {
-      left.removeAttr("locked");
-      pin.removeClass("highlight");
-    }
-    else {
-      pin.addClass("highlight");
-      left.attr("locked", true);
-    }
-  });
+  menuContent.addClass("flexrow flex white");
 
   var mediaOptions = $("<div>").appendTo(leftContent);
-  mediaOptions.addClass("flexcolumn flexmiddle");
+  mediaOptions.addClass("flexrow flexmiddle");
   mediaOptions.css("font-size", "1.6em");
+  function addSubMenu(icon, appclass, shorttitle, title, width, oncreate)
+  {
+    var obj = obj; //force scope
+    var button = genIcon(icon).appendTo(mediaOptions);
+    button.addClass("lrpadding create");
+    button.attr("title", title);
+    button.css("font-size", "1.4em");
+    button.css("padding-left", "0.5em");
+    button.css("padding-right", "0.5em");
+    button.css("display","block");
+    button.css("position","relative");
+    button.css("background","none");
 
-  if (getCookie("UserID") && getCookie("UserID") != "Sandboxer") {
-    var media = genIcon("folder-open").appendTo(mediaOptions);
-    media.addClass("lrpadding create");
-    media.attr("title", "Resource Manager");
-    media.css("font-size", "1.4em");
-    media.css("padding-left", "0.5em");
-    media.css("padding-right", "0.5em");
-    media.click(function() {
-      $("#asset-manager").hide();
-      $("#media-player").hide();
-      $("#audio-player").hide();
-      $("#game-options").hide();
-      $("#quick-combat").hide();
-      $("#quick-help").hide();
-      if ($("#cloud-files").length) {
-        if ($("#cloud-files").is(":visible")) {
-          $("#cloud-files").hide();
-        }
-        else {
-          $("#cloud-files").show();
-          var max = util.getMaxZ(".ui-popout");
-          $("#cloud-files").css("z-index", max+1);
-        }
+    var text = $("<span>").text(shorttitle).appendTo(button);
+    text.css("font-size","12px");
+    text.css("position","absolute").css("bottom","-10px")
+    text.css("left","0").css("right","0");
+    text.css("text-align","center");
+    var content;
+    var popup;
+    button.click(function() {
+      menuContent.children().hide();
+      if(content && isValid(content)) {
+          content.show();
       }
       else {
-        var newApp = sync.newApp("ui_fileBrowser", null, {cloud : true}).appendTo(menuContent);
-        newApp.css("width", assetTypes["filePicker"].width);
-        newApp.attr("id", "cloud-files");
-        /*var popOut = ui_popOut({
-          target : left,
-          align : "right",
-          title : "Cloud Files",
-          id : "cloud-files",
-          close : function(ev, ui) {
-            popOut.hide();
-            return false;
-          },
-          style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
-        }, newApp);
-        popOut.resizable();*/
+        content = sync.newApp(appclass).appendTo(menuContent);
+
+        content.css("width", width);
+        content.addClass("flex");
+        if(oncreate)
+        {
+          oncreate(content);
+        }
       }
     });
+    button.contextmenu(function() {
+      if(popup && isValid(popup)){
+        var max = util.getMaxZ(".ui-popout");
+        popup.css("z-index", max+1);
+        return;
+      }
+      var app = sync.newApp(appclass).appendTo(menuContent);
+
+      popup = ui_popOut({
+        target : $("body"),
+        title : title,
+        style : {"width" : "400px", "height" : "400px"}
+      }, app);
+
+
+
+      popup.resizable();
+      if(oncreate)
+      {
+        oncreate(app);
+      }
+    });
+    button.click();
+    return {button:button,content:content};
   }
 
-  var media = genIcon("globe").appendTo(mediaOptions);
-  media.addClass("create alttext");
-  media.attr("title", "Asset Manager");
-  media.css("font-size", "1.4em");
-  media.css("padding-left", "0.5em");
-  media.css("padding-right", "0.5em");
-  media.click(function() {
-    $("#cloud-files").hide();
-    $("#media-player").hide();
-    $("#audio-player").hide();
-    $("#game-options").hide();
-    $("#quick-combat").hide();
-    $("#quick-help").hide();
-    if ($("#asset-manager").length) {
-      if ($("#asset-manager").is(":visible")) {
-        $("#asset-manager").hide();
-      }
-      else {
-        $("#asset-manager").show();
-      }
-    }
-    else {
-      var newApp = sync.newApp("ui_assetManager").appendTo(menuContent);
-      newApp.css("width", assetTypes["assetPicker"].width);
-      newApp.attr("id", "asset-manager");
-      game.entities.addApp(newApp);
-      /*var pop = ui_popOut({
-        target : left,
-        align : "right",
-        title : "Asset Manager",
-        id : "asset-manager",
-        minimze : true,
-        close : function(ev, ui) {
-          pop.hide();
-          return false;
-        },
-        style : {"width" : "400px", "height" : "600px"}
-      }, newApp);
-      pop.resizable();*/
-    }
-  });
+  function addToGameState(app)
+  {
+    game.state.addApp(app);
+  }
+  function addToConfigState(app)
+  {
+    game.config.addApp(app);
+  }
+
+  addSubMenu("comment", "ui_textBox", "Chat", "Chat", 400, addToGameState);
+
+  if (getCookie("UserID") && getCookie("UserID") == "localhost") {
+    addSubMenu("folder-open", "ui_fileBrowser", "Files", "File Manager", assetTypes["assetPicker"].width, addToGameState);
+  }
+
+  addSubMenu("globe", "ui_assetManager", "Assets", "Asset Manager", assetTypes["assetPicker"].width, addToGameState);
 
   if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-    var media = genIcon("film").appendTo(mediaOptions);
-    media.addClass("lrpadding create");
-    media.attr("title", "Media Player");
-    media.css("font-size", "1.4em");
-    media.css("padding-left", "0.5em");
-    media.css("padding-right", "0.5em");
-    media.click(function() {
-      $("#cloud-files").hide();
-      $("#asset-manager").hide();
-      $("#audio-player").hide();
-      $("#game-options").hide();
-      $("#quick-combat").hide();
-      $("#quick-help").hide();
-      if ($("#media-player").length) {
-        if ($("#media-player").is(":visible")) {
-          $("#media-player").hide();
-        }
-        else {
-          $("#media-player").show();
-          var max = util.getMaxZ(".ui-popout");
-          $("#media-player").css("z-index", max+1);
-        }
-      }
-      else {
-        var newApp = sync.newApp("ui_media", true).appendTo(menuContent);
-        newApp.css("width", assetTypes["filePicker"].width);
-        newApp.attr("id", "media-player");
-        /*
-        var popOut = ui_popOut({
-          target : left,
-          align : "right",
-          title : "Youtube Player",
-          id : "media-player",
-          close : function(ev, ui) {
-            popOut.hide();
-            return false;
-          },
-          style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
-        }, newApp);
-        popOut.resizable();*/
-      }
-    });
-
-    var media = genIcon("music").appendTo(mediaOptions);
-    media.addClass("lrpadding create");
-    media.attr("title", "Audio Player");
-    media.css("font-size", "1.4em");
-    media.css("padding-left", "0.5em");
-    media.css("padding-right", "0.5em");
-    media.click(function() {
-      $("#cloud-files").hide();
-      $("#asset-manager").hide();
-      $("#media-player").hide();
-      $("#game-options").hide();
-      $("#quick-combat").hide();
-      $("#quick-help").hide();
-      if ($("#audio-player").length) {
-        if ($("#audio-player").is(":visible")) {
-          $("#audio-player").hide();
-        }
-        else {
-          $("#audio-player").show();
-          var max = util.getMaxZ(".ui-popout");
-          $("#audio-player").css("z-index", max+1);
-        }
-      }
-      else {
-        var newApp = sync.newApp("ui_audioPlayer").appendTo(menuContent);
-        newApp.css("width", assetTypes["assetPicker"].width);
-        newApp.attr("id", "audio-player");
-        game.config.addApp(newApp);
-        /*var popOut = ui_popOut({
-          target : left,
-          align : "right",
-          title : "Audio Player",
-          id : "audio-player",
-          close : function(ev, ui) {
-            popOut.hide();
-            return false;
-          },
-          style : {"width" : "400px", "height" : "400px"}
-        }, newApp);
-        popOut.resizable();*/
-      }
-    });
+    addSubMenu("film", "ui_media", "Videos" , "Media Player", assetTypes["filePicker"].width, addToGameState);
+    addSubMenu("music", "ui_audioPlayer", "Audio" , "Audio Player", assetTypes["assetPicker"].width, addToConfigState);
   }
-  var media = genIcon("fire").appendTo(mediaOptions);
-  media.addClass("lrpadding create");
-  media.attr("title", "Combat Controls");
-  media.attr("id", "combat-button");
-  media.css("font-size", "1.4em");
-  media.css("padding-left", "0.5em");
-  media.css("padding-right", "0.5em");
-  media.click(function() {
-    $("#cloud-files").hide();
-    $("#asset-manager").hide();
-    $("#media-player").hide();
-    $("#game-options").hide();
-    $("#audio-player").hide();
-    $("#quick-help").hide();
-    if ($("#quick-combat").length) {
-      if ($("#quick-combat").is(":visible")) {
-        $("#quick-combat").hide();
-      }
-      else {
-        $("#quick-combat").show();
-        var max = util.getMaxZ(".ui-popout");
-        $("#quick-combat").css("z-index", max+1);
-      }
-    }
-    else {
-      var newApp = sync.newApp("ui_combatControls").appendTo(menuContent);
-      newApp.css("width", assetTypes["assetPicker"].width);
-      newApp.attr("id", "quick-combat");
-      game.state.addApp(newApp);
-      /*var popOut = ui_popOut({
-        target : left,
-        align : "right",
-        title : "Audio Player",
-        id : "audio-player",
-        close : function(ev, ui) {
-          popOut.hide();
-          return false;
-        },
-        style : {"width" : "400px", "height" : "400px"}
-      }, newApp);
-      popOut.resizable();*/
-    }
+
+  addSubMenu("fire", "ui_combatControls", "Combat" , "Combat Controls", assetTypes["assetPicker"].width, addToGameState)
+
+  var submenu = addSubMenu("question-sign", "ui_renderHelp", "Help" , "Quick Help!", assetTypes["assetPicker"].width, function(app){
+    app.attr("id","quick-help");
+    addToGameState(app);
   });
 
-  var media = genIcon("question-sign").appendTo(mediaOptions);
-  media.addClass("lrpadding create");
-  media.attr("title", "Quick Help!");
-  media.attr("id", "help-button");
-  media.css("font-size", "1.4em");
-  media.css("padding-left", "0.5em");
-  media.css("padding-right", "0.5em");
-  media.click(function() {
-    $("#cloud-files").hide();
-    $("#asset-manager").hide();
-    $("#media-player").hide();
-    $("#game-options").hide();
-    $("#audio-player").hide();
-    $("#quick-combat").hide();
-    if ($("#quick-help").length) {
-      if ($("#quick-help").is(":visible")) {
-        $("#quick-help").hide();
-      }
-      else {
-        $("#quick-help").show();
-        var max = util.getMaxZ(".ui-popout");
-        $("#quick-help").css("z-index", max+1);
-      }
-    }
-    else {
-      var newApp = sync.newApp("ui_renderHelp", null, {}).appendTo(menuContent);
-      newApp.css("width", assetTypes["assetPicker"].width);
-      newApp.attr("id", "quick-help");
-      /*var popOut = ui_popOut({
-        target : left,
-        align : "right",
-        title : "Audio Player",
-        id : "audio-player",
-        close : function(ev, ui) {
-          popOut.hide();
-          return false;
-        },
-        style : {"width" : "400px", "height" : "400px"}
-      }, newApp);
-      popOut.resizable();*/
-    }
-  });
-  media.click();
+  var configOptions = $("<div>").appendTo(sidebar);
+  configOptions.addClass("flexrow flexbetween");
+  configOptions.css("position", "absolute");
+  configOptions.css("right", "0");
+  configOptions.css("top", "2px");
+  configOptions.css("font-size", "12px");
+  configOptions.css("color", "white")
 
-  var div = $("<div>").appendTo(leftContent);
-  div.addClass("flex");
-
-  var configOptions = $("<div>").appendTo(leftContent);
-  configOptions.addClass("flexcolumn flexmiddle");
-  configOptions.css("padding-left", "0.5em");
-  configOptions.css("padding-right", "0.5em");
-  configOptions.css("font-size", "1.4em");
-
-  configOptions.append("<a href='https://discord.gg/usy4ByN' target='_' title='Join the Discord Channel'><img width=26 height=26 src='/content/Discord-Logo-White.png'></img></a>");
+  configOptions.append("<a href='https://discord.gg/usy4ByN' class='flex' target='_' title='Join the Discord Channel'><img class = 'flex' style='display:flex;' width=16 height=16 src='/content/Discord-Logo-White.png'></img></a>");
 
   if (game.owner == getCookie("UserID") && !getCookie("PublicPort")) {
     var label = genIcon("cloud-download").appendTo(configOptions);
@@ -2261,6 +2084,10 @@ layout.left = function() {
   }
 
   var label = genIcon("log-in").appendTo(configOptions);
+  label.css("padding-right", "0.1em");
+  label.css("padding-left", "0.1em");
+  label.addClass("flex");
+
   label.attr("title", "Copies an invite to clipboard");
   label.click(function(){
     var input = genInput({
@@ -2284,14 +2111,12 @@ layout.left = function() {
   });
 
   var gameOptions = genIcon("cog").appendTo(configOptions);
+  gameOptions.addClass("flex");
   gameOptions.attr("title", "Options");
+  gameOptions.css("padding-right", "0.1em");
+  gameOptions.css("padding-left", "0.1em");
   gameOptions.click(function(){
-    $("#cloud-files").hide();
-    $("#asset-manager").hide();
-    $("#media-player").hide();
-    $("#music-player").hide();
-    $("#quick-combat").hide();
-    $("#quick-help").hide();
+    menuContent.children().hide();
     if ($("#game-options").length) {
       $("#game-options").toggle();
       return;
@@ -2499,24 +2324,18 @@ layout.left = function() {
   });
 
   var splash = genIcon("menu-hamburger").appendTo(configOptions);
-  splash.addClass("lrpadding");
+  splash.addClass("flex");
   splash.attr("title", "Main Menu");
-  splash.css("padding-left", "0.5em");
-  splash.css("padding-right", "0.5em");
+  splash.css("padding-left", "0.1em");
+  splash.css("padding-right", "0.1em");
   splash.click(function(){
     openSplash(true);
   });
-
-  var left = ui_popOut({
-    target : $("body"),
-    align : "left",
-    noCss : true,
-    hideclose : true,
-    pin: false,
-    style : {"height" : "600px", "max-height" : "100vh", "transition" : "opacity 0.5s"}
-  }, leftContentWrap).attr("docked", "left").addClass("foreground").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
-  left.draggable("disable");
-  left.addClass("main-dock");
+  sidebar.click(function()
+  {
+    sidebar.trigger("mouseenter");
+  });
+  setTimeout(function(){sidebar.trigger("mouseenter");}, 10);
 }
 
 layout.top = function(){
@@ -2645,6 +2464,7 @@ layout.top = function(){
     target : $("body"),
     align : "top",
     noCss : true,
+    pin: false,
     hideclose : true,
     pin: false,
     style : {"width" : "100vw", "max-width" : "100vw", "transition" : "opacity 0.5s"}
@@ -2700,11 +2520,18 @@ layout.bottom = function(){
   bottomContent.addClass("flexrow flex alttext");
   bottomContent.css("position", "relative");
 
+  var playersContent = $("<div>").appendTo($("body"));
+  playersContent.addClass("flexrow flex alttext");
+  playersContent.css("position", "absolute");
+  playersContent.css("bottom", "2px").css("right", "10px");
+  playersContent.css("height","5vh");
+
+
   var pin = genIcon("pushpin").appendTo(bottomContent);
   pin.addClass("spadding alttext smooth highlight");
   pin.attr("title", "Lock this menu down");
   pin.css("position", "absolute");
-  pin.css("top", "0");
+  pin.css("top", "1px");
   pin.css("left", "0");
   pin.click(function(){
     if (bottom.attr("locked")) {
@@ -2759,7 +2586,7 @@ layout.bottom = function(){
     });
   }*/
 
-
+  /*
   if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
     var cardWrap = $("<div>").appendTo(bottomContent);
     cardWrap.addClass("flexrow flexmiddle");
@@ -2769,22 +2596,22 @@ layout.bottom = function(){
     newApp.removeClass("application");
     newApp.css("overflow", "hidden");
     game.state.addApp(newApp);
-  }
-
+  }*/
+  /*
   var cardWrap = $("<div>").appendTo(bottomContent);
   cardWrap.addClass("flexrow");
   cardWrap.css("overflow", "hidden");
   cardWrap.css("max-width", "30vw");
   cardWrap.css("height", "6.0em");
-
   var newApp = sync.newApp("ui_hand").appendTo(cardWrap);
   newApp.attr("UserID", getCookie("UserID"));
   newApp.css("overflow", "hidden");
   newApp.css("margin-top", "4px");
-  game.state.addApp(newApp);
+  game.state.addApp(newApp);*/
+
 
   var app = sync.newApp("ui_players");
-  app.appendTo(bottomContent);
+  app.appendTo(playersContent);
   app.attr("height", "75px");
   app.css("height", "auto");
   app.css("width", "auto");
@@ -2793,8 +2620,8 @@ layout.bottom = function(){
   game.players.addApp(app);
 
   var cardWrap = $("<div>").appendTo(bottomContent);
-  cardWrap.addClass("flexcolumn");
-  cardWrap.css("max-width", "400px");
+  cardWrap.addClass("flexcolumn flex");
+  cardWrap.css("min-height", "8vh");
 
   var rolls = sync.newApp("ui_hotRolls");
   rolls.appendTo(cardWrap);
@@ -2915,13 +2742,13 @@ layout.bottom = function(){
 
   var bottom = ui_popOut({
     target : $("body"),
-    align : "bottom",
+    align : "bottom left",
     noCss : true,
     hideclose : true,
     pin: false,
     style : {"width" : "100vw", "max-width" : "100vw", "transition" : "opacity 0.5s"}
   }, bottomContent).attr("docked", "bottom").addClass("background").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout")).attr("locked", true);
-
   bottom.draggable("disable");
   bottom.addClass("main-dock");
+
 }
