@@ -19,7 +19,8 @@
     var async = require('async');
 
     var client = natUpnp.createClient();
-    var publicPort = Math.ceil(5536 + 30000);
+    var privatePort = 30000;
+    var publicPort = Math.ceil(5536 + privatePort);
 
     var externalIP;
 
@@ -38,7 +39,7 @@
 
     client.portMapping({
       public: publicPort,
-      private: 30000,
+      private: privatePort,
       ttl: 0
     }, function(err) {
       // Will be called once finished
@@ -53,7 +54,7 @@
     client.externalIp(function(err, ip) {externalIP = ip;});
 
     //view engine setup
-    app.set('port', 30000);
+    app.set('port', privatePort);
     app.engine('.hbs', handlebars({
       extname: '.hbs',
       layoutsDir:'views/layouts',
@@ -351,9 +352,9 @@
 
     app.get('/join', function(req, res){
       if (req.query.userID && req.query.userID != "localhost") {
-        res.cookie("InternalIP", addresses[0], 99999999999999)
-        res.cookie("ExternalIP", externalIP, 99999999999999);
-        res.cookie("PublicPort", publicPort, 9999999999999);
+        res.cookie("InternalIP", addresses[0] || "", 99999999999999)
+        res.cookie("ExternalIP", externalIP || "", 99999999999999);
+        res.cookie("PublicPort", publicPort  || privatePort, 9999999999999);
         res.cookie("UserID", req.query.userID, 9999999999999999);
         res.render('game', {
           layout : "game",
@@ -364,9 +365,9 @@
         var ip = req.ip;
         if (ip == "::ffff:127.0.0.1" || ip == "::1") {
           ip = "127.0.0.1";
-          res.cookie("InternalIP", addresses[0], 99999999999999)
-          res.cookie("ExternalIP", externalIP, 99999999999999);
-          res.cookie("PublicPort", publicPort, 9999999999999);
+          res.cookie("InternalIP", addresses[0] || "", 99999999999999)
+          res.cookie("ExternalIP", externalIP || "", 99999999999999);
+          res.cookie("PublicPort", publicPort  || privatePort, 9999999999999);
           res.cookie("UserID", "localhost", 99999999999999);
           res.render('game', {host : true, layout : "game"});
         }

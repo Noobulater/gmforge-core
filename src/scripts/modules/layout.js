@@ -2625,6 +2625,7 @@ layout.top = function(){
     align : "top",
     noCss : true,
     hideclose : true,
+    pin: false,
     style : {"width" : "100vw", "max-width" : "100vw", "transition" : "opacity 0.5s"}
   }, topContent).attr("docked", "top").addClass("foreground").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
   top.attr("locked", true);
@@ -2636,23 +2637,6 @@ layout.players = function(){
   var bottomContent = $("<div>");
   bottomContent.addClass("flexrow flex flexmiddle dragcontrol");
   bottomContent.css("position", "relative");
-
-  var pin = genIcon("pushpin").appendTo(bottomContent);
-  pin.addClass("spadding alttext smooth highlight");
-  pin.attr("title", "Lock this menu down");
-  pin.css("position", "absolute");
-  pin.css("top", "0");
-  pin.css("right", "0");
-  pin.click(function(){
-    if (bottom.attr("locked")) {
-      bottom.removeAttr("locked");
-      pin.removeClass("highlight");
-    }
-    else {
-      pin.addClass("highlight");
-      bottom.attr("locked", true);
-    }
-  });
 
   //bottom right
   var app = sync.newApp("ui_players").appendTo(bottomContent);
@@ -2678,23 +2662,6 @@ layout.bottom = function(){
   var bottomContent = $("<div>");
   bottomContent.addClass("flexrow flex alttext");
   bottomContent.css("position", "relative");
-
-  var pin = genIcon("pushpin").appendTo(bottomContent);
-  pin.addClass("spadding alttext smooth highlight");
-  pin.attr("title", "Lock this menu down");
-  pin.css("position", "absolute");
-  pin.css("top", "0");
-  pin.css("left", "0");
-  pin.click(function(){
-    if (bottom.attr("locked")) {
-      bottom.removeAttr("locked");
-      pin.removeClass("highlight");
-    }
-    else {
-      pin.addClass("highlight");
-      bottom.attr("locked", true);
-    }
-  });
 
   if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
     var cardWrap = $("<div>").appendTo(bottomContent);
