@@ -747,18 +747,116 @@ function ui_popOut(options, content) {
   }
   else {
     overlay.css("background-color", "none");
-    overlay.draggable({
-      containment : "window",
-      stack : ".ui-popout.snapCss",
-      snap : ".ui-popout.snapCss",
-      snapMode : "Outer",
-      stop : function(ev, ui){
-        overlay.attr("_lastDrag", Date.now());
-        if (options.moved) {
-          options.moved(ev, overlay, ui);
+    if (options.allowDock) {
+      overlay.draggable({
+        containment : "window",
+        stack : ".ui-popout.snapCss",
+        snap : ".ui-popout.snapCss",
+        snapMode : "Outer",
+        handle : ".dragcontrol",
+        start : function(ev, ui) {
+          if (overlay.attr("docked")) {
+            overlay.css("transition", "");
+            overlay.removeAttr("docked");
+            overlay.removeAttr("_dockStartX");
+            overlay.removeAttr("_dockStartY");
+            overlay.removeAttr("docked-z");
+          }
+        },
+        drag : function(ev, ui) {
+          var offset = overlay.offset();
+          var xPos = offset.left;
+          var yPos = offset.top;
+
+          if (xPos <= 1 || yPos <= 1 || xPos + overlay.width() >= $(window).width()-5 || yPos + overlay.height() >= $(window).height()-5) {
+            var lastX = overlay.attr("_dockStartX") || ev.screenX;
+            var lastY = overlay.attr("_dockStartY") || ev.screenY;
+
+            var velX = ev.screenX - lastX;
+            var velY = ev.screenY - lastY;
+
+            if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
+              ui.position.left -= 50;
+            }
+            else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
+              ui.position.left += 50;
+            }
+            else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
+              ui.position.top -= 50;
+            }
+            else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
+              ui.position.top += 50;
+            }
+            if (!overlay.attr("_dockStartX") && !overlay.attr("_dockStartY")) {
+              overlay.attr("_dockStartX", ev.screenX);
+              overlay.attr("_dockStartY", ev.screenY);
+            }
+          }
+          else {
+            overlay.removeAttr("_dockStartX");
+            overlay.removeAttr("_dockStartY");
+          }
+        },
+        stop : function(ev, ui){
+          overlay.attr("_lastDrag", Date.now());
+          var offset = overlay.offset();
+          var xPos = offset.left;
+          var yPos = offset.top;
+          if (xPos <= 1 || yPos <= 1 || xPos + overlay.width() >= $(window).width()-5 || yPos + overlay.height() >= $(window).height()-5) {
+            var lastX = overlay.attr("_dockStartX") || ev.screenX;
+            var lastY = overlay.attr("_dockStartY") || ev.screenY;
+
+            var velX = ev.screenX - lastX;
+            var velY = ev.screenY - lastY;
+
+            if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
+              overlay.attr("docked", "left");
+              overlay.css("left", -1 * overlay.width() + 20);
+              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+            else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
+              overlay.attr("docked", "right");
+              overlay.css("left", $(window).width() - 20);
+              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+            else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
+              overlay.attr("docked", "top");
+              overlay.css("top", -1 * overlay.height() + 20);
+              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+            else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
+              overlay.attr("docked", "bottom");
+              overlay.css("top", $(window).height() - 20);
+              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+          }
+
+          overlay.removeAttr("_dockStartX");
+          overlay.removeAttr("_dockStartY");
+          if (options.moved) {
+            options.moved(ev, overlay, ui);
+          }
         }
-      }
-    });
+      });
+    }
+    else {
+      overlay.draggable({
+        containment : "window",
+        stack : ".ui-popout.snapCss",
+        snap : ".ui-popout.snapCss",
+        snapMode : "Outer",
+        stop : function(ev, ui){
+          overlay.attr("_lastDrag", Date.now());
+          if (options.moved) {
+            options.moved(ev, overlay, ui);
+          }
+        }
+      });
+    }
   }
 
   if (options) {

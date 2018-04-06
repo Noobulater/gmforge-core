@@ -385,7 +385,6 @@ sync.render("ui_editAction", function(obj, app, scope){
           },
           click : function(ev, inputs){
             var name = inputs["Input Name"].val();
-            console.log(inputs);
             inputs["Input Name"].attr("list");
             if (name) {
               name = replaceAll(name, " ", "_");
@@ -398,7 +397,6 @@ sync.render("ui_editAction", function(obj, app, scope){
               name = replaceAll(name, "#", "_");
               name = replaceAll(name, "$", "_");
               obj.data.choices[index] = obj.data.choices[index] || {};
-              console.log(name);
               obj.data.choices[index][name] = "0";
               obj.update();
             }

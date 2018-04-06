@@ -351,6 +351,7 @@
 
     app.get('/join', function(req, res){
       if (req.query.userID && req.query.userID != "localhost") {
+        res.cookie("InternalIP", addresses[0], 99999999999999)
         res.cookie("ExternalIP", externalIP, 99999999999999);
         res.cookie("PublicPort", publicPort, 9999999999999);
         res.cookie("UserID", req.query.userID, 9999999999999999);
@@ -363,6 +364,7 @@
         var ip = req.ip;
         if (ip == "::ffff:127.0.0.1" || ip == "::1") {
           ip = "127.0.0.1";
+          res.cookie("InternalIP", addresses[0], 99999999999999)
           res.cookie("ExternalIP", externalIP, 99999999999999);
           res.cookie("PublicPort", publicPort, 9999999999999);
           res.cookie("UserID", "localhost", 99999999999999);

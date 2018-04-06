@@ -451,7 +451,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       minimize : true,
       prompt : true,
       title : "Game Library",
-      style : {"width" : "600px", "height" : $($(".main-dock")[0]).height()}
+      style : {"width" : "600px", "height" : "600px"}
     }, newApp);
     pop.resizable();
   });

@@ -128,6 +128,154 @@ sync.render("ui_deck", function(obj, app, scope) {
   div.addClass("flexrow flexmiddle");
 
   if (obj.data.cards) {
+    if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+      var cards = $("<div>").appendTo(div);
+      cards.addClass("hover2 flexmiddle");
+      cards.attr("title", "Playing Cards");
+      cards.css("width", 75 * 2/5);
+      cards.css("height", 75 * 3/5);
+      cards.css("background-image", "url('/content/cards/backfacegreen.png')");
+      cards.css("background-size", "contain");
+      cards.css("background-repeat", "no-repeat");
+      cards.css("background-position", "center");
+      cards.click(function(){
+        var cards = [];
+
+        cards.push({
+          name : "Show Hands",
+          click : function() {
+            for (var id in game.state.data.cards.players) {
+              if (id != getCookie("UserID")) {
+                var content = $("<div>");
+                content.addClass("flexcolumn");
+
+                var namePlate = $("<b>"+(getPlayerCharacterName(id) || getPlayerName(id))+"</b>").appendTo(content);
+                namePlate.addClass("alttext lrpadding subtitle smooth outline");
+                namePlate.css("pointer-events", "none");
+                namePlate.css("background-color", "rgba(0,0,0,0.6)");
+                namePlate.css("padding-right", "2em");
+
+                var newApp = sync.newApp("ui_hand").appendTo(content);
+                newApp.addClass("flexmiddle");
+                newApp.attr("UserID", id);
+
+                game.state.addApp(newApp);
+
+                var pop = ui_popOut({
+                  target : $("#player-icon-"+id),
+                  id : "hand-"+id,
+                  align : "top",
+                  noCss : true,
+                  style : {"min-width" : "70px"},
+                }, content);
+                pop.attr("UserID", id);
+
+                if (game.players.data[id].color) {
+                  pop.css("background-color", game.players.data[id].color);
+                }
+                else {
+                  pop.addClass("background");
+                }
+              }
+            }
+          }
+        });
+
+        cards.push({
+          name : "Empty Hands",
+          click : function() {
+            game.state.data.cards.players = {};
+            game.state.sync("updateState");
+          }
+        });
+
+        var createDecks = [];
+        for (var key in util.decks) {
+          createDecks.push({
+            name : key,
+            attr : {deck : key},
+            click : function(ev, ui){
+              game.state.data.cards = game.state.data.cards || {}
+              game.state.data.cards.decks = game.state.data.cards.decks || [];
+
+              // shuffle
+              var deckData = {type : ui.attr("deck"), pool : [], players : {}};
+              var start = duplicate(util.decks[ui.attr("deck")]);
+              while (start.length) {
+                var index = Math.floor(Math.random() * start.length);
+                var val = start.splice(index, 1)[0];
+                deckData.pool.push(val);
+              }
+              game.state.data.cards.decks.push(deckData);
+
+              game.state.sync("updateState");
+            }
+          });
+        }
+
+        cards.push({
+          name : "Deal Unique Card",
+          click : function(ev, ui) {
+            var picker = sync.render("ui_filePicker")(obj, app, {
+              filter : "img",
+              change : function(ev, ui, val){
+                var players = [];
+                players.push({
+                  name : "All Players",
+                  attr : {player : key},
+                  click : function(ev, ui){
+                    var key = ui.attr("player");
+                    game.state.data.cards.players = game.state.data.cards.players || {};
+
+                    for (var key in game.players.data) {
+                      game.state.data.cards.players[key] = game.state.data.cards.players[key] || [];
+                      game.state.data.cards.players[key].push({src : val});
+                    }
+
+                    game.state.sync("updateState");
+                  }
+                });
+
+                for (var key in game.players.data) {
+                  players.push({
+                    name : getPlayerCharacterName(key) || getPlayerName(key),
+                    attr : {player : key},
+                    click : function(ev, ui){
+                      var key = ui.attr("player");
+                      obj.data.cards.players = obj.data.cards.players || {};
+                      obj.data.cards.players[key] = obj.data.cards.players[key] || [];
+                      obj.data.cards.players[key].push({src : val});
+
+                      game.state.sync("updateState");
+                    }
+                  });
+                }
+
+                ui_dropMenu(prompt, players, {id : "drop", align : "center"});
+                layout.coverlay("unique-card");
+              }
+            });
+            var prompt = ui_popOut({
+              target : $("body"),
+              prompt : true,
+              id : "unique-card",
+              style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
+            }, picker);
+          }
+        });
+
+
+        if (createDecks.length) {
+          cards.push({name : "Create Deck", submenu : createDecks});
+        }
+
+        ui_dropMenu($(this), cards, {id : "cards", align : "top"});
+      });
+      cards.contextmenu(function(){
+        $(this).click();
+        return false;
+      });
+    }
     for (var i in obj.data.cards.decks) {
       var cards = $("<div>").appendTo(div);
       cards.addClass("flexmiddle alttext lrpadding");
@@ -297,154 +445,6 @@ sync.render("ui_deck", function(obj, app, scope) {
           return false;
         });
       }
-    }
-    if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-      var cards = $("<div>").appendTo(div);
-      cards.addClass("hover2 flexmiddle");
-      cards.attr("title", "Playing Cards");
-      cards.css("width", 75 * 2/5);
-      cards.css("height", 75 * 3/5);
-      cards.css("background-image", "url('/content/cards/backfacegreen.png')");
-      cards.css("background-size", "contain");
-      cards.css("background-repeat", "no-repeat");
-      cards.css("background-position", "center");
-      cards.click(function(){
-        var cards = [];
-
-        cards.push({
-          name : "Show Hands",
-          click : function() {
-            for (var id in game.state.data.cards.players) {
-              if (id != getCookie("UserID")) {
-                var content = $("<div>");
-                content.addClass("flexcolumn");
-
-                var namePlate = $("<b>"+(getPlayerCharacterName(id) || getPlayerName(id))+"</b>").appendTo(content);
-                namePlate.addClass("alttext lrpadding subtitle smooth outline");
-                namePlate.css("pointer-events", "none");
-                namePlate.css("background-color", "rgba(0,0,0,0.6)");
-                namePlate.css("padding-right", "2em");
-
-                var newApp = sync.newApp("ui_hand").appendTo(content);
-                newApp.addClass("flexmiddle");
-                newApp.attr("UserID", id);
-
-                game.state.addApp(newApp);
-
-                var pop = ui_popOut({
-                  target : $("#player-icon-"+id),
-                  id : "hand-"+id,
-                  align : "top",
-                  noCss : true,
-                  style : {"min-width" : "70px"},
-                }, content);
-                pop.attr("UserID", id);
-
-                if (game.players.data[id].color) {
-                  pop.css("background-color", game.players.data[id].color);
-                }
-                else {
-                  pop.addClass("background");
-                }
-              }
-            }
-          }
-        });
-
-        cards.push({
-          name : "Empty Hands",
-          click : function() {
-            game.state.data.cards.players = {};
-            game.state.sync("updateState");
-          }
-        });
-
-        var createDecks = [];
-        for (var key in util.decks) {
-          createDecks.push({
-            name : key,
-            attr : {deck : key},
-            click : function(ev, ui){
-              game.state.data.cards = game.state.data.cards || {}
-              game.state.data.cards.decks = game.state.data.cards.decks || [];
-
-              // shuffle
-              var deckData = {type : ui.attr("deck"), pool : [], players : {}};
-              var start = duplicate(util.decks[ui.attr("deck")]);
-              while (start.length) {
-                var index = Math.floor(Math.random() * start.length);
-                var val = start.splice(index, 1)[0];
-                deckData.pool.push(val);
-              }
-              game.state.data.cards.decks.push(deckData);
-
-              game.state.sync("updateState");
-            }
-          });
-        }
-
-        cards.push({
-          name : "Deal Unique Card",
-          click : function(ev, ui) {
-            var picker = sync.render("ui_filePicker")(obj, app, {
-              filter : "img",
-              change : function(ev, ui, val){
-                var players = [];
-                players.push({
-                  name : "All Players",
-                  attr : {player : key},
-                  click : function(ev, ui){
-                    var key = ui.attr("player");
-                    game.state.data.cards.players = game.state.data.cards.players || {};
-
-                    for (var key in game.players.data) {
-                      game.state.data.cards.players[key] = game.state.data.cards.players[key] || [];
-                      game.state.data.cards.players[key].push({src : val});
-                    }
-
-                    game.state.sync("updateState");
-                  }
-                });
-
-                for (var key in game.players.data) {
-                  players.push({
-                    name : getPlayerCharacterName(key) || getPlayerName(key),
-                    attr : {player : key},
-                    click : function(ev, ui){
-                      var key = ui.attr("player");
-                      obj.data.cards.players = obj.data.cards.players || {};
-                      obj.data.cards.players[key] = obj.data.cards.players[key] || [];
-                      obj.data.cards.players[key].push({src : val});
-
-                      game.state.sync("updateState");
-                    }
-                  });
-                }
-
-                ui_dropMenu(prompt, players, {id : "drop", align : "center"});
-                layout.coverlay("unique-card");
-              }
-            });
-            var prompt = ui_popOut({
-              target : $("body"),
-              prompt : true,
-              id : "unique-card",
-              style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
-            }, picker);
-          }
-        });
-
-
-        if (createDecks.length) {
-          cards.push({name : "Create Deck", submenu : createDecks});
-        }
-
-        ui_dropMenu($(this), cards, {id : "cards", align : "top"});
-      });
-      cards.contextmenu(function(){
-        $(this).click();
-        return false;
-      });
     }
   }
 

@@ -382,34 +382,33 @@ sync.render("ui_renderItem", function(obj, app, scope){
     weapon.addClass("highlight alttext");
 
     for (var i in obj.data.weapon) {
-      if (i != "prof") {
-        var modRow = $("<div>").appendTo(content);
-        modRow.addClass("flexrow fit-x subtitle");
+      var modRow = $("<div>").appendTo(content);
+      modRow.addClass("flexrow fit-x subtitle");
 
-        var label = $("<b>").appendTo(modRow);
-        label.addClass("lrpadding flexmiddle");
-        label.text(obj.data.weapon[i].name || i);
-        label.css("min-width", "60px");
+      var label = $("<b>").appendTo(modRow);
+      label.addClass("lrpadding flexrow flexmiddle");
+      label.attr("title", "@i.weapon."+i);
+      label.text(obj.data.weapon[i].name || i);
+      label.css("min-width", "100px");
 
-        var val = genInput({
-          parent : modRow,
-          value : sync.val(obj.data.weapon[i]),
-          index : i,
-          disabled : scope.viewOnly,
-        }).addClass("flex line");
-        val.change(function(){
-          sync.val(obj.data.weapon[$(this).attr("index")], $(this).val());
+      var val = genInput({
+        parent : modRow,
+        value : sync.val(obj.data.weapon[i]),
+        index : i,
+        disabled : scope.viewOnly,
+      }).addClass("flex line");
+      val.change(function(){
+        sync.val(obj.data.weapon[$(this).attr("index")], $(this).val());
+        obj.update();
+      });
+      if (!game.templates.item.weapon[i]) {
+        var remove = genIcon("remove").appendTo(modRow);
+        remove.addClass("destroy");
+        remove.attr("index", i);
+        remove.click(function(){
+          delete obj.data.weapon[$(this).attr("index")];
           obj.update();
         });
-        if (!game.templates.item.weapon[i]) {
-          var remove = genIcon("remove").appendTo(modRow);
-          remove.addClass("destroy");
-          remove.attr("index", i);
-          remove.click(function(){
-            delete obj.data.weapon[$(this).attr("index")];
-            obj.update();
-          });
-        }
       }
     }
     if (obj.data.info.skill) {
@@ -476,47 +475,6 @@ sync.render("ui_renderItem", function(obj, app, scope){
         var dice = sync.render("ui_skillDice")(char, app, {skill : skillRef}).appendTo(diceWrap);
       }
     }
-    if (obj.data.weapon.prof) {
-      var skillPlate = $("<div>").appendTo(content);
-      skillPlate.addClass("flexrow subtitle");
-      skillPlate.append("<b class='flexmiddle lrpadding' style='min-width : 60px;'>"+obj.data.weapon.prof.name+"</b>");
-
-      if ($("#item-prof-list").length) {
-        $("#item-prof-list").remove();
-      }
-      var dataList = $("<datalist>").appendTo(skillPlate);
-      dataList.attr("id", "item-prof-list");
-
-      var skillRegex = /\(([^(]+[^)]+)\)/;
-      if (char) {
-        for (var index in char.data.tags) {
-          if (index.match("prof_")) {
-            var option = $("<option>").appendTo(dataList);
-            option.attr("value", index.split("prof_")[1]);
-          }
-        }
-      }
-
-      var prof = genInput({
-        parent : skillPlate,
-        type : "list",
-        list : "item-prof-list",
-        disabled: scope.viewOnly,
-      }).addClass("flex line");
-      if (scope.viewOnly) {
-        prof.css("background-color", "rgb(235,235,228)");
-      }
-      prof.val(sync.val(obj.data.weapon.prof));
-      prof.change(function(){
-        sync.val(obj.data.weapon.prof, $(this).val());
-        if (!scope.local) {
-          obj.sync("updateAsset");
-        }
-        else {
-          obj.update();
-        }
-      });
-    }
     if (!scope.viewOnly) {
       var newField = genIcon("plus", "New Field").appendTo(content);
       newField.addClass("fit-x flexmiddle subtitle");
@@ -554,9 +512,10 @@ sync.render("ui_renderItem", function(obj, app, scope){
       modRow.addClass("flexrow fit-x subtitle");
 
       var label = $("<b>").appendTo(modRow);
-      label.addClass("lrpadding flexmiddle");
+      label.addClass("flexcolumn lrpadding flexmiddle");
+      label.attr("title", "@i.spell."+i);
       label.text(obj.data.spell[i].name || i);
-      label.css("min-width", "60px");
+      label.css("min-width", "100px");
 
       var val = genInput({
         parent : modRow,
@@ -623,7 +582,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
     var calcs = obj.data._calc;
     content.addClass("subtitle");
     content.removeClass("padding");
-    
+
     var warning = $("<i>").appendTo(content);
     warning.addClass("flexmiddle subtitle bold")
     warning.text("Calculations performed here are written to the parent character sheet, and change the values directly. Use with caution");

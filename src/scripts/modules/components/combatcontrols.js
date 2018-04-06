@@ -340,8 +340,8 @@ sync.render("ui_combatControls", function(obj, app, scope){
                     $("#audio-player").hide();
                     $("#quick-combat").show();
                   }
-                  if (!$($(".main-dock")[0]).attr("locked")) {
-                    util.dockReveal($($(".main-dock")[0]));
+                  if (!$("#main-menu").attr("docked")) {
+                    util.dockReveal($("#main-menu"));
                   }
                 }
               }

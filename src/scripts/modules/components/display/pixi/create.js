@@ -562,8 +562,8 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
                   boardApi.pix.selections[key].wrap.y += deltaY;
                 }
               }
-              if (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length < 800) {
-                if (type == "p" && pData.eID && hasSecurity(getCookie("UserID"), "Visible", obj.data)) {
+              if (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length < 800 && obj.data.options.fog) {
+                if (type == "p" && pData.eID && hasSecurity(getCookie("UserID"), "Visible", getEnt(pData.eID).data)) {
                   var range;
                   if (pData.eID && pData.o && pData.o.Sight) {
                     var auraData = pData.o.Sight;
@@ -1643,10 +1643,10 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
 
                 healthbar.beginFill(0x333333, 0.5);
                 healthbar.lineStyle(1,0x333333, 0.5);
-                healthbar.drawRect(2, 0, (objectData.w-4), hpHeight);
+                healthbar.drawRect(1, 0, (objectData.w-4), hpHeight);
                 healthbar.endFill();
                 healthbar.beginFill(util.RGB_HEX("rgb("+(200-Math.ceil(200 * percentage))+","+(Math.ceil(200 * percentage))+",0)"), 0.7);
-                healthbar.drawRect(2, 0, (objectData.w-4)*percentage, hpHeight);
+                healthbar.drawRect(1, 0, (objectData.w-4)*percentage, hpHeight);
                 healthbar.endFill();
                 healthbar.x = 1;
                 healthbar.y = objectData.h-2-hpHeight;
