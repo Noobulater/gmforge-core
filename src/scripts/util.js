@@ -558,7 +558,7 @@ util.dockReveal = function(overlay) {
   if (overlay.attr("docked")) {
     var max = util.getMaxZ(".ui-popout");
     overlay.css("z-index", max+1);
-    overlay.css("transition", "left 0.5s, top 0.5s, opacity 0.5s");
+    overlay.css("transition", "left 0.35s, top 0.35s, opacity 0.35s");
     if (overlay.hasClass("main-dock")) {
       overlay.css("opacity", 1);
     }
@@ -576,14 +576,14 @@ util.dockReveal = function(overlay) {
     }
   }
   else {
-    overlay.css("transition", "opacity 0.5s");
+    overlay.css("transition", "opacity 0.35s");
   }
 }
 
 util.dockHide = function(overlay) {
   if (overlay.attr("docked") && !overlay.is(":hover")) {
     overlay.css("z-index", overlay.attr("docked-z"));
-    overlay.css("transition", "left 0.5s, top 0.5s, opacity 0.5s");
+    overlay.css("transition", "left 0.35s, top 0.35s, opacity 0.35s");
     if (overlay.attr("docked") == "left") {
       overlay.css("left", -1 * overlay.width() + 20);
     }
@@ -598,7 +598,7 @@ util.dockHide = function(overlay) {
     }
   }
   else {
-    overlay.css("transition", "opacity 0.5s");
+    overlay.css("transition", "opacity 0.35s");
   }
 }
 

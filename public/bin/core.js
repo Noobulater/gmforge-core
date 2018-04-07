@@ -1405,7 +1405,7 @@ var game = {
   components : null, // list of all the ui components a player has access to
   actions : null, // list of all the actions a player has access to
   templates : {}, // data structures specific to game
-  version : 1 // the version for the patcher to check against
+  version : 2 // the version for the patcher to check against
 };
 
 function setupGame() {
@@ -2024,7 +2024,7 @@ util.dockReveal = function(overlay) {
   if (overlay.attr("docked")) {
     var max = util.getMaxZ(".ui-popout");
     overlay.css("z-index", max+1);
-    overlay.css("transition", "left 0.5s, top 0.5s, opacity 0.5s");
+    overlay.css("transition", "left 0.35s, top 0.35s, opacity 0.35s");
     if (overlay.hasClass("main-dock")) {
       overlay.css("opacity", 1);
     }
@@ -2042,14 +2042,14 @@ util.dockReveal = function(overlay) {
     }
   }
   else {
-    overlay.css("transition", "opacity 0.5s");
+    overlay.css("transition", "opacity 0.35s");
   }
 }
 
 util.dockHide = function(overlay) {
   if (overlay.attr("docked") && !overlay.is(":hover")) {
     overlay.css("z-index", overlay.attr("docked-z"));
-    overlay.css("transition", "left 0.5s, top 0.5s, opacity 0.5s");
+    overlay.css("transition", "left 0.35s, top 0.35s, opacity 0.35s");
     if (overlay.attr("docked") == "left") {
       overlay.css("left", -1 * overlay.width() + 20);
     }
@@ -2064,7 +2064,7 @@ util.dockHide = function(overlay) {
     }
   }
   else {
-    overlay.css("transition", "opacity 0.5s");
+    overlay.css("transition", "opacity 0.35s");
   }
 }
 
@@ -6603,7 +6603,7 @@ function ui_popOut(options, content) {
       if (overlay.attr("fadeHide")) {
         overlay.css("opacity", "1.0");
       }
-      $(this).css("transition", "width 0.1s height 0.1s left 0.1s, top 0.1s, opacity 0.0s");
+      $(this).css("transition", "width 0.0s, height 0.0s, left 0.0s, top 0.0s, opacity 0.0s");
       if ($(this).attr("docked") == "left") {
         $(this).css("left", 0);
       }
@@ -6635,7 +6635,7 @@ function ui_popOut(options, content) {
           if (overlay.attr("fadeHide")) {
             overlay.css("opacity", "0");
           }
-          overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s, opacity 0.35s");
+          overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s, opacity 0.35s");
           if (overlay.attr("docked") == "left") {
             overlay.css("left", -1 * overlay.width() + 20);
           }
@@ -6723,25 +6723,25 @@ function ui_popOut(options, content) {
           if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
             overlay.attr("docked", "left");
             overlay.css("left", -1 * overlay.width() + 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
             overlay.attr("docked", "right");
             overlay.css("left", $(window).width() - 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
             overlay.attr("docked", "top");
             overlay.css("top", -1 * overlay.height() + 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
             overlay.attr("docked", "bottom");
             overlay.css("top", $(window).height() - 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
 
@@ -6826,25 +6826,25 @@ function ui_popOut(options, content) {
             if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
               overlay.attr("docked", "left");
               overlay.css("left", -1 * overlay.width() + 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
             else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
               overlay.attr("docked", "right");
               overlay.css("left", $(window).width() - 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
             else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
               overlay.attr("docked", "top");
               overlay.css("top", -1 * overlay.height() + 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
             else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
               overlay.attr("docked", "bottom");
               overlay.css("top", $(window).height() - 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
           }
@@ -6901,12 +6901,10 @@ function ui_popOut(options, content) {
   function(){
 
   });
-  if(options.pin == undefined)
-  {
+  if(options.pin == undefined) {
     options.pin = true;
   }
-  if (options.pin)
-  {
+  if (options.pin) {
     pin = genIcon("pushpin").appendTo(removeWrapper);
     pin.addClass("flexrow lrpadding subtitle flexmiddle middle");
     pin.attr("title", "Lock this menu down");
@@ -6930,18 +6928,14 @@ function ui_popOut(options, content) {
         pin.removeClass("highlight");
       }
 
-      if(overlay.attr("docked"))
-      {
+      if (overlay.attr("docked")) {
         pin.show();
       }
-      else{
+      else {
         pin.hide();
       }
     }, 0);
-
   }
-
-  var title;
   var title = $("<b>").appendTo(removeWrapper);
   title.css("pointer-events", "auto");
   title.css("overflow", "hidden");
@@ -9623,10 +9617,10 @@ layout.init = function() {
   layout.load();
 
 
-  layout.right();
-  layout.top();
+  layout.menu();
+  layout.nav();
   layout.players();
-  layout.bottom();
+  layout.hotbar();
 
   //if (!hasSecurity(getCookie("UserID"), "Game Master")) {
     var pointWrap = $("<div>")//.appendTo(layoutCtrl);
@@ -9678,7 +9672,7 @@ layout.init = function() {
 }
 
 
-layout.right = function() {
+layout.menu = function() {
   var rightContentWrap = $("<div>");
   rightContentWrap.addClass("flexcolumn flex");
   rightContentWrap.css("position", "relative");
@@ -9732,15 +9726,11 @@ layout.right = function() {
   gameOptions.addClass("lrpadding");
   gameOptions.attr("title", "Options");
   gameOptions.click(function(){
-    $("#cloud-files").hide();
-    $("#asset-manager").hide();
-    $("#media-player").hide();
-    $("#music-player").hide();
-    $("#quick-combat").hide();
-    $("#quick-help").hide();
-    $("#quick-chat").hide();
+    menuContent.children().hide();
+    mediaOptions.children().removeClass("outline highlight");
+    mediaOptions.children().children().addClass("dull");
     if ($("#game-options").length) {
-      $("#game-options").toggle();
+      $("#game-options").show();
       return;
     }
     else {
@@ -9979,251 +9969,81 @@ layout.right = function() {
   menuContent.addClass("flexcolumn flex white");
 
   var mediaOptions = $("<div>").appendTo(rightContent);
-  mediaOptions.addClass("flexrow flex flexbetween spadding");
+  mediaOptions.addClass("flexrow flex flexbetween");
   mediaOptions.css("font-size", "1.4em");
 
-  var media = genIcon("comment").appendTo(mediaOptions);
-  media.addClass("lrpadding create");
-  media.attr("title", "Event Log");
-  media.css("font-size", "1.4em");
-  media.click(function() {
-    $("#asset-manager").hide();
-    $("#media-player").hide();
-    $("#audio-player").hide();
-    $("#game-options").hide();
-    $("#quick-combat").hide();
-    $("#quick-help").hide();
-    $("#cloud-files").hide();
-    if ($("#quick-chat").length) {
-      $("#quick-chat").show();
+
+  function addSubmenu(icon, shorttitle, title, create, object) {
+    var iconWrap = $("<div>")
+    iconWrap.addClass("flexcolumn smooth flexmiddle link spadding");
+    iconWrap.attr("title", title);
+
+    var media = genIcon(icon).appendTo(iconWrap);
+    media.addClass("lrpadding dull");
+    media.css("font-size", "1.4em");
+
+    var titleText = $("<text>").appendTo(iconWrap);
+    titleText.addClass("dull");
+    titleText.text(shorttitle);
+    titleText.css("font-size", "12px");
+
+
+    var content;
+    if (object) {
+      content = sync.newApp(create).appendTo(menuContent);
+      game[object].addApp(content);
     }
     else {
-      var newApp = sync.newApp("ui_textBox", null, {}).appendTo(menuContent);
-      newApp.attr("id", "quick-chat");
-      /*var popOut = ui_popOut({
-        target : right,
-        align : "right",
-        title : "Cloud Files",
-        id : "cloud-files",
-        close : function(ev, ui) {
-          popOut.hide();
-          return false;
-        },
-        style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
-      }, newApp);
-      popOut.resizable();*/
+      content = sync.newApp(create, null, {}).appendTo(menuContent);
     }
-  });
+    content.hide();
+    if (create == "ui_renderHelp" && !$("#quick-help").length) {
+      content.attr("id", "quick-help");
+    }
+    iconWrap.click(function(){
+      menuContent.children().hide();
+      mediaOptions.children().removeClass("outline highlight");
+      mediaOptions.children().children().addClass("dull");
+      $(this).addClass("outline highlight");
+      $(this).children().removeClass("dull");
 
-  if (getCookie("UserID") && getCookie("UserID") != "Sandboxer") {
-    var media = genIcon("folder-open").appendTo(mediaOptions);
-    media.addClass("lrpadding create");
-    media.attr("title", "Resource Manager");
-    media.css("font-size", "1.4em");
-    media.click(function() {
-      $("#asset-manager").hide();
-      $("#media-player").hide();
-      $("#audio-player").hide();
-      $("#game-options").hide();
-      $("#quick-combat").hide();
-      $("#quick-help").hide();
-      $("#quick-chat").hide();
-      if ($("#cloud-files").length) {
-        $("#cloud-files").show();
-      }
-      else {
-        var newApp = sync.newApp("ui_fileBrowser", null, {cloud : true}).appendTo(menuContent);
-        newApp.attr("id", "cloud-files");
-        /*var popOut = ui_popOut({
-          target : right,
-          align : "right",
-          title : "Cloud Files",
-          id : "cloud-files",
-          close : function(ev, ui) {
-            popOut.hide();
-            return false;
-          },
-          style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
-        }, newApp);
-        popOut.resizable();*/
-      }
+
+      content.show();
     });
-  }
+    iconWrap.contextmenu(function(ev){
+      var newApp;
+      if (object) {
+        newApp = sync.newApp(create);
+        game[object].addApp(newApp);
 
-  var media = genIcon("globe").appendTo(mediaOptions);
-  media.addClass("create lrpadding");
-  media.attr("title", "Asset Manager");
-  media.css("font-size", "1.4em");
-  media.click(function() {
-    $("#cloud-files").hide();
-    $("#media-player").hide();
-    $("#audio-player").hide();
-    $("#game-options").hide();
-    $("#quick-combat").hide();
-    $("#quick-help").hide();
-    $("#quick-chat").hide();
-    if ($("#asset-manager").length) {
-      $("#asset-manager").show();
-    }
-    else {
-      var newApp = sync.newApp("ui_assetManager").appendTo(menuContent);
-      newApp.attr("id", "asset-manager");
-      game.entities.addApp(newApp);
-      /*var pop = ui_popOut({
-        target : right,
-        align : "right",
-        title : "Asset Manager",
-        id : "asset-manager",
-        minimze : true,
-        close : function(ev, ui) {
-          pop.hide();
-          return false;
-        },
-        style : {"width" : "400px", "height" : "600px"}
-      }, newApp);
-      pop.resizable();*/
-    }
-  });
-
-  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-    var media = genIcon("film").appendTo(mediaOptions);
-    media.addClass("lrpadding create");
-    media.attr("title", "Media Player");
-    media.css("font-size", "1.4em");
-    media.click(function() {
-      $("#cloud-files").hide();
-      $("#asset-manager").hide();
-      $("#audio-player").hide();
-      $("#game-options").hide();
-      $("#quick-combat").hide();
-      $("#quick-help").hide();
-      $("#quick-chat").hide();
-      if ($("#media-player").length) {
-        $("#media-player").show();
-      }
-      else {
-        var newApp = sync.newApp("ui_media", true).appendTo(menuContent);
-        newApp.attr("id", "media-player");
-        /*
-        var popOut = ui_popOut({
-          target : right,
-          align : "right",
-          title : "Youtube Player",
-          id : "media-player",
-          close : function(ev, ui) {
-            popOut.hide();
-            return false;
-          },
-          style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
-        }, newApp);
-        popOut.resizable();*/
-      }
-    });
-
-    var media = genIcon("music").appendTo(mediaOptions);
-    media.addClass("lrpadding create");
-    media.attr("title", "Audio Player");
-    media.css("font-size", "1.4em");
-    media.click(function() {
-      $("#cloud-files").hide();
-      $("#asset-manager").hide();
-      $("#media-player").hide();
-      $("#game-options").hide();
-      $("#quick-combat").hide();
-      $("#quick-help").hide();
-      $("#quick-chat").hide();
-      if ($("#audio-player").length) {
-        $("#audio-player").show();
-      }
-      else {
-        var newApp = sync.newApp("ui_audioPlayer").appendTo(menuContent);
-        newApp.attr("id", "audio-player");
-        game.config.addApp(newApp);
-        /*var popOut = ui_popOut({
-          target : right,
-          align : "right",
-          title : "Audio Player",
-          id : "audio-player",
-          close : function(ev, ui) {
-            popOut.hide();
-            return false;
-          },
+        var popup = ui_popOut({
+          target : $("body"),
+          title : title,
           style : {"width" : "400px", "height" : "400px"}
         }, newApp);
-        popOut.resizable();*/
+        popup.resizable();
       }
-    });
-  }
-  var media = genIcon("fire").appendTo(mediaOptions);
-  media.addClass("lrpadding create");
-  media.attr("title", "Combat Controls");
-  media.attr("id", "combat-button");
-  media.css("font-size", "1.4em");
-  media.click(function() {
-    $("#cloud-files").hide();
-    $("#asset-manager").hide();
-    $("#media-player").hide();
-    $("#game-options").hide();
-    $("#audio-player").hide();
-    $("#quick-help").hide();
-    $("#quick-chat").hide();
-    if ($("#quick-combat").length) {
-      $("#quick-combat").show();
-    }
-    else {
-      var newApp = sync.newApp("ui_combatControls").appendTo(menuContent);
-      newApp.attr("id", "quick-combat");
-      game.state.addApp(newApp);
-      /*var popOut = ui_popOut({
-        target : right,
-        align : "right",
-        title : "Audio Player",
-        id : "audio-player",
-        close : function(ev, ui) {
-          popOut.hide();
-          return false;
-        },
-        style : {"width" : "400px", "height" : "400px"}
-      }, newApp);
-      popOut.resizable();*/
-    }
-  });
 
-  var media = genIcon("question-sign").appendTo(mediaOptions);
-  media.addClass("lrpadding create");
-  media.attr("title", "Quick Help!");
-  media.attr("id", "help-button");
-  media.css("font-size", "1.4em");
-  media.click(function() {
-    $("#cloud-files").hide();
-    $("#asset-manager").hide();
-    $("#media-player").hide();
-    $("#game-options").hide();
-    $("#audio-player").hide();
-    $("#quick-combat").hide();
-    $("#quick-chat").hide();
-    if ($("#quick-help").length) {
-      $("#quick-help").show();
-    }
-    else {
-      var newApp = sync.newApp("ui_renderHelp", null, {}).appendTo(menuContent);
-      newApp.attr("id", "quick-help");
-      newApp.css("overflow", "hidden");
-      /*var popOut = ui_popOut({
-        target : right,
-        align : "right",
-        title : "Audio Player",
-        id : "audio-player",
-        close : function(ev, ui) {
-          popOut.hide();
-          return false;
-        },
-        style : {"width" : "400px", "height" : "400px"}
-      }, newApp);
-      popOut.resizable();*/
-    }
-  });
-  media.click();
+      return false;
+    });
+    return iconWrap;
+  }
+
+  addSubmenu("comment", "Chat", "Event Log", "ui_textBox").appendTo(mediaOptions);
+  addSubmenu("folder-open", "Files", "File Manager", "ui_fileBrowser").appendTo(mediaOptions);
+  addSubmenu("globe", "Assets", "Asset Manager", "ui_assetManager", "entities").appendTo(mediaOptions);
+
+  var combat = addSubmenu("fire", "Combat", "Combat Controls", "ui_combatControls", "state").appendTo(mediaOptions);
+  combat.attr("id", "combat-button");
+
+  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+    addSubmenu("music", "Music", "Music Manager", "ui_audioPlayer", "config").appendTo(mediaOptions);
+    addSubmenu("film", "Media", "Media Player", "ui_media").appendTo(mediaOptions);
+  }
+
+  var help = addSubmenu("question-sign", "Help", "Quick Help", "ui_renderHelp").appendTo(mediaOptions);
+  help.attr("id", "help-button");
+  help.click();
 
   var right = ui_popOut({
     target : $("body"),
@@ -10231,14 +10051,18 @@ layout.right = function() {
     noCss : true,
     allowDock : true,
     hideclose : true,
-    style : {"width" : assetTypes["assetPicker"].width, "height" : $(window).height() - 125, "transition" : "opacity 0.5s"}
-  }, rightContentWrap).addClass("foreground").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout"));
+    style : {"width" : assetTypes["assetPicker"].width, "height" : $(window).height() - 125}
+  }, rightContentWrap);
+  right.addClass("foreground");
+  right.attr("fadeHide", "true")
+  right.attr("docked-z", util.getMinZ(".ui-popout"));
+  right.attr("docked", "right");
+  right.attr("id", "main-menu");
   right.css("top", "50px");
   right.resizable();
-  right.attr("id", "main-menu");
 }
 
-layout.top = function(){
+layout.nav = function(){
   var topContent = $("<div>");
   topContent.addClass("flexrow flex alttext");
 
@@ -10375,44 +10199,36 @@ layout.top = function(){
 
 layout.players = function(){
   var bottomContent = $("<div>");
-  bottomContent.addClass("flexrow flex flexmiddle dragcontrol");
+  bottomContent.addClass("flexrow flex");
   bottomContent.css("position", "relative");
 
   //bottom right
   var app = sync.newApp("ui_players").appendTo(bottomContent);
-  app.addClass("flexmiddle");
-  app.attr("height", "50px");
-  app.css("min-height", "60px");
+  app.attr("height", 50);
   app.css("overflow-y", "hidden");
   app.css("pointer-events", "none");
+  app.css("border", "none");
   game.players.addApp(app);
-
+  game.players.listen["recenter"] = function(){
+    app.append("<div class='flex'></div>");
+    util.dockReveal(bottom);
+    return true;
+  };
   var bottom = ui_popOut({
     target : $("body"),
     align : "bottom-right",
     noCss : true,
-    allowDock : true,
     hideclose : true,
     style : {"transition" : "opacity 0.5s", "min-height" : "70px", "min-width" : "200px", "box-shadow" : "none"}
   }, bottomContent).attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout")).attr("locked", "true").attr("docked", "bottom");
   bottom.addClass("main-dock");
+  bottom.draggable("disable");
 }
 
-layout.bottom = function(){
+layout.hotbar = function(){
   var bottomContent = $("<div>");
   bottomContent.addClass("flexrow flex alttext");
   bottomContent.css("position", "relative");
-
-  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-    var cardWrap = $("<div>").appendTo(bottomContent);
-    cardWrap.addClass("flexrow flexmiddle");
-
-    var newApp = sync.newApp("ui_deck").appendTo(cardWrap);
-    newApp.addClass("flexmiddle lrmargin");
-    newApp.removeClass("application");
-    newApp.css("overflow", "hidden");
-    game.state.addApp(newApp);
-  }
 
   var cardWrap = $("<div>").appendTo(bottomContent);
   cardWrap.addClass("flexcolumn lrmargin");
@@ -10431,6 +10247,18 @@ layout.bottom = function(){
   newApp.css("margin-top", "4px");
   game.state.addApp(newApp);
 
+
+  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+    var cardWrap = $("<div>").appendTo(bottomContent);
+    cardWrap.addClass("flexrow flexmiddle");
+
+    var newApp = sync.newApp("ui_deck").appendTo(cardWrap);
+    newApp.addClass("flexmiddle lrmargin");
+    newApp.removeClass("application");
+    newApp.css("overflow", "hidden");
+    game.state.addApp(newApp);
+  }
+
   bottomContent.bind("paste", function(e) {
     // access the clipboard using the api
     // firefox won't call this if ctrl shift + v
@@ -10442,7 +10270,6 @@ layout.bottom = function(){
       }
     }
   });
-
 
   var bottom = ui_popOut({
     target : $("body"),
@@ -10894,17 +10721,25 @@ audioChannels.pause = function(index, ind){
 
 audioChannels.stop = function(index, ind){
   var trackData = game.config.data.tracks[index];
-  audioChannels.channels[index] = audioChannels.channels[index] || {s : {}};
-  if (audioChannels.channels[index].s && audioChannels.channels[index].s[ind]) {
-    audioChannels.channels[index].s[ind].pause();
-    audioChannels.channels[index].s[ind].load();
-    audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
-    audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+  if (!trackData || !trackData.s[ind]) {
+    if (audioChannels.channels[index].s[ind]) {
+      audioChannels.channels[index].s[ind].stop();
+      delete audioChannels.channels[index].s[ind];
+    }
   }
   else {
-    audioChannels.channels[index].s[ind] = new Audio(trackData.s[ind].src);
-    audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
-    audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+    audioChannels.channels[index] = audioChannels.channels[index] || {s : {}};
+    if (audioChannels.channels[index].s && audioChannels.channels[index].s[ind]) {
+      audioChannels.channels[index].s[ind].pause();
+      audioChannels.channels[index].s[ind].load();
+      audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
+      audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+    }
+    else {
+      audioChannels.channels[index].s[ind] = new Audio(trackData.s[ind].src);
+      audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
+      audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+    }
   }
 }
 
@@ -11059,6 +10894,12 @@ sync.render("ui_audioPlayer", function(obj, app, scope) {
       ui_prompt({
         target : $(this),
         click : function(){
+          for (var ind in obj.data.tracks[index].s) {
+            if (audioChannels.trackPaused(index) || audioChannels.trackPlaying(index)) {
+              audioChannels.stop(index, ind);
+              runCommand("music", {cmd : "stop", index : index, ind : ind});
+            }
+          }
           delete obj.data.tracks[index];
           obj.sync("updateConfig");
         }
@@ -11156,6 +10997,10 @@ sync.render("ui_audioPlayer", function(obj, app, scope) {
         ui_prompt({
           target : $(this),
           click : function(){
+            if (audioChannels.trackPaused(index) || audioChannels.trackPlaying(index)) {
+              audioChannels.stop(index, ind);
+              runCommand("music", {cmd : "stop", index : index, ind : ind});
+            }
             obj.data.tracks[index].s.splice(ind, 1);
             obj.sync("updateConfig");
           }
@@ -11270,10 +11115,10 @@ sync.render("ui_audioPlayer", function(obj, app, scope) {
 
 
   var optionsBar = $("<div>").appendTo(div);
-  optionsBar.addClass("foreground alttext flexmiddle");
-
+  optionsBar.addClass("background alttext flexmiddle outline");
 
   var newTrack = genIcon("music", "New Track").appendTo(optionsBar);
+  newTrack.css("font-size", "1.5em");
   newTrack.click(function(){
     var max = 0;
     for (var i in obj.data.tracks) {
@@ -21999,10 +21844,10 @@ sync.render("ui_players", function(obj, app, scope) {
 
   var data = obj.data;
   var div = $("<div>");
-  div.addClass("flexrow flexmiddle fit-y");
+  div.addClass("flexrow flexmiddle fit-xy");
 
   var playerList = $("<div>").appendTo(div);
-  playerList.addClass("flexrow flex flexmiddle fit-y");
+  playerList.addClass("flexrow flex flexmiddle fit-xy");
   playerList.sortable({
     handle : ".playerPlate",
     connectWith : ".dropContent",
@@ -22010,6 +21855,8 @@ sync.render("ui_players", function(obj, app, scope) {
       $(ui.item).css("height", scope.height || "50px");
     }
   });
+
+  playerList.append("<div class='flex'></div>");
 
   for (var id in data) {
     if (id != getCookie("UserID")) {
@@ -22042,14 +21889,20 @@ sync.render("ui_players", function(obj, app, scope) {
       pop.css("border", "1px solid rgba(0,0,0,0.2)");
     });
   }
-  else if (Object.keys(game.players.data).length <= 1) {
-    playerList.removeClass("flex flexmiddle");
-
-    var label = genIcon("log-in", "Click to invite your party");
+  else {
+    var label;
+    if (Object.keys(game.players.data).length <= 1) {
+      playerList.removeClass("flex flexmiddle");
+      label = genIcon("log-in", "Click to invite your party");
+    }
+    else {
+      label = genIcon("log-in");
+    }
     label.appendTo(div);
     label.addClass("lrpadding alttext flexmiddle flex");
     label.css("color", "white");
     label.css("pointer-events", "auto");
+    label.css("white-space", "nowrap");
     label.attr("title", "Copies an invite to clipboard");
     label.click(function(){
       var input = genInput({
@@ -22071,9 +21924,6 @@ sync.render("ui_players", function(obj, app, scope) {
       input.remove();
       sendAlert({text : "Invitation Copied!"});
     });
-  }
-  else {
-    playerList.addClass("");
   }
 
   return div;
@@ -22233,20 +22083,21 @@ sync.render("ui_playerToken", function(obj, app, scope) {
       var character = [
         {name : "Actions", click : function(){
           var actionObj = sync.dummyObj();
-          actionObj.data = {context : {c : getPlayerCharacter(playerPlate.attr("UserID")).id()}};
+          actionObj.data = {context : {c : obj.id()}};
 
           game.locals["actions"] = game.locals["actions"] || [];
           game.locals["actions"].push(actionObj);
 
-          var newApp = sync.newApp("ui_actions");
+          var newApp = sync.newApp("ui_hotActions");
+          newApp.addClass("padding");
           actionObj.addApp(newApp);
 
           var pop = ui_popOut({
             target : playerPlate,
             minimize : true,
             dragThickness : "0.5em",
-            title : "Actions",
-            align : "top"
+            title : getPlayerCharacterName(playerPlate.attr("UserID")),
+            align : "left"
           }, newApp);
           pop.resizable();
         }},
@@ -22544,7 +22395,7 @@ sync.render("ui_playerToken", function(obj, app, scope) {
       }
     }
 
-    var dropMenu = ui_dropMenu($(this), optionList, {id: "dice-app-selection-menu"});
+    var dropMenu = ui_dropMenu($(this), optionList, {id: "dice-app-selection-menu", align : "top"});
     ev.stopPropagation();
     ev.preventDefault();
     return false;
@@ -22584,14 +22435,13 @@ sync.render("ui_playerToken", function(obj, app, scope) {
 
     playerPlate.append("<div class='flex'></div>");
     name = $("<div>").appendTo(playerPlate);
-    name.addClass("smooth alttext flexmiddle lrpadding bold");
+    name.addClass("smooth alttext foreground outline flexmiddle lrpadding bold");
     if (scope.centered) {
       name.addClass("subtitle");
       name.css("max-width", "120px");
     }
     name.attr("displayName", player.displayName);
     name.attr("UserID", id);
-    name.css("background-color", "rgba(0,0,0,0.6)");
     name.css("z-index", "1");
     //if (hasSecurity(id, "Assistant Master")) {
     name.text(getPlayerCharacterName(id) || player.displayName);
@@ -22603,14 +22453,13 @@ sync.render("ui_playerToken", function(obj, app, scope) {
 
     playerPlate.append("<div class='flex'></div>");
     name = $("<div>").appendTo(playerPlate);
-    name.addClass("smooth alttext flexmiddle lrpadding bold");
+    name.addClass("smooth alttext foreground outline flexmiddle lrpadding bold");
     if (scope.centered) {
       name.addClass("subtitle");
       name.css("max-width", "120px");
     }
     name.attr("displayName", player.displayName);
     name.attr("UserID", id);
-    name.css("background-color", "rgba(0,0,0,0.6)");
     name.css("z-index", "1");
     if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
       name.text(getPlayerCharacterName(id) || player.displayName);
@@ -35412,7 +35261,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   }
 
   var creationBar = $("<div>").appendTo(div);
-  creationBar.addClass("flexrow flexbetween foreground spadding subtitle alttext");
+  creationBar.addClass("flexrow flexbetween foreground padding subtitle alttext");
 
   //if (scope.category == "b") {
   //}
@@ -36710,11 +36559,11 @@ sync.render("ui_assetList", function(entities, app, scope) {
         });
       }
       else if (obj.data.category == "c") {
-        var createChar = genIcon("user", "New Character").appendTo(wrap);
-        createChar.attr("title", "Create Character");
+        var createChar = genIcon("user", "New Actor").appendTo(wrap);
+        createChar.attr("title", "Create Actor");
         createChar.click(function(){
           createCharacter(duplicate(game.templates.character), null, null, true, true);
-          sendAlert({text : "Created Character"});
+          sendAlert({text : "Created Actor"});
           app.removeAttr("hideAssets");
           game.entities.update();
         });
@@ -64803,7 +64652,8 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
                   boardApi.pix.selections[key].wrap.y += deltaY;
                 }
               }
-              if (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length < 800 && obj.data.options.fog) {
+              // disabled until more optimized solution can be found
+              if (false && boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length < 800 && obj.data.options.fog) {
                 if (type == "p" && pData.eID && hasSecurity(getCookie("UserID"), "Visible", getEnt(pData.eID).data)) {
                   var range;
                   if (pData.eID && pData.o && pData.o.Sight) {
@@ -67529,7 +67379,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
           for (var i in game.config.data.players) {
             if (i != getCookie("UserID")) {
               actionsList.push({
-                name : game.config.data.players[i].displayName,
+                name : game.config.data.players[i].displayName || game.config.data.players[i].name,
                 attr : {uid : i},
                 click : function(ev, ui){
                   app.attr("UserID", ui.attr("uid"));

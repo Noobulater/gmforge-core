@@ -597,7 +597,7 @@ function ui_popOut(options, content) {
       if (overlay.attr("fadeHide")) {
         overlay.css("opacity", "1.0");
       }
-      $(this).css("transition", "width 0.1s height 0.1s left 0.1s, top 0.1s, opacity 0.0s");
+      $(this).css("transition", "width 0.0s, height 0.0s, left 0.0s, top 0.0s, opacity 0.0s");
       if ($(this).attr("docked") == "left") {
         $(this).css("left", 0);
       }
@@ -629,7 +629,7 @@ function ui_popOut(options, content) {
           if (overlay.attr("fadeHide")) {
             overlay.css("opacity", "0");
           }
-          overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s, opacity 0.35s");
+          overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s, opacity 0.35s");
           if (overlay.attr("docked") == "left") {
             overlay.css("left", -1 * overlay.width() + 20);
           }
@@ -717,25 +717,25 @@ function ui_popOut(options, content) {
           if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
             overlay.attr("docked", "left");
             overlay.css("left", -1 * overlay.width() + 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
             overlay.attr("docked", "right");
             overlay.css("left", $(window).width() - 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
             overlay.attr("docked", "top");
             overlay.css("top", -1 * overlay.height() + 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
             overlay.attr("docked", "bottom");
             overlay.css("top", $(window).height() - 20);
-            overlay.css("transition", "width 0.35s height 0.35s left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
 
@@ -820,25 +820,25 @@ function ui_popOut(options, content) {
             if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
               overlay.attr("docked", "left");
               overlay.css("left", -1 * overlay.width() + 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
             else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
               overlay.attr("docked", "right");
               overlay.css("left", $(window).width() - 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
             else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
               overlay.attr("docked", "top");
               overlay.css("top", -1 * overlay.height() + 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
             else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
               overlay.attr("docked", "bottom");
               overlay.css("top", $(window).height() - 20);
-              overlay.css("transition", "left 0.35s, top 0.35s");
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
               overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
             }
           }
@@ -895,12 +895,10 @@ function ui_popOut(options, content) {
   function(){
 
   });
-  if(options.pin == undefined)
-  {
+  if(options.pin == undefined) {
     options.pin = true;
   }
-  if (options.pin)
-  {
+  if (options.pin) {
     pin = genIcon("pushpin").appendTo(removeWrapper);
     pin.addClass("flexrow lrpadding subtitle flexmiddle middle");
     pin.attr("title", "Lock this menu down");
@@ -924,18 +922,14 @@ function ui_popOut(options, content) {
         pin.removeClass("highlight");
       }
 
-      if(overlay.attr("docked"))
-      {
+      if (overlay.attr("docked")) {
         pin.show();
       }
-      else{
+      else {
         pin.hide();
       }
     }, 0);
-
   }
-
-  var title;
   var title = $("<b>").appendTo(removeWrapper);
   title.css("pointer-events", "auto");
   title.css("overflow", "hidden");

@@ -1282,7 +1282,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   }
 
   var creationBar = $("<div>").appendTo(div);
-  creationBar.addClass("flexrow flexbetween foreground spadding subtitle alttext");
+  creationBar.addClass("flexrow flexbetween foreground padding subtitle alttext");
 
   //if (scope.category == "b") {
   //}

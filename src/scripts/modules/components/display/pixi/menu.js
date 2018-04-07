@@ -822,7 +822,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
           for (var i in game.config.data.players) {
             if (i != getCookie("UserID")) {
               actionsList.push({
-                name : game.config.data.players[i].displayName,
+                name : game.config.data.players[i].displayName || game.config.data.players[i].name,
                 attr : {uid : i},
                 click : function(ev, ui){
                   app.attr("UserID", ui.attr("uid"));

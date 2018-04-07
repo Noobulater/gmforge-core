@@ -1141,11 +1141,11 @@ sync.render("ui_assetList", function(entities, app, scope) {
         });
       }
       else if (obj.data.category == "c") {
-        var createChar = genIcon("user", "New Character").appendTo(wrap);
-        createChar.attr("title", "Create Character");
+        var createChar = genIcon("user", "New Actor").appendTo(wrap);
+        createChar.attr("title", "Create Actor");
         createChar.click(function(){
           createCharacter(duplicate(game.templates.character), null, null, true, true);
-          sendAlert({text : "Created Character"});
+          sendAlert({text : "Created Actor"});
           app.removeAttr("hideAssets");
           game.entities.update();
         });

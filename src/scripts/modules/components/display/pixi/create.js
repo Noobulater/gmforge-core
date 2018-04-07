@@ -562,7 +562,8 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
                   boardApi.pix.selections[key].wrap.y += deltaY;
                 }
               }
-              if (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length < 800 && obj.data.options.fog) {
+              // disabled until more optimized solution can be found
+              if (false && boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length < 800 && obj.data.options.fog) {
                 if (type == "p" && pData.eID && hasSecurity(getCookie("UserID"), "Visible", getEnt(pData.eID).data)) {
                   var range;
                   if (pData.eID && pData.o && pData.o.Sight) {

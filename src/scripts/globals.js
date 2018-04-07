@@ -12,7 +12,7 @@ var game = {
   components : null, // list of all the ui components a player has access to
   actions : null, // list of all the actions a player has access to
   templates : {}, // data structures specific to game
-  version : 1 // the version for the patcher to check against
+  version : 2 // the version for the patcher to check against
 };
 
 function setupGame() {

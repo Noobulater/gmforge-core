@@ -33,17 +33,25 @@ audioChannels.pause = function(index, ind){
 
 audioChannels.stop = function(index, ind){
   var trackData = game.config.data.tracks[index];
-  audioChannels.channels[index] = audioChannels.channels[index] || {s : {}};
-  if (audioChannels.channels[index].s && audioChannels.channels[index].s[ind]) {
-    audioChannels.channels[index].s[ind].pause();
-    audioChannels.channels[index].s[ind].load();
-    audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
-    audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+  if (!trackData || !trackData.s[ind]) {
+    if (audioChannels.channels[index].s[ind]) {
+      audioChannels.channels[index].s[ind].stop();
+      delete audioChannels.channels[index].s[ind];
+    }
   }
   else {
-    audioChannels.channels[index].s[ind] = new Audio(trackData.s[ind].src);
-    audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
-    audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+    audioChannels.channels[index] = audioChannels.channels[index] || {s : {}};
+    if (audioChannels.channels[index].s && audioChannels.channels[index].s[ind]) {
+      audioChannels.channels[index].s[ind].pause();
+      audioChannels.channels[index].s[ind].load();
+      audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
+      audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+    }
+    else {
+      audioChannels.channels[index].s[ind] = new Audio(trackData.s[ind].src);
+      audioChannels.channels[index].s[ind].volume = trackData.s[ind].v;
+      audioChannels.channels[index].s[ind].loop = trackData.s[ind].l;
+    }
   }
 }
 
@@ -198,6 +206,12 @@ sync.render("ui_audioPlayer", function(obj, app, scope) {
       ui_prompt({
         target : $(this),
         click : function(){
+          for (var ind in obj.data.tracks[index].s) {
+            if (audioChannels.trackPaused(index) || audioChannels.trackPlaying(index)) {
+              audioChannels.stop(index, ind);
+              runCommand("music", {cmd : "stop", index : index, ind : ind});
+            }
+          }
           delete obj.data.tracks[index];
           obj.sync("updateConfig");
         }
@@ -295,6 +309,10 @@ sync.render("ui_audioPlayer", function(obj, app, scope) {
         ui_prompt({
           target : $(this),
           click : function(){
+            if (audioChannels.trackPaused(index) || audioChannels.trackPlaying(index)) {
+              audioChannels.stop(index, ind);
+              runCommand("music", {cmd : "stop", index : index, ind : ind});
+            }
             obj.data.tracks[index].s.splice(ind, 1);
             obj.sync("updateConfig");
           }
@@ -409,10 +427,10 @@ sync.render("ui_audioPlayer", function(obj, app, scope) {
 
 
   var optionsBar = $("<div>").appendTo(div);
-  optionsBar.addClass("foreground alttext flexmiddle");
-
+  optionsBar.addClass("background alttext flexmiddle outline");
 
   var newTrack = genIcon("music", "New Track").appendTo(optionsBar);
+  newTrack.css("font-size", "1.5em");
   newTrack.click(function(){
     var max = 0;
     for (var i in obj.data.tracks) {
