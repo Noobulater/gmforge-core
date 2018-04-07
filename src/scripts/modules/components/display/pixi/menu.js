@@ -24,11 +24,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
   newMenu.css("left", "8%");
   newMenu.css("bottom", "8%");
   newMenu.css("max-width", "84%");
-  if ($(".main-dock").length) {
-    if ($($(".main-dock")[2]).attr("locked")) {
-      newMenu.css("max-width", (app.width() * 0.84) - $($(".main-dock")[2]).width());
-    }
-  }
+
   if (!opaque) {
     newMenu.css("opacity", "0.15");
     newMenu.css("transition", "opacity 0.1s");

@@ -280,6 +280,7 @@ sync.obj = function(id, defaultApps) {
   rObj.removeApp = function(newApp){
     for (var index in rObj["_apps"]) {
       if (rObj["_apps"][index] == newApp.attr("id")) {
+        console.log("spliced");
         rObj["_apps"].splice(index, 1);
       }
     }
@@ -1374,7 +1375,6 @@ sync.evalDice = function(term) {
       for (var i=0; i<(dice[1] || 1); i++) {
         values.push(Math.ceil(chance.natural({min: 1, max: dice[2]})));
       }
-      console.log(dice);
       if (dice[3]) {
         //descending order;
         values.sort(function(a,b){
@@ -1387,7 +1387,6 @@ sync.evalDice = function(term) {
           return 0;
         });
         if (dice[3][0] == "k") {
-          console.log(values.toString());
           if (dice[4]) {
             var amount = dice[3].substring(2, dice[3].length);
             if (dice[4] == "h") {

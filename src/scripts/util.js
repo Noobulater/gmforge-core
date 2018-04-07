@@ -559,7 +559,7 @@ util.dockReveal = function(overlay) {
     var max = util.getMaxZ(".ui-popout");
     overlay.css("z-index", max+1);
     overlay.css("transition", "left 0.35s, top 0.35s, opacity 0.35s");
-    if (overlay.hasClass("main-dock")) {
+    if (overlay.attr("fadeHide")) {
       overlay.css("opacity", 1);
     }
     if (overlay.attr("docked") == "left") {

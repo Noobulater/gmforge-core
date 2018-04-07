@@ -327,27 +327,13 @@ sync.render("ui_combatControls", function(obj, app, scope){
                         }
                       }
                     }
-                    layout.coverlay("my-turn-"+$(this).attr("UserID"));
                   });
-                  if ($("#quick-combat").length == 0) {
+                  if ($("#main-menu").length && $("#main-menu").css("opacity") == 0 && $("#main-menu").attr("docked") && !$("#main-menu").attr("locked")) {
                     $("#combat-button").click();
-                  }
-                  else {
-                    $("#cloud-files").hide();
-                    $("#asset-manager").hide();
-                    $("#media-player").hide();
-                    $("#game-options").hide();
-                    $("#audio-player").hide();
-                    $("#quick-combat").show();
-                  }
-                  if (!$("#main-menu").attr("docked")) {
                     util.dockReveal($("#main-menu"));
                   }
                 }
               }
-            }
-            else {
-              $("#my-turn-"+key).remove();
             }
           }
         }

@@ -16,6 +16,9 @@ sync.render("ui_players", function(obj, app, scope) {
   var div = $("<div>");
   div.addClass("flexrow flexmiddle fit-xy");
 
+  $("#player-list").css("left", "");
+  $("#player-list").css("right", "0");
+
   var playerList = $("<div>").appendTo(div);
   playerList.addClass("flexrow flex flexmiddle fit-xy");
   playerList.sortable({
@@ -64,12 +67,13 @@ sync.render("ui_players", function(obj, app, scope) {
     if (Object.keys(game.players.data).length <= 1) {
       playerList.removeClass("flex flexmiddle");
       label = genIcon("log-in", "Click to invite your party");
+      label.addClass("flex");
     }
     else {
       label = genIcon("log-in");
     }
     label.appendTo(div);
-    label.addClass("lrpadding alttext flexmiddle flex");
+    label.addClass("lrpadding alttext flexmiddle");
     label.css("color", "white");
     label.css("pointer-events", "auto");
     label.css("white-space", "nowrap");

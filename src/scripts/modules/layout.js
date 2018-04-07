@@ -2273,8 +2273,10 @@ layout.menu = function() {
       $(this).addClass("outline highlight");
       $(this).children().removeClass("dull");
 
-
       content.show();
+      if (create == "ui_textBox") {
+        game.logs.update();
+      }
     });
     iconWrap.contextmenu(function(ev){
       var newApp;
@@ -2295,8 +2297,13 @@ layout.menu = function() {
     return iconWrap;
   }
 
-  addSubmenu("comment", "Chat", "Event Log", "ui_textBox").appendTo(mediaOptions);
-  addSubmenu("folder-open", "Files", "File Manager", "ui_fileBrowser").appendTo(mediaOptions);
+  var chat = addSubmenu("comment", "Chat", "Event Log", "ui_textBox").appendTo(mediaOptions);
+  chat.attr("id", "chat-button");
+  chat.click();
+
+  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+    addSubmenu("folder-open", "Files", "File Manager", "ui_fileBrowser").appendTo(mediaOptions);
+  }
   addSubmenu("globe", "Assets", "Asset Manager", "ui_assetManager", "entities").appendTo(mediaOptions);
 
   var combat = addSubmenu("fire", "Combat", "Combat Controls", "ui_combatControls", "state").appendTo(mediaOptions);
@@ -2309,7 +2316,6 @@ layout.menu = function() {
 
   var help = addSubmenu("question-sign", "Help", "Quick Help", "ui_renderHelp").appendTo(mediaOptions);
   help.attr("id", "help-button");
-  help.click();
 
   var right = ui_popOut({
     target : $("body"),
@@ -2489,6 +2495,7 @@ layout.players = function(){
   }, bottomContent).attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout")).attr("locked", "true").attr("docked", "bottom");
   bottom.addClass("main-dock");
   bottom.draggable("disable");
+  bottom.attr("id", "player-list");
 }
 
 layout.hotbar = function(){

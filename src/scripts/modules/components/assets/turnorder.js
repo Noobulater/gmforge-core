@@ -478,7 +478,6 @@ sync.render("ui_combat", function(obj, app, scope) {
                             }
                           }
                         }
-                        console.log("change");
                         obj.data.combat.current = inits[newTurn];
                         obj.sync("updateCombatState");
                       }
@@ -530,7 +529,6 @@ sync.render("ui_combat", function(obj, app, scope) {
       handle : ".nothing",
       connectWith : ".dropContent",
       over : function(ev, ui){
-        console.log("oer");
         if ($(ui.item).attr("index")) {
           if (!$("#"+app.attr("id")+"-drag-overlay").length) {
             var olay = layout.overlay({

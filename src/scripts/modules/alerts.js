@@ -119,7 +119,14 @@ function sendAlert(options) {
   }
 
   if (options.player) {
-    util.dockReveal($($(".main-dock")[2]));
+    if ($("#main-menu").length && $("#main-menu").css("opacity") == 0 && $("#main-menu").attr("docked") && !$("#main-menu").attr("locked")) {
+      util.dockReveal($("#main-menu"));
+      $("#chat-button").click();
+    }
+    else {
+      $("#chat-button").addClass("highlight");
+    }
+
     return alert;
     alert.css("padding", "0");
     alert.css("background-color", "white");

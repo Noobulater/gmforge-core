@@ -2,7 +2,6 @@ var snd_diceRoll;
 
 $(document).ready(function() {
   // firefox fix
-  setupGame();
 
   snd_diceRoll = new Audio("/sounds/dice.mp3");
   // connect to local server
@@ -105,6 +104,8 @@ var resizeHooks = {};
 $(window).resize(function() {
   $("#splash-screen").width($(window).width());
   $("#splash-screen").height($(window).height());
+  $("#player-list").css("left", "");
+  $("#player-list").css("right", "0");
   $("body").find(".application[ui-name='ui_board']").each(function(){
     $(this).removeAttr("divWidth");
     $(this).removeAttr("divHeight");

@@ -111,23 +111,25 @@ sync.render("_logs", function(obj, app, scope) {
   chatListed.css("overflow-y", "scroll");
   chatListed.attr("_lastScrollTop", app.attr("_lastScrollTop"));
   if (app.attr("freeScroll") != "true") {
-    setTimeout(function(){chatListed.attr("_lastScrollTop", Number(chatListed[0].scrollHeight) + 100); chatListed.scrollTop(Number(chatListed[0].scrollHeight) + 100);}, 10);
+    setTimeout(function(){chatListed.attr("_lastScrollTop", Number(chatListed[0].scrollHeight) + 100); chatListed.scrollTop(Number(chatListed[0].scrollHeight) + 100); app.removeAttr("freeScroll"); }, 10);
   }
 
   var chatPlate = $("<div>").appendTo(chatListed);
 
   chatListed.scroll(function() {
-    app.attr("_lastScrollTop", $(this).scrollTop());
-    if (Math.round($(this).scrollTop() + $(this).outerHeight()) < $(this)[0].scrollHeight) {
-      app.attr("freeScroll", "true");
+    if (app.is(":visible")) {
+      app.attr("_lastScrollTop", $(this).scrollTop());
+      if (Math.round($(this).scrollTop() + $(this).outerHeight()) < $(this)[0].scrollHeight) {
+        app.attr("freeScroll", "true");
+      }
+      else {
+        app.removeAttr("freeScroll");
+        optionsBar.removeClass("highlight");
+        optionsBar.addClass("foreground");
+      }
+      app.attr("_lastScrollLeft", $(this).scrollLeft());
+      $(this).attr("_lastScrollTop", $(this).scrollTop());
     }
-    else {
-      app.removeAttr("freeScroll");
-      optionsBar.removeClass("highlight");
-      optionsBar.addClass("foreground");
-    }
-    app.attr("_lastScrollLeft", $(this).scrollLeft());
-    $(this).attr("_lastScrollTop", $(this).scrollTop());
   });
 
   function build(list, events, app) {
@@ -704,8 +706,7 @@ sync.render("ui_textBox", function(obj, app, scope){
     chatApp.css("overflow-x", "none");
     chatApp.css("overflow-y", "none");
     //chatApp.attr("show-Game", "false");
-
-    game.logs.addApp(chatApp);
+    setTimeout(function(){game.logs.addApp(chatApp);}, 10);
   }
   var outlinebottom = $("<div>").appendTo(div);
   outlinebottom.addClass("outlinebottom");

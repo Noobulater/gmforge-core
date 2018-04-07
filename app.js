@@ -324,7 +324,7 @@
     app.get('/game', function(req, res){
       res.render('index', {
         layout : "game",
-        title : "GM Forge - Worlds",
+        title : "GM Forge",
       });
     });
 
@@ -358,7 +358,7 @@
         res.cookie("UserID", req.query.userID, 9999999999999999);
         res.render('game', {
           layout : "game",
-          title : "GM Forge - Worlds",
+          title : "GM Forge",
         });
       }
       else {
