@@ -1,4 +1,22 @@
-//cb callback
+Glyph_ToAwesome = {
+  "question-sign":"question-circle",
+  "menu-hamburger":"bars",
+  "remove":"times",
+  "log-in":"link",
+  "refresh":"sync",
+  "folder-close":"folder",
+  "cloud-upload":"cloud-upload-alt",
+  "pushpin":"thumbtack",
+  "flash":"bolt",
+  "ok":"check",
+  "eye-open":"eye",
+  "eye-close":"eye-slash",
+  "warning-sign":"exclamation-triangle",
+  "sunglasses":"bolt",
+  "resize-full":"expand",
+  "facetime-video":"video",
+}
+
 function genIcon(options, name, reverse) {
   if (!(options instanceof Object)) {
     options = {icon : options, text : name, reverse : reverse};
@@ -6,9 +24,14 @@ function genIcon(options, name, reverse) {
   var link = $('<a>');
 
   var icon;
+  if(Glyph_ToAwesome[options.icon])
+  {
+    options.icon = Glyph_ToAwesome[options.icon];
+  }
+
   if (options.reverse || reverse) {
     icon = $('<span>').appendTo(link);
-    icon.addClass("glyphicon glyphicon-" + options.icon);
+    icon.addClass("fa fa-fw fa-" + options.icon);
     if (options.text) {
       if (options.icon) {
         icon.css("padding-right", "0.25em");
@@ -21,7 +44,7 @@ function genIcon(options, name, reverse) {
       link.append(options.text);
     }
     icon = $('<span>');
-    icon.addClass("glyphicon glyphicon-" + options.icon);
+    icon.addClass("fa fa-fw fa-" + options.icon);
     if (options.text && options.icon) {
       icon.css("padding-left", "0.25em");
     }
@@ -32,9 +55,19 @@ function genIcon(options, name, reverse) {
   else if (!options.reverse && !reverse) {
     icon.appendTo(link);
   }
+  if(!options.icon)
+  {
+    icon.css("visibility","hidden");
+  }
+  link.icon = options.icon
   link.changeIcon = function(newIcon) {
-    icon.removeClass(icon.attr("class"));
-    icon.addClass("glyphicon glyphicon-" + newIcon);
+    icon.removeClass("fa-"+link.icon);
+    if(Glyph_ToAwesome[newIcon])
+    {
+      newIcon = Glyph_ToAwesome[newIcon];
+    }
+    link.icon = newIcon;
+    icon.addClass("fa-" + newIcon);
   }
 
   return link;
