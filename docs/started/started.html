@@ -1,0 +1,66 @@
+<div>
+  <div id='video-help'>
+    <iframe width="400" height="200" src="https://www.youtube.com/embed/B2DLVbuVhK0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+  <div id='nav-list'>
+
+  </div>
+</div>
+
+<script>
+function _buildNavList(){
+  $("#nav-list").empty();
+  var categories = {
+    "Setting up an Encounter" : {
+      "Creating a Character" : "https://files.gmforge.io/file/help/started/create/characters.html",
+      "Basic Map Setup" : "",
+      "Adding Characters to a Map" : "",
+      "Writing Notes" : "",
+    },
+    "Running An Encounter" : {
+      "Inviting Players" : "https://files.gmforge.io/file/help/play/players.html",
+      "Using the Combat Tracker" : "",
+      "Rolling Dice" : "",
+      "Using Dice" : "",
+      "Sending Handouts" : "",
+    },
+    "Controlling an Encounter" : {
+      "Access Control" : "https://files.gmforge.io/file/help/started/control/access.html",
+      "Map Pieces / Player Vision" : 0,//"https://files.gmforge.io/file/help/started/create/resources.html",
+      "Tabs" : 0,//"https://files.gmforge.io/file/help/started/create/resources.html",
+      "Resource Pages" : 0,//"https://files.gmforge.io/file/help/started/create/resources.html",
+    },
+    "Other Tips" : {
+      "Custom Files" : "https://files.gmforge.io/file/help/started/files.html",
+    }
+  }
+  function buildList(categories){
+    var div = $("<ul>");
+
+    for (var key in categories) {
+      if (categories[key] instanceof Object) {
+        div.append("<div class='bold fit-x'>"+key+"</div>");
+        div.append(buildList(categories[key]).css("margin-left", "0.5em"));
+      }
+      else {
+        var link = $("<li>").appendTo(div);
+        link.attr("href", categories[key]);
+        link.text(key);
+        if (!categories[key]) {
+          link.addClass("dull");
+        }
+        else {
+          link.addClass("link");
+          link.click(function(){
+            $("#help-body").load($(this).attr("href"));
+          });
+        }
+      }
+    }
+
+    return div;
+  }
+  buildList(categories).appendTo("#nav-list");
+}
+_buildNavList();
+</script>

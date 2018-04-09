@@ -2238,6 +2238,22 @@ layout.menu = function() {
   mediaOptions.addClass("flexrow flex flexbetween");
   mediaOptions.css("font-size", "1.4em");
 
+  // moved it up here to ignore popup auto focus on inputs
+  var right = ui_popOut({
+    target : $("body"),
+    align : "top-right",
+    noCss : true,
+    allowDock : true,
+    hideclose : true,
+    style : {"width" : assetTypes["assetPicker"].width, "height" : $(window).height() - 125}
+  }, rightContentWrap);
+  right.addClass("foreground");
+  right.attr("fadeHide", "true")
+  right.attr("docked-z", util.getMinZ(".ui-popout"));
+  right.attr("docked", "right");
+  right.attr("id", "main-menu");
+  right.css("top", "50px");
+  right.resizable();
 
   function addSubmenu(icon, shorttitle, title, create, object) {
     var iconWrap = $("<div>")
@@ -2250,9 +2266,8 @@ layout.menu = function() {
 
     var titleText = $("<text>").appendTo(iconWrap);
     titleText.addClass("dull");
-    titleText.text(shorttitle);
     titleText.css("font-size", "12px");
-
+    titleText.text(shorttitle);
 
     var content;
     if (object) {
@@ -2265,6 +2280,7 @@ layout.menu = function() {
     content.hide();
     if (create == "ui_renderHelp" && !$("#quick-help").length) {
       content.attr("id", "quick-help");
+      content.css("overflow", "hidden");
     }
     iconWrap.click(function(){
       menuContent.children().hide();
@@ -2316,22 +2332,6 @@ layout.menu = function() {
 
   var help = addSubmenu("question-sign", "Help", "Quick Help", "ui_renderHelp").appendTo(mediaOptions);
   help.attr("id", "help-button");
-
-  var right = ui_popOut({
-    target : $("body"),
-    align : "top-right",
-    noCss : true,
-    allowDock : true,
-    hideclose : true,
-    style : {"width" : assetTypes["assetPicker"].width, "height" : $(window).height() - 125}
-  }, rightContentWrap);
-  right.addClass("foreground");
-  right.attr("fadeHide", "true")
-  right.attr("docked-z", util.getMinZ(".ui-popout"));
-  right.attr("docked", "right");
-  right.attr("id", "main-menu");
-  right.css("top", "50px");
-  right.resizable();
 }
 
 layout.nav = function(){
@@ -2516,8 +2516,9 @@ layout.hotbar = function(){
 
   var newApp = sync.newApp("ui_hand").appendTo(cardWrap);
   newApp.attr("UserID", getCookie("UserID"));
-  newApp.css("overflow", "hidden");
+  newApp.css("overflow", "visible");
   newApp.css("margin-top", "4px");
+  newApp.css("border", "none");
   game.state.addApp(newApp);
 
 
@@ -2528,7 +2529,7 @@ layout.hotbar = function(){
     var newApp = sync.newApp("ui_deck").appendTo(cardWrap);
     newApp.addClass("flexmiddle lrmargin");
     newApp.removeClass("application");
-    newApp.css("overflow", "hidden");
+    newApp.css("overflow", "visible");
     game.state.addApp(newApp);
   }
 
@@ -2549,8 +2550,14 @@ layout.hotbar = function(){
     align : "bottom-left",
     noCss : true,
     hideclose : true,
+    id : "hot-bar",
     style : {"max-width" : "60vw", "transition" : "opacity 0.5s"}
   }, bottomContent).attr("docked", "bottom").addClass("background").attr("fadeHide", "true").attr("docked-z", util.getMinZ(".ui-popout")).attr("locked", true);
+
+  game.players.listen["recenterhot"] = function(){
+    setTimeout(function(){util.dockReveal($("#hot-bar"));}, 10);
+    return true;
+  };
 
   bottom.draggable("disable");
   bottom.addClass("main-dock");

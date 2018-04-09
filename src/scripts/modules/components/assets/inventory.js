@@ -217,7 +217,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
       }
     });
 
-    var load = genIcon("cloud-download").appendTo(options);
+    var load = genIcon("briefcase").appendTo(options);
     load.addClass("lrpadding subtitle");
     load.attr("Load an Existing Item");
     load.click(function(){
@@ -228,7 +228,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
         ui_popOut({
           target : $("body"),
           id : "item-picker",
-          title : "This menu will be rebuilt soon...",
+          title : "Load Existing Item",
           style : {"width" : "80vw", "height" : "80vh"}
         }, content).resizable();
       }
@@ -245,24 +245,26 @@ sync.render("ui_renderItem", function(obj, app, scope){
     obj.update();
   });
 
-  var security = genIcon("lock").appendTo(options);
-  security.addClass("subtitle");
-  security.attr("index", index);
-  security.attr("title", "Configure who has access to this object");
-  security.css("margin-right", "4px");
-  security.click(function(ev){
-    obj.data._s = obj.data._s || {default : 1};
+  if (hasSecurity(getCookie("UserID"), "Rights")) {
+    var security = genIcon("lock").appendTo(options);
+    security.addClass("subtitle");
+    security.attr("index", index);
+    security.attr("title", "Configure who has access to this object");
+    security.css("margin-right", "4px");
+    security.click(function(ev){
+      obj.data._s = obj.data._s || {default : 1};
 
-    var content = sync.newApp("ui_rights");
-    content.attr("viewOnly", scope.viewOnly);
-    obj.addApp(content);
+      var content = sync.newApp("ui_rights");
+      content.attr("viewOnly", scope.viewOnly);
+      obj.addApp(content);
 
-    var frame = ui_popOut({
-      target : $(this),
-      prompt : true,
-      id : "ui-rights-dialog",
-    }, content);
-  });
+      var frame = ui_popOut({
+        target : $(this),
+        prompt : true,
+        id : "ui-rights-dialog",
+      }, content);
+    });
+  }
 
   if (!scope.viewOnly) {
     var stylePage = genIcon("tint").appendTo(options);

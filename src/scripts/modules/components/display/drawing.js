@@ -1070,6 +1070,7 @@ sync.render("ui_drawingControls", function(obj, app, scope){
         drawingMode.click(function(){
           if (data.drawing != "line") {
             data.drawing = "line";
+            sendAlert({text : "Chain Walls by holding ctrl"});
           }
           else {
             delete data.drawing;

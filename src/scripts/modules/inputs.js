@@ -549,6 +549,12 @@ function ui_dropMenu(target, options, style) {
       else {
         overlay.css("left", offsets.left + target.outerWidth());
       }
+
+      if (!style.child) {
+        x = cursorX-10;
+        y = cursorY-10;
+      }
+
       if (x+overlay.outerWidth() > $(window).outerWidth()) {
         x = x - ((x+overlay.outerWidth())-$(window).outerWidth());
       }
@@ -566,6 +572,14 @@ function ui_dropMenu(target, options, style) {
     }
   }
   return overlay;
+}
+
+var cursorX;
+var cursorY;
+// hacky way of doing this, but i'm not updating everything
+document.onmousemove = function(e){
+  cursorX = e.pageX;
+  cursorY = e.pageY;
 }
 
 function ui_popOut(options, content) {

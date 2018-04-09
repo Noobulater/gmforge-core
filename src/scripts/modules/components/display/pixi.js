@@ -2226,9 +2226,7 @@ sync.render("ui_board", function(obj, app, scope) {
 
                   $(".ui-dropmenu-class").remove();
                   setTimeout(function(){
-                    var pop = ui_dropMenu(board, actions, {align : "center"});
-                    pop.css("top", ev.pageY-10);
-                    pop.css("left", ev.pageX-10);
+                    var pop = ui_dropMenu(board, actions, {});
                   }, 10);
                   ev.preventDefault();
                 }

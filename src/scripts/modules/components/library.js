@@ -157,11 +157,11 @@ sync.render("ui_library", function(obj, app, scope) {
   obj.update();
   });*/
 
-  var newApp = sync.newApp("ui_libraryBuild").appendTo(div);
-  obj.addApp(newApp);
-
   var optionsBar = $("<div>").appendTo(div);
   optionsBar.addClass("flexcolumn foreground spadding subtitle");
+
+  var newApp = sync.newApp("ui_libraryBuild").appendTo(div);
+  obj.addApp(newApp);
 
   var custom = $("<div>").appendTo(optionsBar);
   custom.addClass("flexcolumn smooth hover2 white flex alttext");

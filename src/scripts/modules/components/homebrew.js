@@ -193,6 +193,7 @@ sync.render("ui_homebrew", function(obj, app, scope){
       game.locals["homebrew"].update();
       sync.update(game.locals["homebrew"].data.previewPage, newObj, target);
     };
+    game.locals["homebrew"].data.templates.generation = "\n";
   }
   var obj = game.locals["homebrew"];
 
@@ -605,6 +606,8 @@ sync.render("ui_homebrew", function(obj, app, scope){
         button.append("Confirm (Can't be undone)");
         button.click(function(){
           var template = duplicate(obj.data.previewChar.data);
+          obj.data.templates.display.sheet.calc = template._calc;
+
           delete template._d;
           delete template._s;
           delete template._c;
@@ -619,6 +622,8 @@ sync.render("ui_homebrew", function(obj, app, scope){
           }
           obj.data.templates.display.sheet.content = duplicate(obj.data.previewChar.data._d.content);
           obj.data.templates.display.sheet.style = duplicate(obj.data.previewChar.data._d.style);
+          obj.data.templates.actions.c = template._a;
+
 
           var template = duplicate(obj.data.previewItem.data);
           delete template._d;

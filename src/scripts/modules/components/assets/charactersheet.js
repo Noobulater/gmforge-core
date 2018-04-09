@@ -619,7 +619,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         }
       }
       calcList.scrollTop(lastScroll);
-      if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
+      if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
         var addCalc = genIcon("plus", "Add Calculation").appendTo(calcList);
         addCalc.addClass("fit-x flexmiddle create");
         addCalc.click(function(){
@@ -1039,7 +1039,25 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         quickSheet.addClass("background subtitle alttext");
         quickSheet.text("Sheet");
         if (app.attr("simpleEditing")) {
+          quickSheet.text("Save Sheet");
           quickSheet.removeClass("background").addClass("highlight");
+
+          var quickSheetJSON = $("<button>").appendTo(optionsBar);
+          quickSheetJSON.addClass("background subtitle alttext");
+          quickSheetJSON.text("Raw JSON");
+          quickSheetJSON.click(function(){
+            var select = sync.newApp("ui_JSON");
+            select.attr("lookup", "_d");
+            select.attr("closeTarget", "json-editor");
+            obj.addApp(select);
+
+            var pop = ui_popOut({
+              target : $(this),
+              title : "JSON",
+              id : "json-editor",
+            }, select);
+            pop.resizable();
+          });
         }
 
         quickSheet.click(function(){

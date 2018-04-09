@@ -20,9 +20,18 @@ var _actions = {
       pop.resizable();
     }
   },
-  "Set/Roll Initiative" : {
-    condition :function(obj) {return (game.state.data && game.state.data.combat != null && hasSecurity(getCookie("UserID"), "Assistant Master"))},
+
+  "Re-Roll Initiative" : {
+    condition : function(obj) {return (game.state.data && game.state.data.combat != null && !hasSecurity(getCookie("UserID"), "Assistant Master"))},
     click : function(ev, ui, obj, app, scope) {
+      var combatObj;
+      if (game.state.data && game.state.data.combat) {
+        combatObj = game.state;
+      }
+      else {
+        combatObj = game.locals["turnOrder"];
+      }
+
       var context = sync.defaultContext();
       context[obj.data._t] = duplicate(obj.data);
 
@@ -52,19 +61,24 @@ var _actions = {
         var sp;
         var ok;
         var id = obj.id();
-        if (game.state.data.combat) {
-          if (game.state.data.combat.engaged[id]) {
-            if (game.state.data.combat.engaged[id].sp) {
-              sp = game.state.data.combat.engaged[id].sp;
+        if (combatObj.data.combat) {
+          if (combatObj.data.combat.engaged[id]) {
+            if (combatObj.data.combat.engaged[id].sp) {
+              sp = combatObj.data.combat.engaged[id].sp;
             }
-            if (game.state.data.combat.engaged[id].ok) {
-              ok = game.state.data.combat.engaged[id].ok;
+            if (combatObj.data.combat.engaged[id].ok) {
+              ok = combatObj.data.combat.engaged[id].ok;
             }
           }
-          game.state.data.combat.engaged[id] = data.pool;
-          game.state.data.combat.engaged[id].sp = sp;
-          game.state.data.combat.engaged[id].ok = ok;
-          game.state.sync("updateCombatState");
+          combatObj.data.combat.engaged[id] = data.pool;
+          combatObj.data.combat.engaged[id].sp = sp;
+          combatObj.data.combat.engaged[id].ok = ok;
+          if (combatObj && combatObj.data.combat) {
+            game.state.sync("updateCombatState");
+          }
+          else {
+            combatObj.update();
+          }
           layout.coverlay("join-combat");
           layout.coverlay("olay-join-combat");
         }
@@ -81,6 +95,7 @@ var _actions = {
           id : "join-combat",
           noCss : true,
           hideclose : true,
+          prompt : true,
           style : {"width" : "300px"}
         }, content).addClass("lpadding").removeClass("boxshadow");
       }
@@ -88,6 +103,96 @@ var _actions = {
         var pop = ui_popOut({
           target : ui,
           id : "join-combat",
+          prompt : true,
+          title : "Roll Initiative",
+          style : {"width" : "300px"}
+        }, content);
+      }
+    }
+  },
+  "Set/Roll Initiative" : {
+    condition : function(obj) {return (hasSecurity(getCookie("UserID"), "Assistant Master"))},
+    click : function(ev, ui, obj, app, scope) {
+      var combatObj;
+      if (game.state.data && game.state.data.combat) {
+        combatObj = game.state;
+      }
+      else {
+        combatObj = game.locals["turnOrder"];
+      }
+
+      var context = sync.defaultContext();
+      context[obj.data._t] = duplicate(obj.data);
+
+      var content = $("<div>");
+      content.addClass("flexcolumn flex");
+
+      var query = genInput({
+        parent : content,
+        placeholder : sync.result(sync.reduce(game.templates.initiative.query, context, true), context, true)
+      });
+
+      var confirm = $("<button>").appendTo(content);
+      confirm.addClass("foreground alttext flex");
+      confirm.append("Roll Initiative!");
+      confirm.click(function(){
+        var context = sync.defaultContext();
+        context[obj.data._t] = duplicate(obj.data);
+        var data = sync.executeQuery(query.val() || game.templates.initiative.query, context);
+
+        var evData = {
+          msg : "rolled Initiative",
+          data : data
+        }
+
+        runCommand("diceCheck", evData);
+
+        var sp;
+        var ok;
+        var id = obj.id();
+        if (combatObj.data.combat) {
+          if (combatObj.data.combat.engaged[id]) {
+            if (combatObj.data.combat.engaged[id].sp) {
+              sp = combatObj.data.combat.engaged[id].sp;
+            }
+            if (combatObj.data.combat.engaged[id].ok) {
+              ok = combatObj.data.combat.engaged[id].ok;
+            }
+          }
+          combatObj.data.combat.engaged[id] = data.pool;
+          combatObj.data.combat.engaged[id].sp = sp;
+          combatObj.data.combat.engaged[id].ok = ok;
+          if (combatObj && combatObj.data.combat) {
+            game.state.sync("updateCombatState");
+          }
+          else {
+            combatObj.update();
+          }
+          layout.coverlay("join-combat");
+          layout.coverlay("olay-join-combat");
+        }
+      });
+      if (scope.pump) {
+        query.addClass("alttext line middle smargin smooth outline");
+        query.css("background-color", "rgba(0,0,0,0.8)");
+        query.css("font-size", "1.2em");
+        query.val(query.attr("placeholder"));
+        confirm.css("font-size", "1.6em");
+        confirm.addClass("padding hover2");
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          noCss : true,
+          hideclose : true,
+          prompt : true,
+          style : {"width" : "300px"}
+        }, content).addClass("lpadding").removeClass("boxshadow");
+      }
+      else {
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          prompt : true,
           title : "Roll Initiative",
           style : {"width" : "300px"}
         }, content);
@@ -97,6 +202,14 @@ var _actions = {
   "Set/Roll Initiative (Hidden)" : {
     condition :function(obj) {return (game.state.data && game.state.data.combat != null && hasSecurity(getCookie("UserID"), "Assistant Master"))},
     click : function(ev, ui, obj, app, scope) {
+      var combatObj;
+      if (game.state.data && game.state.data.combat) {
+        combatObj = game.state;
+      }
+      else {
+        combatObj = game.locals["turnOrder"];
+      }
+
       var context = sync.defaultContext();
       context[obj.data._t] = duplicate(obj.data);
 
@@ -119,30 +232,63 @@ var _actions = {
         context[obj.data._t] = duplicate(obj.data);
         var data = sync.executeQuery(query.val() || game.templates.initiative.query, context);
 
+        var evData = {
+          msg : "rolled Initiative",
+          data : data
+        }
+
+        runCommand("diceCheck", evData);
+
         var sp;
         var ok;
         var id = obj.id();
-        if (game.state.data.combat.engaged[id]) {
-          if (game.state.data.combat.engaged[id].sp) {
-            sp = game.state.data.combat.engaged[id].sp;
+        if (combatObj.data.combat) {
+          if (combatObj.data.combat.engaged[id]) {
+            if (combatObj.data.combat.engaged[id].sp) {
+              sp = combatObj.data.combat.engaged[id].sp;
+            }
+            if (combatObj.data.combat.engaged[id].ok) {
+              ok = combatObj.data.combat.engaged[id].ok;
+            }
           }
-          if (game.state.data.combat.engaged[id].ok) {
-            ok = game.state.data.combat.engaged[id].ok;
+          combatObj.data.combat.engaged[id] = data.pool;
+          combatObj.data.combat.engaged[id].sp = sp;
+          combatObj.data.combat.engaged[id].ok = ok;
+          if (combatObj && combatObj.data.combat) {
+            game.state.sync("updateCombatState");
           }
+          else {
+            combatObj.update();
+          }
+          layout.coverlay("join-combat");
+          layout.coverlay("olay-join-combat");
         }
-        game.state.data.combat.engaged[id] = data.pool;
-        game.state.data.combat.engaged[id].sp = sp;
-        game.state.data.combat.engaged[id].ok = ok;
-        game.state.sync("updateCombatState");
-        layout.coverlay("join-combat");
-        layout.coverlay("olay-join-combat");
       });
-      var pop = ui_popOut({
-        target : ui,
-        id : "join-combat",
-        title : "Roll Initiative",
-        style : {"width" : "300px"}
-      }, content);
+      if (scope.pump) {
+        query.addClass("alttext line middle smargin smooth outline");
+        query.css("background-color", "rgba(0,0,0,0.8)");
+        query.css("font-size", "1.2em");
+        query.val(query.attr("placeholder"));
+        confirm.css("font-size", "1.6em");
+        confirm.addClass("padding hover2");
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          noCss : true,
+          hideclose : true,
+          prompt : true,
+          style : {"width" : "300px"}
+        }, content).addClass("lpadding").removeClass("boxshadow");
+      }
+      else {
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          prompt : true,
+          title : "Roll Initiative",
+          style : {"width" : "300px"}
+        }, content);
+      }
     }
   },
   "Leave Combat" : {
@@ -2553,7 +2699,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   for (var actionKey in game.templates.actions[obj.data._t]) {
     if (!obj.data._a || !obj.data._a[actionKey]) {
       var saveNewRollWrap = $("<div>").appendTo(div);
-      saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
+      saveNewRollWrap.addClass("white smooth outline padding flexcolumn flexmiddle");
 
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : scope.cref || obj.id()}, action : actionKey, actionData : duplicate(game.templates.actions[obj.data._t][actionKey])};
@@ -2591,7 +2737,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
     }
     else {
       var saveNewRollWrap = $("<div>").appendTo(div);
-      saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
+      saveNewRollWrap.addClass("white smooth outline padding flexcolumn flexmiddle");
 
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : obj.id()}, action : actionKey, actionData : duplicate(obj.data._a[actionKey])};
@@ -2648,7 +2794,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   for (var actionKey in obj.data._a) {
     if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey]) {
       var saveNewRollWrap = $("<div>").appendTo(div);
-      saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
+      saveNewRollWrap.addClass("white smooth outline padding flexcolumn flexmiddle");
 
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : obj.id()}, action : actionKey, actionData : duplicate(obj.data._a[actionKey])};
@@ -2792,6 +2938,9 @@ sync.render("ui_hotActions", function(char, app, scope){
     }
   }
   for (var itemKey in char.data.inventory) {
+    var itemWrap = $("<div>").appendTo(savedRollWrap);
+    itemWrap.addClass("flexrow flexmiddle flexwrap");
+
     for (var actionKey in game.templates.actions.i) {
       var actionData = duplicate(game.templates.actions.i[actionKey]);
       if (char.data.inventory[itemKey]._a && char.data.inventory[itemKey]._a[actionKey]) {
@@ -2808,7 +2957,7 @@ sync.render("ui_hotActions", function(char, app, scope){
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+        var rollWrap = $("<div>").appendTo(itemWrap);
 
         var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
         actionApp.attr("minimized", "true");
@@ -2832,7 +2981,7 @@ sync.render("ui_hotActions", function(char, app, scope){
           game.locals["actionsList"] = game.locals["actionsList"] || {};
           game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
 
-          var rollWrap = $("<div>").appendTo(savedRollWrap);
+          var rollWrap = $("<div>").appendTo(itemWrap);
 
           var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
           actionApp.attr("minimized", "true");
@@ -2845,6 +2994,9 @@ sync.render("ui_hotActions", function(char, app, scope){
     }
   }
   for (var itemKey in char.data.spellbook) {
+    var spellWrap = $("<div>").appendTo(savedRollWrap);
+    spellWrap.addClass("flexrow flexmiddle flexwrap");
+
     for (var actionKey in game.templates.actions.i) {
       var actionData = duplicate(game.templates.actions.i[actionKey]);
       if (char.data.spellbook[itemKey]._a && char.data.spellbook[itemKey]._a[actionKey]) {
@@ -2860,7 +3012,7 @@ sync.render("ui_hotActions", function(char, app, scope){
         game.locals["actionsList"] = game.locals["actionsList"] || {};
         game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+        var rollWrap = $("<div>").appendTo(spellWrap);
 
         var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
         actionApp.attr("minimized", "true");
@@ -2884,7 +3036,7 @@ sync.render("ui_hotActions", function(char, app, scope){
           game.locals["actionsList"] = game.locals["actionsList"] || {};
           game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
 
-          var rollWrap = $("<div>").appendTo(savedRollWrap);
+          var rollWrap = $("<div>").appendTo(spellWrap);
 
           var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
           actionApp.attr("minimized", "true");

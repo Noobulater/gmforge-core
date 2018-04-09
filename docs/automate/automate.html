@@ -1,0 +1,70 @@
+<div>
+  <div id='video-help'>
+    <iframe width="400" height="200" src="https://www.youtube.com/embed/B2DLVbuVhK0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+  <div id='nav-list'>
+
+  </div>
+</div>
+
+<script>
+function _buildNavList(){
+  $("#nav-list").empty();
+  var categories = {
+    "Macro Langauge" : {
+      "Basic Math" : "https://files.gmforge.io/file/help/automate/macro/basics.html",
+      "Referencing Values" : "https://files.gmforge.io/file/help/automate/macro/values.html",
+      "Calc API" : "https://files.gmforge.io/file/help/automate/macro/calcapi.html",
+    },
+    "Math Automation" : {
+      //"Actors" : 0,
+      //"Item/Spell Effects" : 0,
+      "Custom Actions" : "https://files.gmforge.io/file/help/automate/math/actions.html",
+      "Targeting / Dice Actions" : "https://files.gmforge.io/file/help/automate/math/targeting.html",
+    },
+    "Note Automation" : {
+      "Chat Commands" : 0,
+      "Conversations" : 0,
+      "Combat" : 0,
+      "Dice Rolls" : 0,
+      "Images" : 0,
+      "Music" : 0,
+      "Special Effects" : 0,
+      "Youtube" : 0,
+    },
+    "System Building" : {
+      "System Builder" : 0,
+      "Custom Dice Displays" : 0,
+      "Custom Initiative" : 0,
+    }
+  }
+  function buildList(categories){
+    var div = $("<ul>");
+
+    for (var key in categories) {
+      if (categories[key] instanceof Object) {
+        div.append("<div class='bold fit-x'>"+key+"</div>");
+        div.append(buildList(categories[key]).css("margin-left", "0.5em"));
+      }
+      else {
+        var link = $("<li>").appendTo(div);
+        link.attr("href", categories[key]);
+        link.text(key);
+        if (!categories[key]) {
+          link.addClass("dull");
+        }
+        else {
+          link.addClass("link");
+          link.click(function(){
+            $("#help-body").load($(this).attr("href"));
+          });
+        }
+      }
+    }
+
+    return div;
+  }
+  buildList(categories).appendTo("#nav-list");
+}
+_buildNavList();
+</script>

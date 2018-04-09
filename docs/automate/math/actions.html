@@ -1,0 +1,29 @@
+<div class='fit-xy lpadding'>
+  <h2>What is an action</h2>
+  <p>
+    Actions are a way of programming dice rolls to a button. You can write in an equation and then run the action on your hotbar, or through the action menu, which can be accessed from the top right of actors, and items/spells.
+  </p>
+
+  <h4>Default Equation</h4>
+  <p> This is the equation that your action is going execute when rolling dice.
+    String Variables are variables that don't evaluate before being used $[varname]=[value]; ,
+    and normal variables #[varname]=[value]; are variables that do evaluate before being used. Variables can be referenced in the main equation using @varname
+  </p><br>
+  <p>ex. $die=d20;#roll=d20;#bonus=M@c.stats.Dex;#hitbonus=@i.weapon.hit; @roll + @bonus + @hitbonus</p>
+  <br>
+
+  <h4>Choices</h4>
+  <p>
+    These are optional choices you can select that will roll a saved version that changes the default equation. Each choice can inject values into one or multiple variables defined in the default equation. <br>
+    In the example above $die, #roll, #bonus, #hitbonus can all be selected as a choice. 
+  </p><br>
+
+  <h4>Flavor Texts</h4>
+  <p> A flavor text is the fluffy text that goes along with each roll. If you have multiple flavor texts, then one will be selected randomly </p><br>
+
+  <h4>Raw JSON</h4>
+  <p> This is code used to run this action. </p><br>
+
+  <h4>Hot Bar</h4>
+  <p> If this is highlighted, then your action will appear on the hotbar when selecting a piece, or impersonating a character. </p><br>
+</div>

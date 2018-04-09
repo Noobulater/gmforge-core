@@ -163,7 +163,7 @@ sync.render("_logs", function(obj, app, scope) {
             }
           ];
 
-          ui_dropMenu($(this), actionsList, {id : "empty-log-event", align : "center"});
+          ui_dropMenu($(this), actionsList, {id : "empty-log-event"});
           ev.stopPropagation();
           ev.preventDefault();
           return false;

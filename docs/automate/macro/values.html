@@ -1,0 +1,33 @@
+<div class='fit-xy lpadding'>
+  <h2>Basic Values</h2>
+  <p>
+    Basic values are structured like this<br>
+    <br>
+    <b>@[variable].name</b> : <i>The name of value</i><br>
+    <b>@[variable].current</b> : <i>The current value</i><br>
+    <b>@[variable].modifiers</b> : <i>The modifiers that are added to .current when referencing this value</i>
+  </p>
+  <h2>Referencing Values</h2>
+  <p>
+    <i>A Character has rolled a 15 for their Dexterity stat, so they have a 'Stat-Bonus' modifier of +2</i><br>
+    <br>
+    <b>M@c.stats.Dex</b> = +2 : <i>Modified Value, The total of the modifiers only</i><br>
+    <b>R@c.stats.Dex</b> = 15 : <i>Raw Value, only the current value</i><br>
+    <b>@c.stats.Dex</b> = 15+2 = 17 : <i>Total Value, Adds the current and modifiers</i><br>
+    <br>
+    You can short hand certain values if their keys are unique (Only used once in the character sheet)
+    @Dex, R@Dex, M@Dex
+  </p>
+  <br>
+  <h4>Referencing Item Values</h4>
+  <p>
+    You can reference item values by using @i.[category].[key]<br>
+    <i>ex. @i.weapon.damage</i><br>
+    <i>ex. @i.spell.level</i><br>
+  </p>
+  <br>
+  <h4>Total Armor</h4>
+  <p>
+    @:armor() : Will return the total armor value of all equipped items
+  </p>
+</div>

@@ -620,6 +620,22 @@ var assetTypes = {
               actionList.push({name : "Use", submenu : commands});
             }
           }
+          actionList.push({
+            name : "Impersonate...",
+            icon : "user",
+            click : function(ev, ui){
+              runCommand("selectPlayerEntity", {id : ent.id(), userID : getCookie("UserID")});
+              sendAlert({text : "Impersonating Character : " + sync.rawVal(ent.data.info.name)});
+              $(".chatType").text("IC");
+              $(".chatType").addClass("highlight alttext");
+              $(".chatType").attr("title", "In Character");
+              $(".application[ui-name='_imperson']").attr("src", sync.rawVal(ent.data.info.img) || "/content/icons/blankchar.png");
+              $(".application[ui-name='_imperson']").attr("ICText", sync.rawVal(ent.data.info.name));
+              $(".application[ui-name='_imperson']").each(function(){
+                sync.updateApp($(this), game.players);
+              });
+            }
+          });
         }
 
         actionList.push({

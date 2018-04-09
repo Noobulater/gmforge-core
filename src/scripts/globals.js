@@ -1,4 +1,4 @@
-function global_init() {}
+function global_init() {setupGame();}
 var connection = {alive : false, peers : {}, streams : {}};
 // Game state, this is important
 // Do NOT write to this, or you will break everything

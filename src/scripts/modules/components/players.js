@@ -79,24 +79,66 @@ sync.render("ui_players", function(obj, app, scope) {
     label.css("white-space", "nowrap");
     label.attr("title", "Copies an invite to clipboard");
     label.click(function(){
-      var input = genInput({
-        parent : $(this),
-        id : "copy-url",
-        value : window.location.href.split("?password")[0],
+      var content = $("<div>");
+      content.addClass("flexcolumn");
+
+      var button = $("<button>").appendTo(content);
+      button.addClass("background alttext padding");
+      button.text("From Local Network");
+      button.click(function(){
+        var input = genInput({
+          parent : $(this),
+          id : "copy-url",
+          value : window.location.href.split("?password")[0],
+        });
+
+        if (game.config.data.password) {
+          input.val(encodeURI(input.val()+"?password="+game.config.data.password));
+        }
+        if (getCookie("InternalIP")) {
+          input.val(getCookie("InternalIP")+":30000/join");
+        }
+        input.focus();
+        input.get(0).setSelectionRange(0, input.val().length);
+
+        document.execCommand("copy");
+        input.remove();
+        sendAlert({text : "Invitation Copied!"});
+        layout.coverlay("invite");
       });
 
-      if (game.config.data.password) {
-        input.val(encodeURI(input.val()+"?password="+game.config.data.password));
-      }
-      if (getCookie("ExternalIP")) {
-        input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
-      }
-      input.focus();
-      input.get(0).setSelectionRange(0, input.val().length);
+      var button = $("<button>").appendTo(content);
+      button.addClass("padding highlight alttext");
+      button.text("From the Internet");
+      button.click(function(){
+        var input = genInput({
+          parent : $(this),
+          id : "copy-url",
+          value : window.location.href.split("?password")[0],
+        });
 
-      document.execCommand("copy");
-      input.remove();
-      sendAlert({text : "Invitation Copied!"});
+        if (game.config.data.password) {
+          input.val(encodeURI(input.val()+"?password="+game.config.data.password));
+        }
+        if (getCookie("ExternalIP")) {
+          input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+        }
+        input.focus();
+        input.get(0).setSelectionRange(0, input.val().length);
+
+        document.execCommand("copy");
+        input.remove();
+        sendAlert({text : "Invitation Copied!"});
+        layout.coverlay("invite");
+      });
+
+      var pop = ui_popOut({
+        target : $(this),
+        noCss : true,
+        prompt : true,
+        id : "invite",
+        style : {"width" : "200px"}
+      }, content);
     });
   }
 

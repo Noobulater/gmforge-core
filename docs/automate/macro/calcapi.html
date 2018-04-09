@@ -1,0 +1,23 @@
+<div class='fit-xy lpadding'>
+  <h1>Calc Api</h1>
+  <h4>What is it?</h4>
+  <p>The calcAPI is a way of referencing more advanced functions, to allow for more interesting results without having to write out crazy long macros.</p>
+  <h4>How to reference the Calc Api?</h4>
+  @:[function key]([arg1], [arg2], ...) <br>
+  <h4> Current Functions </h4>
+  <b>@:sign([macro])</b><br>returns text with a "+" or "-" depending on if the value is postive or negative (0 = +0) <br><br>
+  <b>@:int([macro])</b><br>turns the result of a macro into an integer <br><br>
+  <b>@:num([macro])</b><br>turns the result of a macro into a number <br><br>
+  <b>@:text([macro])</b><br>turns the result of a macro into text <br><br>
+  <b>@:raw([macro])</b><br>returns a macro as text, without evaluating <br><br>
+  <b>@:gm()</b><br>returns 1 if the local user is a GM and 0 if they are a player <br><br>
+  <b>@:armor()</b><br>returns the total of all equipped armor <br><br>
+  <b>@:weight()</b><br>returns the total weight of all items in characters inventory <br><br>
+  <b>@:equip([key])</b><br>returns the total of all equipped items [key] value<br><br>
+  <b>@:t([tag])</b><br>returns 1 if the asset has the [tag] in question <br><br>
+  <b>@:!([macro], [condition])</b><br>exploding the [macro], only if the [conditon] is met <br><br>
+  <b>@:table([name macro], [key macro])</b><br>References a table [name macro]'s [key macro] and returns the evaluated result<br>
+    <i>Short hand #:[name]([key])</i><br><br>
+  <b>@:constant([key])</b><br>References a constant [key] and returns the evaluated result<br>
+    <i>Short hand #:[constant]</i><br><br>
+</div>

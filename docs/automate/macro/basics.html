@@ -1,0 +1,44 @@
+<div class='fit-xy lpadding'>
+  <h2>Basic Math</h2>
+  <b>+  -  /  *  ()</b> : <i>Basic Math</i><br>
+  <b>( )_3</b> Min Value [3, &#x221e;), ex : (M@Dex)_0 = Dex modifer can't be negative<br>
+  <b>( )|4</b> Max value (&#x221e;,4], (M@Str)|3 = Max Str modifier of 3<br>
+  <b>( )_0|4</b> Value Between [0,4]<br>
+  <br>
+  <h4>Text</h4>
+  <p>
+    Wrap your text in '' or ""<br>
+    Add text together to make larger text<br>
+    ex. <br><br>"@c.info.name attacked with a " + @i.info.name + "!" <br><br> "Bobby attacked with a Shotgun!"
+  </p>
+  <br>
+  <h4>Conditions</h4>
+  <p>
+    ( [Condition] )?( [True Result] ):( [False Result] )
+  </p>
+  <h4> Condition Logic </h4>
+  <p>
+    <b>Equality : </b> !=, !==, ==, ===, <=, >=, <, > <br>
+    <b>And : </b> && <br>
+    <b>Or : </b> || <br>
+  </p>
+  <br>
+  <h2> Rolling Dice </h4>
+  <b> Traditional Dice : </b> [dice count] d [Sides], ex. 1d20, 5d29 <br>
+
+  <h4> Drop Values </h4>
+  <b> Drop (d/dl) : </b> Keep the highest # results<br>
+  <p> ex. 4d6d3 = Roll 4 d6's and drop the lowest 3</p><br>
+  <p> ex. 2d20dl1 = Roll 2 d20's and drop the lowest one</p><br>
+  <b> Drop Highest (dh) : </b> Drop the Highest # results<br>
+  <p> ex. 5d20dh3 = Roll 5 d20's and drop the highest 3</p><br>
+  <h4> Keep Values </h4>
+  <b> Keep (k/kh) : </b> Keep the highest # results<br>
+  <p> ex. 4d6k3 = Roll 4 d6's and keep the highest 3 </p><br>
+  <p> ex. 2d20kl1 = Roll 2 d20's and keep the lowest one</p><br>
+  <b> Keep lowest (kl) : </b> Keep the lowest # results<br>
+  <p> ex. 2d20kl1 = Roll 2 d20's and keep the lowest one</p><br>
+  <h4> Custom Dice (Chat and Actions Only) </h4>
+  <b> [#dice] [ [dice Type] ] : </b> ex. 1[proficiency], 4[fate], <br>
+  4[$die=proficiency;4] *(specific side of the dice to show)
+</div>

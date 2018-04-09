@@ -1,0 +1,109 @@
+<div class="fit-xy subtitle" style='overflow : auto;'>
+  <div id='help-refresh'></div>
+  <div id='help-nav'>
+    <h1 class='flexmiddle fit-x'>Help</h1>
+    <div class='flexcolumn flexmiddle fit-x lpadding'>
+      <button class='fit-x bold padding' style='font-size : 1.6em;' id='help-cat-getting-started'>Getting Started</button>
+    <!--
+      <button class='fit-x bold padding' style='font-size : 1.6em;' id='help-cat-create'>Create</button>
+      <button class='fit-x bold padding' style='font-size : 1.6em;' id='help-cat-custom'>Customize</button>
+    -->
+      <button class='fit-x bold padding' style='font-size : 1.6em;' id='help-cat-play'>Playing</button>
+      <button class='fit-x bold padding' style='font-size : 1.6em;' id='help-cat-automate'>Automation</button>
+    </div>
+  </div>
+  <div id='help-body'>
+
+  </div>
+</div>
+<a href='https://www.github.com/noobulater/gmforge-core' target='_' class='subtitle fit-x flexmiddle'><i>See something wrong? Fix it on github</i></a>
+<i class='bold subtitle fit-x flexmiddle destroy'> UNDER CONSTRUCTION </i>
+
+<script>
+  // refresh the menu $("#quick-help").empty().append(sync.render("ui_renderHelp")());
+  $("#help-cat-getting-started").click(function(){
+    $("#help-nav").css("pointer-events", "none");
+    $("#help-nav").children().hide();
+    $("#help-body").empty();
+    $("#help-refresh").empty();
+    var refresh = genIcon("arrow-left", "Back", true).appendTo("#help-refresh");
+    refresh.addClass("padding");
+    refresh.click(function(){
+      if ($("#nav-list").length) {
+        $("#quick-help").empty().append(sync.render("ui_renderHelp")());
+      }
+      else {
+        $("#help-cat-getting-started").click();
+      }
+    });
+    $("#help-body").load("https://files.gmforge.io/file/help/started/started.html");
+  });
+  /*$("#help-cat-create").click(function(){
+    $("#help-nav").css("pointer-events", "none");
+    $("#help-nav").children().hide();
+    $("#help-body").empty();
+    $("#help-refresh").empty();
+    var refresh = genIcon("arrow-left", "Back", true).appendTo("#help-refresh");
+    refresh.addClass("padding");
+    refresh.click(function(){
+      if ($("#nav-list").length) {
+        $("#quick-help").empty().append(sync.render("ui_renderHelp")());
+      }
+      else {
+        $("#help-cat-create").click();
+      }
+    });
+    $("#help-body").load("https://files.gmforge.io/file/help/create/create.html");
+  });
+  $("#help-cat-custom").click(function(){
+    $("#help-nav").css("pointer-events", "none");
+    $("#help-nav").children().hide();
+    $("#help-body").empty();
+    $("#help-refresh").empty();
+    var refresh = genIcon("arrow-left", "Back", true).appendTo("#help-refresh");
+    refresh.addClass("padding");
+    refresh.click(function(){
+      if ($("#nav-list").length) {
+        $("#quick-help").empty().append(sync.render("ui_renderHelp")());
+      }
+      else {
+        $("#help-cat-custom").click();
+      }
+    });
+    $("#help-body").load("https://files.gmforge.io/file/help/custom/custom.html");
+  });*/
+  $("#help-cat-play").click(function(){
+    $("#help-nav").css("pointer-events", "none");
+    $("#help-nav").children().hide();
+    $("#help-body").empty();
+    $("#help-refresh").empty();
+    var refresh = genIcon("arrow-left", "Back", true).appendTo("#help-refresh");
+    refresh.addClass("padding");
+    refresh.click(function(){
+      if ($("#nav-list").length) {
+        $("#quick-help").empty().append(sync.render("ui_renderHelp")());
+      }
+      else {
+        $("#help-cat-play").click();
+      }
+    });
+    $("#help-body").load("https://files.gmforge.io/file/help/play/play.html");
+  });
+  $("#help-cat-automate").click(function(){
+    $("#help-nav").css("pointer-events", "none");
+    $("#help-nav").children().hide();
+    $("#help-body").empty();
+    $("#help-refresh").empty();
+    var refresh = genIcon("arrow-left", "Back", true).appendTo("#help-refresh");
+    refresh.addClass("padding");
+    refresh.click(function(){
+      if ($("#nav-list").length) {
+        $("#quick-help").empty().append(sync.render("ui_renderHelp")());
+      }
+      else {
+        $("#help-cat-automate").click();
+      }
+    });
+    $("#help-body").load("https://files.gmforge.io/file/help/automate/automate.html");
+  });
+</script>

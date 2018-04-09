@@ -447,7 +447,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     var pop = ui_popOut({
       target : $("body"),
       id : "game-library",
-      align : "right",
+      align : "left",
       minimize : true,
       prompt : true,
       title : "Game Library",

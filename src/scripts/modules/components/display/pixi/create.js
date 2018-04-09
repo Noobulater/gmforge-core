@@ -800,7 +800,13 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
           dragHandle.visible = false;
         }
         else {
-          dragHandle.visible = true;
+          var zoom = Number(app.attr("zoom"))/100;
+          if (zoom != 1 && (i != "r" && i != "br" && i != "b")) {
+            dragHandle.visible = false;
+          }
+          else {
+            dragHandle.visible = true;
+          }
         }
       }
       if (objectWrap.rebuild) {
@@ -1058,7 +1064,7 @@ boardApi.pix.drawShape = function(objectData, stand, lineStyle){
   else if (objectData.d == 2) {
     stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
     stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-    stand.drawEllipse(objectData.w/2-1, objectData.w/2-1, objectData.w/2-1, objectData.h/2-1);
+    stand.drawEllipse(objectData.w/2-1, objectData.h/2-1, objectData.w/2-1, objectData.h/2-1);
     stand.endFill();
   }
   else if (objectData.d == 3) {
@@ -1616,6 +1622,10 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
       else {
         piece.children[1].width = objectData.w;
         piece.children[1].height = objectData.h;
+      }
+      if (piece.children[1].mask) {
+        piece.children[1].mask.clear();
+        boardApi.pix.drawShape(objectData, piece.children[1].mask, lineStyle);
       }
     }
 
