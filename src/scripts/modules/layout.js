@@ -640,6 +640,7 @@ layout.anchorInit = function() {
 
   var reactions = genIcon("menu-hamburger").appendTo(layoutControls);
   reactions.addClass("lrpadding");
+  reactions.attr("id", "splash-button");
   reactions.css("font-size", "2.0em");
   reactions.click(function(){
     openSplash(true);
@@ -2226,6 +2227,7 @@ layout.menu = function() {
 
   var splash = genIcon("menu-hamburger").appendTo(configOptions);
   splash.css("padding-right", "4px");
+  splash.attr("id", "splash-button");
   splash.attr("title", "Main Menu");
   splash.click(function(){
     openSplash(true);

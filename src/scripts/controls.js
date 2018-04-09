@@ -775,226 +775,241 @@ hotkeys[_finalTurn] = {
 }
 
 var _down = {};
+var KEYCODE_ESC = 27;
 function controlsKeyDown(e) {
   e.keyCode = e.keyCode || e.which;
   _down[e.keyCode] = true;
+
   if (!($(':focus').is("input") || $(':focus').is("textarea"))) {
-    var updateList = {};
-    var spliceData = {list : []};
-    var deleteSelections = {};
-    for (var i in boardApi.pix.selections) {
-      var selectData = boardApi.pix.selections[i];
-      var board = getEnt(selectData.board);
-      if (board && board.data) {
-        if (selectData.index != null) {
-          if (selectData.type == "p") {
-            var pieceData = board.data.layers[selectData.layer].p[selectData.index];
-            if (pieceData) {
-              var ent = getEnt(pieceData.eID);
-              if (hasSecurity(getCookie("UserID"), "Rights", board.data) || (ent && hasSecurity(getCookie("UserID"), "Rights", ent.data))) {
-                var oldX = pieceData.x;
-                var oldY = pieceData.y;
-                var diffX = 0;
-                var diffY = 0;
+    if (e.keyCode == KEYCODE_ESC && $("#splash-button").length) {
+      if ($("#splash-screen").length) {
+        layout.coverlay("splash-screen");
+      }
+      else {
+        $("#splash-button").click();
+      }
+    }
+    else {
+      var updateList = {};
+      var spliceData = {list : []};
+      var deleteSelections = {};
+      for (var i in boardApi.pix.selections) {
+        var selectData = boardApi.pix.selections[i];
+        var board = getEnt(selectData.board);
+        if (board && board.data) {
+          if (selectData.index != null) {
+            if (selectData.type == "p") {
+              var pieceData = board.data.layers[selectData.layer].p[selectData.index];
+              if (pieceData) {
+                var ent = getEnt(pieceData.eID);
+                if (hasSecurity(getCookie("UserID"), "Rights", board.data) || (ent && hasSecurity(getCookie("UserID"), "Rights", ent.data))) {
+                  var oldX = pieceData.x;
+                  var oldY = pieceData.y;
+                  var diffX = 0;
+                  var diffY = 0;
 
-                var layer = selectData.layer;
-                var override = false;
+                  var layer = selectData.layer;
+                  var override = false;
 
+                  if (e.keyCode == 46) { // delete
+                    spliceData.target = board.data.layers[selectData.layer].p;
+                    layout.coverlay($(".piece-quick-edit"));
+                    if (hasSecurity(getCookie("UserID"), "Rights", board.data)) {
+                      deleteSelections[i] = selectData;
+                      boardApi.pix.selections[i].selected.visible = false;
+                      //boardApi.pix.destroyObject(selectData.layer, selectData.type, selectData.index, board);
+                    }
+                  }
+                  else if (e.keyCode == 37) {
+                    pieceData.x = pieceData.x - (board.data.gridW || pieceData.w);
+                    diffX = (board.data.gridW || pieceData.w) * -1;
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 38) {
+                    pieceData.y = pieceData.y - (board.data.gridH || pieceData.h);
+                    diffY = (board.data.gridH || pieceData.h) * -1;
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 39) {
+                    pieceData.x = pieceData.x + (board.data.gridW || pieceData.w);
+                    diffX = (board.data.gridW || pieceData.w);
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 40) {
+                    pieceData.y = pieceData.y + (board.data.gridH || pieceData.h);
+                    diffY = (board.data.gridH || pieceData.h);
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 32) { // space bar
+                    boardApi.pix.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
+                  }
+                  if (diffX || diffY){
+                    layout.coverlay($(".piece-quick-edit"));
+                    selectData.wrap.move(e, diffX, diffY);
+                    boardApi.pix.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
+                    if (boardApi.pix.fog[board.id()] && boardApi.pix.fog[board.id()].length && pieceData.eID) {
+                      var range;
+                      if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
+                        var ent = getEnt(pieceData.eID);
+                        var context = sync.defaultContext();
+                        if (ent && ent.data) {
+                          context[ent.data._t] = duplicate(ent.data);
+                        }
+                        var auraData = pieceData.o.Sight;
+                        range = boardApi.pix.scale(sync.eval(auraData.d, context), board, true);
+                      }
+                      boardApi.pix.apps[selectData.app].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.pix.buildDynamicFog(board, $("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
+                      boardApi.pix.rebuildDynamicFog(board, $("#"+selectData.app));
+                    }
+                  }
+                }
+              }
+            }
+            else {
+              var tileData = board.data.layers[selectData.layer][selectData.type][selectData.index];
+              if (tileData) {
                 if (e.keyCode == 46) { // delete
-                  spliceData.target = board.data.layers[selectData.layer].p;
                   layout.coverlay($(".piece-quick-edit"));
+                  spliceData.target = board.data.layers[selectData.layer][selectData.type];
                   if (hasSecurity(getCookie("UserID"), "Rights", board.data)) {
                     deleteSelections[i] = selectData;
                     boardApi.pix.selections[i].selected.visible = false;
-                    //boardApi.pix.destroyObject(selectData.layer, selectData.type, selectData.index, board);
                   }
                 }
                 else if (e.keyCode == 37) {
-                  pieceData.x = pieceData.x - (board.data.gridW || pieceData.w);
-                  diffX = (board.data.gridW || pieceData.w) * -1;
+                  tileData.x = tileData.x - (board.data.gridW || tileData.w);
+                  diffX = (board.data.gridW || tileData.w) * -1;
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 38) {
-                  pieceData.y = pieceData.y - (board.data.gridH || pieceData.h);
-                  diffY = (board.data.gridH || pieceData.h) * -1;
+                  tileData.y = tileData.y - (board.data.gridH || tileData.h);
+                  diffY = (board.data.gridH || tileData.h) * -1;
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 39) {
-                  pieceData.x = pieceData.x + (board.data.gridW || pieceData.w);
-                  diffX = (board.data.gridW || pieceData.w);
+                  tileData.x = tileData.x + (board.data.gridW || tileData.w);
+                  diffX = (board.data.gridW || tileData.w);
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 40) {
-                  pieceData.y = pieceData.y + (board.data.gridH || pieceData.h);
-                  diffY = (board.data.gridH || pieceData.h);
+                  tileData.y = tileData.y + (board.data.gridH || tileData.h);
+                  diffY = (board.data.gridH || tileData.h);
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 32) { // space bar
-                  boardApi.pix.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
-                }
-                if (diffX || diffY){
-                  layout.coverlay($(".piece-quick-edit"));
-                  selectData.wrap.move(e, diffX, diffY);
-                  boardApi.pix.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
-                  if (boardApi.pix.fog[board.id()] && boardApi.pix.fog[board.id()].length && pieceData.eID) {
-                    var range;
-                    if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
-                      var ent = getEnt(pieceData.eID);
-                      var context = sync.defaultContext();
-                      if (ent && ent.data) {
-                        context[ent.data._t] = duplicate(ent.data);
-                      }
-                      var auraData = pieceData.o.Sight;
-                      range = boardApi.pix.scale(sync.eval(auraData.d, context), board, true);
-                    }
-                    boardApi.pix.apps[selectData.app].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.pix.buildDynamicFog(board, $("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
-                    boardApi.pix.rebuildDynamicFog(board, $("#"+selectData.app));
-                  }
+                  boardApi.pix.scrollTo($("#"+selectData.app), tileData.x + tileData.w/2, tileData.y + tileData.h/2);
                 }
               }
             }
+          }
+        }
+      }
+      if (Object.keys(deleteSelections).length) {
+        var rebuild = {};
+        for (var i in deleteSelections) {
+          var selectData = deleteSelections[i];
+          if (selectData.type) {
+            if (!rebuild[selectData.board]) {
+              rebuild[selectData.board] = {};
+            }
+            var boardData = rebuild[selectData.board];
+            if (!boardData[selectData.layer]) {
+              boardData[selectData.layer] = {};
+            }
+            if (!boardData[selectData.layer][selectData.type]) {
+              boardData[selectData.layer][selectData.type] = {indexs : []};
+            }
+            boardData[selectData.layer][selectData.type].indexs.push(Number(selectData.index));
+            if (boardData[selectData.layer][selectData.type].rebuild == null || boardData[selectData.layer][selectData.type].rebuild > selectData.index) {
+              boardData[selectData.layer][selectData.type].rebuild = Number(selectData.index);
+            }
+          }
+        }
+        //boardApi.pix.destroyObject(selectData.layer, selectData.type, selectData.index, board);
+        var undo = duplicate(board.data.layers);
+        for (var bID in rebuild) {
+          var boardData = rebuild[bID];
+          var board = getEnt(bID);
+          if (board && board.data) {
+            for (var layer in boardData) {
+              var layerData = boardData[layer];
+              var update = {
+                layer : layer,
+                id : bID,
+                cmd : "destroy",
+                rebuild : {},
+              };
+              var last = duplicate(board.data.layers[layer]);
+              for (var type in layerData) {
+                var typeData = layerData[type];
+                update.rebuild[type] = typeData.rebuild;
+
+                typeData.indexs.sort();
+                for (var idx=typeData.indexs.length-1; idx>=0; idx--) {
+                  board.data.layers[layer][type].splice(typeData.indexs[idx], 1);
+                }
+              }
+              update.result = duplicate(board.data.layers[layer]);
+              boardApi.pix.applyUpdate(getCookie("UserID"), update, last);
+              runCommand("updateBoardLayer", update);
+            }
+          }
+        }
+        boardApi.pix.selections = {};
+      }
+      for (var key in updateList) {
+        if (game.entities.data[key]) {
+          if (updateList[key]) {
+            util.addUndo(game.entities.data[key], game.entities.data[key].data, updateList[key]);
           }
           else {
-            var tileData = board.data.layers[selectData.layer][selectData.type][selectData.index];
-            if (tileData) {
-              if (e.keyCode == 46) { // delete
-                layout.coverlay($(".piece-quick-edit"));
-                spliceData.target = board.data.layers[selectData.layer][selectData.type];
-                if (hasSecurity(getCookie("UserID"), "Rights", board.data)) {
-                  deleteSelections[i] = selectData;
-                  boardApi.pix.selections[i].selected.visible = false;
-                }
-              }
-              else if (e.keyCode == 37) {
-                tileData.x = tileData.x - (board.data.gridW || tileData.w);
-                diffX = (board.data.gridW || tileData.w) * -1;
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 38) {
-                tileData.y = tileData.y - (board.data.gridH || tileData.h);
-                diffY = (board.data.gridH || tileData.h) * -1;
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 39) {
-                tileData.x = tileData.x + (board.data.gridW || tileData.w);
-                diffX = (board.data.gridW || tileData.w);
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 40) {
-                tileData.y = tileData.y + (board.data.gridH || tileData.h);
-                diffY = (board.data.gridH || tileData.h);
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 32) { // space bar
-                boardApi.pix.scrollTo($("#"+selectData.app), tileData.x + tileData.w/2, tileData.y + tileData.h/2);
-              }
-            }
+            util.addUndo(game.entities.data[key], game.entities.data[key].data);
+          }
+        }
+      }
+      spliceData.list.sort(function(a,b){return a-b;});
+      for (var i=spliceData.list.length-1; i>=0; i--) {
+        spliceData.target.splice(spliceData.list[i], 1);
+      }
+      spliceData = {list : []};
+      for (var key in updateList) {
+        if (game.entities.data[key]) {
+          if (updateList[key]) {
+            game.entities.data[key].sync(updateList[key]);
+          }
+          else {
+            game.entities.data[key].update();
           }
         }
       }
     }
-    if (Object.keys(deleteSelections).length) {
-      var rebuild = {};
-      for (var i in deleteSelections) {
-        var selectData = deleteSelections[i];
-        if (selectData.type) {
-          if (!rebuild[selectData.board]) {
-            rebuild[selectData.board] = {};
-          }
-          var boardData = rebuild[selectData.board];
-          if (!boardData[selectData.layer]) {
-            boardData[selectData.layer] = {};
-          }
-          if (!boardData[selectData.layer][selectData.type]) {
-            boardData[selectData.layer][selectData.type] = {indexs : []};
-          }
-          boardData[selectData.layer][selectData.type].indexs.push(Number(selectData.index));
-          if (boardData[selectData.layer][selectData.type].rebuild == null || boardData[selectData.layer][selectData.type].rebuild > selectData.index) {
-            boardData[selectData.layer][selectData.type].rebuild = Number(selectData.index);
-          }
-        }
-      }
-      //boardApi.pix.destroyObject(selectData.layer, selectData.type, selectData.index, board);
-      var undo = duplicate(board.data.layers);
-      for (var bID in rebuild) {
-        var boardData = rebuild[bID];
-        var board = getEnt(bID);
-        if (board && board.data) {
-          for (var layer in boardData) {
-            var layerData = boardData[layer];
-            var update = {
-              layer : layer,
-              id : bID,
-              cmd : "destroy",
-              rebuild : {},
-            };
-            var last = duplicate(board.data.layers[layer]);
-            for (var type in layerData) {
-              var typeData = layerData[type];
-              update.rebuild[type] = typeData.rebuild;
-
-              typeData.indexs.sort();
-              for (var idx=typeData.indexs.length-1; idx>=0; idx--) {
-                board.data.layers[layer][type].splice(typeData.indexs[idx], 1);
-              }
-            }
-            update.result = duplicate(board.data.layers[layer]);
-            boardApi.pix.applyUpdate(getCookie("UserID"), update, last);
-            runCommand("updateBoardLayer", update);
-          }
-        }
-      }
-      boardApi.pix.selections = {};
-    }
-    for (var key in updateList) {
-      if (game.entities.data[key]) {
-        if (updateList[key]) {
-          util.addUndo(game.entities.data[key], game.entities.data[key].data, updateList[key]);
-        }
-        else {
-          util.addUndo(game.entities.data[key], game.entities.data[key].data);
-        }
-      }
-    }
-    spliceData.list.sort(function(a,b){return a-b;});
-    for (var i=spliceData.list.length-1; i>=0; i--) {
-      spliceData.target.splice(spliceData.list[i], 1);
-    }
-    spliceData = {list : []};
-    for (var key in updateList) {
-      if (game.entities.data[key]) {
-        if (updateList[key]) {
-          game.entities.data[key].sync(updateList[key]);
-        }
-        else {
-          game.entities.data[key].update();
-        }
-      }
-    }
+  }
+  else if (e.keyCode == KEYCODE_ESC) {
+    $(':focus').blur();
   }
   if (_nextKey < Date.now()) {
     for (var key in hotkeys) {
