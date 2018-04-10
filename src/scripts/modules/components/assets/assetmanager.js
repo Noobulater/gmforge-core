@@ -367,32 +367,6 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   var listWrap = $("<div>").appendTo(listedChars);
   listWrap.addClass("fit-x flexcolumn flex");
 
-  if (!scope.hideFolders) {
-    libraryWrap.addClass("dropContent");
-    libraryWrap.sortable({
-      handle : ".nohandle",
-      update : function(ev, ui) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        var ui = $(ui.item);
-        if (ui.attr("path") && ui.attr("arrayIndex")) {
-          var childFolder = sync.traverse(game.config.data.organized, ui.attr("path"));
-          var childData = childFolder.eIDs[ui.attr("arrayIndex")];
-          childFolder.eIDs.splice(ui.attr("arrayIndex"), 1);
-          if (!scope.local) {
-            game.config.sync("updateConfig");
-          }
-          else {
-            game.config.update();
-          }
-          console.log("Here");
-          obj.update();
-        }
-      }
-    });
-  }
-
-
   if (!layout.mobile) {
     listedChars.on("dragover", function(ev) {
       ev.preventDefault();
@@ -489,8 +463,6 @@ sync.render("ui_assetManager", function(obj, app, scope) {
 
   var resourceWrap = $("<div>").appendTo(listWrap);
 
-
-
   function buildSubFolders(path, expand) {
     var folderData = sync.traverse(game.config.data.organized, path);
 
@@ -566,6 +538,10 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     }
     folder.sortable({
       handle : ".nohandle",
+      connectWith : ".dropContent",
+      helper: function(ev, drag) {
+        return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
+      },
       update : function(ev, ui) {
         ev.stopPropagation();
         ev.preventDefault();
@@ -599,6 +575,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
           else {
             game.config.update();
           }
+          obj.update();
         }
       }
     });
@@ -872,6 +849,9 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       resourceList.addClass("outline smooth dropContent");
       resourceList.css("margin-left", "1em");
       resourceList.sortable({
+        helper: function(ev, drag) {
+          return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
+        },
         connectWith : ".dropContent",
         update : function(ev, ui) {
           ev.stopPropagation();
@@ -907,6 +887,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
             else {
               game.config.update();
             }
+            obj.update();
           }
         }
       });
@@ -1126,14 +1107,6 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     app : true,
     draw : function(ui, charObj) {
       ui.css("font-size", "1.4em");
-      if (charObj.data._t == "i") {
-        ui.attr("draggable", true);
-        ui.on("dragstart", function(ev){
-          var dt = ev.originalEvent.dataTransfer;
-          dt.setData("OBJ", JSON.stringify(charObj.data));
-        });
-      }
-
       if (charObj.data._t == "b" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
         var button = $("<button>").appendTo(ui);
         button.addClass("subtitle hover2");
@@ -1261,7 +1234,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       }
     }
   });
-  list.addClass("white .dropContent flex");
+  list.addClass("white dropContent flex");
   
   list.appendTo(listWrap);
   if (list.children().length) {
@@ -1275,13 +1248,29 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   }
   if (!layout.mobile) {
     list.sortable({
-      filter : ".charContent",
       connectWith : ".dropContent",
       start : function(ev, ui) {
         listedChars.scrollTop(0);
       },
       helper: function(ev, drag) {
         return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
+      },
+      update : function(ev, ui) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        var ui = $(ui.item);
+        if (ui.attr("path") && ui.attr("arrayIndex")) {
+          var childFolder = sync.traverse(game.config.data.organized, ui.attr("path"));
+          var childData = childFolder.eIDs[ui.attr("arrayIndex")];
+          childFolder.eIDs.splice(ui.attr("arrayIndex"), 1);
+          if (!scope.local) {
+            game.config.sync("updateConfig");
+          }
+          else {
+            game.config.update();
+          }
+          obj.update();
+        }
       }
     });
   }
