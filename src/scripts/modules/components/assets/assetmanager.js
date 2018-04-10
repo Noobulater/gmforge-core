@@ -221,124 +221,6 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   div.addClass("flexcolumn");
   div.css("min-height", "100%");
 
-  if (!scope.hideFolders) {
-    div.addClass("dropContent");
-    div.sortable({
-      handle : ".nohandle",
-      update : function(ev, ui) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        var ui = $(ui.item);
-        if (ui.attr("path") && ui.attr("arrayIndex")) {
-          var childFolder = sync.traverse(game.config.data.organized, ui.attr("path"));
-          var childData = childFolder.eIDs[ui.attr("arrayIndex")];
-          childFolder.eIDs.splice(ui.attr("arrayIndex"), 1);
-          if (!scope.local) {
-            game.config.sync("updateConfig");
-          }
-          else {
-            game.config.update();
-          }
-          console.log("Here");
-          obj.update();
-        }
-      }
-    });
-  }
-
-  if (!layout.mobile) {
-    div.on("dragover", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
-    		var olay = layout.overlay({
-          target : app,
-          id : app.attr("id")+"-drag-overlay",
-          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none", "z-index" : util.getMaxZ(".ui-popout")+1}
-        });
-        olay.addClass("flexcolumn flexmiddle alttext");
-        olay.css("font-size", "2em");
-        olay.css("z-index", util.getMaxZ(".ui-popout")+1);
-        olay.append("<b>Drop to Create</b>");
-      }
-  	});
-    div.on('drop', function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
-      var ent = JSON.parse(dt.getData("OBJ"));
-
-      game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-      var lastKeys = Object.keys(game.entities.data);
-      game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-        var change = true;
-        for (var key in game.entities.data) {
-          if (!util.contains(lastKeys, key)) {
-            game.locals["newAssetList"].push(key);
-            change = false;
-          }
-        }
-        return change;
-      }
-      app.attr("category", ent._t);
-      if (ent._t == "a") {
-        if (!game.config.data.offline) {
-          runCommand("createAdventure", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "b") {
-        if (!game.config.data.offline) {
-          runCommand("createBoard", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "c") {
-        createCharacter(ent, true);
-        game.entities.update();
-      }
-      else if (ent._t == "i") {
-        if (!game.config.data.offline) {
-          runCommand("createItem", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "p") {
-        if (!game.config.data.offline) {
-          runCommand("createPage", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-    });
-
-  	div.on("dragleave", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-  	});
-  }
-
   var categories = {
     //"a" : {n : "Adventures", i : "book", ui : "ui_planner", width : "60vw", height : "80vh"},
     "c" : {n : "Actors", i : "user", ui : "ui_characterSheet", width : assetTypes["c"].width, height : assetTypes["c"].height},
@@ -483,12 +365,131 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   });
 
   var listWrap = $("<div>").appendTo(listedChars);
-  listWrap.addClass("fit-x");
-  listWrap.css("position", "absolute");
+  listWrap.addClass("fit-x flexcolumn flex");
+
+  if (!scope.hideFolders) {
+    libraryWrap.addClass("dropContent");
+    libraryWrap.sortable({
+      handle : ".nohandle",
+      update : function(ev, ui) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        var ui = $(ui.item);
+        if (ui.attr("path") && ui.attr("arrayIndex")) {
+          var childFolder = sync.traverse(game.config.data.organized, ui.attr("path"));
+          var childData = childFolder.eIDs[ui.attr("arrayIndex")];
+          childFolder.eIDs.splice(ui.attr("arrayIndex"), 1);
+          if (!scope.local) {
+            game.config.sync("updateConfig");
+          }
+          else {
+            game.config.update();
+          }
+          console.log("Here");
+          obj.update();
+        }
+      }
+    });
+  }
 
 
+  if (!layout.mobile) {
+    listedChars.on("dragover", function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+
+      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
+    		var olay = layout.overlay({
+          target : app,
+          id : app.attr("id")+"-drag-overlay",
+          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none", "z-index" : util.getMaxZ(".ui-popout")+1}
+        });
+        olay.addClass("flexcolumn flexmiddle alttext");
+        olay.css("font-size", "2em");
+        olay.css("z-index", util.getMaxZ(".ui-popout")+1);
+        olay.append("<b>Drop to Create</b>");
+      }
+  	});
+    listedChars.on('drop', function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      var dt = ev.originalEvent.dataTransfer;
+      var ent = JSON.parse(dt.getData("OBJ"));
+
+      game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+      var lastKeys = Object.keys(game.entities.data);
+      game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+        var change = true;
+        for (var key in game.entities.data) {
+          if (!util.contains(lastKeys, key)) {
+            game.locals["newAssetList"].push(key);
+            change = false;
+          }
+        }
+        return change;
+      }
+      app.attr("category", ent._t);
+      if (ent._t == "a") {
+        if (!game.config.data.offline) {
+          runCommand("createAdventure", ent);
+        }
+        else {
+          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+          game.entities.update();
+        }
+      }
+      else if (ent._t == "b") {
+        if (!game.config.data.offline) {
+          runCommand("createBoard", ent);
+        }
+        else {
+          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+          game.entities.update();
+        }
+      }
+      else if (ent._t == "c") {
+        createCharacter(ent, true);
+        game.entities.update();
+      }
+      else if (ent._t == "i") {
+        if (!game.config.data.offline) {
+          runCommand("createItem", ent);
+        }
+        else {
+          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+          game.entities.update();
+        }
+      }
+      else if (ent._t == "p") {
+        if (!game.config.data.offline) {
+          runCommand("createPage", ent);
+        }
+        else {
+          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+          game.entities.update();
+        }
+      }
+      layout.coverlay(app.attr("id")+"-drag-overlay");
+    });
+
+  	listedChars.on("dragleave", function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      layout.coverlay(app.attr("id")+"-drag-overlay");
+  	});
+  }
 
   var resourceWrap = $("<div>").appendTo(listWrap);
+
+
 
   function buildSubFolders(path, expand) {
     var folderData = sync.traverse(game.config.data.organized, path);
@@ -931,7 +932,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
               ui.css("font-size", "1.2em");
               ui.removeClass("outline");
               if (charObj.data._t == "i") {
-                ui.attr("draggable", true);
+
                 ui.on("dragstart", function(ev){
                   var dt = ev.originalEvent.dataTransfer;
                   dt.setData("OBJ", JSON.stringify(charObj.data));
@@ -1260,7 +1261,8 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       }
     }
   });
-  list.addClass("white");
+  list.addClass("white .dropContent flex");
+  
   list.appendTo(listWrap);
   if (list.children().length) {
     list.children().each(function(){
@@ -1271,12 +1273,15 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       }
     });
   }
-  if (scope.category != "i" && !layout.mobile) {
+  if (!layout.mobile) {
     list.sortable({
       filter : ".charContent",
       connectWith : ".dropContent",
       start : function(ev, ui) {
         listedChars.scrollTop(0);
+      },
+      helper: function(ev, drag) {
+        return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
       }
     });
   }
