@@ -495,6 +495,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       else {
         game.config.update();
       }
+      obj.update();
       folderNameInput.blur();
     });
     folderNameInput.blur(function(){
@@ -542,6 +543,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       helper: function(ev, drag) {
         return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
       },
+      containment: "body",
       update : function(ev, ui) {
         ev.stopPropagation();
         ev.preventDefault();
@@ -818,6 +820,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
             else {
               game.config.update();
             }
+            obj.update();
           }
         });
         ev.stopPropagation();
@@ -852,6 +855,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
         helper: function(ev, drag) {
           return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
         },
+        containment: "body",
         connectWith : ".dropContent",
         update : function(ev, ui) {
           ev.stopPropagation();
@@ -1255,6 +1259,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       helper: function(ev, drag) {
         return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
       },
+      containment: "body",
       update : function(ev, ui) {
         ev.stopPropagation();
         ev.preventDefault();
