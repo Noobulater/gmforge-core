@@ -2691,3 +2691,606 @@ util.pageSamples = [
   }
 
 ];
+
+util.interfaces = {
+  "Organization" : {
+    "Column" : {
+      content : {
+        classes : "flexcolumn flex flexbetween flexcontainer",
+        display : [],
+      },
+    },
+    "Row" : {
+      content : {
+        classes : "flexrow flex flexbetween flexcontainer",
+        display : [],
+      },
+    },
+  },
+  "Inputs" : {
+    "Field" : {
+      content : {
+        target : "%Target%",
+        edit : {classes : "line"}
+      },
+      arguments : {
+        "%Target%" : {
+          datalist : "character",
+        }
+      }
+    },
+    "Min-Max Field" : {
+      content : {
+        classes : "flexrow flexaround bold", display : [
+          {classes : "bold", target : "%Target%", edit : {classes : "line", style : {width : "24px", "text-align" : "center"}}},
+          {classes : "lrmargin bold", value : "/"},
+          {classes : "bold", name : "", target : "%Target%", edit : {classes : "line", style : {width : "24px", "text-align" : "center"}, raw : "max"}},
+        ]
+      },
+      arguments : {
+        "%Target%" : {
+          datalist : "character",
+        }
+      }
+    },
+    "Image" : {
+      content : {
+        classes : "flexcolumn smooth outline flex white",
+        ui : "ui_image",
+        target : "info.img",
+        style : {"min-width" : "100px", "min-height" : "100px"},
+      },
+    },
+    "Label" : {
+      content : {
+        value : "%Value%",
+      },
+      arguments : {
+        "%Value%" : {
+          value : "Label",
+        }
+      }
+    },
+    "Notes" : {
+      content : {
+        classes : "flexcolumn flex padding",
+        ui : "ui_characterNotes",
+      }
+    },
+  },
+  "Lists" : {
+    "Stat List" : {
+      content : {
+        classes : "flexrow flexaround flexwrap flex",
+        target : "stats",
+        datalist : {
+          classes : "spadding flexcolumn flexmiddle lrmargin bold outline inactive flex",
+          display : [
+            {classes : "flexrow flexmiddle subtitle", display : [
+              {name : "@c.%dataTarget%.name", classes : "lrpadding bold"},
+              {classes : "flexmiddle", ui : "ui_link", scope : {icon : "'list-alt'", click : "ui_modifiers", lookup : "@applyTarget", attr : {"modsOnly" : true}}},
+            ]},
+            {classes : "flexrow flexmiddle lrmargin bold", display : [
+              {
+                name : "", target : "%dataTarget%", edit : {classes : "bold white outline flexmiddle fit-x", style : {"width" : "70px", "height" : "40px"}, raw : "1"},
+              },
+            ]},
+          ]
+        }
+      },
+    },
+    "Inventory" : {
+      content : {
+        classes : "flexcolumn flex padding", display : [
+          {classes : "flexrow underline", style : {"font-size" : "1.4em"}, display : [
+            {classes : "bold lrmargin", name : "Inventory"},
+            {
+              classes : "bold flexmiddle create subtitle lrmargin",
+              style : {"cursor" : "pointer"},
+              icon : "plus",
+              click : {create : "inventory"}
+            }
+          ]},
+          {
+            classes : "flex spadding white outline smooth",
+            style : {"text-align" : "left", "overflow-y" : "auto"},
+            scrl : "inv",
+            ui : "ui_entryList",
+            scope : {
+              drop : "inventoryDrop",
+              connectWith : ".inventoryDrop",
+              reposition : true,
+              lookup : "inventory",
+              applyUI : {classes : "flexrow flex subtitle", display : [
+                {
+                  classes : "flexcolumn",
+                  ui : "ui_image",
+                  target : "@applyTarget.info.img",
+                  style : {"width" : "15px", "height" : "15px"},
+                  scope : {def : "/content/icons/Backpack1000p.png"},
+                },
+                {name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrmargin line middle", title : "Quantity", style : {"width" : "24px"}, raw : "1"}},
+                {classes : "flex lrpadding", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex", style : {"min-width" : "70px"}, raw : "1"}},
+                {classes : "bold hover2 spadding white outline smooth flexrow flexmiddle subtitle",
+                  value : "(@c.@applyTarget.tags.equipped==0)?('Equip'):('Un-equip')", style : {"white-space" : "nowrap"},
+                  click : {calc : [{target : "@applyTarget.tags.equipped", cond : "@c.@applyTarget.tags.equipped==0", eq : "1"},{target : "@applyTarget.tags.equipped", cond : "@c.@applyTarget.tags.equipped==1", eq : "0"}]}
+                },
+                {name : "", target : "@applyTarget.info.weight", edit : {classes : "lrmargin line middle",title : "Weight", style : {"width" : "24px"}, raw : "1"}},
+                {
+                  classes : "flexmiddle",
+                  name : "",
+                  link : "edit",
+                  target : "@applyTarget",
+                  click : {edit : "@applyTarget"}
+                },
+                {
+                  classes : "flexmiddle destroy lrmargin",
+                  name : "",
+                  link : "trash",
+                  click : {delete : true, target : "@applyTarget"}
+                },
+              ]}
+            }
+          },
+        ]
+      },
+    },
+    "Spellbook" : {
+      content : {
+        classes : "flexcolumn flex padding", display : [
+          {classes : "flexrow underline", style : {"font-size" : "1.4em"}, display : [
+            {classes : "bold lrmargin", name : "Spellbook"},
+            {
+              classes : "bold flexmiddle create subtitle lrmargin",
+              style : {"cursor" : "pointer"},
+              icon : "plus",
+              click : {create : "spellbook"}
+            }
+          ]},
+          {
+            classes : "flex spadding white outline smooth",
+            style : {"text-align" : "left", "overflow-y" : "auto"},
+            scrl : "spl",
+            ui : "ui_entryList",
+            scope : {
+              drop : "spellbookDrop",
+              connectWith : ".spellbookDrop",
+              reposition : true,
+              lookup : "spellbook",
+              applyUI : {classes : "flexrow flex subtitle", display : [
+                {
+                  classes : "flexcolumn",
+                  ui : "ui_image",
+                  target : "@applyTarget.info.img",
+                  style : {"width" : "15px", "height" : "15px"},
+                  scope : {def : "/content/icons/Backpack1000p.png"},
+                },
+                {name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrmargin line middle", title : "Quantity", style : {"width" : "24px"}, raw : "1"}},
+                {classes : "flex lrpadding", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex", style : {"min-width" : "70px"}, raw : "1"}},
+                {name : "", target : "@applyTarget.info.weight", edit : {classes : "lrmargin line middle",title : "Weight", style : {"width" : "24px"}, raw : "1"}},
+                {
+                  classes : "flexmiddle",
+                  name : "",
+                  link : "edit",
+                  target : "@applyTarget",
+                  click : {edit : "@applyTarget"}
+                },
+                {
+                  classes : "flexmiddle destroy lrmargin",
+                  name : "",
+                  link : "trash",
+                  click : {delete : true, target : "@applyTarget"}
+                },
+              ]}
+            }
+          },
+        ]
+      },
+    },
+  },
+  "Interactive" : {
+    "Roll Button" : {
+      content : {
+        classes : "bold hover2 spadding white outline smooth flexmiddle",
+        value : "%Macro%",
+        click : {action : "%Action%"}
+      },
+      arguments : {
+        "%Action%" : {
+          value : "",
+        },
+        "%Macro%" : {
+          value : "",
+        }
+      }
+    },
+  }
+}
+
+util.customSheets = function(obj, app, scope, sheet){
+  return [
+    {
+      name : "Blank Notes",
+      click : function(){
+        var style = sheet.style || {};
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexcolumn flex lpadding flexcontainer", display : [
+            {classes : "flexrow flexbetween", display : [
+              {classes : "flexcolumn flex padding",
+                display : [
+                  {
+                    classes : "flexcolumn smooth outline flex white",
+                    ui : "ui_image",
+                    target : "info.img",
+                    style : {"min-width" : "100px", "min-height" : "100px"},
+                  }
+                ]
+              },
+              {classes : "flexcolumn flex2", display : [
+                {classes : "flexrow lrmargin spadding", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                {
+                  classes : "flexcolumn flex2",
+                  ui : "ui_characterNotes",
+                  scope : {style : {"min-height" : "200px"}}
+                },
+              ]},
+            ]}
+          ]},
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Container",
+      click : function(){
+        var style = sheet.style || {};
+        merge(style, {padding : "1em"});
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexrow flexbetween flex flexcontainer", display : [
+              {classes : "flexcolumn flex padding",
+                display : [
+                  {
+                    classes : "flexcolumn smooth outline flex white",
+                    ui : "ui_image",
+                    target : "info.img",
+                    style : {"min-width" : "100px", "min-height" : "100px"},
+                  }
+                ]
+              },
+              {classes : "flexcolumn flex2 lrmargin", display : [
+                {classes : "flexrow fit-x spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                {
+                  classes : "flexcolumn flex",
+                  ui : "ui_characterNotes",
+                  scope : {style : {"min-height" : "200px"}}
+                },
+                {classes : "flexcolumn padding flex", display : [
+                  {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
+                    {classes : "bold subtitle", name : "Inventory"},
+                    {
+                      classes : "bold create subtitle lrmargin",
+                      style : {"cursor" : "pointer"},
+                      icon : "plus",
+                      click : {create : "inventory"}
+                    },
+                    {classes : "flex"},
+                    {classes : "flexrow lrmargin", style : {"font-size" : "0.6em"}, name : "Max Weight", target : "stats.weight", edit : {classes : "line fit-x middle lrmargin", raw : "1", type : "number", style : {"width" : "80px"}}},
+                  ]},
+                  {classes : "flexrow fit-x flexbetween", display : [
+                    {classes : "bold subtitle flex", name : "Name"},
+                    {classes : "lrpadding lrmargin bold subtitle middle", name : "Quantity", style : {"width" : "50px"}},
+                    {classes : "lrpadding lrmargin bold subtitle middle", name : "Weight", style : {"width" : "50px"}},
+                    {
+                      classes : "flexmiddle",
+                      name : "",
+                      icon : "edit",
+                      style : {"color" : "transparent"},
+                    },
+                    {
+                      classes : "flexmiddle",
+                      name : "",
+                      icon : "trash",
+                      style : {"color" : "transparent"},
+                    },
+                  ]},
+                  {
+                    classes : "flex spadding white outline smooth",
+                    style : {"text-align" : "left", "overflow-y" : "auto"},
+                    scrl : "inv",
+                    ui : "ui_entryList",
+                    scope : {
+                      drop : "inventoryDrop",
+                      connectWith : ".inventoryDrop",
+                      reposition : true,
+                      lookup : "inventory",
+                      applyUI : {classes : "flexrow flex subtitle", display : [
+                        {
+                          classes : "flexcolumn",
+                          ui : "ui_image",
+                          target : "@applyTarget.info.img",
+                          style : {"width" : "20px", "height" : "20px"},
+                          scope : {def : "/content/icons/Pouch1000p.png"},
+                        },
+                        {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
+                        {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle", style : {"width" : "50px"}}},
+                        {classes : "lrpadding", name : "", target : "@applyTarget.info.weight", edit : {classes : "lrpadding line middle", style : {"width" : "40px"}}},
+                        {
+                          classes : "flexmiddle",
+                          name : "",
+                          link : "edit",
+                          target : "@applyTarget",
+                          click : {edit : "@applyTarget"}
+                        },
+                        {
+                          classes : "flexmiddle destroy lrmargin",
+                          name : "",
+                          link : "trash",
+                          click : {delete : true, target : "@applyTarget"}
+                        },
+                      ]},
+                    }
+                  },
+                  {classes : "flexrow", cond : "R@c.stats.weight>0", display : [
+                    {classes : "bold subtitle lrmargin", name : "Weight (@:weight()lbs)"},
+                    {classes : "spadding lrmargin flex", ui : "ui_progressBar", scope : {percentage : "@:weight()", max : "R@c.stats.weight", col : "rgb(@:int(@percentage*200),@:int(200-(@percentage*200)),0)"}},
+                    {cond : "R@c.stats.weight>0", classes : "bold subtitle lrmargin", title : "Str*15", value : "@:int((@:weight()/(R@c.stats.weight))*100)+'%'"}
+                  ]},
+                ]}
+              ]},
+            ]
+          },
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Empty",
+      click : function(){
+        var style = sheet.style || {};
+        merge(style, {padding : "1em"});
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexcolumn flex flexcontainer", display : []},
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Notes Only",
+      click : function(){
+        var style = sheet.style || {};
+        merge(style, {padding : "1em"});
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexrow flexbetween flex flexcontainer", display : [
+              {classes : "flexcolumn flex padding",
+                display : [
+                  {
+                    classes : "flexcolumn smooth outline flex white",
+                    ui : "ui_image",
+                    target : "info.img",
+                    style : {"min-width" : "100px", "min-height" : "100px"},
+                  }
+                ]
+              },
+              {classes : "flexcolumn flex2 lrmargin", display : [
+                {classes : "flexrow spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                {
+                  classes : "flexcolumn flex2",
+                  ui : "ui_characterNotes",
+                  scope : {style : {"min-height" : "200px"}}
+                },
+              ]},
+            ]
+          },
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Shop",
+      submenu : [
+        {
+          name : "Inventory",
+          click : function(){
+            var style = sheet.style || {};
+            merge(style, {padding : "1em"});
+            obj.data._d = {
+              style : style,
+              content : {classes : "flexcolumn flex flexcontainer", display : [
+                  {classes : "flexrow flexbetween", display : [
+                    {classes : "flexcolumn flex padding",
+                      display : [
+                        {
+                          classes : "flexcolumn smooth outline flex white",
+                          ui : "ui_image",
+                          target : "info.img",
+                          style : {"min-width" : "100px", "min-height" : "100px"},
+                        }
+                      ]
+                    },
+                    {classes : "flexcolumn flex2 lrmargin", display : [
+                      {classes : "flexrow lrmargin spadding", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                      {
+                        classes : "flexcolumn flex2",
+                        ui : "ui_characterNotes",
+                        scope : {style : {"min-height" : "200px"}}
+                      },
+                    ]},
+                  ]},
+                  {classes : "flexcolumn padding", display : [
+                    {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
+                      {classes : "bold subtitle", name : "Shop"},
+                      {
+                        classes : "bold create subtitle lrmargin",
+                        style : {"cursor" : "pointer"},
+                        icon : "plus",
+                        click : {create : "inventory"}
+                      },
+                    ]},
+                    {classes : "flexrow fit-x flexbetween", display : [
+                      {classes : "bold flex", name : "Name"},
+                      {classes : "bold", name : "Quantity", style : {"width" : "80px"}},
+                      {classes : "bold", name : "Price", style : {"width" : "70px"}},
+                      {
+                        classes : "flexmiddle",
+                        name : "",
+                        icon : "edit",
+                        style : {"color" : "transparent"},
+                      },
+                      {
+                        classes : "flexmiddle lrmargin",
+                        name : "",
+                        icon : "trash",
+                        style : {"color" : "transparent"},
+                      },
+                    ]},
+                    {
+                      classes : "flex padding white outline smooth",
+                      style : {"text-align" : "left", "overflow-y" : "auto"},
+                      scrl : "inv",
+                      ui : "ui_entryList",
+                      scope : {
+                        drop : "inventoryDrop",
+                        connectWith : ".inventoryDrop",
+                        reposition : true,
+                        lookup : "inventory",
+                        applyUI : {classes : "flexrow flex", display : [
+                          {
+                            classes : "flexcolumn",
+                            ui : "ui_image",
+                            target : "@applyTarget.info.img",
+                            style : {"width" : "20px", "height" : "20px"},
+                            scope : {def : "/content/icons/Pouch1000p.png"},
+                          },
+                          {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
+                          {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle flex", style : {"width" : "60px"}}},
+                          {classes : "lrmargin lrpadding white smooth outline bold flexmiddle", name : "", target : "@applyTarget.info.price", edit : {classes : "line middle", style : {"width" : "65px"}}},
+                          {
+                            classes : "flexmiddle",
+                            name : "",
+                            link : "edit",
+                            target : "@applyTarget",
+                            click : {edit : "@applyTarget"}
+                          },
+                          {
+                            classes : "flexmiddle destroy lrmargin",
+                            name : "",
+                            link : "trash",
+                            click : {delete : true, target : "@applyTarget"}
+                          },
+                        ]},
+                      }
+                    }
+                  ]}
+                ]
+              },
+            }
+            obj.sync("updateSheet");
+          }
+        },
+        {
+          name : "Spells",
+          click : function(){
+            var style = sheet.style || {};
+            merge(style, {padding : "1em"});
+            obj.data._d = {
+              style : style,
+              content : {classes : "flexcolumn flex flexcontainer", display : [
+                  {classes : "flexrow flexbetween", display : [
+                    {classes : "flexcolumn flex padding",
+                      display : [
+                        {
+                          classes : "flexcolumn smooth outline flex white",
+                          ui : "ui_image",
+                          target : "info.img",
+                          style : {"min-width" : "100px", "min-height" : "100px"},
+                        }
+                      ]
+                    },
+                    {classes : "flexcolumn flex2 lrmargin", display : [
+                      {classes : "flexrow spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                      {
+                        classes : "flexcolumn flex2",
+                        ui : "ui_characterNotes",
+                        scope : {style : {"min-height" : "200px"}}
+                      },
+                    ]},
+                  ]},
+                  {classes : "flexcolumn padding", display : [
+                    {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
+                      {classes : "bold subtitle", name : "Shop"},
+                      {
+                        classes : "bold create subtitle lrmargin",
+                        style : {"cursor" : "pointer"},
+                        icon : "plus",
+                        click : {create : "inventory"}
+                      },
+                    ]},
+                    {classes : "flexrow fit-x flexbetween", display : [
+                      {classes : "bold flex", name : "Name"},
+                      {classes : "bold", name : "Quantity", style : {"width" : "80px"}},
+                      {classes : "bold", name : "Price", style : {"width" : "70px"}},
+                      {
+                        classes : "flexmiddle",
+                        name : "",
+                        icon : "edit",
+                        style : {"color" : "transparent"},
+                      },
+                      {
+                        classes : "flexmiddle lrmargin",
+                        name : "",
+                        icon : "trash",
+                        style : {"color" : "transparent"},
+                      },
+                    ]},
+                    {
+                      classes : "flex padding white outline smooth",
+                      style : {"text-align" : "left", "overflow-y" : "auto"},
+                      scrl : "inv",
+                      ui : "ui_entryList",
+                      scope : {
+                        drop : "spellDrop",
+                        connectWith : ".spellDrop",
+                        reposition : true,
+                        lookup : "spellbook",
+                        applyUI : {classes : "flexrow flex", display : [
+                          {
+                            classes : "flexcolumn",
+                            ui : "ui_image",
+                            target : "@applyTarget.info.img",
+                            style : {"width" : "20px", "height" : "20px"},
+                            scope : {def : "/content/icons/Pouch1000p.png"},
+                          },
+                          {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
+                          {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle flex", style : {"width" : "60px"}}},
+                          {classes : "lrmargin lrpadding white smooth outline subtitle bold flexmiddle", name : "", target : "@applyTarget.info.price", edit : {classes : "line middle", style : {"width" : "65px"}}},
+                          {
+                            classes : "flexmiddle",
+                            name : "",
+                            link : "edit",
+                            target : "@applyTarget",
+                            click : {edit : "@applyTarget"}
+                          },
+                          {
+                            classes : "flexmiddle destroy lrmargin",
+                            name : "",
+                            link : "trash",
+                            click : {delete : true, target : "@applyTarget"}
+                          },
+                        ]},
+                      }
+                    }
+                  ]}
+                ]
+              },
+            }
+            obj.sync("updateSheet");
+          }
+        }
+      ]
+    }
+  ]
+}

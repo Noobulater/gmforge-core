@@ -77,6 +77,29 @@ sync.render("ui_processUI", function(obj, app, scope) {
         });
       }
 
+      if (sData.datalist) {
+        var value = sync.traverse(obj.data, sData.target);
+        var applyKey = sData.dataKey || "%dataKey%";
+        var applyTarget = sData.dataTarget || "%dataTarget%";
+        var newScope = duplicate(scope);
+        newScope.viewOnly = scope.viewOnly;
+        delete newScope.markup;
+        merge(newScope, sData.scope);
+        for (var key in value) {
+          var dat = value[key];
+          if (sData.datalist) {
+            newScope.name = key;
+            newScope.display = JSON.stringify(sData.datalist);
+            newScope.display = newScope.display.replace(new RegExp(applyKey, 'g'), key);
+            newScope.display = newScope.display.replace(new RegExp(applyTarget, 'g'), sData.target + "." + key);
+            newScope.display = JSON.parse(newScope.display);
+
+            if ((!sData.list || util.contains(sData.list, key)) && (!sData.ignore || !util.contains(sData.ignore, key))) {
+              sync.render("ui_processUI")(obj, app, newScope).appendTo(section);
+            }
+          }
+        }
+      }
       if (sData.click) {
         if (sData.click instanceof Object) {
           section.contextmenu(function(ev){
@@ -572,7 +595,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
             ui.appendTo(section);
           }
         }
-        else {
+        else if (!sData.datalist) {
           var value = sync.traverse(obj.data, newScope.lookup);
           if (value === false) { // field was not found
             // obviously it belongs here
@@ -735,7 +758,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
           }
         }
       }
-      else {
+      else if (!sData.datalist) {
         if (sData.name || sData.link || sData.icon) {
           var name = $("<text>").appendTo(section);
           if (sData.link) {

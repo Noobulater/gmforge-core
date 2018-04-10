@@ -125,6 +125,26 @@
 	background-color: rgba(0, 0, 0, 0.8);
 }
 
+.scroll-y {
+	overflow-y : auto;
+}
+
+.scroll-x {
+	overflow-x : auto;
+}
+
+.scroll {
+	overflow : auto;
+}
+
+.noscroll {
+	overflow : "visible";
+}
+
+.hidescroll {
+	overflow : "hidden"
+}
+
 .noflex {
 	display: block;
 	justify-content: none;

@@ -850,762 +850,368 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       }
     });
 
-    if (app.attr("from") && game.templates.display.sheet.summary) {
-      var back = genIcon("arrow-left").appendTo(optionsBar);
-      back.addClass("lrmargin");
-      back.attr("title", "Back");
-      back.click(function(){
-        if (layout.mobile) {
-          runCommand("selectPlayerEntity");
-          obj.removeApp(app);
-          var old = app.attr("ui-name");
-          app.attr("ui-name", "ui_assetManager");
-          app.attr("from", old);
-          game.entities.addApp(app);
-        }
-        else {
-          var old = app.attr("ui-name");
-          app.attr("ui-name", app.attr("from"));
-          app.attr("from", old);
+    if (app.attr("simpleEditing")) {
+      if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
+        var quickSheet = $("<button>").appendTo(optionsBar);
+        quickSheet.addClass("highlight subtitle alttext");
+        quickSheet.text("Stop Editing");
+        quickSheet.click(function(){
+          if (JSON.stringify(obj.data._d.content) == JSON.stringify(game.templates.display.sheet.content)) {
+            if (JSON.stringify(obj.data._d.style) == JSON.stringify(game.templates.display.sheet.style)) {
+              delete obj.data._d;
+              console.log("deleted");
+            }
+          }
+          app.removeAttr("simpleEditing");
+          obj.sync("updateAsset");
+        });
+
+        var quickSheet = $("<button>").appendTo(optionsBar);
+        quickSheet.addClass("background subtitle alttext");
+        quickSheet.text("Blank Sheet");
+        quickSheet.click(function(){
+          ui_prompt({
+            target : $(this),
+            confirm : "Clear Sheet?",
+            click : function() {
+              obj.data._d = {style : duplicate(game.templates.display.sheet.style) || {}, content : {classes : "flexcolumn flex padding", display : []}};
+              app.attr("simpleEditing", true);
+              obj.update();
+            }
+          });
+        });
+        var quickSheet = $("<button>").appendTo(optionsBar);
+        quickSheet.addClass("background subtitle alttext");
+        quickSheet.text("Default Sheet");
+        quickSheet.click(function(){
+          obj.data._d = {style : duplicate(game.templates.display.sheet.style) || {}, content : duplicate(game.templates.display.sheet.content)};
+          app.attr("simpleEditing", true);
           obj.update();
-        }
-        var parent = app.parent();
-        if (parent && parent.parent() && parent.parent().parent() && parent.parent().parent().hasClass("ui-popout")) {
-          parent = parent.parent().parent();
-          parent.css("width", "");
-          parent.css("height", "");
-          parent.css("max-height", "");
-          parent.resizable();
-        }
-      });
-      div.mousemove(function(){
-        if (_down["17"]) {
-          div.css("cursor", "pointer");
-        }
-        else {
-          div.css("cursor", "");
-        }
-      });
-      div.click(function(ev){
-        if (_down["17"]) {
-          if (optionsBar.hasClass("card-selected")) {
-            optionsBar.removeClass("card-selected");
-            util.untarget(obj.id());
-            sendAlert({text : "Released Target"});
-          }
-          else {
-            optionsBar.addClass("card-selected");
-            util.target(obj.id());
-            sendAlert({text : "Targeted"});
-          }
-        }
-      });
-    }
-    if (!app.attr("homebrew")) {
-      var icon = $("<button>").appendTo(optionsBar);
-      icon.addClass("background subtitle alttext");
-      if (optionsBar.hasClass("card-selected")) {
-        icon.text("Release Target");
+        });
+        var quickSheet = $("<button>").appendTo(optionsBar);
+        quickSheet.addClass("background subtitle alttext");
+        quickSheet.text("Pre-made Sheet");
+        quickSheet.click(function(){
+          var actionList = util.customSheets(obj, app, scope, sheet);
+          ui_dropMenu($(this), actionList, {id : "quick-sheet-drop", "z-index" : util.getMaxZ(".ui-popout")+1});
+        });
       }
-      else {
-        icon.text("Target");
-      }
-      icon.click(function() {
-        if ($(this).text() == "Target") {
-          $(this).text("Release Target");
-          if (optionsBar.hasClass("card-selected")) {
-            optionsBar.removeClass("card-selected");
-            util.untarget(obj.id());
-          }
-          else {
-            optionsBar.addClass("card-selected");
-            util.target(obj.id());
-          }
-        }
-        else {
-          $(this).text("Target");
-          if (optionsBar.hasClass("card-selected")) {
-            optionsBar.removeClass("card-selected");
-            util.untarget(obj.id());
-          }
-          else {
-            optionsBar.addClass("card-selected");
-            util.target(obj.id());
-          }
-        }
-      });
     }
-
-    var buffer = $("<div>").appendTo(optionsBar);
-    buffer.addClass("flex");
-
-    if (!scope.viewOnly) {
+    else {
+      if (app.attr("from") && game.templates.display.sheet.summary) {
+        var back = genIcon("arrow-left").appendTo(optionsBar);
+        back.addClass("lrmargin");
+        back.attr("title", "Back");
+        back.click(function(){
+          if (layout.mobile) {
+            runCommand("selectPlayerEntity");
+            obj.removeApp(app);
+            var old = app.attr("ui-name");
+            app.attr("ui-name", "ui_assetManager");
+            app.attr("from", old);
+            game.entities.addApp(app);
+          }
+          else {
+            var old = app.attr("ui-name");
+            app.attr("ui-name", app.attr("from"));
+            app.attr("from", old);
+            obj.update();
+          }
+          var parent = app.parent();
+          if (parent && parent.parent() && parent.parent().parent() && parent.parent().parent().hasClass("ui-popout")) {
+            parent = parent.parent().parent();
+            parent.css("width", "");
+            parent.css("height", "");
+            parent.css("max-height", "");
+            parent.resizable();
+          }
+        });
+        div.mousemove(function(){
+          if (_down["17"]) {
+            div.css("cursor", "pointer");
+          }
+          else {
+            div.css("cursor", "");
+          }
+        });
+        div.click(function(ev){
+          if (_down["17"]) {
+            if (optionsBar.hasClass("card-selected")) {
+              optionsBar.removeClass("card-selected");
+              util.untarget(obj.id());
+              sendAlert({text : "Released Target"});
+            }
+            else {
+              optionsBar.addClass("card-selected");
+              util.target(obj.id());
+              sendAlert({text : "Targeted"});
+            }
+          }
+        });
+      }
       if (!app.attr("homebrew")) {
-        var securityWrap = $("<button>").appendTo(optionsBar);
-        securityWrap.addClass("background subtitle alttext");
-
-        var security = genIcon("lock", "Grant Access").appendTo(securityWrap);
-        security.attr("title", "Edit who has access to this character");
-        security.click(function(){
-          if (app.attr("viewingRights")) {
-            app.removeAttr("viewingRights");
+        var icon = $("<button>").appendTo(optionsBar);
+        icon.addClass("background subtitle alttext");
+        if (optionsBar.hasClass("card-selected")) {
+          icon.text("Release Target");
+        }
+        else {
+          icon.text("Target");
+        }
+        icon.click(function() {
+          if ($(this).text() == "Target") {
+            $(this).text("Release Target");
+            if (optionsBar.hasClass("card-selected")) {
+              optionsBar.removeClass("card-selected");
+              util.untarget(obj.id());
+            }
+            else {
+              optionsBar.addClass("card-selected");
+              util.target(obj.id());
+            }
           }
           else {
-            app.attr("viewingRights", true);
+            $(this).text("Target");
+            if (optionsBar.hasClass("card-selected")) {
+              optionsBar.removeClass("card-selected");
+              util.untarget(obj.id());
+            }
+            else {
+              optionsBar.addClass("card-selected");
+              util.target(obj.id());
+            }
           }
-          obj.update();
         });
       }
 
       var buffer = $("<div>").appendTo(optionsBar);
       buffer.addClass("flex");
 
-      var title = genIcon("tint").appendTo(optionsBar);
-      title.addClass("lrmargin");
-      title.attr("title", "Change Notes Style");
-      title.click(function(){
-        var newApp = sync.newApp("ui_stylePage");
-        obj.addApp(newApp);
+      if (!scope.viewOnly) {
+        if (!app.attr("homebrew")) {
+          var securityWrap = $("<button>").appendTo(optionsBar);
+          securityWrap.addClass("background subtitle alttext");
 
-        var pop = ui_popOut({
-          target : $(this),
-          prompt : true,
-          id : "page-styling",
-          title : "Notes Style",
-          style : {width : assetTypes["p"].width, height : assetTypes["p"].height},
-        }, newApp);
-      });
-
-      var cog = genIcon("cog").appendTo(optionsBar);
-      cog.css("margin-right", "4px");
-      cog.attr("title", "Manage attributes");
-      cog.click(function(){
-        if (app.attr("attributes")) {
-          app.removeAttr("attributes");
-        }
-        else {
-          app.attr("attributes", true);
-        }
-        obj.update();
-      });
-      if (!app.attr("homebrew")) {
-        var icon = $("<button>").appendTo(optionsBar);
-        icon.addClass("background subtitle alttext");
-        icon.text("Update Map Piece");
-        icon.click(function() {
-          if (boardApi.pix.selections && Object.keys(boardApi.pix.selections).length == 1) {
-            var selectData = boardApi.pix.selections[Object.keys(boardApi.pix.selections)[0]];
-            var ent = getEnt(selectData.board);
-            if (selectData.layer && ent && ent.data && ent.data.layers && ent.data.layers[selectData.layer] && ent.data.layers[selectData.layer].p[selectData.index]) {
-              found = true;
-              var dupe = duplicate(ent.data.layers[selectData.layer].p[selectData.index]);
-              delete dupe.x;
-              delete dupe.y;
-              dupe.w = boardApi.pix.scale(dupe.w, ent, true);
-              dupe.h = boardApi.pix.scale(dupe.h, ent, true);
-              delete dupe.l;
-              delete dupe.e;
-              delete dupe.v;
-              if (dupe.i) {
-                obj.data.info.img.min = dupe.i;
-              }
-              else {
-                delete obj.data.info.img.min;
-              }
-              sendAlert({text : "Saved as default piece"});
-
-              obj.data.info.img.modifiers = dupe;
-              obj.sync("updateAsset");
+          var security = genIcon("lock", "Grant Access").appendTo(securityWrap);
+          security.attr("title", "Edit who has access to this character");
+          security.click(function(){
+            if (app.attr("viewingRights")) {
+              app.removeAttr("viewingRights");
             }
             else {
-              sendAlert({text : "Invalid Piece"});
+              app.attr("viewingRights", true);
             }
-          }
-          else {
-            sendAlert({text : "Select a single piece to save as the default map piece "})
-          }
-        });
-      }
-
-      var calculations = $("<button>").appendTo(optionsBar);
-      calculations.addClass("background subtitle alttext");
-      calculations.text("Math");
-      calculations.click(function(){
-        app.attr("viewingData", true);
-        obj.update();
-      });
-      if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
-        var quickSheet = $("<button>").appendTo(optionsBar);
-        quickSheet.addClass("background subtitle alttext");
-        quickSheet.text("Sheet");
-        if (app.attr("simpleEditing")) {
-          quickSheet.text("Save Sheet");
-          quickSheet.removeClass("background").addClass("highlight");
-
-          var quickSheetJSON = $("<button>").appendTo(optionsBar);
-          quickSheetJSON.addClass("background subtitle alttext");
-          quickSheetJSON.text("Raw JSON");
-          quickSheetJSON.click(function(){
-            var select = sync.newApp("ui_JSON");
-            select.attr("lookup", "_d");
-            select.attr("closeTarget", "json-editor");
-            obj.addApp(select);
-
-            var pop = ui_popOut({
-              target : $(this),
-              title : "JSON",
-              id : "json-editor",
-            }, select);
-            pop.resizable();
+            obj.update();
           });
         }
 
-        quickSheet.click(function(){
-          var actionList = [
-            {
-              name : "Default Sheet",
-              click : function(){
-                delete obj.data._d;
-                obj.sync("updateSheet");
-              }
-            },
-            {
-              name : "Quick Sheets",
-              submenu : [
-                {
-                  name : "Blank Notes",
-                  click : function(){
-                    var style = sheet.style || {};
-                    obj.data._d = {
-                      style : style,
-                      content : {classes : "flexcolumn flex lpadding flexcontainer", display : [
-                        {classes : "flexrow flexbetween", display : [
-                          {classes : "flexcolumn flex padding",
-                            display : [
-                              {
-                                classes : "flexcolumn smooth outline flex white",
-                                ui : "ui_image",
-                                target : "info.img",
-                                style : {"min-width" : "100px", "min-height" : "100px"},
-                              }
-                            ]
-                          },
-                          {classes : "flexcolumn flex2", display : [
-                            {classes : "flexrow lrmargin spadding", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
-                            {
-                              classes : "flexcolumn flex2",
-                              ui : "ui_characterNotes",
-                              scope : {style : {"min-height" : "200px"}}
-                            },
-                          ]},
-                        ]}
-                      ]},
-                    }
-                    obj.sync("updateSheet");
-                  }
-                },
-                {
-                  name : "Container",
-                  click : function(){
-                    var style = sheet.style || {};
-                    merge(style, {padding : "1em"});
-                    obj.data._d = {
-                      style : style,
-                      content : {classes : "flexrow flexbetween flex flexcontainer", display : [
-                          {classes : "flexcolumn flex padding",
-                            display : [
-                              {
-                                classes : "flexcolumn smooth outline flex white",
-                                ui : "ui_image",
-                                target : "info.img",
-                                style : {"min-width" : "100px", "min-height" : "100px"},
-                              }
-                            ]
-                          },
-                          {classes : "flexcolumn flex2 lrmargin", display : [
-                            {classes : "flexrow fit-x spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
-                            {
-                              classes : "flexcolumn flex",
-                              ui : "ui_characterNotes",
-                              scope : {style : {"min-height" : "200px"}}
-                            },
-                            {classes : "flexcolumn padding flex", display : [
-                              {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
-                                {classes : "bold subtitle", name : "Inventory"},
-                                {
-                                  classes : "bold create subtitle lrmargin",
-                                  style : {"cursor" : "pointer"},
-                                  icon : "plus",
-                                  click : {create : "inventory"}
-                                },
-                                {classes : "flex"},
-                                {classes : "flexrow lrmargin", style : {"font-size" : "0.6em"}, name : "Max Weight", target : "stats.weight", edit : {classes : "line fit-x middle lrmargin", raw : "1", type : "number", style : {"width" : "80px"}}},
-                              ]},
-                              {classes : "flexrow fit-x flexbetween", display : [
-                                {classes : "bold subtitle flex", name : "Name"},
-                                {classes : "lrpadding lrmargin bold subtitle middle", name : "Quantity", style : {"width" : "50px"}},
-                                {classes : "lrpadding lrmargin bold subtitle middle", name : "Weight", style : {"width" : "50px"}},
-                                {
-                                  classes : "flexmiddle",
-                                  name : "",
-                                  icon : "edit",
-                                  style : {"color" : "transparent"},
-                                },
-                                {
-                                  classes : "flexmiddle",
-                                  name : "",
-                                  icon : "trash",
-                                  style : {"color" : "transparent"},
-                                },
-                              ]},
-                              {
-                                classes : "flex spadding white outline smooth",
-                                style : {"text-align" : "left", "overflow-y" : "auto"},
-                                scrl : "inv",
-                                ui : "ui_entryList",
-                                scope : {
-                                  drop : "inventoryDrop",
-                                  connectWith : ".inventoryDrop",
-                                  reposition : true,
-                                  lookup : "inventory",
-                                  applyUI : {classes : "flexrow flex subtitle", display : [
-                                    {
-                                      classes : "flexcolumn",
-                                      ui : "ui_image",
-                                      target : "@applyTarget.info.img",
-                                      style : {"width" : "20px", "height" : "20px"},
-                                      scope : {def : "/content/icons/Pouch1000p.png"},
-                                    },
-                                    {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
-                                    {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle", style : {"width" : "50px"}}},
-                                    {classes : "lrpadding", name : "", target : "@applyTarget.info.weight", edit : {classes : "lrpadding line middle", style : {"width" : "40px"}}},
-                                    {
-                                      classes : "flexmiddle",
-                                      name : "",
-                                      link : "edit",
-                                      target : "@applyTarget",
-                                      click : {edit : "@applyTarget"}
-                                    },
-                                    {
-                                      classes : "flexmiddle destroy lrmargin",
-                                      name : "",
-                                      link : "trash",
-                                      click : {delete : true, target : "@applyTarget"}
-                                    },
-                                  ]},
-                                }
-                              },
-                              {classes : "flexrow", cond : "R@c.stats.weight>0", display : [
-                                {classes : "bold subtitle lrmargin", name : "Weight (@:weight()lbs)"},
-                                {classes : "spadding lrmargin flex", ui : "ui_progressBar", scope : {percentage : "@:weight()", max : "R@c.stats.weight", col : "rgb(@:int(@percentage*200),@:int(200-(@percentage*200)),0)"}},
-                                {cond : "R@c.stats.weight>0", classes : "bold subtitle lrmargin", title : "Str*15", value : "@:int((@:weight()/(R@c.stats.weight))*100)+'%'"}
-                              ]},
-                            ]}
-                          ]},
-                        ]
-                      },
-                    }
-                    obj.sync("updateSheet");
-                  }
-                },
-                {
-                  name : "Empty",
-                  click : function(){
-                    var style = sheet.style || {};
-                    merge(style, {padding : "1em"});
-                    obj.data._d = {
-                      style : style,
-                      content : {classes : "flexcolumn flex flexcontainer", display : []},
-                    }
-                    obj.sync("updateSheet");
-                  }
-                },
-                {
-                  name : "Notes Only",
-                  click : function(){
-                    var style = sheet.style || {};
-                    merge(style, {padding : "1em"});
-                    obj.data._d = {
-                      style : style,
-                      content : {classes : "flexrow flexbetween flex flexcontainer", display : [
-                          {classes : "flexcolumn flex padding",
-                            display : [
-                              {
-                                classes : "flexcolumn smooth outline flex white",
-                                ui : "ui_image",
-                                target : "info.img",
-                                style : {"min-width" : "100px", "min-height" : "100px"},
-                              }
-                            ]
-                          },
-                          {classes : "flexcolumn flex2 lrmargin", display : [
-                            {classes : "flexrow spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
-                            {
-                              classes : "flexcolumn flex2",
-                              ui : "ui_characterNotes",
-                              scope : {style : {"min-height" : "200px"}}
-                            },
-                          ]},
-                        ]
-                      },
-                    }
-                    obj.sync("updateSheet");
-                  }
-                },
-                {
-                  name : "Shop",
-                  submenu : [
-                    {
-                      name : "Inventory",
-                      click : function(){
-                        var style = sheet.style || {};
-                        merge(style, {padding : "1em"});
-                        obj.data._d = {
-                          style : style,
-                          content : {classes : "flexcolumn flex flexcontainer", display : [
-                              {classes : "flexrow flexbetween", display : [
-                                {classes : "flexcolumn flex padding",
-                                  display : [
-                                    {
-                                      classes : "flexcolumn smooth outline flex white",
-                                      ui : "ui_image",
-                                      target : "info.img",
-                                      style : {"min-width" : "100px", "min-height" : "100px"},
-                                    }
-                                  ]
-                                },
-                                {classes : "flexcolumn flex2 lrmargin", display : [
-                                  {classes : "flexrow lrmargin spadding", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
-                                  {
-                                    classes : "flexcolumn flex2",
-                                    ui : "ui_characterNotes",
-                                    scope : {style : {"min-height" : "200px"}}
-                                  },
-                                ]},
-                              ]},
-                              {classes : "flexcolumn padding", display : [
-                                {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
-                                  {classes : "bold subtitle", name : "Shop"},
-                                  {
-                                    classes : "bold create subtitle lrmargin",
-                                    style : {"cursor" : "pointer"},
-                                    icon : "plus",
-                                    click : {create : "inventory"}
-                                  },
-                                ]},
-                                {classes : "flexrow fit-x flexbetween", display : [
-                                  {classes : "bold flex", name : "Name"},
-                                  {classes : "bold", name : "Quantity", style : {"width" : "80px"}},
-                                  {classes : "bold", name : "Price", style : {"width" : "70px"}},
-                                  {
-                                    classes : "flexmiddle",
-                                    name : "",
-                                    icon : "edit",
-                                    style : {"color" : "transparent"},
-                                  },
-                                  {
-                                    classes : "flexmiddle lrmargin",
-                                    name : "",
-                                    icon : "trash",
-                                    style : {"color" : "transparent"},
-                                  },
-                                ]},
-                                {
-                                  classes : "flex padding white outline smooth",
-                                  style : {"text-align" : "left", "overflow-y" : "auto"},
-                                  scrl : "inv",
-                                  ui : "ui_entryList",
-                                  scope : {
-                                    drop : "inventoryDrop",
-                                    connectWith : ".inventoryDrop",
-                                    reposition : true,
-                                    lookup : "inventory",
-                                    applyUI : {classes : "flexrow flex", display : [
-                                      {
-                                        classes : "flexcolumn",
-                                        ui : "ui_image",
-                                        target : "@applyTarget.info.img",
-                                        style : {"width" : "20px", "height" : "20px"},
-                                        scope : {def : "/content/icons/Pouch1000p.png"},
-                                      },
-                                      {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
-                                      {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle flex", style : {"width" : "60px"}}},
-                                      {classes : "lrmargin lrpadding white smooth outline bold flexmiddle", name : "", target : "@applyTarget.info.price", edit : {classes : "line middle", style : {"width" : "65px"}}},
-                                      {
-                                        classes : "flexmiddle",
-                                        name : "",
-                                        link : "edit",
-                                        target : "@applyTarget",
-                                        click : {edit : "@applyTarget"}
-                                      },
-                                      {
-                                        classes : "flexmiddle destroy lrmargin",
-                                        name : "",
-                                        link : "trash",
-                                        click : {delete : true, target : "@applyTarget"}
-                                      },
-                                    ]},
-                                  }
-                                }
-                              ]}
-                            ]
-                          },
-                        }
-                        obj.sync("updateSheet");
-                      }
-                    },
-                    {
-                      name : "Spells",
-                      click : function(){
-                        var style = sheet.style || {};
-                        merge(style, {padding : "1em"});
-                        obj.data._d = {
-                          style : style,
-                          content : {classes : "flexcolumn flex flexcontainer", display : [
-                              {classes : "flexrow flexbetween", display : [
-                                {classes : "flexcolumn flex padding",
-                                  display : [
-                                    {
-                                      classes : "flexcolumn smooth outline flex white",
-                                      ui : "ui_image",
-                                      target : "info.img",
-                                      style : {"min-width" : "100px", "min-height" : "100px"},
-                                    }
-                                  ]
-                                },
-                                {classes : "flexcolumn flex2 lrmargin", display : [
-                                  {classes : "flexrow spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
-                                  {
-                                    classes : "flexcolumn flex2",
-                                    ui : "ui_characterNotes",
-                                    scope : {style : {"min-height" : "200px"}}
-                                  },
-                                ]},
-                              ]},
-                              {classes : "flexcolumn padding", display : [
-                                {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
-                                  {classes : "bold subtitle", name : "Shop"},
-                                  {
-                                    classes : "bold create subtitle lrmargin",
-                                    style : {"cursor" : "pointer"},
-                                    icon : "plus",
-                                    click : {create : "inventory"}
-                                  },
-                                ]},
-                                {classes : "flexrow fit-x flexbetween", display : [
-                                  {classes : "bold flex", name : "Name"},
-                                  {classes : "bold", name : "Quantity", style : {"width" : "80px"}},
-                                  {classes : "bold", name : "Price", style : {"width" : "70px"}},
-                                  {
-                                    classes : "flexmiddle",
-                                    name : "",
-                                    icon : "edit",
-                                    style : {"color" : "transparent"},
-                                  },
-                                  {
-                                    classes : "flexmiddle lrmargin",
-                                    name : "",
-                                    icon : "trash",
-                                    style : {"color" : "transparent"},
-                                  },
-                                ]},
-                                {
-                                  classes : "flex padding white outline smooth",
-                                  style : {"text-align" : "left", "overflow-y" : "auto"},
-                                  scrl : "inv",
-                                  ui : "ui_entryList",
-                                  scope : {
-                                    drop : "spellDrop",
-                                    connectWith : ".spellDrop",
-                                    reposition : true,
-                                    lookup : "spellbook",
-                                    applyUI : {classes : "flexrow flex", display : [
-                                      {
-                                        classes : "flexcolumn",
-                                        ui : "ui_image",
-                                        target : "@applyTarget.info.img",
-                                        style : {"width" : "20px", "height" : "20px"},
-                                        scope : {def : "/content/icons/Pouch1000p.png"},
-                                      },
-                                      {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
-                                      {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle flex", style : {"width" : "60px"}}},
-                                      {classes : "lrmargin lrpadding white smooth outline subtitle bold flexmiddle", name : "", target : "@applyTarget.info.price", edit : {classes : "line middle", style : {"width" : "65px"}}},
-                                      {
-                                        classes : "flexmiddle",
-                                        name : "",
-                                        link : "edit",
-                                        target : "@applyTarget",
-                                        click : {edit : "@applyTarget"}
-                                      },
-                                      {
-                                        classes : "flexmiddle destroy lrmargin",
-                                        name : "",
-                                        link : "trash",
-                                        click : {delete : true, target : "@applyTarget"}
-                                      },
-                                    ]},
-                                  }
-                                }
-                              ]}
-                            ]
-                          },
-                        }
-                        obj.sync("updateSheet");
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-          ];
-          if (app.attr("simpleEditing")) {
-            app.removeAttr("simpleEditing");
-            obj.sync("updateAsset");
-          }
-          else {
-            actionList.push({
-              name : "Edit Sheet",
-              icon : "edit",
-              click : function(){
-                obj.data._d = obj.data._d || {style : duplicate(game.templates.display.sheet.style) || {}, content : {classes : "flexcolumn flex padding", display : []}};
-                app.attr("simpleEditing", true);
-                obj.update();
-              }
-            });
-            if (!obj.data._d) {
-              actionList.push({
-                name : "Extend Sheet",
-                icon : "edit",
-                click : function(){
-                  obj.data._d = {style : duplicate(game.templates.display.sheet.style) || {}, content : duplicate(game.templates.display.sheet.content)};
-                  app.attr("simpleEditing", true);
-                  obj.update();
-                }
-              });
-            }
-            ui_dropMenu($(this), actionList, {id : "quick-sheet-drop", "z-index" : util.getMaxZ(".ui-popout")+1});
-          }
-        });
-      }
-      if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
-        var tags = $("<button>").appendTo(optionsBar);
-        tags.addClass("background subtitle alttext");
-        tags.text("Notes");
-        tags.click(function(){
-          app.attr("viewingNotes", true);
-          obj.update();
-        });
-      }
+        var buffer = $("<div>").appendTo(optionsBar);
+        buffer.addClass("flex");
 
-      var tags = $("<button>").appendTo(optionsBar);
-      tags.addClass("background subtitle alttext");
-      tags.text("Tags");
-      if (app.attr("viewingTags")) {
-        tags.removeClass("background");
-        tags.addClass("highlight");
-      }
-      tags.click(function(){
-        if (app.attr("viewingTags")) {
-          app.removeAttr("viewingTags");
-        }
-        else {
-          app.attr("viewingTags", true);
-        }
-        obj.update();
-      });
-      if (!app.attr("homebrew")) {
-        var actions = $("<button>").appendTo(optionsBar);
-        actions.addClass("background subtitle alttext");
-        if (app.attr("viewingActions")) {
-          actions.removeClass("background");
-          actions.addClass("highlight");
-        }
-        actions.text("Actions");
-        actions.click(function(){
-          if (app.attr("viewingActions")) {
-            app.removeAttr("viewingActions");
-            div.empty();
-          }
-          else {
-            app.attr("viewingActions", true);
-          }
-          obj.update();
-        });
-        actions.contextmenu(function(ev){
-          var actionObj = sync.dummyObj();
-          actionObj.data = {context : {c : obj.id()}};
-
-          game.locals["actions"] = game.locals["actions"] || [];
-          game.locals["actions"].push(actionObj);
-
-          var newApp = sync.newApp("ui_actions");
-          newApp.addClass("spadding");
-          actionObj.addApp(newApp);
+        var title = genIcon("tint").appendTo(optionsBar);
+        title.addClass("lrmargin");
+        title.attr("title", "Change Notes Style");
+        title.click(function(){
+          var newApp = sync.newApp("ui_stylePage");
+          obj.addApp(newApp);
 
           var pop = ui_popOut({
             target : $(this),
-            minimize : true,
-            dragThickness : "0.5em",
-            title : "Actions",
-            align : "bottom",
-            style : {"width" : "300px"},
+            prompt : true,
+            id : "page-styling",
+            title : "Notes Style",
+            style : {width : assetTypes["p"].width, height : assetTypes["p"].height},
           }, newApp);
-          pop.resizable();
-
-          ev.stopPropagation();
-          return false;
         });
-      }
 
-      if (hasSecurity(getCookie("UserID"), "Rights", data) && hasSecurity(getCookie("UserID"), "Assistant Master")) {
-        if (hasSecurity(getCookie("UserID"), "Owner", data)) {
-          var syncLabel;
-          if (data._c == -1) {
-            syncLabel = genIcon("remove").appendTo(optionsBar);
-            syncLabel.addClass("alttext background outline");
-            syncLabel.attr("title", "Duplicate to move to Asset Storage");
+        var cog = genIcon("cog").appendTo(optionsBar);
+        cog.css("margin-right", "4px");
+        cog.attr("title", "Manage attributes");
+        cog.click(function(){
+          if (app.attr("attributes")) {
+            app.removeAttr("attributes");
           }
           else {
-            if (data._uid) {
-              if (data._sync) {
-                var syncLabel = genIcon("refresh").appendTo(optionsBar);
-                syncLabel.addClass("alttext highlight smooth outline lrpadding");
-                syncLabel.attr("title", "This is saved, and is in-sync with Asset Storage");
-                syncLabel.click(function(ev){
-                  runCommand("updateSync", {id : obj.id(), data : false});
-                  ev.stopPropagation();
-                  return false;
-                });
+            app.attr("attributes", true);
+          }
+          obj.update();
+        });
+        if (!app.attr("homebrew")) {
+          var icon = $("<button>").appendTo(optionsBar);
+          icon.addClass("background subtitle alttext");
+          icon.text("Update Map Piece");
+          icon.click(function() {
+            if (boardApi.pix.selections && Object.keys(boardApi.pix.selections).length == 1) {
+              var selectData = boardApi.pix.selections[Object.keys(boardApi.pix.selections)[0]];
+              var ent = getEnt(selectData.board);
+              if (selectData.layer && ent && ent.data && ent.data.layers && ent.data.layers[selectData.layer] && ent.data.layers[selectData.layer].p[selectData.index]) {
+                found = true;
+                var dupe = duplicate(ent.data.layers[selectData.layer].p[selectData.index]);
+                delete dupe.x;
+                delete dupe.y;
+                dupe.w = boardApi.pix.scale(dupe.w, ent, true);
+                dupe.h = boardApi.pix.scale(dupe.h, ent, true);
+                delete dupe.l;
+                delete dupe.e;
+                delete dupe.v;
+                if (dupe.i) {
+                  obj.data.info.img.min = dupe.i;
+                }
+                else {
+                  delete obj.data.info.img.min;
+                }
+                sendAlert({text : "Saved as default piece"});
+
+                obj.data.info.img.modifiers = dupe;
+                obj.sync("updateAsset");
               }
               else {
-                var syncLabel = genIcon("cloud").appendTo(optionsBar);
-                syncLabel.addClass("alttext highlight smooth outline lrpadding");
-                syncLabel.attr("title", "This is saved, but is not in-sync with Asset Storage");
-                syncLabel.click(function(ev){
-                  runCommand("updateSync", {id : obj.id(), data : true});
-                  ev.stopPropagation();
-                  return false;
-                });
+                sendAlert({text : "Invalid Piece"});
               }
             }
             else {
-              var syncLabel = genIcon("cloud")//.appendTo(optionsBar);
-              syncLabel.addClass("lrpadding");
-              syncLabel.attr("title", "Enable Asset Storage");
-              syncLabel.click(function(ev){
-                var popOut = ui_prompt({
-                  target : $(this),
-                  id : "confirm-store-char",
-                  confirm : "Move to Asset Storage",
-                  click : function(){
-                    runCommand("storeAsset", {id: obj.id()});
-                    layout.coverlay("quick-storage-popout");
-                    syncLabel.remove();
-                  }
+              sendAlert({text : "Select a single piece to save as the default map piece "})
+            }
+          });
+        }
+
+        var calculations = $("<button>").appendTo(optionsBar);
+        calculations.addClass("background subtitle alttext");
+        calculations.text("Math");
+        calculations.click(function(){
+          app.attr("viewingData", true);
+          obj.update();
+        });
+        if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
+          var quickSheet = $("<button>").appendTo(optionsBar);
+          quickSheet.addClass("background subtitle alttext");
+          quickSheet.text("Sheet");
+          quickSheet.click(function(){
+            obj.data._d = obj.data._d || {style : duplicate(game.templates.display.sheet.style) || {}, content : duplicate(game.templates.display.sheet.content)};
+            app.attr("simpleEditing", true);
+            obj.update();
+          });
+        }
+        if (hasSecurity(getCookie("UserID"), "Rights", obj.data) || app.attr("homebrew")) {
+          var tags = $("<button>").appendTo(optionsBar);
+          tags.addClass("background subtitle alttext");
+          tags.text("Notes");
+          tags.click(function(){
+            app.attr("viewingNotes", true);
+            obj.update();
+          });
+        }
+
+        var tags = $("<button>").appendTo(optionsBar);
+        tags.addClass("background subtitle alttext");
+        tags.text("Tags");
+        if (app.attr("viewingTags")) {
+          tags.removeClass("background");
+          tags.addClass("highlight");
+        }
+        tags.click(function(){
+          if (app.attr("viewingTags")) {
+            app.removeAttr("viewingTags");
+          }
+          else {
+            app.attr("viewingTags", true);
+          }
+          obj.update();
+        });
+        if (!app.attr("homebrew")) {
+          var actions = $("<button>").appendTo(optionsBar);
+          actions.addClass("background subtitle alttext");
+          if (app.attr("viewingActions")) {
+            actions.removeClass("background");
+            actions.addClass("highlight");
+          }
+          actions.text("Actions");
+          actions.click(function(){
+            if (app.attr("viewingActions")) {
+              app.removeAttr("viewingActions");
+              div.empty();
+            }
+            else {
+              app.attr("viewingActions", true);
+            }
+            obj.update();
+          });
+          actions.contextmenu(function(ev){
+            var actionObj = sync.dummyObj();
+            actionObj.data = {context : {c : obj.id()}};
+
+            game.locals["actions"] = game.locals["actions"] || [];
+            game.locals["actions"].push(actionObj);
+
+            var newApp = sync.newApp("ui_actions");
+            newApp.addClass("spadding");
+            actionObj.addApp(newApp);
+
+            var pop = ui_popOut({
+              target : $(this),
+              minimize : true,
+              dragThickness : "0.5em",
+              title : "Actions",
+              align : "bottom",
+              style : {"width" : "300px"},
+            }, newApp);
+            pop.resizable();
+
+            ev.stopPropagation();
+            return false;
+          });
+        }
+
+        if (hasSecurity(getCookie("UserID"), "Rights", data) && hasSecurity(getCookie("UserID"), "Assistant Master")) {
+          if (hasSecurity(getCookie("UserID"), "Owner", data)) {
+            var syncLabel;
+            if (data._c == -1) {
+              syncLabel = genIcon("remove").appendTo(optionsBar);
+              syncLabel.addClass("alttext background outline");
+              syncLabel.attr("title", "Duplicate to move to Asset Storage");
+            }
+            else {
+              if (data._uid) {
+                if (data._sync) {
+                  var syncLabel = genIcon("refresh").appendTo(optionsBar);
+                  syncLabel.addClass("alttext highlight smooth outline lrpadding");
+                  syncLabel.attr("title", "This is saved, and is in-sync with Asset Storage");
+                  syncLabel.click(function(ev){
+                    runCommand("updateSync", {id : obj.id(), data : false});
+                    ev.stopPropagation();
+                    return false;
+                  });
+                }
+                else {
+                  var syncLabel = genIcon("cloud").appendTo(optionsBar);
+                  syncLabel.addClass("alttext highlight smooth outline lrpadding");
+                  syncLabel.attr("title", "This is saved, but is not in-sync with Asset Storage");
+                  syncLabel.click(function(ev){
+                    runCommand("updateSync", {id : obj.id(), data : true});
+                    ev.stopPropagation();
+                    return false;
+                  });
+                }
+              }
+              else {
+                var syncLabel = genIcon("cloud")//.appendTo(optionsBar);
+                syncLabel.addClass("lrpadding");
+                syncLabel.attr("title", "Enable Asset Storage");
+                syncLabel.click(function(ev){
+                  var popOut = ui_prompt({
+                    target : $(this),
+                    id : "confirm-store-char",
+                    confirm : "Move to Asset Storage",
+                    click : function(){
+                      runCommand("storeAsset", {id: obj.id()});
+                      layout.coverlay("quick-storage-popout");
+                      syncLabel.remove();
+                    }
+                  });
+                  ev.stopPropagation();
+                  return false;
                 });
-                ev.stopPropagation();
-                return false;
-              });
+              }
             }
           }
         }
@@ -1693,45 +1299,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
     if (app.attr("simpleEditing")) {
       function sheetElementMenu(parent, path) {
         var contents = $("<div>");
-        contents.addClass("flex subtitle foreground");
-        var type = $("<div>").appendTo(contents);
-        type.addClass("inactive hover2 bold spadding outline smooth");
-        type.attr("id", "edit-element");
-        type.css("padding-right", "16px");
-        if (parent.hasClass("flexrow")) {
-          type.append(genIcon("cog", "Row"));
-        }
-        else {
-          type.append(genIcon("cog", "Column"));
-        }
-        type.click(function(){
-          var replace = path.replace(app.attr("id")+"_0", "");
-          while (replace.match("-")) {
-            replace = replace.replace("-", ".");
-          }
-          if (replace[0] == ".") {
-            replace = replace.substring(1, replace.length);
-          }
-
-          var select = sync.newApp("ui_JSON");
-          if (replace != null && replace.trim()) {
-            select.attr("lookup", "_d.content."+replace);
-          }
-          else {
-            select.attr("lookup", "_d.content");
-          }
-          select.attr("closeTarget", "json-editor");
-          obj.addApp(select);
-
-          var popout = ui_popOut({
-            target : $(this),
-            title : "JSON Edit",
-            id : "json-editor",
-          }, select);
-          popout.resizable();
-        });
-
-        contents.addClass("flexcolumn");
+        contents.addClass("flexrow flex subtitle foreground");
 
         var newOptionWrap = $("<div>").appendTo(contents);
         newOptionWrap.addClass("bold flexrow flexmiddle alttext");
@@ -1760,224 +1328,50 @@ sync.render("ui_characterSheet", function(obj, app, scope){
           });
         }
 
-        var newOption = $("<button>").appendTo(newOptionWrap);
-        newOption.attr("id", "add-new-element");
-        newOption.addClass("bold flexcolumn flexmiddle outline hover2 background alttext");
-        newOption.append(genIcon("plus", "Add..."));
-        newOption.click(function(){
-          var interfaces = {
-            "Organization" : {
-              "Column" : {
-                content : {
-                  classes : "flexcolumn flex flexbetween flexcontainer",
-                  display : [],
-                },
-              },
-              "Row" : {
-                content : {
-                  classes : "flexrow flex flexbetween flexcontainer",
-                  display : [],
-                },
-              },
-            },
-            "Inputs" : {
-              "Field" : {
-                content : {
-                  target : "%Target%",
-                  edit : {classes : "line"}
-                },
-                arguments : {
-                  "%Target%" : {
-                    datalist : "character",
-                  }
-                }
-              },
-              "Min-Max Field" : {
-                content : {
-                  classes : "flexrow flexaround bold", display : [
-                    {classes : "bold", target : "%Target%", edit : {classes : "line", style : {width : "24px", "text-align" : "center"}}},
-                    {classes : "lrmargin bold", value : "/"},
-                    {classes : "bold", name : "", target : "%Target%", edit : {classes : "line", style : {width : "24px", "text-align" : "center"}, raw : "max"}},
-                  ]
-                },
-                arguments : {
-                  "%Target%" : {
-                    datalist : "character",
-                  }
-                }
-              },
-              "Image" : {
-                content : {
-                  classes : "flexcolumn smooth outline flex white",
-                  ui : "ui_image",
-                  target : "info.img",
-                  style : {"min-width" : "100px", "min-height" : "100px"},
-                },
-              },
-              "Label" : {
-                content : {
-                  value : "%Value%",
-                },
-                arguments : {
-                  "%Value%" : {
-                    value : "Label",
-                  }
-                }
-              },
-              "Notes" : {
-                content : {
-                  classes : "flexcolumn flex padding",
-                  ui : "ui_characterNotes",
-                }
-              },
-            },
-            "Lists" : {
-              "Stat List" : {
-                content : {
-                  classes : "flexrow flexaround flexwrap", target : "stats", applyUI : {
-                    display : {classes : "flexrow flexaround flexwrap flex", display : [
-                      {classes : "spadding flexcolumn flexmiddle lrmargin bold outline inactive flex", display : [
-                        {classes : "flexrow flexmiddle subtitle", display : [
-                          {name : "@c.@applyTarget.name", classes : "lrpadding bold"},
-                          {classes : "flexmiddle", ui : "ui_link", scope : {icon : "'list-alt'", click : "ui_modifiers", lookup : "@applyTarget", attr : {"modsOnly" : true}}},
-                        ]},
-                        {classes : "flexrow flexmiddle lrmargin bold", display : [
-                          {
-                            name : "", target : "@applyTarget", edit : {classes : "bold white outline flexmiddle fit-x", style : {"width" : "70px", "height" : "40px"}, raw : "1"},
-                          },
-                        ]},
-                      ]},
-                    ]},
-                  }
-                },
-              },
-              "Inventory" : {
-                content : {
-                  classes : "flexcolumn flex padding", display : [
-                    {classes : "flexrow underline", style : {"font-size" : "1.4em"}, display : [
-                      {classes : "bold lrmargin", name : "Inventory"},
-                      {
-                        classes : "bold flexmiddle create subtitle lrmargin",
-                        style : {"cursor" : "pointer"},
-                        icon : "plus",
-                        click : {create : "inventory"}
-                      }
-                    ]},
-                    {
-                      classes : "flex spadding white outline smooth",
-                      style : {"text-align" : "left", "overflow-y" : "auto"},
-                      scrl : "inv",
-                      ui : "ui_entryList",
-                      scope : {
-                        drop : "inventoryDrop",
-                        connectWith : ".inventoryDrop",
-                        reposition : true,
-                        lookup : "inventory",
-                        applyUI : {classes : "flexrow flex subtitle", display : [
-                          {
-                            classes : "flexcolumn",
-                            ui : "ui_image",
-                            target : "@applyTarget.info.img",
-                            style : {"width" : "15px", "height" : "15px"},
-                            scope : {def : "/content/icons/Backpack1000p.png"},
-                          },
-                          {name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrmargin line middle", title : "Quantity", style : {"width" : "24px"}, raw : "1"}},
-                          {classes : "flex lrpadding", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex", style : {"min-width" : "70px"}, raw : "1"}},
-                          {classes : "bold hover2 spadding white outline smooth flexrow flexmiddle subtitle",
-                            value : "(@c.@applyTarget.tags.equipped==0)?('Equip'):('Un-equip')", style : {"white-space" : "nowrap"},
-                            click : {calc : [{target : "@applyTarget.tags.equipped", cond : "@c.@applyTarget.tags.equipped==0", eq : "1"},{target : "@applyTarget.tags.equipped", cond : "@c.@applyTarget.tags.equipped==1", eq : "0"}]}
-                          },
-                          {name : "", target : "@applyTarget.info.weight", edit : {classes : "lrmargin line middle",title : "Weight", style : {"width" : "24px"}, raw : "1"}},
-                          {
-                            classes : "flexmiddle",
-                            name : "",
-                            link : "edit",
-                            target : "@applyTarget",
-                            click : {edit : "@applyTarget"}
-                          },
-                          {
-                            classes : "flexmiddle destroy lrmargin",
-                            name : "",
-                            link : "trash",
-                            click : {delete : true, target : "@applyTarget"}
-                          },
-                        ]}
-                      }
-                    },
-                  ]
-                },
-              },
-              "Spellbook" : {
-                content : {
-                  classes : "flexcolumn flex padding", display : [
-                    {classes : "flexrow underline", style : {"font-size" : "1.4em"}, display : [
-                      {classes : "bold lrmargin", name : "Spellbook"},
-                      {
-                        classes : "bold flexmiddle create subtitle lrmargin",
-                        style : {"cursor" : "pointer"},
-                        icon : "plus",
-                        click : {create : "spellbook"}
-                      }
-                    ]},
-                    {
-                      classes : "flex spadding white outline smooth",
-                      style : {"text-align" : "left", "overflow-y" : "auto"},
-                      scrl : "spl",
-                      ui : "ui_entryList",
-                      scope : {
-                        drop : "spellbookDrop",
-                        connectWith : ".spellbookDrop",
-                        reposition : true,
-                        lookup : "spellbook",
-                        applyUI : {classes : "flexrow flex subtitle", display : [
-                          {
-                            classes : "flexcolumn",
-                            ui : "ui_image",
-                            target : "@applyTarget.info.img",
-                            style : {"width" : "15px", "height" : "15px"},
-                            scope : {def : "/content/icons/Backpack1000p.png"},
-                          },
-                          {name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrmargin line middle", title : "Quantity", style : {"width" : "24px"}, raw : "1"}},
-                          {classes : "flex lrpadding", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex", style : {"min-width" : "70px"}, raw : "1"}},
-                          {name : "", target : "@applyTarget.info.weight", edit : {classes : "lrmargin line middle",title : "Weight", style : {"width" : "24px"}, raw : "1"}},
-                          {
-                            classes : "flexmiddle",
-                            name : "",
-                            link : "edit",
-                            target : "@applyTarget",
-                            click : {edit : "@applyTarget"}
-                          },
-                          {
-                            classes : "flexmiddle destroy lrmargin",
-                            name : "",
-                            link : "trash",
-                            click : {delete : true, target : "@applyTarget"}
-                          },
-                        ]}
-                      }
-                    },
-                  ]
-                },
-              },
-            },
-            "Interactive" : {
-              "Roll Button" : {
-                content : {
-                  classes : "bold hover2 spadding white outline smooth flexmiddle",
-                  value : "%Macro%",
-                  click : {action : "%Action%"}
-                },
-                arguments : {
-                  "%Action%" : {
-                    value : "",
-                  },
-                  "%Macro%" : {
-                    value : "",
-                  }
-                }
-              },
-            }
+
+        var type = $("<div>").appendTo(newOptionWrap);
+        type.addClass("flexmiddle button hover2 bold spadding outline smooth");
+        type.attr("id", "edit-element");
+        type.css("color", "#333");
+        type.css("text-shadow", "none");
+        if (parent.hasClass("flexrow")) {
+          type.append(genIcon("cog", "Row"));
+        }
+        else {
+          type.append(genIcon("cog", "Column"));
+        }
+        type.click(function(){
+          var replace = path.replace(app.attr("id")+"_0", "");
+          while (replace.match("-")) {
+            replace = replace.replace("-", ".");
           }
+          if (replace[0] == ".") {
+            replace = replace.substring(1, replace.length);
+          }
+
+          var select = sync.newApp("ui_elementMenu");
+          if (replace != null && replace.trim()) {
+            select.attr("lookup", "_d.content."+replace);
+          }
+          else {
+            select.attr("lookup", "_d.content");
+          }
+          select.attr("closeTarget", "json-editor");
+          obj.addApp(select);
+
+          var popout = ui_popOut({
+            target : $(this),
+            title : "JSON Edit",
+            id : "json-editor",
+          }, select);
+          popout.resizable();
+        });
+
+        var newOption = genIcon("plus", "Add...").appendTo(newOptionWrap);
+        newOption.attr("id", "add-new-element");
+        newOption.addClass("bold alttext lrmargin");
+        newOption.click(function(){
+          var interfaces = duplicate(util.interfaces);
 
           contents.empty();
           contents.addClass("flexaround alttext");
@@ -1991,7 +1385,8 @@ sync.render("ui_characterSheet", function(obj, app, scope){
             for (var key in interfaces[category]) {
               var intData = interfaces[category][key];
 
-              var inputWrap = $("<li>").appendTo(list);
+              var inputWrap = $("<div>").appendTo(list);
+              inputWrap.addClass("flexmiddle subtitle");
 
               var inputLink = genIcon(null, key).appendTo(inputWrap);
               inputLink.attr("index", key);
@@ -2108,7 +1503,8 @@ sync.render("ui_characterSheet", function(obj, app, scope){
 
         var newOption = $("<button>").appendTo(contents);
         newOption.addClass("bold flexcolumn flexmiddle outline flex hover2 destroy");
-        newOption.append(genIcon("trash", "Delete"));
+        newOption.append(genIcon("trash"));
+        newOption.css("margin-right", "20px");
         newOption.click(function(){
           var replace = path.replace(app.attr("id")+"_0", "");
           while (replace.match("-")) {
@@ -2133,6 +1529,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
           var pop = ui_popOut({
             target : parent,
             noCss : true,
+            pin : false,
             prompt : true,
             align : "top",
             id : "sheet-element-menu",
@@ -2209,7 +1606,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         }
         function clickWrap(scope, lastLookup) {
           setTimeout(function(){
-            $("#"+(newScope.markup || "")+lastLookup).hover(function(ev){
+            $("#"+(newScope.markup || "")+lastLookup).mousemove(function(ev){
               if (!$("#sheet-element-menu").length || $("#sheet-element-menu").hasClass("prompt")) {
                 $(".selected").removeClass("selected");
                 $(this).addClass("selected");
@@ -2217,8 +1614,6 @@ sync.render("ui_characterSheet", function(obj, app, scope){
               }
               ev.stopPropagation();
               ev.preventDefault();
-            },
-            function(){
             });
             $("#"+(newScope.markup || "")+lastLookup).attr("target", lastLookup);
             $("#"+(newScope.markup || "")+lastLookup).unbind("click");
