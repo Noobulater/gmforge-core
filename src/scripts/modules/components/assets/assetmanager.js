@@ -857,6 +857,10 @@ sync.render("ui_assetManager", function(obj, app, scope) {
         },
         containment: "body",
         connectWith : ".dropContent",
+        start : function(ev, ui)
+        {
+          $(ui.item).trigger("dragstart");
+        },
         update : function(ev, ui) {
           ev.stopPropagation();
           ev.preventDefault();
@@ -917,9 +921,10 @@ sync.render("ui_assetManager", function(obj, app, scope) {
               ui.css("font-size", "1.2em");
               ui.removeClass("outline");
               if (charObj.data._t == "i") {
-
+                ui.attr("draggable",true);
                 ui.on("dragstart", function(ev){
-                  var dt = ev.originalEvent.dataTransfer;
+                  ui.data("dt",new DataTransfer())
+                  var dt = ui.data("dt");
                   dt.setData("OBJ", JSON.stringify(charObj.data));
                 });
               }
@@ -1111,6 +1116,15 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     app : true,
     draw : function(ui, charObj) {
       ui.css("font-size", "1.4em");
+      if (charObj.data._t == "i") {
+        ui.attr("draggable",true);
+        ui.on("dragstart", function(ev){
+          ui.data("dt",new DataTransfer())
+          var dt = ui.data("dt");
+          dt.setData("OBJ", JSON.stringify(charObj.data));
+        });
+      }
+
       if (charObj.data._t == "b" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
         var button = $("<button>").appendTo(ui);
         button.addClass("subtitle hover2");
@@ -1255,6 +1269,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       connectWith : ".dropContent",
       start : function(ev, ui) {
         listedChars.scrollTop(0);
+        $(ui.item).trigger("dragstart");
       },
       helper: function(ev, drag) {
         return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
