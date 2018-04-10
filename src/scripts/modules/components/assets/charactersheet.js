@@ -792,8 +792,9 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         olay.css("z-index", util.getMaxZ(".ui-popout")+1);
         olay.append("<b>Drop to Create</b>");
       }
-  	});
-    div.on('drop', function(ev){
+    });
+    div.droppable();
+    div.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
       if (_dragTransfer) {
@@ -804,7 +805,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         }
       }
       else {
-        var dt = ev.originalEvent.dataTransfer;
+        var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
         if (dt.getData("OBJ")) {
           var ent = JSON.parse(dt.getData("OBJ"));
           if (ent._t == "i") {
