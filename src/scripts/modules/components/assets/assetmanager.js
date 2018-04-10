@@ -920,14 +920,12 @@ sync.render("ui_assetManager", function(obj, app, scope) {
             draw : function(ui, charObj) {
               ui.css("font-size", "1.2em");
               ui.removeClass("outline");
-              if (charObj.data._t == "i") {
-                ui.attr("draggable",true);
-                ui.on("dragstart", function(ev){
-                  ui.data("dt",new DataTransfer())
-                  var dt = ui.data("dt");
-                  dt.setData("OBJ", JSON.stringify(charObj.data));
-                });
-              }
+              ui.attr("draggable",true);
+              ui.on("dragstart", function(ev){
+                ui.data("dt",new DataTransfer())
+                var dt = ui.data("dt");
+                dt.setData("OBJ", JSON.stringify(charObj.data));
+              });
 
               if (charObj.data._t == "b" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
                 var button = $("<button>").appendTo(ui);
@@ -1116,14 +1114,12 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     app : true,
     draw : function(ui, charObj) {
       ui.css("font-size", "1.4em");
-      if (charObj.data._t == "i") {
-        ui.attr("draggable",true);
-        ui.on("dragstart", function(ev){
-          ui.data("dt",new DataTransfer())
-          var dt = ui.data("dt");
-          dt.setData("OBJ", JSON.stringify(charObj.data));
-        });
-      }
+      ui.attr("draggable",true);
+      ui.on("dragstart", function(ev){
+        ui.data("dt",new DataTransfer())
+        var dt = ui.data("dt");
+        dt.setData("OBJ", JSON.stringify(charObj.data));
+      });
 
       if (charObj.data._t == "b" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
         var button = $("<button>").appendTo(ui);
@@ -1253,7 +1249,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     }
   });
   list.addClass("white dropContent flex");
-  
+
   list.appendTo(listWrap);
   if (list.children().length) {
     list.children().each(function(){
