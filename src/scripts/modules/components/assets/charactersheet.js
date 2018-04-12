@@ -172,7 +172,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
 
   if (!obj || !obj.data || obj.data["_t"] != "c") {
     if (app && layout.mobile) {
-      app.attr("ui-name", "ui_characterList");
+      app.attr("ui-name", "ui_assetManager");
       game.entities.addApp(app);
     }
     return div;
@@ -237,6 +237,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       headerRow.append("<u class='flex2 subtitle flexmiddle lrmargin' style='width:100px'>Value</u>");
       headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:40px'>Min</u>");
       headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:40px'>Max</u>");
+      headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:70px'>Modifiers</u>");
       headerRow.append(genIcon("remove").addClass("lrpadding lrmargin").css("color", "transparent"));
       for (var subKey in obj.data[key]) {
         path = key + "." + subKey;
@@ -289,6 +290,26 @@ sync.render("ui_characterSheet", function(obj, app, scope){
             raw : "max"
           });
 
+          var remove = genIcon("list-alt", "Edit").appendTo(attrOption);
+          remove.addClass("flexmiddle lrmargin lrpadding");
+          remove.attr("path", path);
+          remove.css("width", "70px");
+          remove.click(function(){
+            var path = $(this).attr("path");
+
+            var content = sync.newApp("ui_modifiers");
+            content.attr("viewOnly", scope.viewOnly);
+            content.attr("lookup", path);
+            content.attr("modsOnly", "true");
+            obj.addApp(content);
+
+            ui_popOut({
+              target : $(this),
+              align : "top",
+              id : "modify-exp"
+            }, content);
+          });
+
           var remove = genIcon("remove").appendTo(attrOption);
           remove.addClass("destroy flexmiddle lrmargin lrpadding");
           remove.attr("path", path);
@@ -311,7 +332,38 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       headerRow.addClass("flexmiddle fit-x create");
       headerRow.attr("category", key);
       headerRow.click(function(){
-        var key = $(this).attr("category");
+        var category = $(this).attr("category");
+
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in obj.data) {
+          invalidKeys[key] = key;
+        }
+        for (var key in obj.data.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in obj.data.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in obj.data.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in game.templates.item.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in game.templates.item.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in game.templates.item.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in game.templates.item.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
 
         ui_prompt({
           target : $(this),
@@ -320,7 +372,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
           },
           click : function(ev, inputs){
             var path = inputs["Macro Key"].val();
-            if (path && path != "notes" && path != "img" && path != "name") {
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
               path = replaceAll(path, " ", "_");
               path = replaceAll(path, "@", "");
               path = replaceAll(path, "(", "_");
@@ -330,8 +382,13 @@ sync.render("ui_characterSheet", function(obj, app, scope){
               path = replaceAll(path, "!", "_");
               path = replaceAll(path, "#", "_");
               path = replaceAll(path, "$", "_");
-              obj.data[key][path] = {};
-              obj.sync("updtaeAsset");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
+              }
+              else {
+                obj.data[category][path] = {};
+                obj.sync("updtaeAsset");
+              }
             }
           }
         });
@@ -340,88 +397,6 @@ sync.render("ui_characterSheet", function(obj, app, scope){
 
     return div;
   }
-
-  /*
-  var content = $("<div>");
-  content.addClass("flexcolumn");
-
-  content.append("<b>Attribute</b>");
-
-  var dataList = $("<datalist>").appendTo(content);
-  dataList.attr("id", "homebrew-list-edit");
-  dataList.css("height", "200px");
-
-  var template = {stats : "", info : "", counters : ""};
-  for (var key in template) {
-    var path = key;
-    for (var subKey in obj.data[key]) {
-      path = key + "." + subKey;
-      if (path != "info.notes" && path != "info.img") {
-        var option = $("<option>").appendTo(dataList);
-        option.attr("value", path);
-      }
-    }
-  }
-
-  var input = genInput({
-    parent : content,
-    type : "list",
-    list : "homebrew-list-edit",
-    id : "homebrew-target-input",
-    placeholder : "Field Target",
-  });
-
-  var options = $("<div>").appendTo(content);
-  options.addClass("flexrow flexaround flexwrap");
-
-  var confirm = $("<button>").appendTo(options);
-  confirm.addClass("highlight alttext flex");
-  confirm.append("Delete");
-  confirm.click(function(){
-    if (input.val() && input.val() != "info.notes" && input.val() != "info.img") {
-      var traverse = sync.traverse(obj.data, input.val(), "");
-      obj.sync("updateAsset");
-      sendAlert({text : "Field deleted"});
-      layout.coverlay("quick-sheet-add-field");
-    }
-    else {
-      input.val("");
-      sendAlert({text : "Restricted Field"});
-    }
-  });
-
-  var confirm = $("<button>").appendTo(options);
-  confirm.addClass("background alttext flex");
-  confirm.append("Create");
-  confirm.click(function(){
-    if (input.val() && input.val() != "info.notes" && input.val() != "info.img") {
-      var traverse = sync.traverse(obj.data, input.val());
-      if (traverse === false) {
-        ui_prompt({
-          target : $(this),
-          inputs : {
-            "Enter new field name" : ""
-          },
-          click : function(ev, inputs){
-            sync.traverse(obj.data, input.val(), {name : inputs["Enter new field name"].val()});
-            obj.sync("updateAsset");
-            sendAlert({text : "Field created"});
-            layout.coverlay("quick-sheet-add-field");
-          }
-        });
-      }
-    }
-    else {
-      input.val("");
-      sendAlert({text : "Restricted Field"});
-    }
-  });
-
-  var pop = ui_popOut({
-    target : $(this),
-    id : "quick-sheet-add-field",
-  }, content);
-  */
 
   if (app.attr("viewingData")) {
     var calcs = duplicate(obj.data._calc || sheet.calc || []);
@@ -806,7 +781,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       }
       else {
         var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
-        if (dt.getData("OBJ")) {
+        if (dt && dt.getData("OBJ")) {
           var ent = JSON.parse(dt.getData("OBJ"));
           if (ent._t == "i") {
             if (dt.getData("spell") || ent.tags["spell"]) {
@@ -838,7 +813,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
   var info = data.info;
   if (!scope.local) {
     var optionsBar = $("<div>").appendTo(div);
-    optionsBar.addClass("flexaround background boxinshadow alttext");
+    optionsBar.addClass("flexbetween background boxinshadow alttext");
     optionsBar.css("color", "white");
     optionsBar.attr("index", obj.id());
     div.contextmenu(function(ev){
@@ -860,7 +835,6 @@ sync.render("ui_characterSheet", function(obj, app, scope){
           if (JSON.stringify(obj.data._d.content) == JSON.stringify(game.templates.display.sheet.content)) {
             if (JSON.stringify(obj.data._d.style) == JSON.stringify(game.templates.display.sheet.style)) {
               delete obj.data._d;
-              console.log("deleted");
             }
           }
           app.removeAttr("simpleEditing");
@@ -895,6 +869,30 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         quickSheet.click(function(){
           var actionList = util.customSheets(obj, app, scope, sheet);
           ui_dropMenu($(this), actionList, {id : "quick-sheet-drop", "z-index" : util.getMaxZ(".ui-popout")+1});
+        });
+
+        var quickSheet = $("<button>").appendTo(optionsBar);
+        quickSheet.addClass("background subtitle alttext");
+        quickSheet.text("Load a Sheet");
+        quickSheet.click(function(){
+          var content = sync.render("ui_assetPicker")(obj, app, {
+            category : "c",
+            select : function(ev, ui, ent, options, entities){
+              if (ent.data._d) {
+                obj.data._d = duplicate(ent.data._d);
+                obj.update();
+              }
+              layout.coverlay("add-asset");
+            }
+          });
+          var pop = ui_popOut({
+            target : $("body"),
+            prompt : true,
+            id : "add-asset",
+            title : "Pick Sheet",
+            style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
+          }, content);
+          pop.resizable();
         });
       }
     }
@@ -1299,251 +1297,17 @@ sync.render("ui_characterSheet", function(obj, app, scope){
     charContents.append(sync.render("ui_processUI")(obj, app, newScope));
     if (app.attr("simpleEditing")) {
       function sheetElementMenu(parent, path) {
-        var contents = $("<div>");
-        contents.addClass("flexrow flex subtitle foreground");
+        var contents = sync.render("ui_addElement")(obj, app, {path : path, closeTarget : "sheet-element-menu", viewOnly : scope.viewOnly});
 
-        var newOptionWrap = $("<div>").appendTo(contents);
-        newOptionWrap.addClass("bold flexrow flexmiddle alttext");
-
-        if (path) {
-          var moveUp = genIcon("arrow-up").appendTo(newOptionWrap);
-          moveUp.addClass("lrmargin");
-          moveUp.click(function(){
-            var replace = path.replace(app.attr("id")+"_0", "");
-            while (replace.match("-")) {
-              replace = replace.replace("-", ".");
-            }
-            if (replace[0] == ".") {
-              replace = replace.substring(1, replace.length);
-            }
-
-            var index = replace.split("\.");
-            index = index[index.length-1];
-            var final = replace.substring(0, replace.length-1-index.length);
-            var arr = sync.traverse(obj.data._d.content, final);
-            if (arr && Array.isArray(arr)) {
-              util.insert(arr, 0, arr.splice(index, 1)[0]);
-              obj.update();
-              $("#sheet-element-menu").remove();
-            }
-          });
-        }
-
-
-        var type = $("<div>").appendTo(newOptionWrap);
-        type.addClass("flexmiddle button hover2 bold spadding outline smooth");
-        type.attr("id", "edit-element");
-        type.css("color", "#333");
-        type.css("text-shadow", "none");
-        if (parent.hasClass("flexrow")) {
-          type.append(genIcon("cog", "Row"));
-        }
-        else {
-          type.append(genIcon("cog", "Column"));
-        }
-        type.click(function(){
-          var replace = path.replace(app.attr("id")+"_0", "");
-          while (replace.match("-")) {
-            replace = replace.replace("-", ".");
-          }
-          if (replace[0] == ".") {
-            replace = replace.substring(1, replace.length);
-          }
-
-          var select = sync.newApp("ui_elementMenu");
-          if (replace != null && replace.trim()) {
-            select.attr("lookup", "_d.content."+replace);
-          }
-          else {
-            select.attr("lookup", "_d.content");
-          }
-          select.attr("closeTarget", "json-editor");
-          obj.addApp(select);
-
-          var popout = ui_popOut({
-            target : $(this),
-            title : "JSON Edit",
-            id : "json-editor",
-          }, select);
-          popout.resizable();
-        });
-
-        var newOption = genIcon("plus", "Add...").appendTo(newOptionWrap);
-        newOption.attr("id", "add-new-element");
-        newOption.addClass("bold alttext lrmargin");
-        newOption.click(function(){
-          var interfaces = duplicate(util.interfaces);
-
-          contents.empty();
-          contents.addClass("flexaround alttext");
-          contents.css("font-size", "1.2em");
-
-          for (var category in interfaces) {
-            var list = $("<div>").appendTo(contents);
-            list.addClass("flexcolumn margin");
-            list.append("<b class='fit-x flexmiddle underline'>"+category+"</b>");
-
-            for (var key in interfaces[category]) {
-              var intData = interfaces[category][key];
-
-              var inputWrap = $("<div>").appendTo(list);
-              inputWrap.addClass("flexmiddle subtitle");
-
-              var inputLink = genIcon(null, key).appendTo(inputWrap);
-              inputLink.attr("index", key);
-              inputLink.attr("category", category);
-              inputLink.click(function(){
-                var inputData = duplicate(interfaces[$(this).attr("category")][$(this).attr("index")]);
-                function submitData() {
-                  if (!path) {
-                    obj.data._d.content.display = obj.data._d.content.display || [];
-                    obj.data._d.content.display.push(inputData.content);
-                  }
-                  else {
-                    var replace = path.replace(app.attr("id")+"_0", "");
-                    while (replace.match("-")) {
-                      replace = replace.replace("-", ".");
-                    }
-                    if (replace[0] == ".") {
-                      replace = replace.substring(1, replace.length);
-                    }
-                    var target = sync.traverse(obj.data._d.content, replace);
-                    target.display = target.display || [];
-                    target.display.push(inputData.content);
-                  }
-                  obj.update();
-                  pop.remove();
-                }
-                if (!inputData.arguments) {
-                  submitData();
-                }
-                else {
-                  var inputs = {};
-
-                  for (var arg in inputData.arguments) {
-                    var argData = inputData.arguments[arg];
-                    inputs[arg] = {};
-                    if (argData.datalist) {
-                      var dataList = $("<datalist>").appendTo(contents);
-                      dataList.attr("id", "argument-data-list");
-
-                      if (argData.datalist == "character") {
-                        var template = {stats : "", info : "", counters : ""};
-                        for (var key in template) {
-                          var pathKey = key;
-                          for (var subKey in obj.data[key]) {
-                            pathKey = key + "." + subKey;
-                            if (pathKey != "info.notes" && pathKey != "info.img") {
-                              var option = $("<option>").appendTo(dataList);
-                              option.attr("value", pathKey);
-                            }
-                          }
-                        }
-                      }
-                      else {
-                        for (var i in argData.datalist) {
-                          var option = $("<option>").appendTo(dataList);
-                          option.attr("value", argData.datalist[i]);
-                        }
-                      }
-
-                      inputs[arg] = {
-                        type : "list",
-                        list : "argument-data-list",
-                      };
-                    }
-                    inputs[arg].category = $(this).attr("category");
-                    inputs[arg].index = $(this).attr("index");
-                    inputs[arg].arg = arg;
-                    inputs[arg].placeholder = argData.placeholder;
-                    inputs[arg].value = argData.default;
-                  }
-
-                  ui_prompt({
-                    target : $(this),
-                    inputs : inputs,
-                    click : function(ev, inputs){
-                      for (var key in inputs) {
-                        var inputEl = inputs[key];
-                        var intData = interfaces[inputEl.attr("category")][inputEl.attr("index")];
-                        var argData = interfaces[inputEl.attr("category")][inputEl.attr("index")].arguments[inputEl.attr("arg")];
-                        inputData.content = JSON.parse(replaceAll(JSON.stringify(inputData.content), inputEl.attr("arg"), inputEl.val()));
-                      }
-                      submitData();
-                    },
-                  });
-                }
-              });
-            }
-          }
-        });
-
-        if (path) {
-          var moveDown = genIcon("arrow-down").appendTo(newOptionWrap);
-          moveDown.addClass("lrmargin");
-          moveDown.click(function(){
-            var replace = path.replace(app.attr("id")+"_0", "");
-            while (replace.match("-")) {
-              replace = replace.replace("-", ".");
-            }
-            if (replace[0] == ".") {
-              replace = replace.substring(1, replace.length);
-            }
-
-            var index = replace.split("\.");
-            index = index[index.length-1];
-            var final = replace.substring(0, replace.length-1-index.length);
-            var arr = sync.traverse(obj.data._d.content, final);
-            if (arr && Array.isArray(arr)) {
-              arr.push(arr.splice(index, 1)[0]);
-              obj.update();
-              $("#sheet-element-menu").remove();
-            }
-          });
-        }
-
-        var newOption = $("<button>").appendTo(contents);
-        newOption.addClass("bold flexcolumn flexmiddle outline flex hover2 destroy");
-        newOption.append(genIcon("trash"));
-        newOption.css("margin-right", "20px");
-        newOption.click(function(){
-          var replace = path.replace(app.attr("id")+"_0", "");
-          while (replace.match("-")) {
-            replace = replace.replace("-", ".");
-          }
-          if (replace[0] == ".") {
-            replace = replace.substring(1, replace.length);
-          }
-
-          var index = replace.split("\.");
-          index = index[index.length-1];
-          var final = replace.substring(0, replace.length-1-index.length);
-          var arr = sync.traverse(obj.data._d.content, final);
-          if (arr && Array.isArray(arr)) {
-            arr.splice(index, 1);
-            $("#sheet-element-menu").remove();
-            obj.update();
-          }
-        });
-
-        if (!$("#sheet-element-menu").length || $("#sheet-element-menu").hasClass("prompt")) {
-          var pop = ui_popOut({
-            target : parent,
-            noCss : true,
-            pin : false,
-            prompt : true,
-            align : "top",
-            id : "sheet-element-menu",
-          }, contents);
-        }
+        var pop = ui_popOut({
+          target : app,
+          prompt : true,
+          title : "Add Element",
+          id : "sheet-element-menu",
+        }, contents);
+        return pop;
       }
 
-      charContents.hover(function(ev){
-        if ($(".selected").length == 0) {
-          sheetElementMenu($(this));
-        }
-        ev.stopPropagation();
-      });
       charContents.click(function(){
         var replace = path.replace(app.attr("id")+"_0", "");
         while (replace.match("-")) {
@@ -1608,10 +1372,11 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         function clickWrap(scope, lastLookup) {
           setTimeout(function(){
             $("#"+(newScope.markup || "")+lastLookup).mousemove(function(ev){
+              cursorX = ev.pageX;
+              cursorY = ev.pageY;
               if (!$("#sheet-element-menu").length || $("#sheet-element-menu").hasClass("prompt")) {
                 $(".selected").removeClass("selected");
                 $(this).addClass("selected");
-                sheetElementMenu($(this), lastLookup);
               }
               ev.stopPropagation();
               ev.preventDefault();
@@ -1622,19 +1387,120 @@ sync.render("ui_characterSheet", function(obj, app, scope){
             $("#"+(newScope.markup || "")+lastLookup).click(function(ev){
               $(".selected").removeClass("selected");
               $(this).addClass("selected");
-              $("#sheet-element-menu").remove();
-              sheetElementMenu($(this), lastLookup);
-              $("#sheet-element-menu").removeClass("prompt");
-              $("#add-new-element").click();
+
+              var popout = sheetElementMenu($(this), lastLookup);
+
               ev.stopPropagation();
             });
             $("#"+(newScope.markup || "")+lastLookup).contextmenu(function(ev){
               $(".selected").removeClass("selected");
               $(this).addClass("selected");
-              $("#sheet-element-menu").remove();
-              sheetElementMenu($(this), lastLookup);
-              $("#sheet-element-menu").removeClass("prompt");
-              $("#edit-element").click();
+              var focus = $(this);
+              var actionsList = [
+                {
+                  name : "Raw JSON",
+                  click : function(ev, ui) {
+                    var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                    while (replace.match("-")) {
+                      replace = replace.replace("-", ".");
+                    }
+                    if (replace[0] == ".") {
+                      replace = replace.substring(1, replace.length);
+                    }
+
+                    var select = sync.newApp("ui_JSON");
+                    if (replace != null && replace.trim()) {
+                      select.attr("lookup", "_d.content."+replace);
+                    }
+                    else {
+                      select.attr("lookup", "_d.content");
+                    }
+                    select.attr("closeTarget", "json-editor");
+                    obj.addApp(select);
+
+                    var popout = ui_popOut({
+                      target : ui,
+                      title : "JSON Edit",
+                      id : "json-editor",
+                    }, select);
+                    popout.resizable();
+                  }
+                },
+                {
+                  name : "To Top",
+                  click : function(ev, ui) {
+                    if (lastLookup) {
+                      var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                      while (replace.match("-")) {
+                        replace = replace.replace("-", ".");
+                      }
+                      if (replace[0] == ".") {
+                        replace = replace.substring(1, replace.length);
+                      }
+
+                      var index = replace.split("\.");
+                      index = index[index.length-1];
+                      var final = replace.substring(0, replace.length-1-index.length);
+                      var arr = sync.traverse(obj.data._d.content, final);
+                      if (arr && Array.isArray(arr)) {
+                        util.insert(arr, 0, arr.splice(index, 1)[0]);
+                        obj.update();
+                        $("#sheet-element-menu").remove();
+                      }
+                    }
+                  }
+                },
+                {
+                  name : "To Bottom",
+                  click : function(ev, ui) {
+                    if (lastLookup) {
+                      var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                      while (replace.match("-")) {
+                        replace = replace.replace("-", ".");
+                      }
+                      if (replace[0] == ".") {
+                        replace = replace.substring(1, replace.length);
+                      }
+
+                      var index = replace.split("\.");
+                      index = index[index.length-1];
+                      var final = replace.substring(0, replace.length-1-index.length);
+                      var arr = sync.traverse(obj.data._d.content, final);
+                      if (arr && Array.isArray(arr)) {
+                        arr.push(arr.splice(index, 1)[0]);
+                        obj.update();
+                        $("#sheet-element-menu").remove();
+                      }
+                    }
+                  }
+                },
+                {
+                  name : "DELETE",
+                  icon : "trash",
+                  click : function(ev, ui) {
+                    var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                    while (replace.match("-")) {
+                      replace = replace.replace("-", ".");
+                    }
+                    if (replace[0] == ".") {
+                      replace = replace.substring(1, replace.length);
+                    }
+
+                    var index = replace.split("\.");
+                    index = index[index.length-1];
+                    var final = replace.substring(0, replace.length-1-index.length);
+                    var arr = sync.traverse(obj.data._d.content, final);
+                    if (arr && Array.isArray(arr)) {
+                      arr.splice(index, 1);
+                      $("#sheet-element-menu").remove();
+                      obj.update();
+                    }
+                  }
+                },
+              ]
+
+              var drop = ui_dropMenu($(this), actionsList, {});
+
               ev.stopPropagation();
               return false;
             });
@@ -1651,304 +1517,6 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       }
       build(newScope.display);
     }
-    /*
-    var flatDisplay = $("<div>").appendTo(charContents);
-
-    if (sheet.content && Object.keys(sheet.content).length && sheet.category && sheet.category.length) {
-      flatDisplay.addClass("flex");
-      flatDisplay.css("min-height", "25%");
-      flatDisplay.css("max-height", "33%");
-      flatDisplay.css("overflow", "auto");
-    }
-    else if (sheet.category && sheet.category.length) {
-      flatDisplay.addClass("flex");
-      flatDisplay.css("max-height", "100%");
-      flatDisplay.css("overflow", "auto");
-    }
-
-    for (var key in sheet.category) {
-      var title = $("<div>").appendTo(flatDisplay);
-      title.addClass("underline");
-      title.css("font-size", "1.6em");
-      title.css("text-align", "left");
-      title.text(sheet.category[key].name);
-
-      if (app.attr("simpleEditing")) {
-        title.empty();
-        var editCategory = genIcon("edit", sheet.category[key].name).appendTo(title);
-        editCategory.addClass("lrmargin");
-        editCategory.attr("index", key);
-        editCategory.click(function(){
-          var key = $(this).attr("index");
-          ui_prompt({
-            target : $(this),
-            inputs : {
-              "Category Name" : ""
-            },
-            click : function(ev, inputs){
-              obj.data._d.category[key].name = inputs["Category Name"].val();
-              obj.sync("updateAsset");
-            }
-          });
-        });
-
-        var del = genIcon("remove").appendTo(title);
-        del.addClass("destroy");
-        del.attr("index", key);
-        del.click(function(){
-          obj.data._d.category.splice($(this).attr("index"), 1);
-          obj.sync("updateAsset");
-          layout.coverlay("edit-category");
-        });
-      }
-
-      if (sheet.category[key].display instanceof String) {
-        flatDisplay.append(sync.render(sheet.category[key].display)(obj, app, scope));
-      }
-      else {
-        for (var dKey in sheet.category[key].display) {
-          var newScope = duplicate(scope);
-          newScope.display = sheet.category[key].display[dKey];
-          if (scope.markup) {
-            newScope.markup = "content";
-          }
-          newScope.context = ctx;
-          var display = sync.render("ui_processUI")(obj, app, newScope).appendTo(flatDisplay);
-          if (app.attr("simpleEditing")) {
-            display.attr("category", key);
-            display.attr("categoryKey", dKey);
-            display.children().css("pointer-events", "none");
-            display.css("cursor", "pointer");
-            display.hover(function(){
-              $(this).addClass("selected");
-            },
-            function(){
-              $(this).removeClass("selected");
-            });
-            display.click(function(ev){
-              var catKey = $(this).attr("category");
-              var dKey = $(this).attr("categoryKey");
-
-              var content = $("<div>");
-              content.addClass("flexrow flexaround padding lrmargin bold");
-              content.css("font-size", "1.2em");
-
-              var moveup = genIcon("arrow-up", "Move Up").appendTo(content);
-              moveup.addClass("lrmargin");
-              moveup.click(function(){
-                var data = obj.data._d.category[catKey].display.splice(dKey, 1);
-                util.insert(obj.data._d.category[catKey].display, Math.max(dKey-1, 0), data[0]);
-                obj.sync("updateAsset");
-                layout.coverlay("quick-sheet-edit-field");
-              });
-
-              var movedown = genIcon("arrow-down", "Move Down").appendTo(content);
-              moveup.addClass("lrmargin");
-              movedown.click(function(){
-                var data = obj.data._d.category[catKey].display.splice(dKey, 1);
-                if (obj.data._d.category[catKey].display.length == dKey) {
-                  obj.data._d.category[catKey].display.push(data[0]);
-                }
-                else {
-                  util.insert(obj.data._d.category[catKey].display, dKey, data[0]);
-                }
-                obj.sync("updateAsset");
-                layout.coverlay("quick-sheet-edit-field");
-              });
-
-              var remove = genIcon("remove", "Remove").appendTo(content);
-              remove.addClass("destroy lrmargin");
-              remove.click(function(){
-                obj.data._d.category[catKey].display.splice(dKey, 1);
-                obj.sync("updateAsset");
-                layout.coverlay("quick-sheet-edit-field");
-              });
-
-              var pop = ui_popOut({
-                target : $(this),
-                id : "quick-sheet-edit-field",
-              }, content);
-
-              ev.stopPropagation();
-              ev.preventDefault();
-            });
-          }
-        }
-      }
-      if (app.attr("simpleEditing")) {
-        var catWrap = $("<div>").appendTo(flatDisplay);
-        catWrap.addClass("flexmiddle");
-
-        var newField = genIcon("plus", "New Field").appendTo(catWrap);
-        newField.addClass("fit-x create middle subtitle");
-        newField.attr("category", key);
-        newField.click(function(){
-          var catKey = $(this).attr("category");
-
-          var content = $("<div>");
-          content.addClass("flexcolumn");
-
-          content.append("<b>Field Target</b>");
-
-          var dataList = $("<datalist>").appendTo(content);
-          dataList.attr("id", "homebrew-list-edit");
-
-          var template = {stats : "", info : "", counters : ""};
-          for (var key in template) {
-            var path = key;
-            for (var subKey in obj.data[key]) {
-              path = key + "." + subKey;
-              if (path != "info.notes" && path != "info.img") {
-                var option = $("<option>").appendTo(dataList);
-                option.attr("value", path);
-              }
-            }
-          }
-
-          var input = genInput({
-            parent : content,
-            type : "list",
-            list : "homebrew-list-edit",
-            id : "homebrew-target-input",
-            placeholder : "Field to Edit",
-          });
-
-          var options = $("<div>").appendTo(content);
-          options.addClass("flexrow flexaround flexwrap");
-
-          var minCheckWrap = $("<div>").appendTo(options);
-          minCheckWrap.addClass("flexmiddle bold subtitle");
-
-          var minCheck = genInput({
-            parent : minCheckWrap,
-            type : "checkbox",
-            style : {"margin" : "0"},
-          });
-
-          minCheckWrap.append("Min");
-
-          var maxCheckWrap = $("<div>").appendTo(options);
-          maxCheckWrap.addClass("flexmiddle bold subtitle");
-
-          var maxCheck = genInput({
-            parent : maxCheckWrap,
-            type : "checkbox",
-            style : {"margin" : "0"},
-          });
-
-          maxCheckWrap.append("Max");
-
-          var showModsWrap = $("<div>").appendTo(options);
-          showModsWrap.addClass("flexmiddle bold subtitle");
-
-          var modsCheck = genInput({
-            parent : showModsWrap,
-            type : "checkbox",
-            style : {"margin" : "0"},
-          });
-
-          showModsWrap.append("Modifiers");
-
-
-          var confirm = $("<button>").appendTo(content);
-          confirm.addClass("highlight alttext");
-          confirm.append("Confirm");
-          confirm.click(function(){
-            if (input.val() && input.val() != "info.notes" && input.val() != "info.img") {
-              var traverse = sync.traverse(obj.data, input.val());
-              if (traverse === false) {
-                ui_prompt({
-                  target : $(this),
-                  inputs : {
-                    "Enter new field name" : ""
-                  },
-                  click : function(ev, inputs) {
-                    var traverse = sync.traverse(obj.data, input.val(), {name : inputs["Enter new field name"].val()});
-
-                    var display = {};
-                    display.classes = "fit-x spadding flexrow flexmiddle";
-                    if (minCheck.prop("checked") || maxCheck.prop("checked") || modsCheck.prop("checked")) {
-                      display.display = [
-                        {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin middle", cmd : "updateAsset", raw : "1"}}
-                      ];
-                      if (minCheck.prop("checked")) {
-                        display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "min", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "min"}});
-                      }
-                      if (maxCheck.prop("checked")) {
-                        display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "max", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "max"}});
-                      }
-                      if (modsCheck.prop("checked")) {
-                        display.display.push({classes : "flexmiddle lrmargin", ui : "ui_link", scope : {classes : "flexmiddle", icon : "'list-alt'", click : "ui_modifiers", lookup : input.val(), attr : {"modsOnly" : true}}});
-                      }
-                      display.display.push({classes : "flexmiddle lrmargin bold", style : {"font-size" : "1.2em"}, value : "@c." + input.val()});
-                    }
-                    else {
-                      display.display = [
-                        {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin", cmd : "updateAsset", raw : "1"}}
-                      ];
-                    }
-                    layout.coverlay("quick-sheet-add-field");
-                    obj.data._d.category[catKey].display = obj.data._d.category[catKey].display || [];
-                    obj.data._d.category[catKey].display.push(display);
-                    obj.sync("updateAsset");
-                  }
-                });
-              }
-              else {
-                var display = {};
-                display.classes = "fit-x spadding flexrow flexmiddle";
-                if (minCheck.prop("checked") || maxCheck.prop("checked") || modsCheck.prop("checked")) {
-                  display.display = [
-                    {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin middle", cmd : "updateAsset", raw : "1"}}
-                  ];
-                  if (minCheck.prop("checked")) {
-                    display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "min", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "min"}});
-                  }
-                  if (maxCheck.prop("checked")) {
-                    display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "max", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "max"}});
-                  }
-                  if (modsCheck.prop("checked")) {
-                    display.display.push({classes : "flexmiddle lrmargin", ui : "ui_link", scope : {classes : "flexmiddle", icon : "'list-alt'", click : "ui_modifiers", lookup : input.val(), attr : {"modsOnly" : true}}});
-                  }
-                  display.display.push({classes : "flexmiddle lrmargin bold", style : {"font-size" : "1.2em"}, value : "@c." + input.val()});
-                }
-                else {
-                  display.display = [
-                    {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin", cmd : "updateAsset", raw : "1"}}
-                  ];
-                }
-                layout.coverlay("quick-sheet-add-field");
-                obj.data._d.category[catKey].display = obj.data._d.category[catKey].display || [];
-                obj.data._d.category[catKey].display.push(display);
-                obj.sync("updateAsset");
-              }
-            }
-            else {
-              input.val("");
-              sendAlert({text : "Restricted Field"});
-            }
-          });
-
-          var pop = ui_popOut({
-            target : $(this),
-            id : "quick-sheet-add-field",
-          }, content);
-        });
-      }
-    }
-    if (app.attr("simpleEditing")) {
-      var catWrap = $("<div>").appendTo(flatDisplay);
-      catWrap.addClass("flexmiddle");
-
-      var newCategory = genIcon("plus", "New Category").appendTo(catWrap);
-      newCategory.addClass("fit-x create middle");
-      newCategory.css("font-size", "1.6em");
-      newCategory.click(function(){
-        obj.data._d.category.push({name : "New Category"});
-        obj.sync("updateAsset");
-      });
-    }
-    */
     if (sheet.tabs && sheet.tabs.length) {
       var tabContent = genNavBar("flexaround background alttext", "flex", "4px");
       tabContent.addClass("flex");

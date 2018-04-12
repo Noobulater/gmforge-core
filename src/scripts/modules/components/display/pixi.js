@@ -379,10 +379,10 @@ sync.render("ui_board", function(obj, app, scope) {
           olay.append("<b>Drop to Create</b>");
         }
       });
-      board.on('drop', function(ev){
+      board.on('drop', function(ev, ui){
         ev.preventDefault();
         ev.stopPropagation();
-        var dt = ev.originalEvent.dataTransfer;
+        var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
         var files = dt.files;
         var focal = boardCanvas.stage.toLocal({x : ev.originalEvent.pageX, y : ev.originalEvent.pageY});
         var xPos = focal.x;
@@ -479,8 +479,9 @@ sync.render("ui_board", function(obj, app, scope) {
         }
         else if (dt.getData("Text")) {
           var img = new Image();
-          dt.getData("Text")
-          img.src = dt.getData("Text");
+          var url = dt.getData("Text");
+          url = url.replace("http://localhost:30000", "");
+          img.src = url;
           img.onload = function(){
             if (hasGrid) {
               var xGrid = Math.floor((xPos - (data.gridX || 0))/data.gridW);
@@ -512,165 +513,133 @@ sync.render("ui_board", function(obj, app, scope) {
                 i : 0
               });
               sendAlert({text : "Tile Sheet Added"});
+              if (!scope.local) {
+                obj.sync("updateAsset");
+              }
+              else {
+                obj.update();
+              }
             }
             else {
-               data.layers[scope.layer].p.push({
-                x : xPos, y : yPos,
-                w : (data.pW || data.gridW || 64),
-                h : (data.pH || data.gridH || 64),
-                i : img.src
-              });
+              var newP = {
+                 x : xPos, y : yPos,
+                 w : (data.pW || data.gridW || 64),
+                 h : (data.pH || data.gridH || 64),
+                 i : url
+               };
+              boardApi.pix.addObject(newP, scope.layer, "p", obj);
               sendAlert({text : "Token Added"});
-            }
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
             }
           }
         }
-        else if (dt.getData("OBJ")) {
+        else if (dt && dt.getData("OBJ")) {
           var ent = JSON.parse(dt.getData("OBJ"));
-
-          if (ent._t == "a") {
-            if (!game.config.data.offline) {
-              runCommand("createAdventure", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "b") {
-            if (!game.config.data.offline) {
-              runCommand("createBoard", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "c") {
-            createCharacter(ent, true);
-            game.entities.update();
-          }
-          else if (ent._t == "i") {
-            if (!game.config.data.offline) {
-              runCommand("createItem", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "p") {
-            if (!game.config.data.offline) {
-              runCommand("createPage", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "v") {
-            if (!game.config.data.offline) {
-              runCommand("createVehicle", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-
-
-          game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-          var lastKeys = Object.keys(game.entities.data);
-          game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-            var change = true;
-            var keyIndex;
-            for (var key in game.entities.data) {
-              if (!util.contains(lastKeys, key)) {
-                game.locals["newAssetList"].push(key);
-                keyIndex = key;
-                change = false;
-              }
-            }
-            var ent = getEnt(keyIndex);
-            if (ent && hasSecurity(userID, "Rights", ent.data)) {
-              if (!_down["16"] && hasGrid) {
-                xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
-                yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
-              }
-
-              if (!_down["16"]) {
-                for (var index in data.layers[scope.layer].p) {
-                  if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == keyIndex) {
-                    data.layers[scope.layer].p[index].x = xPos;
-                    data.layers[scope.layer].p[index].y = yPos;
-                    if (!scope.local) {
-                      runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
-                      boardApi.pix.moveObject(scope.layer, "p", index, obj);
-                    }
-                    else {
-                      obj.update();
-                    }
-                    return;
-                  }
-                }
-              }
-              var newP = {
-                x : xPos,
-                y : yPos,
-                w : (data.pW || data.gridW || 64),
-                h : (data.pH || data.gridH || 64),
-                d : (data.pD || null),
-                c : (data.pC || null),
-                eID : keyIndex,
-                i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
-              };
-              if (newP.eID) {
-                var ent = getEnt(newP.eID);
-                if (ent.data._t == "c") {
-                  ent = duplicate(ent);
-                  var context = sync.defaultContext();
-                  context[ent.data._t] = ent.data;
-
-                  for (var i in ent.data.info.img.modifiers) {
-                    var val = ent.data.info.img.modifiers[i];
-                    if (val) {
-                      newP[i] = sync.eval(val, context);
-                    }
-                  }
-                  if (ent.data.info.img.modifiers) {
-                    if (ent.data.info.img.modifiers.w) {
-                      newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
-                    }
-                    if (ent.data.info.img.modifiers.h) {
-                      newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
-                    }
-                  }
-                }
-              }
-              if (hasSecurity(userID, "Rights", data)) {
-                boardApi.pix.addObject(newP, scope.layer, "p", obj);
+          if (ent._t != "i") {
+            if (ent._t == "b") {
+              if (!game.config.data.offline) {
+                runCommand("createBoard", ent);
               }
               else {
-                //boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+                game.entities.update();
+              }
+            }
+            else if (ent._t == "c") {
+              createCharacter(ent, true);
+              game.entities.update();
+            }
+            else if (ent._t == "p") {
+              if (!game.config.data.offline) {
+                runCommand("createPage", ent);
+              }
+              else {
+                game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+                game.entities.update();
               }
             }
 
-            return change;
+
+            game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+            var lastKeys = Object.keys(game.entities.data);
+            game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+              var change = true;
+              var keyIndex;
+              for (var key in game.entities.data) {
+                if (!util.contains(lastKeys, key)) {
+                  game.locals["newAssetList"].push(key);
+                  keyIndex = key;
+                  change = false;
+                }
+              }
+              var ent = getEnt(keyIndex);
+              if (ent && hasSecurity(userID, "Rights", ent.data)) {
+                if (!_down["16"] && hasGrid) {
+                  xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
+                  yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
+                }
+
+                if (!_down["16"]) {
+                  for (var index in data.layers[scope.layer].p) {
+                    if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == keyIndex) {
+                      data.layers[scope.layer].p[index].x = xPos;
+                      data.layers[scope.layer].p[index].y = yPos;
+                      if (!scope.local) {
+                        runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
+                        boardApi.pix.moveObject(scope.layer, "p", index, obj);
+                      }
+                      else {
+                        obj.update();
+                      }
+                      return;
+                    }
+                  }
+                }
+                var newP = {
+                  x : xPos,
+                  y : yPos,
+                  w : (data.pW || data.gridW || 64),
+                  h : (data.pH || data.gridH || 64),
+                  d : (data.pD || null),
+                  c : (data.pC || null),
+                  eID : keyIndex,
+                  i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
+                };
+                if (newP.eID) {
+                  var ent = getEnt(newP.eID);
+                  if (ent.data._t == "c") {
+                    ent = duplicate(ent);
+                    var context = sync.defaultContext();
+                    context[ent.data._t] = ent.data;
+
+                    for (var i in ent.data.info.img.modifiers) {
+                      var val = ent.data.info.img.modifiers[i];
+                      if (val) {
+                        newP[i] = sync.eval(val, context);
+                      }
+                    }
+                    if (ent.data.info.img.modifiers) {
+                      if (ent.data.info.img.modifiers.w) {
+                        newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
+                      }
+                      if (ent.data.info.img.modifiers.h) {
+                        newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
+                      }
+                    }
+                  }
+                }
+                if (hasSecurity(userID, "Rights", data)) {
+                  boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                }
+                else {
+                  //boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                }
+              }
+              return change;
+            }
           }
         }
         layout.coverlay(app.attr("id")+"-drag-overlay");
@@ -744,64 +713,66 @@ sync.render("ui_board", function(obj, app, scope) {
         }
         else if ($(ui.item).attr("index")) {
           var ent = getEnt($(ui.item).attr("index"));
-          if (ent && hasSecurity(userID, "Rights", ent.data)) {
-            if (!_down["16"] && hasGrid) {
-              xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
-              yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
-            }
-
-            if (!_down["16"]) {
-              for (var index in data.layers[scope.layer].p) {
-                if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == $(ui.item).attr("index")) {
-                  var oldData = data.layers[scope.layer].p[index];
-                  data.layers[scope.layer].p[index].x = xPos;
-                  data.layers[scope.layer].p[index].y = yPos;
-                  if (!scope.local) {
-                    runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
-                    boardApi.pix.moveObject(scope.layer, "p", index, obj);
-                  }
-                  else {
-                    obj.update();
-                  }
-                  return;
-                }
+          if (ent.data._t != "i") {
+            if (ent && hasSecurity(userID, "Rights", ent.data)) {
+              if (!_down["16"] && hasGrid) {
+                xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
+                yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
               }
-            }
-            var newP = {
-              x : xPos,
-              y : yPos,
-              w : (data.pW || data.gridW || 64),
-              h : (data.pH || data.gridH || 64),
-              d : (data.pD || null),
-              c : (data.pC || null),
-              eID : $(ui.item).attr("index"),
-              i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
-            };
-            if (newP.eID) {
-              var ent = getEnt(newP.eID);
-              if (ent.data._t == "c") {
-                ent = duplicate(ent);
-                var context = sync.defaultContext();
-                context[ent.data._t] = ent.data;
 
-                for (var i in ent.data.info.img.modifiers) {
-                  var val = ent.data.info.img.modifiers[i];
-                  if (val) {
-                    newP[i] = sync.eval(val, context);
-                  }
-                }
-                if (ent.data.info.img.modifiers) {
-                  if (ent.data.info.img.modifiers.w) {
-                    newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
-                  }
-                  if (ent.data.info.img.modifiers.h) {
-                    newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
+              if (!_down["16"]) {
+                for (var index in data.layers[scope.layer].p) {
+                  if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == $(ui.item).attr("index")) {
+                    var oldData = data.layers[scope.layer].p[index];
+                    data.layers[scope.layer].p[index].x = xPos;
+                    data.layers[scope.layer].p[index].y = yPos;
+                    if (!scope.local) {
+                      runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
+                      boardApi.pix.moveObject(scope.layer, "p", index, obj);
+                    }
+                    else {
+                      obj.update();
+                    }
+                    return;
                   }
                 }
               }
-            }
-            if (hasSecurity(userID, "Rights", data)) {
-              boardApi.pix.addObject(newP, scope.layer, "p", obj);
+              var newP = {
+                x : xPos,
+                y : yPos,
+                w : (data.pW || data.gridW || 64),
+                h : (data.pH || data.gridH || 64),
+                d : (data.pD || null),
+                c : (data.pC || null),
+                eID : $(ui.item).attr("index"),
+                i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
+              };
+              if (newP.eID) {
+                var ent = getEnt(newP.eID);
+                if (ent.data._t == "c") {
+                  ent = duplicate(ent);
+                  var context = sync.defaultContext();
+                  context[ent.data._t] = ent.data;
+
+                  for (var i in ent.data.info.img.modifiers) {
+                    var val = ent.data.info.img.modifiers[i];
+                    if (val) {
+                      newP[i] = sync.eval(val, context);
+                    }
+                  }
+                  if (ent.data.info.img.modifiers) {
+                    if (ent.data.info.img.modifiers.w) {
+                      newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
+                    }
+                    if (ent.data.info.img.modifiers.h) {
+                      newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
+                    }
+                  }
+                }
+              }
+              if (hasSecurity(userID, "Rights", data)) {
+                boardApi.pix.addObject(newP, scope.layer, "p", obj);
+              }
             }
           }
         }
@@ -2666,6 +2637,8 @@ sync.render("ui_board", function(obj, app, scope) {
     //}
     setTimeout(function(){
       var loaded = {};
+      app.attr("divWidth", divRow.width());
+      app.attr("divHeight", divRow.height());
       function checkLoaded(sheet) {
         var fullLoaded = true;
         for (var i=0; i<data.sheets.length; i++) {
@@ -2677,32 +2650,29 @@ sync.render("ui_board", function(obj, app, scope) {
           if (hasRights) {
             app.attr("hideCursor", "true");
           }
-          app.attr("divWidth", divRow.width());
-          app.attr("divHeight", divRow.height());
           obj.update();
         }
       }
-
-      for (var i=0; i<data.sheets.length; i++) {
-        function loadWrap(sheet) {
-          if (!data.sheets[sheet].i || PIXI.loader.resources[data.sheets[sheet].i]) {
+      function loadWrap(sheet) {
+        if (!data.sheets[sheet].i || PIXI.loader.resources[data.sheets[sheet].i]) {
+          loaded[sheet] = true;
+          checkLoaded(sheet);
+          if (data.sheets[Number(sheet)+1]) {
+            loadWrap(Number(sheet)+1);
+          }
+        }
+        else {
+          PIXI.loader.add(data.sheets[sheet].i).load(setup);
+          function setup() {
             loaded[sheet] = true;
-            checkLoaded(sheet);
             if (data.sheets[Number(sheet)+1]) {
               loadWrap(Number(sheet)+1);
             }
-          }
-          else {
-            PIXI.loader.add(data.sheets[sheet].i).load(setup);
-            function setup() {
-              loaded[sheet] = true;
-              if (data.sheets[Number(sheet)+1]) {
-                loadWrap(Number(sheet)+1);
-              }
-              checkLoaded(sheet);
-            }
+            checkLoaded(sheet);
           }
         }
+      }
+      for (var i=0; i<data.sheets.length; i++) {
         loadWrap(i);
         break;
       }
@@ -2710,8 +2680,6 @@ sync.render("ui_board", function(obj, app, scope) {
         if (hasRights) {
           app.attr("hideCursor", "true");
         }
-        app.attr("divWidth", divRow.width());
-        app.attr("divHeight", divRow.height());
         setTimeout(function(){obj.update();}, 100);
       }
     }, 200);

@@ -144,8 +144,9 @@ var _actions = {
           msg : "rolled Initiative",
           data : data
         }
-
-        runCommand("diceCheck", evData);
+        if (combatObj == game.state) {
+          runCommand("diceCheck", evData);
+        }
 
         var sp;
         var ok;
@@ -200,7 +201,7 @@ var _actions = {
     }
   },
   "Set/Roll Initiative (Hidden)" : {
-    condition :function(obj) {return (game.state.data && game.state.data.combat != null && hasSecurity(getCookie("UserID"), "Assistant Master"))},
+    condition :function(obj) {return (hasSecurity(getCookie("UserID"), "Assistant Master"))},
     click : function(ev, ui, obj, app, scope) {
       var combatObj;
       if (game.state.data && game.state.data.combat) {
@@ -231,13 +232,6 @@ var _actions = {
         var context = sync.defaultContext();
         context[obj.data._t] = duplicate(obj.data);
         var data = sync.executeQuery(query.val() || game.templates.initiative.query, context);
-
-        var evData = {
-          msg : "rolled Initiative",
-          data : data
-        }
-
-        runCommand("diceCheck", evData);
 
         var sp;
         var ok;

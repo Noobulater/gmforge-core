@@ -970,6 +970,14 @@ function controlsKeyDown(e) {
 
                 typeData.indexs.sort();
                 for (var idx=typeData.indexs.length-1; idx>=0; idx--) {
+                  if (board.data.layers[layer][type][typeData.indexs[idx]] && board.data.layers[layer][type][typeData.indexs[idx]].eID) {
+                    var delEnt = getEnt(board.data.layers[layer][type][typeData.indexs[idx]].eID);
+                    if (delEnt && delEnt.data && delEnt.data.tags && delEnt.data.tags["temp"]) {
+                      if (hasSecurity(getCookie("UserID"), "Owner", delEnt.data)) {
+                        delEnt.sync("deleteAsset");
+                      }
+                    }
+                  }
                   board.data.layers[layer][type].splice(typeData.indexs[idx], 1);
                 }
               }
@@ -3227,6 +3235,13 @@ util.parse = {
   }
 }
 
+util.resourceTypes = [
+  "Rich Text",
+  "HTML",
+  "Image",
+  "Roll Table"
+]
+
 util.processPage = function(pageData, obj, app, scope) {
   scope = scope || {};
   app = app || $("<div>");
@@ -4194,8 +4209,9 @@ util.interfaces = {
   "Inputs" : {
     "Field" : {
       content : {
+        classes : "flexrow",
         target : "%Target%",
-        edit : {classes : "line"}
+        edit : {classes : "line lrmargin"}
       },
       arguments : {
         "%Target%" : {
@@ -4219,14 +4235,22 @@ util.interfaces = {
     },
     "Image" : {
       content : {
-        classes : "flexcolumn smooth outline flex white",
-        ui : "ui_image",
-        target : "info.img",
-        style : {"min-width" : "100px", "min-height" : "100px"},
+        classes : "flexcolumn flex flexcontainer smooth outline white margin",
+        style : {"position" : "relative"},
+        display : [
+          {
+            classes : "flexcolumn flex",
+            ui : "ui_image",
+            target : "info.img",
+            style : {"min-width" : "100px", "min-height" : "100px"},
+          },
+          {style : {"position" : "absolute", "right" : "0", "bottom" : "0"}, title : "Map Token", target : "info.img", ui : "ui_token", scope : {classes : "smooth outline white"}}
+        ]
       },
     },
     "Label" : {
       content : {
+        classes : "bold flexmiddle",
         value : "%Value%",
       },
       arguments : {
@@ -4237,8 +4261,8 @@ util.interfaces = {
     },
     "Notes" : {
       content : {
-        classes : "flexcolumn flex padding",
-        ui : "ui_characterNotes",
+        classes : "flexcolumn flex padding white smooth outline",
+        ui : "ui_rawNotes",
       }
     },
   },
@@ -5098,7 +5122,7 @@ function genIcon(options, name, reverse) {
     options = {icon : options, text : name, reverse : reverse};
   }
   var link = $('<a>');
-
+  link.css("white-space", "nowrap");
   var icon;
   if (options.reverse || reverse) {
     icon = $('<span>').appendTo(link);
@@ -10086,7 +10110,6 @@ sync.obj = function(id, defaultApps) {
   rObj.removeApp = function(newApp){
     for (var index in rObj["_apps"]) {
       if (rObj["_apps"][index] == newApp.attr("id")) {
-        console.log("spliced");
         rObj["_apps"].splice(index, 1);
       }
     }
@@ -15164,851 +15187,6 @@ sync.render("ui_combatControls", function(obj, app, scope){
   return div;
 });
 
-sync.render("ui_contentList", function(obj, app, scope) {
-  scope = scope || {viewOnly: (app.attr("viewOnly") == "true")};
-  var div = $("<div>");
-  div.addClass("fit-xy flexcolumn");
-  div.css("position", "relative");
-
-  if (!obj) {
-    game.locals["storage"] = game.locals["storage"] || sync.obj("storage");
-    game.locals["storage"].addApp(app);
-
-    runCommand("retreiveStorage");
-    return div;//$("<div class='flexmiddle'><b>Loading...</b></div>");
-  }
-
-  var list = [];
-  if (game.locals["newContent"]) {
-    list.push(game.locals["newContent"]);
-  }
-  if (obj) {
-    var data = obj.data;
-    for (var i in data.l) {
-      if (data.l[i] && data.l[i].a == "pk" && data.l[i]._uid) {
-        if (isNaN(data.l[i]._uid)) {
-          if (data.l[i]._uid.match(getCookie("UserID"))) {
-            var splt = data.l[i]._uid.split("_");
-            if (splt[1]) {
-              list.push(data.s[splt[1]]);
-            }
-          }
-          else if (data.s[data.l[i]._uid]) {
-            list.push(data.s[data.l[i]._uid]);
-          }
-        }
-        else {
-          list.push(data.s[data.l[i]._uid]);
-        }
-      }
-    }
-  }
-  if (list.length) {
-    var wrap = $("<div>").appendTo(div);
-    wrap.addClass("flex outlinebottom");
-    wrap.css("position", "relative");
-    wrap.css("overflow", "auto");
-
-    var content = sync.render("ui_entList")(obj, app, {
-      list : list,
-      draw : function(ui, ent) {
-        $(ui.children()[0]).removeClass("flexbetween");
-        $(ui.children()[0]).addClass("flexcolumn");
-        $(ui.children()[0]).css("position", "relative");
-        var img = $($(ui.children()[0]).children()[0]);
-        img.css("max-width", "100%");
-        img.css("height", "auto");
-        if (obj != game.locals["newContent"]) {
-          for (var i in data.l) {
-            if (data.s[data.l[i]._uid] == ent) {
-              var del = genIcon("remove").appendTo($(ui.children()[0]));
-              del.addClass("lrpadding");
-              del.attr("title", "Unsubscribe");
-              del.attr("index", i);
-              del.css("position", "absolute");
-              del.css("right", "0");
-              del.css("top", "0");
-              del.click(function(ev){
-                var l = duplicate(data.l);
-                l[$(this).attr("index")] = {delete : true};
-                runCommand("moveAssets", {l : l});
-                ui.remove();
-                sendAlert({text : "Unsubscribing"});
-                ev.stopPropagation();
-                ev.preventDefault();
-                return false;
-              });
-            }
-          }
-        }
-      },
-      click : function(ev, ui, eObj) {
-        var newApp = sync.newApp("ui_contentEditor");
-        eObj.addApp(newApp);
-
-        var pop = ui_popOut({
-          target : app,
-          align : "top",
-          id : "content-package",
-          dragThickness : "0.5em",
-          minimize : true,
-          title : sync.rawVal(eObj.data.info.name),
-          style : {"width" : "50vw", "height" : "50vh"}
-        }, newApp);
-        pop.resizable();
-      },
-    });
-    content.addClass("fit-xy");
-    content.css("position", "absolute");
-    content.css("top", "0");
-    content.css("left", "0");
-    content.appendTo(wrap);
-
-    var library = genIcon("cloud-download", "find more packs").appendTo(div);
-    library.addClass("fit-x flexmiddle subtitle");
-    library.click(function(){
-      var frame = layout.page({title: "Community Chest", blur : 0.5, width: "90%", id: "community-chest"});
-      if (layout.mobile) {
-        frame.css("width", "95vw");
-      }
-      var newApp = sync.newApp("ui_newMarket", null, {});
-      newApp.appendTo(frame);
-      newApp.css("height", "80vh");
-    });
-
-    var optionsBar = $("<div>").appendTo(div);
-    optionsBar.addClass("background alttext flexrow flexaround spadding");
-
-    var newPack = genIcon("plus", "Create New Package").appendTo(optionsBar);
-    newPack.addClass("subtitle");
-    newPack.click(function(){
-      game.locals["newContent"] = sync.obj();
-      game.locals["newContent"].data = duplicate(game.templates.content);
-      sync.rawVal(game.locals["newContent"].data.info.name, "Local Package");
-
-      var newApp = sync.newApp("ui_contentEditor");
-      game.locals["newContent"].addApp(newApp);
-
-      var pop = ui_popOut({
-        target : app,
-        align : "top",
-        id : "content-package",
-        dragThickness : "0.5em",
-        minimize : true,
-        title : sync.rawVal(game.locals["newContent"].data.info.name),
-        style : {"width" : "50vw", "height" : "50vh"}
-      }, newApp);
-      pop.resizable();
-    });
-
-    return div;
-  }
-  else {
-    div.append("<i class='subtitle lrpadding flex flexmiddle'>No Content Packs Found</i>");
-
-    var optionsBar = $("<div>").appendTo(div);
-    optionsBar.addClass("background alttext flexrow flexaround spadding");
-
-    var newPack = genIcon("plus", "Create New Package").appendTo(optionsBar);
-    newPack.addClass("subtitle");
-    newPack.click(function(){
-      game.locals["newContent"] = sync.obj();
-      game.locals["newContent"].data = duplicate(game.templates.content);
-      sync.rawVal(game.locals["newContent"].data.info.name, "Local Package");
-
-      var newApp = sync.newApp("ui_contentEditor");
-      game.locals["newContent"].addApp(newApp);
-
-      var pop = ui_popOut({
-        target : app,
-        align : "top",
-        id : "content-package",
-        dragThickness : "0.5em",
-        minimize : true,
-        title : sync.rawVal(game.locals["newContent"].data.info.name),
-        style : {"width" : "50vw", "height" : "50vh"}
-      }, newApp);
-      pop.resizable();
-    });
-    return div;
-  }
-});
-
-sync.render("ui_contentEditor", function(obj, app, scope) {
-  scope = scope || {viewOnly : (app.attr("viewOnly") == "true")};
-
-  var categories = {
-    "a" : {n : "Adventures", i : "book", ui : "ui_planner", width : "60vw", height : "40vh"},
-    "b" : {n : "Maps", i : "globe", ui : "ui_board", width : assetTypes["b"].width, height : assetTypes["b"].height},
-    "c" : {n : "Actors", i : "user", ui : "ui_characterSheet", width : assetTypes["c"].width, height : assetTypes["c"].height},
-    "i" : {n : "Items/Spells", i : "briefcase", ui : "ui_renderItem", width : assetTypes["i"].width, height : assetTypes["i"].height},
-    "p" : {n : "Resources", i : "file", ui : "ui_renderPage", width : "600px", height : "800px"},
-    "v" : {n : "Vehicles", i : "plane", ui : "ui_vehicle", width : "50vw", height : "40vh"},
-  };
-
-  var div = $("<div>");
-  div.addClass("flex flexcolumn");
-
-  if (!obj) {
-    return sync.render("ui_contentList")(obj, app, scope);
-  }
-  var data = obj.data;
-  if (obj.data["_uid"] && isNaN(obj.data["_uid"]) && !obj.data["_uid"].toLowerCase().match(getCookie("UserID").toLowerCase())) {
-    scope.viewOnly = true;
-  }
-  console.log(data);
-  if (!(data.b instanceof Object)) {
-    data.b = JSON.parse(data.b || "[]");
-  }
-  if (!(data.c instanceof Object)) {
-    data.c = JSON.parse(data.c || "[]");
-  }
-  if (!(data.p instanceof Object)) {
-    data.p = JSON.parse(data.p || "[]");
-  }
-  if (!(data.v instanceof Object)) {
-    data.v = JSON.parse(data.v || "[]");
-  }
-
-  if (!(data.inventory instanceof Object)) {
-    data.inventory = JSON.parse(data.inventory || "[]");
-  }
-  if (!(data.spellbook instanceof Object)) {
-    data.spellbook = JSON.parse(data.spellbook || "[]");
-  }
-  /*if (!(data.talents instanceof Object)) {
-    data.talents = JSON.parse(data.talents || "[]");
-  }*/
-
-  if (!scope.viewOnly || app.attr("from")) {
-    var optionsBar = $("<div>").appendTo(div);
-    optionsBar.addClass("foreground padding subtitle alttext flexrow flexaround");
-    if (app.attr("from")) {
-      var back = genIcon("arrow-left").appendTo(optionsBar);
-      back.attr("title", "To List");
-      back.click(function(){
-        obj.removeApp(app);
-        app.attr("ui-name", "ui_contentList");
-        game.locals["storage"] = game.locals["storage"] || sync.obj("storage");
-        game.locals["storage"].addApp(app);
-      });
-    }
-
-    if (!scope.viewOnly) {
-      if (obj.data["_uid"]) {
-        var trash = genIcon("trash", "Delete Content").appendTo(optionsBar);
-        trash.attr("title", "Delete this Content");
-        trash.click(function(){
-          ui_prompt({
-            target : $(this),
-            id : "confirm-delete-content",
-            click : function(){
-              sendAlert({text : "You must delete this from your storage"});
-            }
-          });
-        });
-      }
-
-      var clear = genIcon("remove", "Clear Content").appendTo(optionsBar);
-      clear.attr("title", "Clear the Contents of this Content");
-      clear.click(function(){
-        ui_prompt({
-          target : $(this),
-          id : "confirm-clear-adventure",
-          click : function(){
-            obj.data = duplicate(game.templates.content);
-            obj.sync("updateAsset");
-          }
-        });
-      });
-
-      var store = genIcon("cloud-upload", "Export Content as Package");
-      if (obj.data["_uid"]) {
-        store = genIcon("cloud-upload", "Re-Package Content");
-      }
-      store.appendTo(optionsBar);
-      store.attr("title", "Save Content as Package");
-      store.click(function(){
-        var dupe = {_s : obj.data._s};
-        dupe.info = duplicate(obj.data.info);
-        dupe.b = JSON.stringify(obj.data.b);
-        dupe.c = JSON.stringify(obj.data.c);
-        dupe.p = JSON.stringify(obj.data.p);
-        dupe.v = JSON.stringify(obj.data.v);
-        dupe._c = obj.data._c;
-        dupe._t = "pk";
-        dupe._uid = duplicate(obj.data._uid);
-        dupe.inventory = JSON.stringify(obj.data.inventory);
-        dupe.spellbook = JSON.stringify(obj.data.spellbook);
-        dupe.talents = JSON.stringify(obj.data.talents);
-        runCommand("storeContent", dupe);
-        layout.coverlay("quick-storage-popout");
-      });
-    }
-  }
-
-  var body = genNavBar('foreground subtitle alttext', null, "4px");
-  $(body.children()[0]).removeClass("background");
-  body.addClass("fit-xy flexcolumn");
-  body.appendTo(div);
-
-  body.generateTab("Content Package Info", "info-sign", function(parent){
-    parent.addClass("flexcolumn flex");
-
-    var content = $("<div>").appendTo(parent);
-    content.addClass("flexcolumn flex");
-
-    var newApp = sync.render("ui_editPage")(obj, app, scope);
-    if (scope.viewOnly) {
-      newApp = sync.render("ui_renderPage")(obj, app, {viewOnly : true});
-    }
-    content.append(newApp);
-    if (app) {
-      app.attr("_tab", "Content Package Info");
-    }
-  });
-
-  /*body.generateTab("Character Factory", "list-alt", function(parent){
-    parent.addClass("flexcolumn flex");
-
-    var content = $("<div>").appendTo(parent);
-    content.addClass("flexcolumn flex");
-    content.css("position", "relative");
-    $("<b class='highlight smooth spadding outline alttext' style='position:absolute;'>Beta</b>").appendTo(content);
-    var newApp = sync.render("ui_genEditor")(obj, app, scope);
-    content.append(newApp);
-    if (app) {
-      app.attr("_tab", "Character Factory");
-    }
-  });*/
-
-  function tabWrap(name, icon, filter, click) {
-    body.generateTab(name, icon, function(parent){
-      parent.addClass("flexcolumn fit-y");
-
-      //var create = genIcon("plus", "Create "+name.substring(0,name.length-1)+"").appendTo(optionsBar);
-
-      var listedChars = $("<div>").appendTo(parent);
-      listedChars.addClass("flexcolumn flex outlinebottom");
-      listedChars.attr("_lastScrollTop", app.attr("_lastScrollTop_chars"));
-      listedChars.css("overflow-y", "auto");
-      listedChars.css("position", "relative");
-      listedChars.scroll(function(){
-        app.attr("_lastScrollTop_chars", $(this).scrollTop());
-      });
-
-      var listWrap = $("<div>").appendTo(listedChars);
-      listWrap.addClass("fit-x flexcolumn flexmiddle");
-      listWrap.css("position", "absolute");
-      var target = "c";
-      if (filter == "i") {
-        if (name == "Spells") {
-          target = "spellbook";
-        }
-        else {
-          target = "inventory";
-        }
-      }
-      else if (filter == "b") {
-        target = "b";
-      }
-      else if (filter == "p") {
-        target = "p";
-      }
-      else if (filter == "v") {
-        target = "v";
-      }
-
-      for (var i in obj.data[target]) {
-        var dummyObj = sync.obj(-1);
-        dummyObj.data = obj.data[target][i];
-        var charList = sync.render("ui_ent")(dummyObj, app, {
-          small : true,
-          draw : function(ui, charObj) {
-            if (!scope.viewOnly) {
-              var remove = genIcon("trash").appendTo(ui);
-                remove.click(function(ev){
-                obj.data[target].splice(ui.attr("index"), 1);
-                obj.update();
-
-                ev.stopPropagation();
-                ev.preventDefault();
-              });
-            }
-          },
-          click : function(ev, ui, charObj) {
-            var newApp;
-            var width = "40vw";
-            var height = "70vh";
-            if (categories[target]) {
-              width = categories[target].width;
-              height = categories[target].height;
-              newApp = sync.newApp(categories[target].ui);
-            }
-            else if (target == "inventory" || target == "spellbook") {
-              width = categories["i"].width;
-              height = categories["i"].height;
-              newApp = sync.newApp(categories["i"].ui, null, {viewOnly : true, itemData : charObj.data, spellBool : (target == "spellbook")});
-            }
-            newApp.attr("viewOnly", "true");
-
-            charObj.addApp(newApp);
-            var pop = ui_popOut({
-              target : app,
-              title : sync.rawVal(charObj.data.info.name),
-              minimize : true,
-              dragThickness : "0.5em",
-              style : {"width" : width, "height" : height},
-            }, newApp);
-            pop.resizable();
-          }
-        });
-        charList.appendTo(listWrap);
-        charList.addClass("fit-x");
-        charList.attr("draggable", true);
-        charList.attr("index", i);
-        charList.on("dragstart", function(ev){
-          var dt = ev.originalEvent.dataTransfer;
-          dt.setData("OBJ", JSON.stringify(obj.data[target][$(this).attr("index")]));
-          if (target == "spellbook") {
-            dt.setData("spell", true);
-          }
-        });
-      }
-      if (listWrap.children().length > 1) {
-        listWrap.children().each(function(){
-          $(this).removeClass("outline");
-          $(this).addClass("outlinebottom");
-        });
-      }
-
-
-      var optionsBar = $("<div>").appendTo(parent);
-      optionsBar.addClass("fit-x flexbetween outline flexwrap background alttext");
-
-      var searchBar = $("<div>").appendTo(optionsBar);
-      searchBar.addClass("flexmiddle");
-
-      var searchIcon = genIcon("search").appendTo(searchBar);
-      searchIcon.addClass("lrpadding");
-      searchIcon.attr("title", "Search");
-
-      var searchInput = genInput({
-        parent : searchBar,
-        placeholder : "Search Terms",
-        value : app.attr("lastSearchTerm"),
-      });
-      searchInput.addClass("flex subtitle");
-      searchInput.css("color", "#333");
-
-      if (!scope.viewOnly) {
-        var add = genIcon("share-alt", "Insert "+name+"").appendTo(optionsBar);
-        if (filter == "i") {
-          add.click(function(){
-            var content = $("<div>");
-            content.addClass("flexaround flexwrap");
-            var finalList = [];
-            for (var key in game.entities.data) {
-              var ent = game.entities.data[key];
-              if (ent && (ent.data["_t"] == "c" || ent.data["_t"] == "v") && hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
-                var list = [];
-                var inventory = ent.data.inventory;
-                for (var itemKey in inventory) {
-                  var itemData = inventory[itemKey];
-                  if (itemData && itemData["_t"] == "i" && !util.contains(finalList, JSON.stringify(itemData))) {
-                    list.push(finalList.length);
-                    finalList.push(JSON.stringify(itemData));
-                  }
-                }
-                if (list.length) {
-                  var container = $("<div>").appendTo(content);
-                  container.addClass("subtitle");
-
-                  var charDiv = sync.render("ui_characterSummary")(ent, app, {minimized: true});
-                  charDiv.addClass("background alttext");
-                  charDiv.appendTo(container);
-
-                  for (var itemKey in list) {
-                    var itemData = JSON.parse(finalList[list[itemKey]]);
-                    var itemPlate = $("<div>").appendTo(container);
-                    itemPlate.css("margin-left", "8px");
-                    itemPlate.addClass("outline hover2");
-                    if (sync.rawVal(itemData.info.img)) {
-                      var img = $("<img>").appendTo(itemPlate);
-                      img.attr("width", "auto");
-                      img.attr("height", "25px");
-                      img.attr("src", sync.rawVal(itemData.info.img));
-                    }
-                    var namePlate = $("<b>").appendTo(itemPlate);
-                    namePlate.append(sync.rawVal(itemData.info.name));
-                    itemPlate.attr("index", list[itemKey]);
-                    itemPlate.click(function(ev){
-                      var itemData = finalList[$(this).attr("index")];
-                      click(ev, $(this), JSON.parse(itemData));
-                    });
-                  }
-                }
-              }
-            }
-            if (finalList.length){
-              ui_popOut({
-                target : div,
-                id : "content-insert",
-                align : "top",
-                style : {"max-width" : "80vw", "max-height" : "35vh", "overflow-y" : "scroll"}
-              }, content);
-            }
-          });
-          var importText = genIcon("import", "Import "+name+" as List");//.appendTo(optionsBar);
-          importText.click(function(){
-            var content = $("<div>");
-            content.addClass("flexcolumn flexmiddle");
-
-            var textArea = $("<textarea>").appendTo(content);
-            textArea.addClass("fit-x");
-            textArea.css("width", "400px");
-            textArea.css("height", "400px");
-            textArea.attr("placeholder", "Seperate Entries with a new line, or comma's");
-
-            var button = $("<button>Confirm</button>").appendTo(content);
-            button.addClass("fit-x");
-            button.click(function(){
-              if (name == "Spells") {
-                var tempChar = duplicate(game.templates.character);
-                maxify("SPELLBOOK-\n"+(textArea.val() || ""), tempChar, game.templates);
-
-                for (var i in tempChar.spellbook) {
-                  var str = JSON.stringify(tempChar.spellbook[i]);
-                  var stop = false;
-                  for (var j in data.spellbook) {
-                    if (str == JSON.stringify(data.spellbook[j])) {
-                      layout.coverlay("import-subsection");
-                      stop = true;
-                      break;
-                    }
-                  }
-                  if (!stop) {
-                    obj.data.spellbook.push(tempChar.spellbook[i]);
-                  }
-                }
-              }
-              else {
-                var tempChar = duplicate(game.templates.character);
-                maxify("INVENTORY-\n"+(textArea.val() || ""), tempChar, game.templates);
-
-                for (var i in tempChar.inventory) {
-                  var str = JSON.stringify(tempChar.inventory[i]);
-                  var stop = false;
-                  for (var j in data.inventory) {
-                    if (str == JSON.stringify(data.inventory[j])) {
-                      layout.coverlay("import-subsection");
-                      stop = true;
-                      break;
-                    }
-                  }
-                  if (!stop) {
-                    obj.data.inventory.push(tempChar.inventory[i]);
-                  }
-                }
-              }
-
-              layout.coverlay("import-subsection");
-              obj.update();
-            });
-            ui_popOut({
-              target : $(this),
-              id : "import-subsection"
-            }, content);
-          });
-        }
-        else {
-          add.click(function(){
-            var ignore = {};
-            for (var i in game.entities.data) {
-              if (isNaN(i)) {
-                ignore[i] = true;
-              }
-            }
-            for (var key in obj.data.entities) {
-              ignore[obj.data.entities[key]] = true;
-            }
-            var content = sync.render("ui_entList")(obj, app, {
-              filter : filter,
-              click : click,
-              ignore : ignore,
-            });
-            if (content.children().length > 0) {
-              ui_popOut({
-                target : $(this),
-                id : "content-insert",
-              }, content);
-            }
-          });
-        }
-      }
-
-      if (app) {
-        app.attr("_tab", name);
-      }
-    });
-  }
-  tabWrap("Actors", "user", "c",
-  function(ev, ui, eObj) {
-    data.c.push(duplicate(eObj.data));
-    obj.update();
-    layout.coverlay("content-insert");
-  });
-  tabWrap("Items", "briefcase", "i",
-    function(ev, ui, eObj) {
-      var str = JSON.stringify(eObj);
-      for (var i in data.inventory) {
-        if (str == JSON.stringify(data.inventory[i])) {
-          sendAlert({text : "Dupicate Item Detected", duration : data.duration || 3000});
-          layout.coverlay("content-insert");
-          return;
-        }
-      }
-      data.inventory.push(eObj);
-      obj.update();
-      layout.coverlay("content-insert");
-    }
-  );
-  tabWrap("Maps", "globe", "b",
-  function(ev, ui, eObj) {
-    data.b.push(duplicate(eObj.data));
-    obj.update();
-    layout.coverlay("content-insert");
-  });
-  tabWrap("Resources", "duplicate", "p",
-  function(ev, ui, eObj) {
-    data.p.push(duplicate(eObj.data));
-    obj.update();
-    layout.coverlay("content-insert");
-  });
-  tabWrap("Spells", "flash", "i",
-    function(ev, ui, eObj) {
-      var str = JSON.stringify(eObj);
-      for (var i in data.spellbook) {
-        if (str == JSON.stringify(data.spellbook[i])) {
-          sendAlert({text : "Dupicate Spell Detected", duration : data.duration || 3000});
-          layout.coverlay("content-insert");
-          return;
-        }
-      }
-      data.spellbook.push(eObj);
-      obj.update();
-      layout.coverlay("content-insert");
-    }
-  );
-
-/*  body.generateTab("Talents", "screenshot", function(parent){
-    parent.addClass("flexcolumn flex");
-
-    var optionsBar = $("<div>").appendTo(parent);
-    optionsBar.addClass("fit-x flexaround flexwrap background alttext outline");
-
-    var searchBar = $("<div>").appendTo(optionsBar);
-    searchBar.addClass("flexmiddle");
-
-    var searchIcon = genIcon("search").appendTo(searchBar);
-    searchIcon.addClass("lrpadding");
-    searchIcon.attr("title", "Search");
-
-    var searchInput = genInput({
-      parent : searchBar,
-      placeholder : "Search Terms",
-      value : app.attr("lastSearchTerm"),
-    });
-    searchInput.addClass("flex subtitle");
-    searchInput.css("color", "#333");
-
-    if (!scope.viewOnly) {
-      var add = genIcon("share-alt", "Insert Talent").appendTo(optionsBar);
-      add.click(function(){
-        var content = $("<div>");
-        content.addClass("flexaround flexwrap");
-        var finalList = [];
-        for (var key in game.entities.data) {
-          var ent = game.entities.data[key];
-          if (ent && ent.data.talents && hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
-            var list = [];
-            var talents = ent.data.talents;
-            for (var itemKey in talents) {
-              var itemData = talents[itemKey];
-              if (itemData && !util.contains(finalList, JSON.stringify(itemData))) {
-                list.push(finalList.length);
-                finalList.push(JSON.stringify(itemData));
-              }
-            }
-            if (list.length) {
-              var container = $("<div>").appendTo(content);
-              container.addClass("subtitle");
-
-              var charDiv = sync.render("ui_characterSummary")(ent, app, {minimized: true});
-              charDiv.addClass("background alttext");
-              charDiv.appendTo(container);
-
-              for (var itemKey in list) {
-                var itemData = JSON.parse(finalList[list[itemKey]]);
-                var itemPlate = sync.render("ui_renderTalent")(obj, app, {talentData : itemData, viewOnly : true}).appendTo(container);
-                itemPlate.addClass("outline hover2");
-                itemPlate.attr("index", list[itemKey]);
-                itemPlate.click(function(ev){
-                  var itemData = JSON.parse(finalList[$(this).attr("index")]);
-                  obj.data.talents.push(itemData);
-                  obj.update();
-                  layout.coverlay("content-insert");
-                });
-              }
-            }
-          }
-        }
-        if (finalList.length){
-          ui_popOut({
-            target : div,
-            id : "content-insert",
-            align : "top",
-            style : {"max-width" : "80vw", "max-height" : "35vh", "overflow-y" : "scroll"}
-          }, content);
-        }
-      });
-      var importText = genIcon("import", "Import Talents as List").appendTo(optionsBar);
-      importText.click(function(){
-        var content = $("<div>");
-        content.addClass("flexcolumn flexmiddle");
-
-        var textArea = $("<textarea>").appendTo(content);
-        textArea.addClass("fit-x");
-        textArea.css("width", "400px");
-        textArea.css("height", "400px");
-        textArea.attr("placeholder", "Seperate Entries with a new line, or comma's");
-
-        var button = $("<button>Confirm</button>").appendTo(content);
-        button.addClass("fit-x");
-        button.click(function(){
-          var tempChar = duplicate(game.templates.character);
-          maxify("TALENTS-\n"+(textArea.val() || ""), tempChar, game.templates);
-
-          for (var i in tempChar.talents) {
-            var str = JSON.stringify(tempChar.talents[i]);
-            var stop = false;
-            for (var j in data.inventory) {
-              if (str == JSON.stringify(data.talents[j])) {
-                layout.coverlay("import-subsection");
-                stop = true;
-                break;
-              }
-            }
-            if (!stop) {
-              obj.data.talents.push(tempChar.talents[i]);
-            }
-          }
-          layout.coverlay("import-subsection");
-          obj.update();
-        });
-        ui_popOut({
-          target : $(this),
-          id : "import-subsection"
-        }, content);
-      });
-    }
-
-    var wrapper = $("<div>").appendTo(parent);
-    wrapper.addClass("flexcolumn flex");
-
-    var contentWrapper = $("<div>").appendTo(wrapper);
-    contentWrapper.addClass("fit-x flex");
-    contentWrapper.css("overflow", "auto");
-    if (name == "Talents") {
-      searchInput.keyup(function(){
-        listWrap.children().hide();
-        var term = ($(this).val() || "").toLowerCase();
-        listWrap.children().each(function(){
-          var ent = obj.data.talents[$(this).attr("index")];
-          if ((ent.name || "").toLowerCase().match(term)) {
-            $(this).show();
-          }
-        });
-      });
-    }
-    else {
-      searchInput.keyup(function(){
-        listWrap.children().hide();
-        var term = ($(this).val() || "").toLowerCase();
-        listWrap.children().each(function(){
-          var ent = obj.data[target][$(this).attr("index")];
-          if ((sync.rawVal(ent.info.name) || "").toLowerCase().match(term)) {
-            $(this).show();
-          }
-        });
-      });
-    }
-
-    for (var index in obj.data.talents) {
-      var wrapper = $("<div>").appendTo(contentWrapper);
-      wrapper.addClass("flexrow flexbetween outlinebottom");
-      wrapper.css("background-color", "white");
-      wrapper.attr("draggable", true);
-      wrapper.attr("index", index);
-      wrapper.on("dragstart", function(ev){
-        var dt = ev.originalEvent.dataTransfer;
-        dt.setData("OBJ", JSON.stringify(obj.data.talents[$(this).attr("index")]));
-        dt.setData("target", "talents");
-      });
-
-      var talentCont = $("<div>").appendTo(wrapper);
-      talentCont.addClass("flex hover2 flexbetween");
-      talentCont.css("cursor", "pointer");
-      talentCont.attr("index", index);
-      talentCont.css("padding-bottom", "1em");
-      talentCont.click(function(){
-        var content = $("<div>");
-        content.append(sync.render("ui_renderTalent")(obj, app, {talentData : obj.data.talents[$(this).attr("index")], viewOnly : scope.viewOnly}));
-        ui_popOut({
-          target : $(this),
-          id : "content-preview",
-          align : "bottom",
-          style : {"max-width" : "50vw"}
-        }, content);
-      });
-      var talentData = duplicate(obj.data.talents[index]);
-      sync.render("ui_renderTalent")(obj, app, {talentData: talentData, viewOnly: true, minimized : scope.minimized}).appendTo(talentCont);
-
-      if (!scope.viewOnly) {
-        var optionsBar = $("<div>").appendTo(wrapper);
-        optionsBar.addClass("flexmiddle background outline alttext");
-
-        var remove = genIcon("trash").appendTo(optionsBar);
-        remove.attr("index", index);
-        remove.click(function(){
-          obj.data.talents.splice($(this).attr("index"), 1);
-          obj.update();
-        });
-      }
-    }
-
-    app.attr("_tab", "Talents");
-  });
-
-  /*tabWrap("Vehicles", "plane", "v",
-  function(ev, ui, eObj) {
-    data.v.push(duplicate(eObj.data));
-    obj.update();
-    layout.coverlay("content-insert");
-  });*/
-  if (app) {
-    if (!app.attr("_tab")) {
-      app.attr("_tab", "Content Package Info");
-    }
-    body.selectTab(app.attr("_tab"));
-  }
-  else {
-    body.selectTab("Content Package Info");
-  }
-
-  return div;
-});
-
 sync.render("ui_existing", function(obj, app, scope) {
   var content = $("<div>");
   content.addClass("flexaround flexwrap");
@@ -18682,7 +17860,6 @@ sync.render("ui_library", function(obj, app, scope) {
   }
   if (localList) {
     // loads the content package so we can merge it's contents
-    //sync.render("ui_contentEditor")(pck, app, scope);
     if (localList.a && localList.a.length) {
       obj.data.a = obj.data.a.concat(duplicate(localList.a));
     }
@@ -19004,12 +18181,12 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
             olay.append("<b>Drop to Insert</b>");
           }
       	});
-        listedChars.on('drop', function(ev){
+        listedChars.on('drop', function(ev, ui ){
           ev.preventDefault();
           ev.stopPropagation();
           if (!_dragTransfer) {
-            var dt = ev.originalEvent.dataTransfer;
-            if (dt.getData("OBJ")) {
+            var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
+            if (dt && dt.getData("OBJ")) {
               var entData = JSON.parse(dt.getData("OBJ"));
               if (entData._t == "i") {
                 entData._s = {}; // clear security
@@ -19185,7 +18362,10 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
       charList.attr("index", i);
       charList.on("dragstart", function(ev){
         var dt = ev.originalEvent.dataTransfer;
-        dt.setData("OBJ", JSON.stringify(obj.data[target][$(this).attr("index")]));
+        var tempObj = duplicate(obj.data[target][$(this).attr("index")]);
+        tempObj.tags = tempObj.tags || {};
+        tempObj.tags["temp"] = true;
+        dt.setData("OBJ", JSON.stringify(tempObj));
         if (target == "spellbook") {
           dt.setData("spell", true);
         }
@@ -19574,9 +18754,10 @@ sync.render("ui_editPage", function(obj, app, scope){
       select.css("width", "100px");
       select.css("color", "#333");
       select.css("text-shadow", "none");
-      select.append("<option>Rich Text</option>");
-      select.append("<option>HTML</option>");
-      select.append("<option>Image</option>");
+
+      for (var key in util.resourceTypes) {
+        select.append("<option>"+util.resourceTypes[key]+"</option>");
+      }
       select.children().each(function(){
         if ($(this).text() == sync.rawVal(obj.data.info.mode)) {
           $(this).attr("selected", "selected");
@@ -19755,6 +18936,111 @@ sync.render("ui_editPage", function(obj, app, scope){
     scope.lookup = "info.img";
     content.addClass("smooth outline white");
     sync.render("ui_image")(obj, app, scope).appendTo(content);
+  }
+  else if (sync.rawVal(obj.data.info.mode) == "Roll Table") {
+    var tableData;
+
+    if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "{") {
+      try {
+        tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+      }
+      catch (e) {
+        tableData = {headers : [], contents : []};
+      }
+    }
+    else {
+      tableData = {headers : [], contents : []};
+    }
+
+    var tableOptions = $("<div>").appendTo(content);
+    tableOptions.addClass("flexcolumn foreground alttext");
+
+    var tableConfig = $("<div>").appendTo(tableOptions);
+
+    var headers = $("<div>").appendTo(tableOptions);
+    headers.addClass("flexrow flexbetween");
+
+      if (tableData.headers.length < 2) {
+        tableData.headers = [{name : "d100"}, {name : "Crazy Table"}];
+      }
+
+    for (var i=0; i<tableData.headers.length; i++) {
+      var headerData = tableData.headers[i];
+
+      var headerWrap = $("<div>").appendTo(headers);
+      headerWrap.addClass("flexcolumn flexmiddle flex");
+      if (i == 0) {
+        headerWrap.removeClass("flex");
+        headerWrap.append("<b class='subtitle dull'>Dice to Roll</b>");
+      }
+      else {
+        headerWrap.append("<b class='subtitle dull'>Description</b>");
+      }
+
+      var headerInput = genInput({
+        parent : headerWrap,
+        classes : "line middle lrmargin",
+        value : headerData.name,
+        index : i
+      });
+      headerInput.change(function(){
+        tableData.headers[$(this).attr("index")].name = $(this).val();
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+    }
+
+    var tableContent = $("<div>").appendTo(content);
+    tableContent.addClass("flexcolumn");
+
+    for (var i=0; i<tableData.contents.length; i++) {
+      var contentData = tableData.contents[i];
+
+      var headerWrap = $("<div>").appendTo(tableContent);
+      headerWrap.addClass("flexrow fit-x");
+
+      var headerInput = genInput({
+        parent : headerWrap,
+        classes : "line middle lrmargin",
+        value : contentData.name,
+        placeholder : "Dice Range (ex. 32-46)",
+        index : i
+      });
+      headerInput.change(function(){
+        tableData.contents[$(this).attr("index")].name = $(this).val();
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+
+      var valueInput = genInput({
+        parent : headerWrap,
+        classes : "line middle flex lrmargin",
+        value : contentData.value,
+        index : i
+      });
+      valueInput.change(function(){
+        tableData.contents[$(this).attr("index")].value = $(this).val();
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+
+      var remove = genIcon("remove").appendTo(headerWrap);
+      remove.addClass("destroy");
+      remove.attr("index", i);
+      remove.click(function(){
+        tableData.contents.splice($(this).attr("index"), 1);
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+    }
+
+    var newRow = genIcon("plus", "New Row").appendTo(tableContent);
+    newRow.addClass("fit-x flexmiddle subtitle bold");
+    newRow.click(function(){
+      tableData.contents.push({});
+      sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+      obj.update();
+    });
   }
   else {
     var saveWrap = $("<div>").appendTo(optionsBar);
@@ -20780,6 +20066,116 @@ sync.render("ui_renderPage", function(obj, app, scope){
     scope.lookup = "info.img";
     scope.viewOnly = true;
     sync.render("ui_image")(obj, app, scope).appendTo(contentWrap);
+  }
+  else if (sync.rawVal(obj.data.info.mode) == "Roll Table") {
+    var tableData;
+
+    if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "{") {
+      try {
+        tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+      }
+      catch (e) {
+        tableData = {headers : [], contents : []};
+      }
+    }
+    else {
+      tableData = {headers : [], contents : []};
+    }
+
+    var tableContent = $("<div>").appendTo(contentWrap);
+
+    for (var i=0; i<tableData.contents.length; i++) {
+      var contentData = tableData.contents[i];
+
+      var headerWrap = $("<div>").appendTo(tableContent);
+      headerWrap.addClass("flexrow fit-x outlinebottom");
+
+      var rollButton = $("<button>").appendTo(headerWrap);
+      rollButton.css("width", "100px");
+      rollButton.attr("index", i);
+      rollButton.text(contentData.name);
+      rollButton.click(function(){
+        var msg = "Selected "+tableData.contents[$(this).attr("index")].name+" on " + sync.rawVal(obj.data.info.name);
+        sendAlert({text : msg});
+        util.chatEvent(msg, null, null, $("<input>"), null, true);
+        util.chatEvent(tableData.contents[$(this).attr("index")].value, null, null, $("<input>"), null, true);
+      });
+
+      headerWrap.append("<p class='spadding flex'>"+(contentData.value || "")+"</p>");
+    }
+
+    var tableOptions = $("<div>").appendTo(contentWrap);
+    tableOptions.addClass("fit-x flexmiddle");
+
+    var rollButton = $("<button>").appendTo(tableOptions);
+    rollButton.addClass("bold flexmiddle button spadding");
+    rollButton.text("Roll");
+    rollButton.click(function(){
+      var result = sync.eval(tableData.headers[0].name, {});
+      var rangeRegex = /(\d+)-(\d+)/i;
+      for (var i=0; i<tableData.contents.length; i++) {
+        var contentName = tableData.contents[i].name;
+        var rangeMatch = contentName.match(rangeRegex);
+        if (rangeMatch) {
+          if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+            var temp = Number(rangeMatch[1]);
+            rangeMatch[1] = Number(rangeMatch[2]);
+            rangeMatch[2] = temp;
+          }
+          if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+            var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+            sendAlert({text : msg});
+            util.chatEvent(msg, null, null, $("<input>"), null, true);
+            util.chatEvent(tableData.contents[i].value, null, null, $("<input>"), null, true);
+            return;
+          }
+        }
+        else if (!isNaN(contentName) && contentName == result) {
+          var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+          sendAlert({text : msg});
+          util.chatEvent(msg, null, null, $("<input>"), null, true);
+          util.chatEvent(tableData.contents[i].value, null, null, $("<input>"), null, true);
+          return;
+        }
+      }
+    });
+
+    var rollButton = $("<button>").appendTo(tableOptions);
+    rollButton.addClass("bold flexmiddle background alttext spadding");
+    rollButton.text("Roll Private");
+    rollButton.click(function(){
+      var result = sync.eval(tableData.headers[0].name, {});
+      var rangeRegex = /(\d+)-(\d+)/i;
+      for (var i=0; i<tableData.contents.length; i++) {
+        var contentName = tableData.contents[i].name;
+        var rangeMatch = contentName.match(rangeRegex);
+        if (rangeMatch) {
+          if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+            var temp = Number(rangeMatch[1]);
+            rangeMatch[1] = Number(rangeMatch[2]);
+            rangeMatch[2] = temp;
+          }
+          if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+            var whisper = {};
+            whisper[getCookie("UserID")] = 1;
+            var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+            sendAlert({text : msg});
+            util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+            util.chatEvent(tableData.contents[i].value, null, whisper, $("<input>"), null, true);
+            return;
+          }
+        }
+        else if (!isNaN(contentName) && contentName == result) {
+          var whisper = {};
+          whisper[getCookie("UserID")] = 1;
+          var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+          sendAlert({text : msg});
+          util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+          util.chatEvent(tableData.contents[i].value, null, whisper, $("<input>"), null, true);
+          return;
+        }
+      }
+    });
   }
   else {
     var content = $("<div>").appendTo(contentWrap);
@@ -26586,10 +25982,10 @@ sync.render("ui_textBox", function(obj, app, scope){
         olay.append("<b>Drop to Share</b>");
       }
     });
-    div.on('drop', function(ev){
+    div.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
       if (dt.getData("Text") && dt.getData("Text").trim()) {
         var flavor;
         var icon;
@@ -29656,6 +29052,220 @@ sync.render("ui_diceVisual", function(obj, app, scope) {
   return div;
 });
 
+var _lastBuilder;
+sync.render("ui_addElement", function(obj, app, scope){
+  scope = scope || {
+    viewOnly: (app.attr("viewOnly") == "true"),
+    path : app.attr("lookup"),
+    closeTarget : app.attr("closeTarget"),
+  };
+
+  var path = scope.path;
+
+  var div = $("<div>");
+  div.addClass("flex");
+
+  function rebuild(type){
+    _lastBuilder = type;
+    div.empty();
+
+    var tabMenu = $("<div>").appendTo(div);
+    tabMenu.addClass("flexrow");
+
+    var simpleButton = $("<div>").appendTo(tabMenu);
+    simpleButton.addClass("spadding subtitle");
+    simpleButton.text("Attributes");
+    simpleButton.click(function(){
+      rebuild("attributes");
+    });
+
+    var jsonbutton = $("<div>").appendTo(tabMenu);
+    jsonbutton.addClass("spadding subtitle");
+    jsonbutton.text("Elements");
+    jsonbutton.click(function(){
+      rebuild("elements");
+    });
+
+    var content = $("<div>").appendTo(div);
+
+    if (type == "attributes") {
+      jsonbutton.addClass("button");
+      simpleButton.addClass("highlight alttext");
+
+      var listWrap = $("<div>").appendTo(div);
+      listWrap.addClass("foreground");
+      listWrap.css("overflow", "auto");
+      listWrap.css("max-height", "600px");
+      listWrap.css("width", "400px");
+
+      var keys = {};
+      var template = {stats : "", info : "", counters : ""};
+      for (var key in template) {
+        var templateWrap = $("<div>").appendTo(listWrap);
+        templateWrap.addClass("flexcolumn");
+
+        templateWrap.append("<b class='alttext lrmargin'>"+key+"</b>");
+
+        var templateData = $("<div>").appendTo(templateWrap);
+        templateData.addClass("flexcolumn white outline smooth padding");
+
+        var pathKey = key;
+        for (var subKey in obj.data[key]) {
+          pathKey = key + "." + subKey;
+          if (pathKey != "info.notes" && pathKey != "info.img") {
+            var attrOption = $("<div>").appendTo(templateData);
+            attrOption.addClass("flexrow subtitle button lrmargin");
+            attrOption.attr("path", pathKey);
+            if (!keys[subKey]) {
+              attrOption.append("<text class='flexmiddle' style='width:100px'>"+subKey+"</text>");
+              keys[subKey] = true;
+            }
+            else {
+              attrOption.append("<text class='flexmiddle' style='width:100px'>"+pathKey+"</text>");
+            }
+            attrOption.append("<b>"+obj.data[key][subKey].name+"</b>");
+            attrOption.click(function(){
+              var replace = path.replace(app.attr("id")+"_0", "");
+              while (replace.match("-")) {
+                replace = replace.replace("-", ".");
+              }
+              if (replace[0] == ".") {
+                replace = replace.substring(1, replace.length);
+              }
+              var target = sync.traverse(obj.data._d.content, replace);
+              target.display = target.display || [];
+              target.display.push({
+                classes : "flexrow",
+                target : $(this).attr("path"),
+                edit : {classes : "line lrmargin"}
+              });
+              obj.update();
+              layout.coverlay(scope.closeTarget);
+            });
+          }
+        }
+      }
+    }
+    else {
+      simpleButton.addClass("button");
+      jsonbutton.addClass("highlight alttext");
+
+      var listWrap = $("<div>").appendTo(div);
+      listWrap.addClass("foreground");
+      listWrap.css("overflow", "auto");
+      listWrap.css("max-height", "600px");
+      listWrap.css("width", "400px");
+
+      var interfaces = duplicate(util.interfaces);
+
+      for (var category in interfaces) {
+        var templateWrap = $("<div>").appendTo(listWrap);
+        templateWrap.addClass("flexcolumn");
+        templateWrap.append("<b class='alttext lrmargin'>"+category+"</b>");
+
+        var templateData = $("<div>").appendTo(templateWrap);
+        templateData.addClass("flexcolumn white outline smooth padding");
+
+        for (var key in interfaces[category]) {
+          var intData = interfaces[category][key];
+
+          var inputWrap = $("<div>").appendTo(templateData);
+          inputWrap.addClass("button lrmargin flexmiddle subtitle");
+          inputWrap.attr("index", key);
+          inputWrap.attr("category", category);
+          inputWrap.text(key);
+          inputWrap.click(function(){
+            var inputData = duplicate(interfaces[$(this).attr("category")][$(this).attr("index")]);
+            function submitData() {
+              if (!path) {
+                obj.data._d.content.display = obj.data._d.content.display || [];
+                obj.data._d.content.display.push(inputData.content);
+              }
+              else {
+                var replace = path.replace(app.attr("id")+"_0", "");
+                while (replace.match("-")) {
+                  replace = replace.replace("-", ".");
+                }
+                if (replace[0] == ".") {
+                  replace = replace.substring(1, replace.length);
+                }
+                var target = sync.traverse(obj.data._d.content, replace);
+                target.display = target.display || [];
+                target.display.push(inputData.content);
+              }
+              obj.update();
+              layout.coverlay(scope.closeTarget);
+            }
+            if (!inputData.arguments) {
+              submitData();
+            }
+            else {
+              var inputs = {};
+
+              for (var arg in inputData.arguments) {
+                var argData = inputData.arguments[arg];
+                inputs[arg] = {};
+                if (argData.datalist) {
+                  var dataList = $("<datalist>").appendTo(listWrap);
+                  dataList.attr("id", "argument-data-list");
+
+                  if (argData.datalist == "character") {
+                    var template = {stats : "", info : "", counters : ""};
+                    for (var key in template) {
+                      var pathKey = key;
+                      for (var subKey in obj.data[key]) {
+                        pathKey = key + "." + subKey;
+                        if (pathKey != "info.notes" && pathKey != "info.img") {
+                          var option = $("<option>").appendTo(dataList);
+                          option.attr("value", pathKey);
+                        }
+                      }
+                    }
+                  }
+                  else {
+                    for (var i in argData.datalist) {
+                      var option = $("<option>").appendTo(dataList);
+                      option.attr("value", argData.datalist[i]);
+                    }
+                  }
+
+                  inputs[arg] = {
+                    type : "list",
+                    list : "argument-data-list",
+                  };
+                }
+                inputs[arg].category = $(this).attr("category");
+                inputs[arg].index = $(this).attr("index");
+                inputs[arg].arg = arg;
+                inputs[arg].placeholder = argData.placeholder;
+                inputs[arg].value = argData.default;
+              }
+
+              ui_prompt({
+                target : $(this),
+                inputs : inputs,
+                click : function(ev, inputs){
+                  for (var key in inputs) {
+                    var inputEl = inputs[key];
+                    var intData = interfaces[inputEl.attr("category")][inputEl.attr("index")];
+                    var argData = interfaces[inputEl.attr("category")][inputEl.attr("index")].arguments[inputEl.attr("arg")];
+                    inputData.content = JSON.parse(replaceAll(JSON.stringify(inputData.content), inputEl.attr("arg"), inputEl.val()));
+                  }
+                  submitData();
+                },
+              });
+            }
+          });
+        }
+      }
+    }
+  }
+
+  rebuild(_lastBuilder || "attributes");
+
+  return div;
+});
+
 sync.render("ui_elementMenu", function(obj, app, scope){
   scope = scope || {
     viewOnly: (app.attr("viewOnly") == "true"),
@@ -29718,7 +29328,7 @@ sync.render("ui_elementMenu", function(obj, app, scope){
           lookup : scope.lookup + "." + key,
         });
         input.change(function(){
-          sync.traverse(obj.data, scope.lookup || "", $(this).val());
+          sync.traverse(obj.data, $(this).attr("lookup"), $(this).val());
           obj.update();
         });
       }
@@ -30161,6 +29771,11 @@ sync.render("ui_image", function(obj, app, scope){
     imgContainer.css("background-position", "center 25%");
   }
 
+  if (app.attr("showTemp") && obj.data.tags["temp"]) {
+    imgContainer.addClass("flexmiddle");
+    imgContainer.append("<b class='inactive smooth smargin spadding' style='font-size : 8px; color:#333; text-shadow:none;' title='Assets tagged with `temp` are deleted when their tokens are removed from a map'>Temp.</b>");
+  }
+
   if (scope.classes) {
     imgContainer.addClass(scope.classes);
   }
@@ -30445,10 +30060,10 @@ sync.render("ui_processUI", function(obj, app, scope) {
       section.attr("id", (scope.markup || "")+lastLookup);
       if (sData.display && (!sData.classes || sData.classes.match("flexcontainer"))) {
         section.css("background", "rgba(235,235,228,0.05)");
-        section.css("padding-top", "24px");
-        section.css("padding-left", "8px");
-        section.css("padding-right", "8px");
-        section.css("padding-bottom", "8px");
+        section.css("padding-top", "12px");
+        section.css("padding-left", "4px");
+        section.css("padding-right", "4px");
+        section.css("padding-bottom", "4px");
         section.css("border", "2px dashed rgba(55,55,55,0.2)");
         returnSection = section;
 
@@ -30644,9 +30259,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
               for (var i in options) {
                 options[i] = sync.eval(options[i], ctx);
               }
-
               var final = util.injectContext(actionData.eventData.data, ctx, options);
-
               var eventData = {
                 f : sync.rawVal(obj.data.info.name),
                 icon : sData.click.icon,
@@ -31041,7 +30654,6 @@ sync.render("ui_processUI", function(obj, app, scope) {
               if (sData.edit) {
                 if (value.name || sData.name) {
                   var name = $("<b>").appendTo(section);
-
                   if ((sData.name || sData.name === "")) {
                     if (sData.link) {
                       name = genIcon(sData.link, sync.eval((sData.name === "")?("''"):(sData.name), scope.context)).appendTo(section);
@@ -31058,6 +30670,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
                   else {
                     name.text(value.name + " ");
                   }
+                  name.css("white-space", "nowrap");
                 }
                 var edit = {
                   parent : section,
@@ -31107,6 +30720,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
                     else {
                       name.text(value.name + " ");
                     }
+                    name.css("white-space", "nowrap");
                   }
                   val.appendTo(section);
                 }
@@ -32019,8 +31633,9 @@ var _actions = {
           msg : "rolled Initiative",
           data : data
         }
-
-        runCommand("diceCheck", evData);
+        if (combatObj == game.state) {
+          runCommand("diceCheck", evData);
+        }
 
         var sp;
         var ok;
@@ -32075,7 +31690,7 @@ var _actions = {
     }
   },
   "Set/Roll Initiative (Hidden)" : {
-    condition :function(obj) {return (game.state.data && game.state.data.combat != null && hasSecurity(getCookie("UserID"), "Assistant Master"))},
+    condition :function(obj) {return (hasSecurity(getCookie("UserID"), "Assistant Master"))},
     click : function(ev, ui, obj, app, scope) {
       var combatObj;
       if (game.state.data && game.state.data.combat) {
@@ -32106,13 +31721,6 @@ var _actions = {
         var context = sync.defaultContext();
         context[obj.data._t] = duplicate(obj.data);
         var data = sync.executeQuery(query.val() || game.templates.initiative.query, context);
-
-        var evData = {
-          msg : "rolled Initiative",
-          data : data
-        }
-
-        runCommand("diceCheck", evData);
 
         var sp;
         var ok;
@@ -34985,7 +34593,9 @@ sync.render("ui_ent", function(ent, app, scope) {
       imgWrap.css("background-repeat", "no-repeat");
       imgWrap.css("background-position", "center 25%");
     }
-
+    if (ent.data.tags["temp"]) {
+      imgWrap.append("<b class='inactive smooth spadding subtitle' title='Assets tagged with 'temp' are deleted when their tokens are removed from a map'>Temp.</b>");
+    }
     if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
       imgWrap.addClass("hover2");
       imgWrap.click(function(ev){
@@ -35013,6 +34623,7 @@ sync.render("ui_ent", function(ent, app, scope) {
       img.addClass("flexcolumn");
       img.attr("viewOnly", true);
       img.attr("mode", "preview");
+      img.attr("showTemp", true);
       img.css("width", ((parseInt(scope.height) || 20) * 3) + "px");
       img.css("height", scope.height || "auto");
       ent.addApp(img);
@@ -35149,124 +34760,6 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   var div = $("<div>");
   div.addClass("flexcolumn");
   div.css("min-height", "100%");
-
-  if (!scope.hideFolders) {
-    div.addClass("dropContent");
-    div.sortable({
-      handle : ".nohandle",
-      update : function(ev, ui) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        var ui = $(ui.item);
-        if (ui.attr("path") && ui.attr("arrayIndex")) {
-          var childFolder = sync.traverse(game.config.data.organized, ui.attr("path"));
-          var childData = childFolder.eIDs[ui.attr("arrayIndex")];
-          childFolder.eIDs.splice(ui.attr("arrayIndex"), 1);
-          if (!scope.local) {
-            game.config.sync("updateConfig");
-          }
-          else {
-            game.config.update();
-          }
-          console.log("Here");
-          obj.update();
-        }
-      }
-    });
-  }
-
-  if (!layout.mobile) {
-    div.on("dragover", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
-    		var olay = layout.overlay({
-          target : app,
-          id : app.attr("id")+"-drag-overlay",
-          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none", "z-index" : util.getMaxZ(".ui-popout")+1}
-        });
-        olay.addClass("flexcolumn flexmiddle alttext");
-        olay.css("font-size", "2em");
-        olay.css("z-index", util.getMaxZ(".ui-popout")+1);
-        olay.append("<b>Drop to Create</b>");
-      }
-  	});
-    div.on('drop', function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
-      var ent = JSON.parse(dt.getData("OBJ"));
-
-      game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-      var lastKeys = Object.keys(game.entities.data);
-      game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-        var change = true;
-        for (var key in game.entities.data) {
-          if (!util.contains(lastKeys, key)) {
-            game.locals["newAssetList"].push(key);
-            change = false;
-          }
-        }
-        return change;
-      }
-      app.attr("category", ent._t);
-      if (ent._t == "a") {
-        if (!game.config.data.offline) {
-          runCommand("createAdventure", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "b") {
-        if (!game.config.data.offline) {
-          runCommand("createBoard", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "c") {
-        createCharacter(ent, true);
-        game.entities.update();
-      }
-      else if (ent._t == "i") {
-        if (!game.config.data.offline) {
-          runCommand("createItem", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "p") {
-        if (!game.config.data.offline) {
-          runCommand("createPage", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-    });
-
-  	div.on("dragleave", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-  	});
-  }
 
   var categories = {
     //"a" : {n : "Adventures", i : "book", ui : "ui_planner", width : "60vw", height : "80vh"},
@@ -35412,10 +34905,90 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   });
 
   var listWrap = $("<div>").appendTo(listedChars);
-  listWrap.addClass("fit-x");
-  listWrap.css("position", "absolute");
+  listWrap.addClass("fit-x flexcolumn flex");
 
+  if (!layout.mobile) {
+    listedChars.on("dragover", function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
 
+      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
+    		var olay = layout.overlay({
+          target : app,
+          id : app.attr("id")+"-drag-overlay",
+          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none", "z-index" : util.getMaxZ(".ui-popout")+1}
+        });
+        olay.addClass("flexcolumn flexmiddle alttext");
+        olay.css("font-size", "2em");
+        olay.css("z-index", util.getMaxZ(".ui-popout")+1);
+        olay.append("<b>Drop to Create</b>");
+      }
+  	});
+    listedChars.on('drop', function(ev, ui){
+      ev.preventDefault();
+      ev.stopPropagation();
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
+      var ent = JSON.parse(dt.getData("OBJ"));
+
+      game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+      var lastKeys = Object.keys(game.entities.data);
+      game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+        var change = true;
+        for (var key in game.entities.data) {
+          if (!util.contains(lastKeys, key)) {
+            game.locals["newAssetList"].push(key);
+            change = false;
+          }
+        }
+        return change;
+      }
+      app.attr("category", ent._t);
+      if (ent._t == "b") {
+        if (!game.config.data.offline) {
+          runCommand("createBoard", ent);
+        }
+        else {
+          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+          game.entities.update();
+        }
+      }
+      else if (ent._t == "c") {
+        createCharacter(ent, true);
+        game.entities.update();
+      }
+      else if (ent._t == "i") {
+        if (!game.config.data.offline) {
+          runCommand("createItem", ent);
+        }
+        else {
+          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+          game.entities.update();
+        }
+      }
+      else if (ent._t == "p") {
+        if (!game.config.data.offline) {
+          runCommand("createPage", ent);
+        }
+        else {
+          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+          game.entities.update();
+        }
+      }
+      layout.coverlay(app.attr("id")+"-drag-overlay");
+    });
+
+  	listedChars.on("dragleave", function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      layout.coverlay(app.attr("id")+"-drag-overlay");
+  	});
+  }
 
   var resourceWrap = $("<div>").appendTo(listWrap);
 
@@ -35451,6 +35024,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       else {
         game.config.update();
       }
+      obj.update();
       folderNameInput.blur();
     });
     folderNameInput.blur(function(){
@@ -35494,6 +35068,11 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     }
     folder.sortable({
       handle : ".nohandle",
+      connectWith : ".dropContent",
+      helper: function(ev, drag) {
+        return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
+      },
+      containment: "body",
       update : function(ev, ui) {
         ev.stopPropagation();
         ev.preventDefault();
@@ -35527,6 +35106,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
           else {
             game.config.update();
           }
+          obj.update();
         }
       }
     });
@@ -35769,6 +35349,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
             else {
               game.config.update();
             }
+            obj.update();
           }
         });
         ev.stopPropagation();
@@ -35800,7 +35381,15 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       resourceList.addClass("outline smooth dropContent");
       resourceList.css("margin-left", "1em");
       resourceList.sortable({
+        helper: function(ev, drag) {
+          return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
+        },
+        containment: "body",
         connectWith : ".dropContent",
+        start : function(ev, ui)
+        {
+          $(ui.item).trigger("dragstart");
+        },
         update : function(ev, ui) {
           ev.stopPropagation();
           ev.preventDefault();
@@ -35835,6 +35424,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
             else {
               game.config.update();
             }
+            obj.update();
           }
         }
       });
@@ -35859,13 +35449,12 @@ sync.render("ui_assetManager", function(obj, app, scope) {
             draw : function(ui, charObj) {
               ui.css("font-size", "1.2em");
               ui.removeClass("outline");
-              if (charObj.data._t == "i") {
-                ui.attr("draggable", true);
-                ui.on("dragstart", function(ev){
-                  var dt = ev.originalEvent.dataTransfer;
-                  dt.setData("OBJ", JSON.stringify(charObj.data));
-                });
-              }
+              ui.attr("draggable",true);
+              ui.on("dragstart", function(ev){
+                ui.data("dt",new DataTransfer())
+                var dt = ui.data("dt");
+                dt.setData("OBJ", JSON.stringify(charObj.data));
+              });
 
               if (charObj.data._t == "b" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
                 var button = $("<button>").appendTo(ui);
@@ -36054,13 +35643,12 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     app : true,
     draw : function(ui, charObj) {
       ui.css("font-size", "1.4em");
-      if (charObj.data._t == "i") {
-        ui.attr("draggable", true);
-        ui.on("dragstart", function(ev){
-          var dt = ev.originalEvent.dataTransfer;
-          dt.setData("OBJ", JSON.stringify(charObj.data));
-        });
-      }
+      ui.attr("draggable",true);
+      ui.on("dragstart", function(ev){
+        ui.data("dt",new DataTransfer())
+        var dt = ui.data("dt");
+        dt.setData("OBJ", JSON.stringify(charObj.data));
+      });
 
       if (charObj.data._t == "b" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
         var button = $("<button>").appendTo(ui);
@@ -36189,7 +35777,8 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       }
     }
   });
-  list.addClass("white");
+  list.addClass("white dropContent flex");
+
   list.appendTo(listWrap);
   if (list.children().length) {
     list.children().each(function(){
@@ -36200,12 +35789,33 @@ sync.render("ui_assetManager", function(obj, app, scope) {
       }
     });
   }
-  if (scope.category != "i" && !layout.mobile) {
+  if (!layout.mobile) {
     list.sortable({
-      filter : ".charContent",
       connectWith : ".dropContent",
       start : function(ev, ui) {
         listedChars.scrollTop(0);
+        $(ui.item).trigger("dragstart");
+      },
+      helper: function(ev, drag) {
+        return drag.clone().css("pointer-events","none").addClass("white").appendTo("body").show();
+      },
+      containment: "body",
+      update : function(ev, ui) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        var ui = $(ui.item);
+        if (ui.attr("path") && ui.attr("arrayIndex")) {
+          var childFolder = sync.traverse(game.config.data.organized, ui.attr("path"));
+          var childData = childFolder.eIDs[ui.attr("arrayIndex")];
+          childFolder.eIDs.splice(ui.attr("arrayIndex"), 1);
+          if (!scope.local) {
+            game.config.sync("updateConfig");
+          }
+          else {
+            game.config.update();
+          }
+          obj.update();
+        }
       }
     });
   }
@@ -36331,36 +35941,62 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   });
 
 
-    var button = genIcon("file", "New Resource");
-    button.attr("title", "Create a new Resource");
-    button.appendTo(creationBar);
-    button.click(function() {
-      app.attr("category", "p");
-      game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-      var lastKeys = Object.keys(game.entities.data);
-      game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-        var change = true;
-        for (var key in game.entities.data) {
-          if (!util.contains(lastKeys, key)) {
-            game.locals["newAssetList"].push(key);
-            change = false;
-          }
+  var button = genIcon("file", "New Resource");
+  button.attr("title", "Create a new Resource");
+  button.appendTo(creationBar);
+  button.click(function() {
+    app.attr("category", "p");
+    game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+    var lastKeys = Object.keys(game.entities.data);
+    game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+      var change = true;
+      for (var key in game.entities.data) {
+        if (!util.contains(lastKeys, key)) {
+          game.locals["newAssetList"].push(key);
+          change = false;
         }
-        return change;
       }
-      app.removeAttr("hideAssets");
-      if (!game.config.data.offline) {
-        runCommand("createPage", {data : {}});
+      return change;
+    }
+    app.removeAttr("hideAssets");
+    if (!game.config.data.offline) {
+      var content = $("<div>");
+      var contentList = $("<div>").appendTo(content);
+      for (var key in util.resourceTypes) {
+        var button = $("<div>")
+        button.addClass("hover2 alttext spadding flexmiddle");
+        button.attr("type", util.resourceTypes[key]);
+        if (util.resourceTypes[key] == "Rich Text") {
+          button.appendTo(content);
+          button.addClass("highlight");
+          button.text("Normal Notes");
+        }
+        else {
+          button.addClass("background subtitle");
+          button.appendTo(contentList);
+          button.text(util.resourceTypes[key]);
+        }
+        button.click(function(){
+          runCommand("createPage", {data : {override : {info : {mode : sync.newValue("Mode", $(this).attr("type"))}}}});
+          layout.coverlay("resource-select");
+          sendAlert({text : "Created Resource"});
+        });
       }
-      else {
-        game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-        game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-        game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.page);
-        game.entities.update();
-      }
-      sendAlert({text : "Created Resource"});
-    });
-  //}
+      ui_popOut({
+        prompt : true,
+        title : "Type",
+        align : "top",
+        target : $(this),
+        id : "resource-select"
+      }, content);
+    }
+    else {
+      game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+      game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+      game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.page);
+      game.entities.update();
+    }
+  });
 
 
   return div;
@@ -37257,10 +36893,10 @@ sync.render("ui_assetList", function(entities, app, scope) {
         olay.append("<b>Drop to Create</b>");
       }
     });
-    listedWrap.on('drop', function(ev){
+    listedWrap.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
       var ent = JSON.parse(dt.getData("OBJ"));
 
       game.locals["newAssetList"] = game.locals["newAssetList"] || [];
@@ -38303,895 +37939,6 @@ sync.render("ui_characterInventory", function(obj, app, scope){
   return div;
 });
 
-sync.render("ui_charCard", function(obj, app, scope){
-  var data = obj.data;
-  var info = data.info;
-  var charContainer = $("<div>");
-  charContainer.addClass("flexcolumn flexmiddle");
-  charContainer.attr("index", obj.id());
-
-  var charOutline = $("<div>").appendTo(charContainer);
-  charOutline.addClass("outline charContent");
-  charOutline.css("cursor", "pointer");
-
-  var optionsBar = $("<div>");
-  if (scope.mode != "list") {
-    optionsBar.appendTo(charOutline);
-  }
-  optionsBar.addClass("flexrow flexaround flexwrap");
-
-  if (hasSecurity(getCookie("UserID"), "Rights", data) && !scope.viewOnly) {
-    var deleteButton = genIcon("trash").appendTo(optionsBar);
-    deleteButton.attr("title", "Delete Character");
-    deleteButton.click(function() {
-      var popOut = ui_prompt({
-        target : $(this),
-        id : "confirm-delete-char",
-        confirm : "Delete Character",
-        click : function(){
-          runCommand("deleteAsset", {id: obj.id()});
-          delete game.entities.data[obj.id()];
-          game.entities.update();
-        }
-      });
-    });
-
-    var visible = genIcon("cog").appendTo(optionsBar);
-    visible.attr("title", "Doesn't reveal this character's name or image");
-    visible.click(function(){
-      var commands = [];
-      for (var key in _actions) {
-        if (!_actions[key].condition || _actions[key].condition(obj)) {
-          commands.push(
-            {name : _actions[key].name || key,
-              attr : {key : key},
-              click : function(ev, ui){
-                if (_actions[ui.attr("key")].click) {
-                  _actions[ui.attr("key")].click(ev, ui, obj, app, scope);
-                  //sendAlert({text : "Action Executed"});
-                }
-              }
-            }
-          );
-        }
-      }
-      ui_dropMenu($(this), commands, {id : "c-actions"});
-    });
-    if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-      var dupe = genIcon("duplicate");
-      dupe.appendTo(optionsBar);
-      dupe.attr("title", "Duplicate this character");
-      dupe.click(function(){
-        createCharacter(duplicate(data), true);
-      });
-      if (scope.edit) {
-        var edit = genIcon("pencil").appendTo(optionsBar);
-        edit.attr("title", "Edit this character");
-        edit.click(function(ev) {
-          scope.edit(ev, this, obj);
-        });
-      }
-    }
-
-    var security = genIcon("lock").appendTo(optionsBar);
-    security.attr("title", "Configure who can access this");
-    security.click(function(){
-      var content = sync.newApp("ui_rights");
-      obj.addApp(content);
-
-      var frame = ui_popOut({
-        target : $(this),
-        prompt : true,
-        align : "bottom",
-        id : "ui-rights-dialog",
-      }, content);
-    });
-  }
-
-  var charDiv = $("<div>").appendTo(charOutline);
-  charDiv.attr("index", obj.id());
-  if (!scope.mode) {
-    charDiv.css("overflow-y", "hidden");
-    charDiv.css("min-width", "8em");
-
-    charContainer.css("max-width", "150px");
-    charDiv.css("cursor", "pointer");
-
-    var title = $("<b style='text-align : center;'>"+sync.rawVal(info.name)+"</b>").appendTo(charDiv);
-    title.addClass("flexmiddle outlinebottom");
-
-    if (sync.rawVal(info.name) && sync.rawVal(info.name).length > 20) {
-      title.addClass("subtitle");
-      if (sync.rawVal(info.name).length > 35) {
-        title.text(sync.rawVal(info.name).substring(0, 33)+"..");
-      }
-    }
-
-    var icon = $("<div>").appendTo(charDiv);
-    icon.css("position", "relative");
-    icon.css("background-image", "url('"+(sync.val(info.img) || "/content/icons/blankchar.png")+"')");
-    icon.css("background-size", "cover");
-    icon.css("background-repeat", "no-repeat");
-    icon.css("width", "100%");
-    icon.css("height", "6em");
-  }
-  else if (scope.mode == "list") {
-    charContainer.removeClass("flexmiddle");
-    charOutline.addClass("flex flexcolumn");
-
-    charDiv.addClass("flex flexrow");
-    charDiv.css("cursor", "pointer");
-
-    var icon = $("<img>").appendTo(charDiv);
-    icon.attr("src", (sync.val(info.img) || "/content/icons/blankchar.png"));
-    icon.attr("width", "auto");
-    icon.attr("height", "25px");
-    icon.addClass("outline");
-
-    var title = $("<b style='text-align : center;'>"+sync.rawVal(info.name)+"</b>").appendTo(charDiv);
-    title.addClass("flexmiddle flex");
-
-    optionsBar.appendTo(charDiv);
-  }
-  else if (scope.mode == "large") {
-    charDiv.css("overflow-y", "hidden");
-    charDiv.css("min-width", "25em");
-
-    charDiv.css("cursor", "pointer");
-
-    var title = $("<b style='text-align : center;'>"+sync.rawVal(info.name)+"</b>").appendTo(charDiv);
-    title.addClass("flexmiddle outlinebottom");
-    title.css("font-size", "1.5em");
-
-    if (sync.rawVal(info.name) && sync.rawVal(info.name).length > 20) {
-      title.css("font-size", "1.2em");
-      title.css("text-align", "center");
-      if (sync.rawVal(info.name).length > 35) {
-        title.text(sync.rawVal(info.name).substring(0, 33)+"..");
-      }
-    }
-
-    var icon = $("<div>").appendTo(charDiv);
-    icon.css("position", "relative");
-    icon.css("background-image", "url('"+(sync.val(info.img) || "/content/icons/blankchar.png")+"')");
-    icon.css("background-size", "contain");
-    icon.css("background-position", "center");
-    icon.css("background-repeat", "no-repeat");
-    icon.css("width", "100%");
-    icon.css("height", "15em");
-  }
-  charDiv.click(function(ev){
-    $(".card-selected").removeClass("card-selected");
-    if (_down["16"] && hasSecurity(getCookie("UserID"), "Visible", obj.data)) {
-      var content = sync.newApp("ui_characterSummary");
-      obj.addApp(content);
-      var popOut = ui_popOut({
-        target: $(this),
-        id: "char-summary-"+$(this).attr("index"),
-      }, content);
-      //popOut.resizable();
-    }
-    else if (scope.click) {
-      scope.click(ev, $(this), obj);
-    }
-  });
-  if (scope.label) {
-    var labelDiv = $("<div>").appendTo(icon);
-    labelDiv.addClass("alttext background outline subtitle spadding");
-    labelDiv.css("position", "absolute");
-    if (scope.label instanceof String) {
-      labelDiv.append("<i>"+scope.label+"</i>");
-    }
-    else {
-      labelDiv.append(scope.label);
-    }
-  }
-
-  if (hasSecurity(getCookie("UserID"), "Owner", data) && !scope.viewOnly) {
-    var syncLabel;
-    if (data._c == -1) {
-      syncLabel = genIcon("remove").appendTo(icon);
-      syncLabel.addClass("alttext background outline");
-      syncLabel.attr("title", "Duplicate to move to Asset Storage");
-      syncLabel.css("right", "0");
-      syncLabel.css("bottom", "0");
-      syncLabel.css("position", "absolute");
-      syncLabel.css("padding", "2px");
-    }
-    else {
-      if (data._uid) {
-        if (data._sync) {
-          syncLabel = genIcon("refresh").appendTo(icon);
-          syncLabel.addClass("alttext background outline");
-          syncLabel.attr("title", "This is saved, and is in-sync with Asset Storage");
-          syncLabel.click(function(ev){
-            runCommand("updateSync", {id : obj.id(), data : false});
-            ev.stopPropagation();
-            return false;
-          });
-        }
-        else {
-          syncLabel = genIcon("cloud").appendTo(icon);
-          syncLabel.addClass("alttext background outline");
-          syncLabel.attr("title", "This is saved, but is not in-sync with Asset Storage");
-          syncLabel.click(function(ev){
-            runCommand("updateSync", {id : obj.id(), data : true});
-            ev.stopPropagation();
-            return false;
-          });
-        }
-      }
-      else {
-        syncLabel = genIcon("cloud").appendTo(icon);
-        syncLabel.addClass("outline");
-        syncLabel.css("background-color", "white");
-        syncLabel.attr("title", "Enable Asset Storage");
-        syncLabel.click(function(ev){
-          var popOut = ui_prompt({
-            target : $(this),
-            id : "confirm-store-char",
-            confirm : "Move to Asset Storage",
-            click : function(){
-              runCommand("storeAsset", {id: obj.id()});
-              layout.coverlay("quick-storage-popout");
-              syncLabel.remove();
-            }
-          });
-          ev.stopPropagation();
-          return false;
-        });
-      }
-      syncLabel.css("right", "0");
-      syncLabel.css("bottom", "0");
-      syncLabel.css("position", "absolute");
-      syncLabel.css("padding", "2px");
-    }
-  }
-
-  return charContainer;
-});
-
-sync.render("ui_vehicleCard", function(obj, app, scope){
-  var data = obj.data;
-  var info = data.info;
-  var charContainer = $("<div>");
-  charContainer.addClass("flexcolumn flexmiddle");
-  charContainer.attr("index", obj.id());
-
-  var charOutline = $("<div>").appendTo(charContainer);
-  charOutline.addClass("outline charContent");
-  charOutline.css("cursor", "pointer");
-
-  var optionsBar = $("<div>").appendTo(charOutline);
-  optionsBar.addClass("flexaround");
-
-  if (hasSecurity(getCookie("UserID"), "Rights", data) && !scope.viewOnly) {
-    var deleteButton = genIcon("trash").appendTo(optionsBar);
-    deleteButton.attr("title", "Delete Vehicle");
-    deleteButton.click(function() {
-      var popOut = ui_prompt({
-        target : $(this),
-        id : "confirm-delete-vehicle",
-        confirm : "Delete Vehicle",
-        click : function(){
-          runCommand("deleteAsset", {id: obj.id()});
-          delete game.entities.data[obj.id()];
-          game.entities.update();
-        }
-      });
-    });
-
-    var dupe = genIcon("duplicate");
-    dupe.appendTo(optionsBar);
-    dupe.attr("title", "Duplicate this Vehicle");
-    dupe.click(function(){
-      runCommand("createVehicle", data);
-    });
-
-    var security = genIcon("lock").appendTo(optionsBar);
-    security.attr("title", "Configure who can access this");
-    security.click(function(){
-      var content = sync.newApp("ui_rights");
-      obj.addApp(content);
-
-      var frame = ui_popOut({
-        target : $(this),
-        prompt : true,
-        align : "bottom",
-        id : "ui-rights-dialog",
-      }, content);
-    });
-  }
-
-  var charDiv = $("<div>").appendTo(charOutline);
-  charDiv.attr("index", obj.id());
-  if (!scope.mode) {
-    charDiv.css("overflow-y", "hidden");
-    charDiv.css("min-width", "8em");
-
-    charContainer.css("max-width", "150px");
-    charDiv.css("cursor", "pointer");
-
-    var title = $("<b style='text-align : center;'>"+sync.rawVal(info.name)+"</b>").appendTo(charDiv);
-    title.addClass("flexmiddle outlinebottom");
-
-    if (sync.rawVal(info.name) && sync.rawVal(info.name).length > 20) {
-      title.addClass("subtitle")
-      if (sync.rawVal(info.name).length > 35) {
-        title.text(sync.rawVal(info.name).substring(0, 33)+"..");
-      }
-    }
-
-    var icon = $("<div>").appendTo(charDiv);
-    icon.css("position", "relative");
-    icon.css("background-image", "url('"+(sync.val(info.img) || "/content/icons/blankvehicle.png")+"')");
-    icon.css("background-size", "cover");
-    icon.css("background-repeat", "no-repeat");
-    icon.css("width", "100%");
-    icon.css("height", "6em");
-  }
-  else if (scope.mode == "list") {
-    charContainer.removeClass("flexmiddle");
-    charOutline.addClass("flex flexcolumn");
-
-    charDiv.addClass("flex flexrow");
-    charDiv.css("cursor", "pointer");
-
-    var icon = $("<img>").appendTo(charDiv);
-    icon.attr("src", (sync.val(info.img) || "/content/icons/blankchar.png"));
-    icon.attr("width", "auto");
-    icon.attr("height", "25px");
-    icon.addClass("outline");
-
-    var title = $("<b style='text-align : center;'>"+sync.rawVal(info.name)+"</b>").appendTo(charDiv);
-    title.addClass("flexmiddle flex");
-  }
-  else if (scope.mode == "large") {
-    charDiv.css("overflow-y", "hidden");
-    charDiv.css("min-width", "25em");
-
-    charDiv.css("cursor", "pointer");
-
-    var title = $("<b style='text-align : center;'>"+sync.rawVal(info.name)+"</b>").appendTo(charDiv);
-    title.addClass("flexmiddle");
-    title.css("font-size", "1.5em");
-
-    if (sync.rawVal(info.name) && sync.rawVal(info.name).length > 20) {
-      title.css("font-size", "1.2em");
-      title.css("text-align", "center");
-      if (sync.rawVal(info.name).length > 35) {
-        title.text(sync.rawVal(info.name).substring(0, 33)+"..");
-      }
-    }
-
-    var icon = $("<div>").appendTo(charDiv);
-    icon.css("position", "relative");
-    icon.css("background-image", "url('"+(sync.val(info.img) || "/content/icons/blankvehicle.png")+"')");
-    icon.css("background-size", "contain");
-    icon.css("background-position", "center");
-    icon.css("background-repeat", "no-repeat");
-    icon.css("width", "100%");
-    icon.css("height", "15em");
-  }
-
-  charDiv.click(function(ev){
-    $(".card-selected").removeClass("card-selected");
-    if ($(this).attr("_lastClick") && (Date.now()-$(this).attr("_lastClick") < 1000)) {
-      if (scope.click) {
-        scope.click(ev, $(this), obj);
-      }
-      else {
-        if (hasSecurity(getCookie("UserID"), "Visible", obj.data)) {
-          var wid = "30vw";
-          if (layout.mobile) {
-            wid = "auto";
-          }
-          var content = sync.newApp("ui_vehicle");
-          obj.addApp(content);
-          var popOut = ui_popOut({
-            target: $(this),
-            id: "vehicle-summary-"+$(this).attr("index"),
-            dragThickness : "0.5em",
-            title : sync.rawVal(obj.data.info.name),
-            minimize : true,
-            style: {"width" : wid, "max-width" : ""}
-          }, content);
-          popOut.resizable();
-        }
-      }
-      $(this).removeAttr("_lastClick");
-    }
-    else {
-      var index = $(this).attr("index");
-
-      $(".board-selected").removeClass("board-selected");
-      $(".piece").each(function(){
-        if ($(this).attr("eID") == index) {
-          $(this).addClass("board-selected");
-        }
-      });
-      charOutline.addClass("card-selected");
-      util.target(index);
-      $(this).attr("_lastClick", Date.now());
-    }
-  });
-  if (scope.label) {
-    var labelDiv = $("<div>").appendTo(icon);
-    labelDiv.addClass("alttext background outline subtitle spadding");
-    labelDiv.css("position", "absolute");
-    if (scope.label instanceof String) {
-      labelDiv.append("<i>"+scope.label+"</i>");
-    }
-    else {
-      labelDiv.append(scope.label);
-    }
-  }
-
-  if (hasSecurity(getCookie("UserID"), "Owner", data) && !scope.viewOnly) {
-    var syncLabel;
-    if (data._c == -1) {
-      syncLabel = genIcon("remove").appendTo(icon);
-      syncLabel.addClass("alttext background outline");
-      syncLabel.attr("title", "Duplicate to move to Asset Storage");
-      syncLabel.css("right", "0");
-      syncLabel.css("bottom", "0");
-      syncLabel.css("position", "absolute");
-      syncLabel.css("padding", "2px");
-    }
-    else {
-      if (data._uid) {
-        if (data._sync) {
-          syncLabel = genIcon("refresh").appendTo(icon);
-          syncLabel.addClass("alttext background outline");
-          syncLabel.attr("title", "This is saved, and is in-sync with Asset Storage");
-          syncLabel.click(function(ev){
-            runCommand("updateSync", {id : obj.id(), data : false});
-            ev.stopPropagation();
-            return false;
-          });
-        }
-        else {
-          syncLabel = genIcon("cloud").appendTo(icon);
-          syncLabel.addClass("alttext background outline");
-          syncLabel.attr("title", "This is saved, and is not in-sync with Asset Storage");
-          syncLabel.click(function(ev){
-            runCommand("updateSync", {id : obj.id(), data : true});
-            ev.stopPropagation();
-            return false;
-          });
-        }
-      }
-      else {
-        syncLabel = genIcon("cloud").appendTo(icon);
-        syncLabel.addClass("outline");
-        syncLabel.css("background-color", "white");
-        syncLabel.attr("title", "Enable Asset Storage");
-        syncLabel.click(function(ev){
-          var popOut = ui_prompt({
-            target : $(this),
-            id : "confirm-store-char",
-            confirm : "Move to Asset Storage",
-            click : function(){
-              runCommand("storeAsset", {id: obj.id()});
-              layout.coverlay("quick-storage-popout");
-              syncLabel.remove();
-            }
-          });
-          ev.stopPropagation();
-          return false;
-        });
-      }
-      syncLabel.css("right", "0");
-      syncLabel.css("bottom", "0");
-      syncLabel.css("position", "absolute");
-      syncLabel.css("padding", "2px");
-    }
-  }
-
-  return charContainer;
-});
-
-sync.render("ui_characterList", function(obj, app, scope){
-  var div = $("<div>");
-  div.addClass("fit-xy flexcolumn");
-  // content creation
-  if (!layout.mobile) {
-    div.on("dragover", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
-    		var olay = layout.overlay({
-          target : app,
-          id : app.attr("id")+"-drag-overlay",
-          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none"}
-        });
-        olay.addClass("flexcolumn flexmiddle alttext");
-        olay.css("font-size", "2em");
-        olay.append("<b>Drop to Create</b>");
-      }
-  	});
-    div.on('drop', function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
-      var ent = JSON.parse(dt.getData("OBJ"));
-      if (ent._t == "c") {
-        createCharacter(ent, true);
-        game.entities.update();
-      }
-      else if (ent._t == "v") {
-        if (!game.config.data.offline) {
-          runCommand("createVehicle", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-    });
-
-  	div.on("dragleave", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-  	});
-  }
-
-  if (!obj) {
-    game.entities.addApp(app);
-    game.state.addApp(app);
-    return $("<div>");
-  }
-
-  var obj = game.entities;
-
-  var optionsBar = $("<div>").appendTo(div);
-  optionsBar.addClass("flexaround outline background boxinshadow");
-  optionsBar.css("color", "white");
-
-  var counter = $("<b>").appendTo(optionsBar);
-
-  var createChar = genIcon("user", "New Character").appendTo(optionsBar);
-  createChar.attr("title", "Create Character");
-  createChar.click(function(){
-    createCharacter(duplicate(game.templates.character));
-    game.entities.update();
-  });
-
-  var createVehicle = genIcon("plane", "New Vehicle").appendTo(optionsBar);
-  createVehicle.attr("title", "Create a Blank Vehicle");
-  createVehicle.click(function(){
-    if (!game.config.data.offline) {
-      runCommand("createVehicle", {data : {}});
-    }
-    else {
-      game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-      game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-      game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.vehicle);
-      game.entities.update();
-    }
-  });
-
-  var charCount = 0;
-
-  var columnList = $("<div>").appendTo(div);
-  columnList.addClass("flexrow fit-y");
-  columnList.css("overflow-y", "hidden");
-
-  var listedWrap = $("<div>").appendTo(columnList);
-  listedWrap.addClass("flexcolumn fit-y");
-  listedWrap.css("min-width", "200px");
-
-  var search = $("<div>").appendTo(listedWrap);
-  search.addClass("outlinebottom background fit-x flexaround alttext");
-
-  var searchIcon = genIcon("search").appendTo(search);
-  searchIcon.addClass("lrpadding");
-  searchIcon.attr("title", "Search");
-
-  var searchInput = genInput({
-    parent : search,
-    placeholder : "Search Terms",
-    value : app.attr("lastSearchTerm"),
-  });
-  searchInput.addClass("flex subtitle");
-  searchInput.css("color", "#333");
-
-  var listedChars = $("<div>").appendTo(listedWrap);
-  listedChars.addClass("flexcolumn fit-xy");
-  listedChars.attr("_lastScrollTop", app.attr("_lastScrollTop_chars"));
-  listedChars.css("overflow-y", "auto");
-  listedChars.css("position", "relative");
-  listedChars.scroll(function(){
-    app.attr("_lastScrollTop_chars", $(this).scrollTop());
-  });
-
-  var listWrap = $("<div>").appendTo(listedChars);
-  listWrap.addClass("fit-x flexcolumn flexmiddle");
-  listWrap.css("position", "absolute");
-
-  var charList = sync.render("ui_entList")(game.entities, app, {
-    filter : "c",
-    rights : "Visible",
-    draw : function(ui, charObj) {
-      if (hasSecurity(getCookie("UserID"), "Owner", charObj.data)) {
-        var deleteButton = genIcon("trash").appendTo(ui);
-        deleteButton.attr("title", "Delete Character");
-        deleteButton.click(function() {
-          var popOut = ui_prompt({
-            target : $(this),
-            id : "confirm-delete-char",
-            confirm : "Delete Character",
-            click : function(){
-              runCommand("deleteAsset", {id: charObj.id()});
-              delete game.entities.data[charObj.id()];
-              game.entities.update();
-            }
-          });
-        });
-      }
-    },
-    click : function(ev, ui, charObj) {
-      if (hasSecurity(getCookie("UserID"), "Visible", charObj.data)) {
-        if (layout.mobile) {
-          obj.removeApp(app);
-          game.state.removeApp(app);
-          app.attr("from", app.attr("ui-name"));
-          app.attr("ui-name", "ui_characterSheet");
-          if (!hasSecurity(getCookie("UserID"), "Rights", charObj.data)) {
-            app.attr("viewOnly", "true");
-          }
-          else {
-            game.players.data[getCookie("UserID")].entity = charObj.id();
-            runCommand("selectPlayerEntity", {id : charObj.id()});
-            app.removeAttr("viewOnly");
-          }
-          charObj.addApp(app);
-        }
-        else {
-          if (!_down["16"]) {
-            var newApp = sync.newApp("ui_characterSheet");
-            newApp.attr("from", "ui_characterSummary");
-            charObj.addApp(newApp);
-            if (!hasSecurity(getCookie("UserID"), "Rights", charObj.data)) {
-              newApp.attr("viewOnly", "true");
-            }
-            else {
-              game.players.data[getCookie("UserID")].entity = charObj.id();
-            }
-            var pop = ui_popOut({
-              target : app,
-              id : "char-sheet-"+charObj.id(),
-              title : sync.rawVal(charObj.data.info.name),
-              minimize : true,
-              dragThickness : "0.5em",
-              style : {width : assetTypes["c"].width, height : assetTypes["c"].height},
-            }, newApp);
-            pop.resizable();
-          }
-          else {
-            var newApp = sync.newApp("ui_characterSummary");
-            charObj.addApp(newApp);
-            if (!hasSecurity(getCookie("UserID"), "Rights", charObj.data)) {
-              newApp.attr("viewOnly", "true");
-            }
-            else {
-              game.players.data[getCookie("UserID")].entity = charObj.id();
-            }
-            var pop = ui_popOut({
-              target : ui,
-              id : "char-summary-"+charObj.id(),
-              title : sync.rawVal(charObj.data.info.name),
-              minimize : true,
-              dragThickness : "0.5em",
-            }, newApp);
-            pop.resizable();
-          }
-        }
-      }
-    }
-  });
-  if (charList.children().length) {
-    listWrap.append("<b class='subtitle'>Characters</b>");
-  }
-  charList.appendTo(listWrap);
-  charList.addClass("fit-x dropContent");
-
-  if (!layout.mobile) {
-    charList.sortable({
-      filter : ".charContent",
-      connectWith : ".dropContent",
-      update : function(ev, ui) {
-        if ($(ui.item).attr("gID")) {
-          var gp = game.entities.data[$(ui.item).attr("gID")];
-          if (gp && gp.data.list) {
-            for (var gKey in gp.data.list) {
-              if (gp.data.list[gKey] == $(ui.item).attr("index")) {
-                gp.data.list.splice(gKey, 1);
-                gp.sync("updateGroup");
-                break;
-              }
-            }
-          }
-        }
-        if ($(ui.item).attr("src")) {
-          if ($(ui.item).attr("src") == "state") {
-            game.state.update(); // refresh the list
-          }
-          else if ($(ui.item).attr("src") == "players") {
-            game.players.update(); // refresh the list
-          }
-          else {
-            game.entities.data[$(ui.item).attr("src")].update(); // refresh the list
-          }
-        }
-        game.entities.update(); // refresh the list
-      }
-    });
-  }
-
-  var vehList = sync.render("ui_entList")(game.entities, app, {
-    filter : "v",
-    rights : "Visible",
-    draw : function(ui, charObj) {
-      if (hasSecurity(getCookie("UserID"), "Owner", charObj.data)) {
-        var deleteButton = genIcon("trash").appendTo(ui);
-        deleteButton.attr("title", "Delete Vehicle");
-        deleteButton.click(function() {
-          var popOut = ui_prompt({
-            target : $(this),
-            id : "confirm-delete-vehicle",
-            confirm : "Delete Vehicle",
-            click : function(){
-              runCommand("deleteAsset", {id: charObj.id()});
-              delete game.entities.data[charObj.id()];
-              game.entities.update();
-            }
-          });
-        });
-      }
-    },
-    click : function(ev, ui, charObj) {
-      if (hasSecurity(getCookie("UserID"), "Visible", charObj.data)) {
-        var newApp = sync.newApp("ui_vehicle");
-        charObj.addApp(newApp);
-        if (!hasSecurity(getCookie("UserID"), "Rights", charObj.data)) {
-          newApp.attr("viewOnly", "true");
-        }
-        else {
-          game.players.data[getCookie("UserID")].entity = charObj.id();
-        }
-        var pop = ui_popOut({
-          target : app,
-          id : "vehicle-sheet-"+charObj.id(),
-          title : sync.rawVal(charObj.data.info.name),
-          minimize : true,
-          dragThickness : "0.5em",
-          style : {"width" : "50vw", "height" : "40vh"},
-        }, newApp);
-        pop.resizable();
-      }
-    }
-  });
-  if (vehList.children().length) {
-    listWrap.append("<b class='subtitle'>Vehicles</b>");
-  }
-  vehList.appendTo(listWrap);
-  vehList.addClass("fit-x dropContent");
-
-  if (!layout.mobile) {
-    vehList.sortable({
-      filter : ".charContent",
-      connectWith : ".dropContent",
-      update : function(ev, ui) {
-        if ($(ui.item).attr("gID")) {
-          var gp = game.entities.data[$(ui.item).attr("gID")];
-          if (gp && gp.data.list) {
-            for (var gKey in gp.data.list) {
-              if (gp.data.list[gKey] == $(ui.item).attr("index")) {
-                gp.data.list.splice(gKey, 1);
-                gp.sync("updateGroup");
-                break;
-              }
-            }
-          }
-        }
-        if ($(ui.item).attr("src")) {
-          if ($(ui.item).attr("src") == "state") {
-            game.state.update(); // refresh the list
-          }
-          else if ($(ui.item).attr("src") == "players") {
-            game.players.update(); // refresh the list
-          }
-          else {
-            game.entities.data[$(ui.item).attr("src")].update(); // refresh the list
-          }
-        }
-        game.entities.update(); // refresh the list
-      }
-    });
-  }
-
-  searchInput.keyup(function(){
-    var inputVal = ($(this).val() || "").toLowerCase();
-    app.attr("lastSearchTerm", ($(this).val() || ""));
-    charList.children().show();
-    charList.children().each(function(){
-      var ent = game.entities.data[$(this).attr("index")];
-      if (!(sync.rawVal(ent.data.info.name) || "").toLowerCase().match(inputVal)) {
-        $(this).hide();
-      }
-    });
-    vehList.children().show();
-    vehList.children().each(function(){
-      var ent = game.entities.data[$(this).attr("index")];
-      if (!(sync.rawVal(ent.data.info.name) || "").toLowerCase().match(inputVal)) {
-        $(this).hide();
-      }
-    });
-  });
-
-  var inputVal = (searchInput.val() || "").toLowerCase();
-  app.attr("lastSearchTerm", (searchInput.val() || ""));
-  charList.children().each(function(){
-    var ent = game.entities.data[$(this).attr("index")];
-    if (!(sync.rawVal(ent.data.info.name) || "").toLowerCase().match(inputVal)) {
-      $(this).hide();
-    }
-  });
-  vehList.children().each(function(){
-    var ent = game.entities.data[$(this).attr("index")];
-    if (!(sync.rawVal(ent.data.info.name) || "").toLowerCase().match(inputVal)) {
-      $(this).hide();
-    }
-  });
-
-  var groupWrap = $("<div>").appendTo(columnList);
-  groupWrap.addClass("flex outline lpadding");
-  groupWrap.css("overflow-y", "auto");
-  groupWrap.css("position", "relative");
-  groupWrap.attr("_lastScrollTop", app.attr("_lastScrollTop"));
-  groupWrap.scroll(function(){
-    app.attr("_lastScrollTop", $(this).scrollTop());
-  });
-
-  var groupList = $("<div>").appendTo(groupWrap);
-  groupList.addClass("flexrow flexwrap flex");
-  groupList.css("position", "absolute");
-
-  var grouped = [];
-  for (var index in obj.data) {
-    var gData = obj.data[index];
-    if (gData && gData.data["_t"] == "g" && hasSecurity(getCookie("UserID"), "Visible", gData.data)) {
-      charCount = charCount + 1;
-      var group = sync.newApp("ui_groupCard");
-      group.attr("targetApp", app.attr("id"));
-      group.css("width", "auto");
-      group.css("display", "inline-block");
-      group.css("margin", "0px 4px 0px 4px");
-      gData.addApp(group);
-      // get the group members and keep track of the ones that are in groups
-      if (gData.data.list) {
-        for (var i=0; i<gData.data.list.length; i++) {
-          grouped.push(gData.data.list[i]);
-        }
-      }
-      group.addClass("padding flex");
-      group.css("min-width", "48%");
-      group.removeClass("lightoutline");
-      group.appendTo(groupList);
-    }
-  }
-
-  counter.append("Limits : " + charCount + "/" + (game.config.data.entityLimit + game.config.data.capacity));
-
-  return div;
-});
-
 sync.render("ui_rawNotes", function(obj, app, scope){
   scope = scope || {viewOnly: (app.attr("viewOnly") == "true")};
 
@@ -39368,6 +38115,8 @@ sync.render("ui_characterProficiency", function(obj, app, scope){
 
   return div;
 });
+
+// legacy support
 
 sync.render("ui_characterSaves", function(obj, app, scope){
   var diceTemplates = game.templates.dice;
@@ -39814,7 +38563,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
 
   if (!obj || !obj.data || obj.data["_t"] != "c") {
     if (app && layout.mobile) {
-      app.attr("ui-name", "ui_characterList");
+      app.attr("ui-name", "ui_assetManager");
       game.entities.addApp(app);
     }
     return div;
@@ -39879,6 +38628,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       headerRow.append("<u class='flex2 subtitle flexmiddle lrmargin' style='width:100px'>Value</u>");
       headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:40px'>Min</u>");
       headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:40px'>Max</u>");
+      headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:70px'>Modifiers</u>");
       headerRow.append(genIcon("remove").addClass("lrpadding lrmargin").css("color", "transparent"));
       for (var subKey in obj.data[key]) {
         path = key + "." + subKey;
@@ -39931,6 +38681,26 @@ sync.render("ui_characterSheet", function(obj, app, scope){
             raw : "max"
           });
 
+          var remove = genIcon("list-alt", "Edit").appendTo(attrOption);
+          remove.addClass("flexmiddle lrmargin lrpadding");
+          remove.attr("path", path);
+          remove.css("width", "70px");
+          remove.click(function(){
+            var path = $(this).attr("path");
+
+            var content = sync.newApp("ui_modifiers");
+            content.attr("viewOnly", scope.viewOnly);
+            content.attr("lookup", path);
+            content.attr("modsOnly", "true");
+            obj.addApp(content);
+
+            ui_popOut({
+              target : $(this),
+              align : "top",
+              id : "modify-exp"
+            }, content);
+          });
+
           var remove = genIcon("remove").appendTo(attrOption);
           remove.addClass("destroy flexmiddle lrmargin lrpadding");
           remove.attr("path", path);
@@ -39953,7 +38723,38 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       headerRow.addClass("flexmiddle fit-x create");
       headerRow.attr("category", key);
       headerRow.click(function(){
-        var key = $(this).attr("category");
+        var category = $(this).attr("category");
+
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in obj.data) {
+          invalidKeys[key] = key;
+        }
+        for (var key in obj.data.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in obj.data.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in obj.data.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in game.templates.item.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in game.templates.item.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in game.templates.item.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in game.templates.item.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
 
         ui_prompt({
           target : $(this),
@@ -39962,7 +38763,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
           },
           click : function(ev, inputs){
             var path = inputs["Macro Key"].val();
-            if (path && path != "notes" && path != "img" && path != "name") {
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
               path = replaceAll(path, " ", "_");
               path = replaceAll(path, "@", "");
               path = replaceAll(path, "(", "_");
@@ -39972,8 +38773,13 @@ sync.render("ui_characterSheet", function(obj, app, scope){
               path = replaceAll(path, "!", "_");
               path = replaceAll(path, "#", "_");
               path = replaceAll(path, "$", "_");
-              obj.data[key][path] = {};
-              obj.sync("updtaeAsset");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
+              }
+              else {
+                obj.data[category][path] = {};
+                obj.sync("updtaeAsset");
+              }
             }
           }
         });
@@ -39982,88 +38788,6 @@ sync.render("ui_characterSheet", function(obj, app, scope){
 
     return div;
   }
-
-  /*
-  var content = $("<div>");
-  content.addClass("flexcolumn");
-
-  content.append("<b>Attribute</b>");
-
-  var dataList = $("<datalist>").appendTo(content);
-  dataList.attr("id", "homebrew-list-edit");
-  dataList.css("height", "200px");
-
-  var template = {stats : "", info : "", counters : ""};
-  for (var key in template) {
-    var path = key;
-    for (var subKey in obj.data[key]) {
-      path = key + "." + subKey;
-      if (path != "info.notes" && path != "info.img") {
-        var option = $("<option>").appendTo(dataList);
-        option.attr("value", path);
-      }
-    }
-  }
-
-  var input = genInput({
-    parent : content,
-    type : "list",
-    list : "homebrew-list-edit",
-    id : "homebrew-target-input",
-    placeholder : "Field Target",
-  });
-
-  var options = $("<div>").appendTo(content);
-  options.addClass("flexrow flexaround flexwrap");
-
-  var confirm = $("<button>").appendTo(options);
-  confirm.addClass("highlight alttext flex");
-  confirm.append("Delete");
-  confirm.click(function(){
-    if (input.val() && input.val() != "info.notes" && input.val() != "info.img") {
-      var traverse = sync.traverse(obj.data, input.val(), "");
-      obj.sync("updateAsset");
-      sendAlert({text : "Field deleted"});
-      layout.coverlay("quick-sheet-add-field");
-    }
-    else {
-      input.val("");
-      sendAlert({text : "Restricted Field"});
-    }
-  });
-
-  var confirm = $("<button>").appendTo(options);
-  confirm.addClass("background alttext flex");
-  confirm.append("Create");
-  confirm.click(function(){
-    if (input.val() && input.val() != "info.notes" && input.val() != "info.img") {
-      var traverse = sync.traverse(obj.data, input.val());
-      if (traverse === false) {
-        ui_prompt({
-          target : $(this),
-          inputs : {
-            "Enter new field name" : ""
-          },
-          click : function(ev, inputs){
-            sync.traverse(obj.data, input.val(), {name : inputs["Enter new field name"].val()});
-            obj.sync("updateAsset");
-            sendAlert({text : "Field created"});
-            layout.coverlay("quick-sheet-add-field");
-          }
-        });
-      }
-    }
-    else {
-      input.val("");
-      sendAlert({text : "Restricted Field"});
-    }
-  });
-
-  var pop = ui_popOut({
-    target : $(this),
-    id : "quick-sheet-add-field",
-  }, content);
-  */
 
   if (app.attr("viewingData")) {
     var calcs = duplicate(obj.data._calc || sheet.calc || []);
@@ -40434,8 +39158,9 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         olay.css("z-index", util.getMaxZ(".ui-popout")+1);
         olay.append("<b>Drop to Create</b>");
       }
-  	});
-    div.on('drop', function(ev){
+    });
+    div.droppable();
+    div.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
       if (_dragTransfer) {
@@ -40446,8 +39171,8 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         }
       }
       else {
-        var dt = ev.originalEvent.dataTransfer;
-        if (dt.getData("OBJ")) {
+        var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
+        if (dt && dt.getData("OBJ")) {
           var ent = JSON.parse(dt.getData("OBJ"));
           if (ent._t == "i") {
             if (dt.getData("spell") || ent.tags["spell"]) {
@@ -40479,7 +39204,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
   var info = data.info;
   if (!scope.local) {
     var optionsBar = $("<div>").appendTo(div);
-    optionsBar.addClass("flexaround background boxinshadow alttext");
+    optionsBar.addClass("flexbetween background boxinshadow alttext");
     optionsBar.css("color", "white");
     optionsBar.attr("index", obj.id());
     div.contextmenu(function(ev){
@@ -40501,7 +39226,6 @@ sync.render("ui_characterSheet", function(obj, app, scope){
           if (JSON.stringify(obj.data._d.content) == JSON.stringify(game.templates.display.sheet.content)) {
             if (JSON.stringify(obj.data._d.style) == JSON.stringify(game.templates.display.sheet.style)) {
               delete obj.data._d;
-              console.log("deleted");
             }
           }
           app.removeAttr("simpleEditing");
@@ -40536,6 +39260,30 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         quickSheet.click(function(){
           var actionList = util.customSheets(obj, app, scope, sheet);
           ui_dropMenu($(this), actionList, {id : "quick-sheet-drop", "z-index" : util.getMaxZ(".ui-popout")+1});
+        });
+
+        var quickSheet = $("<button>").appendTo(optionsBar);
+        quickSheet.addClass("background subtitle alttext");
+        quickSheet.text("Load a Sheet");
+        quickSheet.click(function(){
+          var content = sync.render("ui_assetPicker")(obj, app, {
+            category : "c",
+            select : function(ev, ui, ent, options, entities){
+              if (ent.data._d) {
+                obj.data._d = duplicate(ent.data._d);
+                obj.update();
+              }
+              layout.coverlay("add-asset");
+            }
+          });
+          var pop = ui_popOut({
+            target : $("body"),
+            prompt : true,
+            id : "add-asset",
+            title : "Pick Sheet",
+            style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
+          }, content);
+          pop.resizable();
         });
       }
     }
@@ -40940,252 +39688,17 @@ sync.render("ui_characterSheet", function(obj, app, scope){
     charContents.append(sync.render("ui_processUI")(obj, app, newScope));
     if (app.attr("simpleEditing")) {
       function sheetElementMenu(parent, path) {
-        var contents = $("<div>");
-        contents.addClass("flexrow flex subtitle foreground");
+        var contents = sync.render("ui_addElement")(obj, app, {path : path, closeTarget : "sheet-element-menu", viewOnly : scope.viewOnly});
 
-        var newOptionWrap = $("<div>").appendTo(contents);
-        newOptionWrap.addClass("bold flexrow flexmiddle alttext");
-
-        if (path) {
-          var moveUp = genIcon("arrow-up").appendTo(newOptionWrap);
-          moveUp.addClass("lrmargin");
-          moveUp.click(function(){
-            var replace = path.replace(app.attr("id")+"_0", "");
-            while (replace.match("-")) {
-              replace = replace.replace("-", ".");
-            }
-            if (replace[0] == ".") {
-              replace = replace.substring(1, replace.length);
-            }
-
-            var index = replace.split("\.");
-            index = index[index.length-1];
-            var final = replace.substring(0, replace.length-1-index.length);
-            var arr = sync.traverse(obj.data._d.content, final);
-            if (arr && Array.isArray(arr)) {
-              util.insert(arr, 0, arr.splice(index, 1)[0]);
-              obj.update();
-              $("#sheet-element-menu").remove();
-            }
-          });
-        }
-
-
-        var type = $("<div>").appendTo(newOptionWrap);
-        type.addClass("flexmiddle button hover2 bold spadding outline smooth");
-        type.attr("id", "edit-element");
-        type.css("color", "#333");
-        type.css("text-shadow", "none");
-        if (parent.hasClass("flexrow")) {
-          type.append(genIcon("cog", "Row"));
-        }
-        else {
-          type.append(genIcon("cog", "Column"));
-        }
-        type.click(function(){
-          var replace = path.replace(app.attr("id")+"_0", "");
-          while (replace.match("-")) {
-            replace = replace.replace("-", ".");
-          }
-          if (replace[0] == ".") {
-            replace = replace.substring(1, replace.length);
-          }
-
-          var select = sync.newApp("ui_elementMenu");
-          if (replace != null && replace.trim()) {
-            select.attr("lookup", "_d.content."+replace);
-          }
-          else {
-            select.attr("lookup", "_d.content");
-          }
-          select.attr("closeTarget", "json-editor");
-          obj.addApp(select);
-
-          var popout = ui_popOut({
-            target : $(this),
-            title : "JSON Edit",
-            id : "json-editor",
-          }, select);
-          popout.resizable();
-        });
-
-        var newOption = genIcon("plus", "Add...").appendTo(newOptionWrap);
-        newOption.attr("id", "add-new-element");
-        newOption.addClass("bold alttext lrmargin");
-        newOption.click(function(){
-          var interfaces = duplicate(util.interfaces);
-
-          contents.empty();
-          contents.addClass("flexaround alttext");
-          contents.css("font-size", "1.2em");
-
-          for (var category in interfaces) {
-            var list = $("<div>").appendTo(contents);
-            list.addClass("flexcolumn margin");
-            list.append("<b class='fit-x flexmiddle underline'>"+category+"</b>");
-
-            for (var key in interfaces[category]) {
-              var intData = interfaces[category][key];
-
-              var inputWrap = $("<div>").appendTo(list);
-              inputWrap.addClass("flexmiddle subtitle");
-
-              var inputLink = genIcon(null, key).appendTo(inputWrap);
-              inputLink.attr("index", key);
-              inputLink.attr("category", category);
-              inputLink.click(function(){
-                var inputData = duplicate(interfaces[$(this).attr("category")][$(this).attr("index")]);
-                function submitData() {
-                  if (!path) {
-                    obj.data._d.content.display = obj.data._d.content.display || [];
-                    obj.data._d.content.display.push(inputData.content);
-                  }
-                  else {
-                    var replace = path.replace(app.attr("id")+"_0", "");
-                    while (replace.match("-")) {
-                      replace = replace.replace("-", ".");
-                    }
-                    if (replace[0] == ".") {
-                      replace = replace.substring(1, replace.length);
-                    }
-                    var target = sync.traverse(obj.data._d.content, replace);
-                    target.display = target.display || [];
-                    target.display.push(inputData.content);
-                  }
-                  obj.update();
-                  pop.remove();
-                }
-                if (!inputData.arguments) {
-                  submitData();
-                }
-                else {
-                  var inputs = {};
-
-                  for (var arg in inputData.arguments) {
-                    var argData = inputData.arguments[arg];
-                    inputs[arg] = {};
-                    if (argData.datalist) {
-                      var dataList = $("<datalist>").appendTo(contents);
-                      dataList.attr("id", "argument-data-list");
-
-                      if (argData.datalist == "character") {
-                        var template = {stats : "", info : "", counters : ""};
-                        for (var key in template) {
-                          var pathKey = key;
-                          for (var subKey in obj.data[key]) {
-                            pathKey = key + "." + subKey;
-                            if (pathKey != "info.notes" && pathKey != "info.img") {
-                              var option = $("<option>").appendTo(dataList);
-                              option.attr("value", pathKey);
-                            }
-                          }
-                        }
-                      }
-                      else {
-                        for (var i in argData.datalist) {
-                          var option = $("<option>").appendTo(dataList);
-                          option.attr("value", argData.datalist[i]);
-                        }
-                      }
-
-                      inputs[arg] = {
-                        type : "list",
-                        list : "argument-data-list",
-                      };
-                    }
-                    inputs[arg].category = $(this).attr("category");
-                    inputs[arg].index = $(this).attr("index");
-                    inputs[arg].arg = arg;
-                    inputs[arg].placeholder = argData.placeholder;
-                    inputs[arg].value = argData.default;
-                  }
-
-                  ui_prompt({
-                    target : $(this),
-                    inputs : inputs,
-                    click : function(ev, inputs){
-                      for (var key in inputs) {
-                        var inputEl = inputs[key];
-                        var intData = interfaces[inputEl.attr("category")][inputEl.attr("index")];
-                        var argData = interfaces[inputEl.attr("category")][inputEl.attr("index")].arguments[inputEl.attr("arg")];
-                        console.log(inputEl.attr("arg"), inputEl.val());
-                        inputData.content = JSON.parse(replaceAll(JSON.stringify(inputData.content), inputEl.attr("arg"), inputEl.val()));
-                      }
-                      submitData();
-                    },
-                  });
-                }
-              });
-            }
-          }
-        });
-
-        if (path) {
-          var moveDown = genIcon("arrow-down").appendTo(newOptionWrap);
-          moveDown.addClass("lrmargin");
-          moveDown.click(function(){
-            var replace = path.replace(app.attr("id")+"_0", "");
-            while (replace.match("-")) {
-              replace = replace.replace("-", ".");
-            }
-            if (replace[0] == ".") {
-              replace = replace.substring(1, replace.length);
-            }
-
-            var index = replace.split("\.");
-            index = index[index.length-1];
-            var final = replace.substring(0, replace.length-1-index.length);
-            var arr = sync.traverse(obj.data._d.content, final);
-            if (arr && Array.isArray(arr)) {
-              arr.push(arr.splice(index, 1)[0]);
-              obj.update();
-              $("#sheet-element-menu").remove();
-            }
-          });
-        }
-
-        var newOption = $("<button>").appendTo(contents);
-        newOption.addClass("bold flexcolumn flexmiddle outline flex hover2 destroy");
-        newOption.append(genIcon("trash"));
-        newOption.css("margin-right", "20px");
-        newOption.click(function(){
-          var replace = path.replace(app.attr("id")+"_0", "");
-          while (replace.match("-")) {
-            replace = replace.replace("-", ".");
-          }
-          if (replace[0] == ".") {
-            replace = replace.substring(1, replace.length);
-          }
-
-          var index = replace.split("\.");
-          index = index[index.length-1];
-          var final = replace.substring(0, replace.length-1-index.length);
-          var arr = sync.traverse(obj.data._d.content, final);
-          if (arr && Array.isArray(arr)) {
-            arr.splice(index, 1);
-            $("#sheet-element-menu").remove();
-            obj.update();
-          }
-        });
-
-        if (!$("#sheet-element-menu").length || $("#sheet-element-menu").hasClass("prompt")) {
-          var pop = ui_popOut({
-            target : parent,
-            noCss : true,
-            pin : false,
-            prompt : true,
-            align : "top",
-            id : "sheet-element-menu",
-          }, contents);
-        }
+        var pop = ui_popOut({
+          target : app,
+          prompt : true,
+          title : "Add Element",
+          id : "sheet-element-menu",
+        }, contents);
+        return pop;
       }
 
-      charContents.hover(function(ev){
-        if ($(".selected").length == 0) {
-          sheetElementMenu($(this));
-        }
-        ev.stopPropagation();
-      });
       charContents.click(function(){
         var replace = path.replace(app.attr("id")+"_0", "");
         while (replace.match("-")) {
@@ -41250,10 +39763,11 @@ sync.render("ui_characterSheet", function(obj, app, scope){
         function clickWrap(scope, lastLookup) {
           setTimeout(function(){
             $("#"+(newScope.markup || "")+lastLookup).mousemove(function(ev){
+              cursorX = ev.pageX;
+              cursorY = ev.pageY;
               if (!$("#sheet-element-menu").length || $("#sheet-element-menu").hasClass("prompt")) {
                 $(".selected").removeClass("selected");
                 $(this).addClass("selected");
-                sheetElementMenu($(this), lastLookup);
               }
               ev.stopPropagation();
               ev.preventDefault();
@@ -41264,19 +39778,120 @@ sync.render("ui_characterSheet", function(obj, app, scope){
             $("#"+(newScope.markup || "")+lastLookup).click(function(ev){
               $(".selected").removeClass("selected");
               $(this).addClass("selected");
-              $("#sheet-element-menu").remove();
-              sheetElementMenu($(this), lastLookup);
-              $("#sheet-element-menu").removeClass("prompt");
-              $("#add-new-element").click();
+
+              var popout = sheetElementMenu($(this), lastLookup);
+
               ev.stopPropagation();
             });
             $("#"+(newScope.markup || "")+lastLookup).contextmenu(function(ev){
               $(".selected").removeClass("selected");
               $(this).addClass("selected");
-              $("#sheet-element-menu").remove();
-              sheetElementMenu($(this), lastLookup);
-              $("#sheet-element-menu").removeClass("prompt");
-              $("#edit-element").click();
+              var focus = $(this);
+              var actionsList = [
+                {
+                  name : "Raw JSON",
+                  click : function(ev, ui) {
+                    var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                    while (replace.match("-")) {
+                      replace = replace.replace("-", ".");
+                    }
+                    if (replace[0] == ".") {
+                      replace = replace.substring(1, replace.length);
+                    }
+
+                    var select = sync.newApp("ui_JSON");
+                    if (replace != null && replace.trim()) {
+                      select.attr("lookup", "_d.content."+replace);
+                    }
+                    else {
+                      select.attr("lookup", "_d.content");
+                    }
+                    select.attr("closeTarget", "json-editor");
+                    obj.addApp(select);
+
+                    var popout = ui_popOut({
+                      target : ui,
+                      title : "JSON Edit",
+                      id : "json-editor",
+                    }, select);
+                    popout.resizable();
+                  }
+                },
+                {
+                  name : "To Top",
+                  click : function(ev, ui) {
+                    if (lastLookup) {
+                      var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                      while (replace.match("-")) {
+                        replace = replace.replace("-", ".");
+                      }
+                      if (replace[0] == ".") {
+                        replace = replace.substring(1, replace.length);
+                      }
+
+                      var index = replace.split("\.");
+                      index = index[index.length-1];
+                      var final = replace.substring(0, replace.length-1-index.length);
+                      var arr = sync.traverse(obj.data._d.content, final);
+                      if (arr && Array.isArray(arr)) {
+                        util.insert(arr, 0, arr.splice(index, 1)[0]);
+                        obj.update();
+                        $("#sheet-element-menu").remove();
+                      }
+                    }
+                  }
+                },
+                {
+                  name : "To Bottom",
+                  click : function(ev, ui) {
+                    if (lastLookup) {
+                      var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                      while (replace.match("-")) {
+                        replace = replace.replace("-", ".");
+                      }
+                      if (replace[0] == ".") {
+                        replace = replace.substring(1, replace.length);
+                      }
+
+                      var index = replace.split("\.");
+                      index = index[index.length-1];
+                      var final = replace.substring(0, replace.length-1-index.length);
+                      var arr = sync.traverse(obj.data._d.content, final);
+                      if (arr && Array.isArray(arr)) {
+                        arr.push(arr.splice(index, 1)[0]);
+                        obj.update();
+                        $("#sheet-element-menu").remove();
+                      }
+                    }
+                  }
+                },
+                {
+                  name : "DELETE",
+                  icon : "trash",
+                  click : function(ev, ui) {
+                    var replace = lastLookup.replace(app.attr("id")+"_0", "");
+                    while (replace.match("-")) {
+                      replace = replace.replace("-", ".");
+                    }
+                    if (replace[0] == ".") {
+                      replace = replace.substring(1, replace.length);
+                    }
+
+                    var index = replace.split("\.");
+                    index = index[index.length-1];
+                    var final = replace.substring(0, replace.length-1-index.length);
+                    var arr = sync.traverse(obj.data._d.content, final);
+                    if (arr && Array.isArray(arr)) {
+                      arr.splice(index, 1);
+                      $("#sheet-element-menu").remove();
+                      obj.update();
+                    }
+                  }
+                },
+              ]
+
+              var drop = ui_dropMenu($(this), actionsList, {});
+
               ev.stopPropagation();
               return false;
             });
@@ -41293,304 +39908,6 @@ sync.render("ui_characterSheet", function(obj, app, scope){
       }
       build(newScope.display);
     }
-    /*
-    var flatDisplay = $("<div>").appendTo(charContents);
-
-    if (sheet.content && Object.keys(sheet.content).length && sheet.category && sheet.category.length) {
-      flatDisplay.addClass("flex");
-      flatDisplay.css("min-height", "25%");
-      flatDisplay.css("max-height", "33%");
-      flatDisplay.css("overflow", "auto");
-    }
-    else if (sheet.category && sheet.category.length) {
-      flatDisplay.addClass("flex");
-      flatDisplay.css("max-height", "100%");
-      flatDisplay.css("overflow", "auto");
-    }
-
-    for (var key in sheet.category) {
-      var title = $("<div>").appendTo(flatDisplay);
-      title.addClass("underline");
-      title.css("font-size", "1.6em");
-      title.css("text-align", "left");
-      title.text(sheet.category[key].name);
-
-      if (app.attr("simpleEditing")) {
-        title.empty();
-        var editCategory = genIcon("edit", sheet.category[key].name).appendTo(title);
-        editCategory.addClass("lrmargin");
-        editCategory.attr("index", key);
-        editCategory.click(function(){
-          var key = $(this).attr("index");
-          ui_prompt({
-            target : $(this),
-            inputs : {
-              "Category Name" : ""
-            },
-            click : function(ev, inputs){
-              obj.data._d.category[key].name = inputs["Category Name"].val();
-              obj.sync("updateAsset");
-            }
-          });
-        });
-
-        var del = genIcon("remove").appendTo(title);
-        del.addClass("destroy");
-        del.attr("index", key);
-        del.click(function(){
-          obj.data._d.category.splice($(this).attr("index"), 1);
-          obj.sync("updateAsset");
-          layout.coverlay("edit-category");
-        });
-      }
-
-      if (sheet.category[key].display instanceof String) {
-        flatDisplay.append(sync.render(sheet.category[key].display)(obj, app, scope));
-      }
-      else {
-        for (var dKey in sheet.category[key].display) {
-          var newScope = duplicate(scope);
-          newScope.display = sheet.category[key].display[dKey];
-          if (scope.markup) {
-            newScope.markup = "content";
-          }
-          newScope.context = ctx;
-          var display = sync.render("ui_processUI")(obj, app, newScope).appendTo(flatDisplay);
-          if (app.attr("simpleEditing")) {
-            display.attr("category", key);
-            display.attr("categoryKey", dKey);
-            display.children().css("pointer-events", "none");
-            display.css("cursor", "pointer");
-            display.hover(function(){
-              $(this).addClass("selected");
-            },
-            function(){
-              $(this).removeClass("selected");
-            });
-            display.click(function(ev){
-              var catKey = $(this).attr("category");
-              var dKey = $(this).attr("categoryKey");
-
-              var content = $("<div>");
-              content.addClass("flexrow flexaround padding lrmargin bold");
-              content.css("font-size", "1.2em");
-
-              var moveup = genIcon("arrow-up", "Move Up").appendTo(content);
-              moveup.addClass("lrmargin");
-              moveup.click(function(){
-                var data = obj.data._d.category[catKey].display.splice(dKey, 1);
-                util.insert(obj.data._d.category[catKey].display, Math.max(dKey-1, 0), data[0]);
-                obj.sync("updateAsset");
-                layout.coverlay("quick-sheet-edit-field");
-              });
-
-              var movedown = genIcon("arrow-down", "Move Down").appendTo(content);
-              moveup.addClass("lrmargin");
-              movedown.click(function(){
-                var data = obj.data._d.category[catKey].display.splice(dKey, 1);
-                if (obj.data._d.category[catKey].display.length == dKey) {
-                  obj.data._d.category[catKey].display.push(data[0]);
-                }
-                else {
-                  util.insert(obj.data._d.category[catKey].display, dKey, data[0]);
-                }
-                obj.sync("updateAsset");
-                layout.coverlay("quick-sheet-edit-field");
-              });
-
-              var remove = genIcon("remove", "Remove").appendTo(content);
-              remove.addClass("destroy lrmargin");
-              remove.click(function(){
-                obj.data._d.category[catKey].display.splice(dKey, 1);
-                obj.sync("updateAsset");
-                layout.coverlay("quick-sheet-edit-field");
-              });
-
-              var pop = ui_popOut({
-                target : $(this),
-                id : "quick-sheet-edit-field",
-              }, content);
-
-              ev.stopPropagation();
-              ev.preventDefault();
-            });
-          }
-        }
-      }
-      if (app.attr("simpleEditing")) {
-        var catWrap = $("<div>").appendTo(flatDisplay);
-        catWrap.addClass("flexmiddle");
-
-        var newField = genIcon("plus", "New Field").appendTo(catWrap);
-        newField.addClass("fit-x create middle subtitle");
-        newField.attr("category", key);
-        newField.click(function(){
-          var catKey = $(this).attr("category");
-
-          var content = $("<div>");
-          content.addClass("flexcolumn");
-
-          content.append("<b>Field Target</b>");
-
-          var dataList = $("<datalist>").appendTo(content);
-          dataList.attr("id", "homebrew-list-edit");
-
-          var template = {stats : "", info : "", counters : ""};
-          for (var key in template) {
-            var path = key;
-            for (var subKey in obj.data[key]) {
-              path = key + "." + subKey;
-              if (path != "info.notes" && path != "info.img") {
-                var option = $("<option>").appendTo(dataList);
-                option.attr("value", path);
-              }
-            }
-          }
-
-          var input = genInput({
-            parent : content,
-            type : "list",
-            list : "homebrew-list-edit",
-            id : "homebrew-target-input",
-            placeholder : "Field to Edit",
-          });
-
-          var options = $("<div>").appendTo(content);
-          options.addClass("flexrow flexaround flexwrap");
-
-          var minCheckWrap = $("<div>").appendTo(options);
-          minCheckWrap.addClass("flexmiddle bold subtitle");
-
-          var minCheck = genInput({
-            parent : minCheckWrap,
-            type : "checkbox",
-            style : {"margin" : "0"},
-          });
-
-          minCheckWrap.append("Min");
-
-          var maxCheckWrap = $("<div>").appendTo(options);
-          maxCheckWrap.addClass("flexmiddle bold subtitle");
-
-          var maxCheck = genInput({
-            parent : maxCheckWrap,
-            type : "checkbox",
-            style : {"margin" : "0"},
-          });
-
-          maxCheckWrap.append("Max");
-
-          var showModsWrap = $("<div>").appendTo(options);
-          showModsWrap.addClass("flexmiddle bold subtitle");
-
-          var modsCheck = genInput({
-            parent : showModsWrap,
-            type : "checkbox",
-            style : {"margin" : "0"},
-          });
-
-          showModsWrap.append("Modifiers");
-
-
-          var confirm = $("<button>").appendTo(content);
-          confirm.addClass("highlight alttext");
-          confirm.append("Confirm");
-          confirm.click(function(){
-            if (input.val() && input.val() != "info.notes" && input.val() != "info.img") {
-              var traverse = sync.traverse(obj.data, input.val());
-              if (traverse === false) {
-                ui_prompt({
-                  target : $(this),
-                  inputs : {
-                    "Enter new field name" : ""
-                  },
-                  click : function(ev, inputs) {
-                    var traverse = sync.traverse(obj.data, input.val(), {name : inputs["Enter new field name"].val()});
-
-                    var display = {};
-                    display.classes = "fit-x spadding flexrow flexmiddle";
-                    if (minCheck.prop("checked") || maxCheck.prop("checked") || modsCheck.prop("checked")) {
-                      display.display = [
-                        {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin middle", cmd : "updateAsset", raw : "1"}}
-                      ];
-                      if (minCheck.prop("checked")) {
-                        display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "min", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "min"}});
-                      }
-                      if (maxCheck.prop("checked")) {
-                        display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "max", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "max"}});
-                      }
-                      if (modsCheck.prop("checked")) {
-                        display.display.push({classes : "flexmiddle lrmargin", ui : "ui_link", scope : {classes : "flexmiddle", icon : "'list-alt'", click : "ui_modifiers", lookup : input.val(), attr : {"modsOnly" : true}}});
-                      }
-                      display.display.push({classes : "flexmiddle lrmargin bold", style : {"font-size" : "1.2em"}, value : "@c." + input.val()});
-                    }
-                    else {
-                      display.display = [
-                        {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin", cmd : "updateAsset", raw : "1"}}
-                      ];
-                    }
-                    layout.coverlay("quick-sheet-add-field");
-                    obj.data._d.category[catKey].display = obj.data._d.category[catKey].display || [];
-                    obj.data._d.category[catKey].display.push(display);
-                    obj.sync("updateAsset");
-                  }
-                });
-              }
-              else {
-                var display = {};
-                display.classes = "fit-x spadding flexrow flexmiddle";
-                if (minCheck.prop("checked") || maxCheck.prop("checked") || modsCheck.prop("checked")) {
-                  display.display = [
-                    {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin middle", cmd : "updateAsset", raw : "1"}}
-                  ];
-                  if (minCheck.prop("checked")) {
-                    display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "min", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "min"}});
-                  }
-                  if (maxCheck.prop("checked")) {
-                    display.display.push({classes : "flex flexrow flexmiddle lrmargin", name : "max", target : input.val(), edit : {classes : "line middle flex lrmargin", cmd : "updateAsset", raw : "max"}});
-                  }
-                  if (modsCheck.prop("checked")) {
-                    display.display.push({classes : "flexmiddle lrmargin", ui : "ui_link", scope : {classes : "flexmiddle", icon : "'list-alt'", click : "ui_modifiers", lookup : input.val(), attr : {"modsOnly" : true}}});
-                  }
-                  display.display.push({classes : "flexmiddle lrmargin bold", style : {"font-size" : "1.2em"}, value : "@c." + input.val()});
-                }
-                else {
-                  display.display = [
-                    {classes : "flex flexrow flexmiddle lrmargin", target : input.val(), edit : {classes : "line flex lrmargin", cmd : "updateAsset", raw : "1"}}
-                  ];
-                }
-                layout.coverlay("quick-sheet-add-field");
-                obj.data._d.category[catKey].display = obj.data._d.category[catKey].display || [];
-                obj.data._d.category[catKey].display.push(display);
-                obj.sync("updateAsset");
-              }
-            }
-            else {
-              input.val("");
-              sendAlert({text : "Restricted Field"});
-            }
-          });
-
-          var pop = ui_popOut({
-            target : $(this),
-            id : "quick-sheet-add-field",
-          }, content);
-        });
-      }
-    }
-    if (app.attr("simpleEditing")) {
-      var catWrap = $("<div>").appendTo(flatDisplay);
-      catWrap.addClass("flexmiddle");
-
-      var newCategory = genIcon("plus", "New Category").appendTo(catWrap);
-      newCategory.addClass("fit-x create middle");
-      newCategory.css("font-size", "1.6em");
-      newCategory.click(function(){
-        obj.data._d.category.push({name : "New Category"});
-        obj.sync("updateAsset");
-      });
-    }
-    */
     if (sheet.tabs && sheet.tabs.length) {
       var tabContent = genNavBar("flexaround background alttext", "flex", "4px");
       tabContent.addClass("flex");
@@ -44178,6 +42495,38 @@ sync.render("ui_renderItem", function(obj, app, scope){
       var newField = genIcon("plus", "New Field").appendTo(content);
       newField.addClass("fit-x flexmiddle subtitle");
       newField.click(function(){
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in game.templates.character) {
+          invalidKeys[key] = key;
+        }
+        for (var key in game.templates.character.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in game.templates.character.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in game.templates.character.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in obj.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in obj.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in obj.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in obj.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
+
+
         ui_prompt({
           target : $(this),
           id : "add-field",
@@ -44186,20 +42535,30 @@ sync.render("ui_renderItem", function(obj, app, scope){
             "Field Name" : {placeholder : "(Optional)"},
           },
           click : function(ev, inputs) {
-            if (inputs["Field Key"].val()) {
-              if (!obj.data.weapon[inputs["Field Key"].val()]) {
-                obj.data.weapon[inputs["Field Key"].val()] = sync.newValue(inputs["Field Name"].val(), null);
-                obj.update();
+            var path = inputs["Field Key"].val();
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
+              path = replaceAll(path, " ", "_");
+              path = replaceAll(path, "@", "");
+              path = replaceAll(path, "(", "_");
+              path = replaceAll(path, ")", "_");
+              path = replaceAll(path, "[", "_");
+              path = replaceAll(path, "]", "_");
+              path = replaceAll(path, "!", "_");
+              path = replaceAll(path, "#", "_");
+              path = replaceAll(path, "$", "_");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
               }
               else {
-                sendAlert({text : "Field is already in use"});
+                obj.data.weapon[path] = sync.newValue(path, null);
+                obj.update();
               }
             }
             else {
-              sendAlert({text : "No Field Specified"});
+              sendAlert({text : "Invalid Field Key"});
             }
           }
-        })
+        });
       });
     }
   }
@@ -44240,6 +42599,38 @@ sync.render("ui_renderItem", function(obj, app, scope){
       var newField = genIcon("plus", "New Field").appendTo(content);
       newField.addClass("fit-x flexmiddle subtitle");
       newField.click(function(){
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in game.templates.character) {
+          invalidKeys[key] = key;
+        }
+        for (var key in game.templates.character.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in game.templates.character.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in game.templates.character.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in obj.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in obj.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in obj.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in obj.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
+
+
         ui_prompt({
           target : $(this),
           id : "add-field",
@@ -44248,20 +42639,30 @@ sync.render("ui_renderItem", function(obj, app, scope){
             "Field Name" : {placeholder : "(Optional)"},
           },
           click : function(ev, inputs) {
-            if (inputs["Field Key"].val()) {
-              if (!obj.data.spell[inputs["Field Key"].val()]) {
-                obj.data.spell[inputs["Field Key"].val()] = sync.newValue(inputs["Field Name"].val(), null);
-                obj.update();
+            var path = inputs["Field Key"].val();
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
+              path = replaceAll(path, " ", "_");
+              path = replaceAll(path, "@", "");
+              path = replaceAll(path, "(", "_");
+              path = replaceAll(path, ")", "_");
+              path = replaceAll(path, "[", "_");
+              path = replaceAll(path, "]", "_");
+              path = replaceAll(path, "!", "_");
+              path = replaceAll(path, "#", "_");
+              path = replaceAll(path, "$", "_");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
               }
               else {
-                sendAlert({text : "Field is already in use"});
+                obj.data.spell[path] = sync.newValue(path, null);
+                obj.update();
               }
             }
             else {
-              sendAlert({text : "No Field Specified"});
+              sendAlert({text : "Invalid Field Key"});
             }
           }
-        })
+        });
       });
     }
   }
@@ -46257,503 +44658,6 @@ var altInitiative = {
     return header;
   },
 }
-
-sync.render("ui_vehicle", function(obj, app, scope) {
-  scope = scope || {
-    viewOnly: (app.attr("viewOnly") == "true"),
-    displayMode : parseInt(app.attr("displayMode") || 0),
-    editable: (app.attr("editable") == "true"),
-    markup : app.attr("markup") == "true"
-  };
-
-  var data = obj.data;
-
-  var div = $("<div>");
-  div.addClass("flexcolumn outline");
-
-  var sheet = scope.sheet || game.templates.display.vehicle;
-  for (var i in sheet.style) {
-    div.css(i, sheet.style[i]);
-  }
-
-  if (!obj.local) {
-    for (var i in sheet.calc) {
-      if (!sheet.calc[i].cond || sync.eval(sheet.calc[i].cond, [obj.data])) {
-        var val = sheet.calc[i].eq;
-        if (val && val.length) {
-          val = sync.result(val, [obj.data]);
-          val = sync.eval(val);
-        }
-        var target = sync.traverse(obj.data, sheet.calc[i].target, val);
-      }
-    }
-  }
-
-  if (!scope.viewOnly) {
-    div.on("dragover", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
-    		var olay = layout.overlay({
-          target : app,
-          id : app.attr("id")+"-drag-overlay",
-          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none"}
-        });
-        olay.addClass("flexcolumn flexmiddle alttext");
-        olay.css("font-size", "2em");
-        olay.append("<b>Drop to Create</b>");
-      }
-  	});
-    div.on('drop', function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
-      if (dt.getData("Text").match("{")) {
-        var ent = JSON.parse(dt.getData("Text"));
-        if (ent._t == "i") {
-          if (!dt.getData("spell")) {
-            obj.data.inventory.push(ent);
-            obj.sync("updateAsset");
-          }
-        }
-      }
-
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-    });
-
-  	div.on("dragleave", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      layout.coverlay(app.attr("id")+"-drag-overlay");
-  	});
-  }
-
-  if (!scope.viewOnly) {
-    var optionsBack = $("<div>").appendTo(div);
-    optionsBack.addClass("alttext background outline");
-
-    var optionsBar = $("<div>").appendTo(optionsBack);
-    optionsBar.addClass("flexwrap");
-
-    var security = genIcon("lock");
-    security.attr("title", "Edit who has access to this character");
-    security.appendTo(optionsBar);
-    security.click(function(){
-      var content = sync.newApp("ui_rights");
-      obj.addApp(content);
-
-      var frame = ui_popOut({
-        target : $(this),
-        prompt : true,
-        align : "top",
-        id : "ui-rights-dialog",
-      }, content);
-    });
-
-    if (hasSecurity(getCookie("UserID"), "Rights", data)) {
-      var icon = genIcon("heart");
-      icon.css("margin-left", "8px");
-      icon.attr("title", "Change wounds");
-      if (sheet.altStat) {
-        icon.attr("title", "Change wounds, ctrl for "+sync.traverse(obj.data, sheet.altStat).name);
-      }
-      icon.appendTo(optionsBar);
-      icon.click(function(e) {
-        var target = sync.traverse(obj.data, sheet.health || "counters.wounds");
-
-        if (e.ctrlKey && sheet.altStat) {
-         target = sync.traverse(obj.data, sheet.altStat);
-        }
-        var text = {};
-        text[(target.name + " Amount")] = {type : "number", value : 1};
-        ui_prompt({
-          target : $(this),
-          inputs : text,
-          click : function(ev, inputs) {
-            sync.val(target, sync.rawVal(target)+parseInt(inputs[(target.name + " Amount")].val() || 0));
-            obj.sync("updateAsset");
-          }
-        });
-      });
-
-      var icon = genIcon("heart-empty");
-      icon.css("margin-left", "8px");
-      icon.attr("title", "Change wounds");
-      if (sheet.altStat) {
-        icon.attr("title", "Change wounds, ctrl for "+sync.traverse(obj.data, sheet.altStat).name);
-      }
-      icon.appendTo(optionsBar);
-      icon.click(function(e) {
-        var target = sync.traverse(obj.data, sheet.health || "counters.wounds");
-
-        if (e.ctrlKey && sheet.altStat) {
-         target = sync.traverse(obj.data, sheet.altStat);
-        }
-        var text = {};
-        text[(target.name + " Amount")] = {type : "number", value : -1};
-        ui_prompt({
-          target : $(this),
-          inputs : text,
-          click : function(ev, inputs) {
-            sync.val(target, sync.rawVal(target)+parseInt(inputs[(target.name + " Amount")].val() || 0));
-            obj.sync("updateAsset");
-          }
-        });
-      });
-
-      for (var i in sheet.summary) {
-        var tabData = sheet.summary[i];
-        var tab = genIcon(tabData.icon, tabData.name).appendTo(optionsBar);
-        tab.attr("title", tabData.name);
-        tab.css("margin-left", "8px");
-        tab.attr("index", i);
-        tab.click(function(){
-          if ($(this).attr("index") < 0) {
-            app.attr("displayMode", sheet.summary.length-1);
-          }
-          else if ($(this).attr("index") >= sheet.summary.length) {
-            app.attr("displayMode", 0);
-          }
-          else {
-            app.attr("displayMode", $(this).attr("index"));
-          }
-          obj.update();
-        });
-      }
-    }
-  }
-
-  var infoPanel = $("<div>").appendTo(div);
-  infoPanel.addClass("flexcolumn");
-
-  var ctx = sync.defaultContext();
-  ctx["c"] = obj.data;
-
-  var newScope = duplicate(scope);
-  newScope.display = sheet.summary[scope.displayMode].display;
-  newScope.context = ctx;
-  if (scope.markup) {
-    newScope.markup = "vehicle"+scope.displayMode;
-  }
-  infoPanel.append(sync.render("ui_processUI")(obj, app, newScope));
-
-  return div;
-});
-
-sync.render("ui_crew", function(obj, app, scope) {
-  var data = obj.data;
-  var div = $("<div>");
-
-  var title = $("<h4>Crew</h4>").appendTo(div);
-  title.addClass("flexmiddle");
-  if (!scope.viewOnly) {
-    var newCrew = genIcon("plus");
-    newCrew.attr("title", "Add Crew Slot");
-    newCrew.appendTo(title);
-    newCrew.click(function(){
-      data.crew.push({img : "/content/icons/Toolbox1000p.png", title : "Seat"});
-      if (!scope.local) {
-        obj.sync("updateAsset");
-      }
-      else {
-        obj.update();
-      }
-    });
-  }
-
-  var list = $("<div>").appendTo(div);
-  list.addClass("fit-x flexaround flexwrap");
-  for (var crewIndex in data.crew) {
-    var crewData = data.crew[crewIndex];
-    var crewContainer = $("<div>").appendTo(list);
-    crewContainer.addClass("outline flexrow");
-
-    var crewPlate = $("<div>").appendTo(crewContainer);
-    crewPlate.addClass("flexcolumn flexmiddle subtitle");
-
-    var crewTitle = genIcon("", (crewData.title || "").substring(0, 16)).appendTo(crewPlate);
-    crewTitle.attr("title", "Change Name")
-    crewTitle.attr("index", crewIndex);
-    crewTitle.click(function(){
-      var index = $(this).attr("index");
-      ui_prompt({
-        target : $(this),
-        id : "change-crew-title",
-        inputs : {
-          "Title" : data.crew[index].title,
-        },
-        click : function(ev, inputs) {
-          data.crew[index].title = inputs["Title"].val();
-          if (!scope.local) {
-            obj.sync("updateAsset");
-          }
-          else {
-            obj.update();
-          }
-        }
-      });
-    });
-
-    var crewContent = $("<div>").appendTo(crewPlate);
-    crewContent.addClass("outline subtitle");
-    crewContent.css("width", "50px");
-    crewContent.css("height", "50px");
-
-    if (crewData.eID && game.entities.data[crewData.eID]) {
-      var ent = game.entities.data[crewData.eID];
-      crewContent.css("background-image", "url('"+ (sync.rawVal(ent.data.info.img)  || "/content/icons/blankchar.png") +"')");
-      crewContent.css("background-size", "contain");
-      crewContent.css("background-repeat", "no-repeat");
-      crewContent.css("background-position", "center");
-      if (hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
-        crewContent.addClass("hover2");
-        crewContent.attr("index", crewData.eID);
-        crewContent.attr("name", crewData.title);
-        crewContent.click(function() {
-          if (_down[16]) {
-            var content = sync.newApp("ui_characterSummary");
-            game.entities.data[$(this).attr("index")].addApp(content);
-            var popOut = ui_popOut({
-              target: $(this),
-              id: "char-summary-"+$(this).attr("index"),
-              dragThickness : "0.5em",
-              title : $(this).attr("name"),
-              minimize : true,
-            }, content);
-            popOut.resizable();
-          }
-          else {
-            var content = sync.newApp("ui_characterSheet");
-            game.entities.data[$(this).attr("index")].addApp(content);
-            var popOut = ui_popOut({
-              target: $(this),
-              id: "char-summary-"+$(this).attr("index"),
-              dragThickness : "0.5em",
-              title : $(this).attr("name"),
-              minimize : true,
-            }, content);
-            popOut.resizable();
-          }
-        });
-        if (hasSecurity(getCookie("UserID"), "Rights", ent.data)) {
-          var optionsList = $("<div>").appendTo(crewContainer);
-          optionsList.addClass("flexcolumn");
-
-          var disembark = genIcon("log-out").appendTo(optionsList);
-          disembark.attr("title", "Leave Vehicle");
-          disembark.attr("index", crewIndex);
-          disembark.click(function(){
-            delete data.crew[$(this).attr("index")].eID;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          });
-        }
-      }
-    }
-    else {
-      if (crewData.img) {
-        crewContent.css("background-image", "url('"+ crewData.img +"')");
-        crewContent.css("background-size", "contain");
-        crewContent.css("background-repeat", "no-repeat");
-        crewContent.css("background-position", "center");
-      }
-      var optionsList = $("<div>").appendTo(crewContainer);
-      optionsList.addClass("flexcolumn");
-
-      var crewMember = genIcon("user").appendTo(optionsList);
-      crewMember.attr("title", "Change Crew Member");
-      crewMember.attr("index", crewIndex);
-      crewMember.click(function(){
-        var index = $(this).attr("index");
-        var content = sync.render("ui_entList")(obj, app, {
-          filter : "c",
-          click : function(ev, ui, charObj) {
-            data.crew[index].eID = charObj.id();
-            layout.coverlay("popout-chars");
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        });
-
-        var popOut = ui_popOut({
-          target : $(this),
-          id : "popout-chars",
-          style : {"max-height" : "25vh", "overflow-y" : "auto"}
-        }, content);
-      });
-
-      var img = genIcon("picture").appendTo(optionsList);
-      img.attr("title", "Change Image");
-      img.attr("index", crewIndex);
-      img.click(function(){
-        var index = $(this).attr("index");
-
-        var content = $("<div>");
-
-        var iconDiv = $("<div>").appendTo(content);
-
-        for (var i in util.art.icons) {
-          var imgClick = $("<img>").appendTo(iconDiv);
-          imgClick.addClass("outline hover2");
-          imgClick.css("cursor", "pointer");
-          imgClick.css("width", "32px");
-          imgClick.css("height", "32px");
-          imgClick.attr("src", "/content/icons/"+util.art.icons[i]);
-          imgClick.click(function(){
-            imgInput.val($(this).attr("src"));
-            layout.coverlay("icons-picker");
-          });
-        }
-
-        var imgInput = genInput({
-          parent : content,
-          value : data.crew[index].img || "",
-          style : {"font-size" : "0.8em", "width" : "100%"}
-        });
-
-        var confirm = $("<button>").appendTo(content);
-        confirm.addClass("fit-x");
-        confirm.append("Confirm");
-        confirm.click(function(){
-          data.crew[index].img = imgInput.val() || "";
-          if (!scope.local) {
-            obj.sync("updateAsset");
-          }
-          else {
-            obj.update();
-          }
-          layout.coverlay("change-crew-img", 300);
-        });
-
-        ui_popOut({
-          target : $(this),
-          id : "change-crew-img",
-          style : {"max-width" : "30vw"}
-        }, content);
-      });
-
-      var del = genIcon("trash").appendTo(optionsList);
-      del.attr("title", "Delete Crew Slot");
-      del.attr("index", crewIndex);
-      del.click(function(){
-        var index = $(this).attr("index");
-        ui_prompt({
-          target : $(this),
-          id : "delete-crew",
-          confirm : "Delete Slot",
-          click : function(){
-            data.crew.splice(index, 1);
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        });
-      });
-    }
-  }
-  return div;
-});
-
-sync.render("ui_locations", function(obj, app, scope) {
-  scope = scope || {viewOnly : app.attr("viewOnly") == "true"};
-  scope.editable = (app.attr("editable") == "true");
-  var div = $("<div>");
-  var data = obj.data;
-
-  var title = $("<h4 style='text-align: center;'>Locations</h4>").appendTo(div);
-  if (!scope.viewOnly) {
-    if (scope.editable) {
-      var icon = genIcon("plus").appendTo(title);
-      icon.click(function() {
-        var popout = ui_prompt({
-          target : $(this),
-          id : "special-rule-popout",
-          inputs : {"Name" : ""},
-          click : function(ev, inputs) {
-            if (inputs["Name"].val() && inputs["Name"].val().trim()) {
-              data.body[inputs["Name"].val().trim()] = {coords: [0,0], size: ["50%","50%"], value : 0};
-              obj.update();
-            }
-          }
-        });
-      });
-      var icon = genIcon("ok").appendTo(title);
-      icon.click(function() {
-        app.removeAttr("editable");
-        if (!scope.local) {
-          obj.sync("updateAsset");
-        }
-        else {
-          obj.update();
-        }
-      });
-    }
-    else {
-      var icon = genIcon("pencil").appendTo(title);
-      icon.click(function() {
-        app.attr("editable", "true");
-        obj.update();
-      });
-    }
-  }
-  var newScope = {
-    viewOnly : scope.viewOnly,
-    url : sync.rawVal(data.info.img) || "/content/icons/blankvehicle.png",
-    body : data.body,
-    editable : scope.editable,
-    displayText : function(ui, key){
-      if (data.body[ui.attr("key")] != null && !scope.editable) {
-        ui.css("text-shadow", "0px 0px 4px black");
-        ui.css("color", "white");
-        ui.text(data.body[ui.attr("key")].value);
-      }
-      else {
-        ui.css("text-shadow", "0px 0px 4px white");
-      }
-    },
-    click : function(ev, ui) {
-      if (data.body[ui.attr("key")] != null) {
-        if (_down["17"]) {
-          data.body[ui.attr("key")].value = (data.body[ui.attr("key")].value || 0) + 1;
-        }
-        else {
-          data.body[ui.attr("key")].value = (data.body[ui.attr("key")].value || 0) - 1;
-        }
-        if (!scope.local) {
-          obj.sync("updateAsset");
-        }
-        else {
-          obj.update();
-        }
-      }
-    }
-  };
-  if (scope.editable) {
-    newScope.click = function(ev, ui) {
-      delete data.body[ui.attr("key")];
-      if (!scope.local) {
-        obj.sync("updateAsset");
-      }
-      else {
-        obj.update();
-      }
-    }
-  }
-  var dragContainer = sync.render("ui_body")(obj, app, newScope).appendTo(div);
-
-  return div;
-});
 
 sync.render("ui_boardActions", function(obj, app, scope) {
   var content = $("<div>");
@@ -48897,6 +46801,7 @@ boardApi.pix.destroyObject = function(layer, type, index, obj) {
     cmd : "destroy",
     type : type,
   };
+  var pieceData = duplicate(obj.data.layers[layer][type][index]);
   obj.data.layers[layer][type].splice(index, 1);
   update.result = duplicate(obj.data.layers[layer]);
   update.index = index;
@@ -49104,6 +47009,8 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
           var pieces = layer.children[2];
           if (pieces.children && pieces.children.length) {
             if (data.cmd == "destroy") {
+              data.rebuild = data.rebuild || {};
+              data.rebuild.r = true;
               pieces.removeChildren();
               for (var i=0; i<layerData.p.length; i++) {
                 var newChild = boardApi.pix.createPiece({data : layerData.p[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
@@ -49838,7 +47745,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
 
             game.state.data.tabs = game.state.data.tabs || [];
             var charObj = getEnt($(ui.item).attr("index"));
-
             var useTab = true;
             for (var i in game.state.data.tabs) {
               if (game.state.data.tabs[i].index == charObj.id()) {
@@ -49857,10 +47763,7 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                 }
                 else if ($(this).attr("default") && !found) {
                   found = true;
-                  if (charObj.data._t == "a") {
-                    finalOrder.push({index : charObj.id(), ui : "ui_planner"});
-                  }
-                  else if (charObj.data._t == "b") {
+                  if (charObj.data._t == "b") {
                     finalOrder.push({index : charObj.id(), ui : "ui_board"});
                   }
                   else if (charObj.data._t == "c") {
@@ -49868,9 +47771,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                   }
                   else if (charObj.data._t == "p") {
                     finalOrder.push({index : charObj.id(), ui : "ui_renderPage"});
-                  }
-                  else if (charObj.data._t == "v") {
-                    finalOrder.push({index : charObj.id(), ui : "ui_vehicle"});
                   }
                 }
               });
@@ -55555,9 +53455,14 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
             target : $(this),
             confirm : "Delete Piece",
             click : function(ev, inputs){
-              board.data.layers[layer].p.splice(piece, 1);
+              var delEnt = getEnt(board.data.layers[layer].p[piece].eID);
+              if (delEnt && delEnt.data && delEnt.data.tags && delEnt.data.tags["temp"]) {
+                if (hasSecurity(getCookie("UserID"), "Owner", delEnt.data)) {
+                  delEnt.sync("deleteAsset");
+                }
+              }
               layout.coverlay("piece-popout-"+board.id()+"-"+layer+"-"+piece);
-              board.sync("updateAsset"); // TODO
+              boardApi.pix.destroyObject(layer, "p", piece, board);
             }
           });
           ev.stopPropagation();
@@ -55687,6 +53592,9 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
         runCommand("boardMove", {id : app.attr("target"), layer : layer, type : "p", index : piece, data : board.data.layers[layer].p[piece]});
       });
 
+      inWrap.append("<b class='subtitle'>"+(board.data.options.unit || "")+"</b>");
+
+
       var inWrap = $("<div>").appendTo(inputWrap);
       inWrap.addClass("flexrow flexmiddle");
 
@@ -55720,6 +53628,8 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
         boardApi.pix.updateObject(layer, "p", piece, board);
         runCommand("boardMove", {id : app.attr("target"), layer : layer, type : "p", index : piece, data : board.data.layers[layer].p[piece]});
       });
+
+      inWrap.append("<b class='subtitle'>"+(board.data.options.unit || "")+"</b>");
 
       var inputWrap = $("<div>").appendTo(imgPreview);
       inputWrap.addClass("flexrow fit-x dull");
@@ -56675,11 +54585,14 @@ sync.render("ui_pieceQuickEdit", function(obj, app, scope){
           target : $(this),
           confirm : "Delete Piece",
           click : function(ev, inputs){
-            obj.data.layers[scope.layer].p.splice(scope.piece, 1);
+            var delEnt = getEnt(obj.data.layers[scope.layer].p[scope.piece].eID);
+            if (delEnt && delEnt.data && delEnt.data.tags && delEnt.data.tags["temp"]) {
+              if (hasSecurity(getCookie("UserID"), "Owner", delEnt.data)) {
+                delEnt.sync("deleteAsset");
+              }
+            }
             layout.coverlay($(".piece-quick-edit"));
-            runCommand("boardMove", {id : obj.id(), layer : scope.layer, type : "p", index : scope.piece, data : obj.data.layers[scope.layer].p[scope.piece]});
-            boardApi.pix.updateObject(scope.layer, "p", scope.piece, obj);
-            sync.updateApp(app, obj);
+            boardApi.pix.destroyObject(scope.layer, "p", scope.piece, obj);
           }
         });
       });
@@ -58119,10 +56032,10 @@ sync.render("ui_board", function(obj, app, scope) {
           olay.append("<b>Drop to Create</b>");
         }
       });
-      board.on('drop', function(ev){
+      board.on('drop', function(ev, ui){
         ev.preventDefault();
         ev.stopPropagation();
-        var dt = ev.originalEvent.dataTransfer;
+        var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
         var files = dt.files;
         var focal = boardCanvas.stage.toLocal({x : ev.originalEvent.pageX, y : ev.originalEvent.pageY});
         var xPos = focal.x;
@@ -58219,8 +56132,9 @@ sync.render("ui_board", function(obj, app, scope) {
         }
         else if (dt.getData("Text")) {
           var img = new Image();
-          dt.getData("Text")
-          img.src = dt.getData("Text");
+          var url = dt.getData("Text");
+          url = url.replace("http://localhost:30000", "");
+          img.src = url;
           img.onload = function(){
             if (hasGrid) {
               var xGrid = Math.floor((xPos - (data.gridX || 0))/data.gridW);
@@ -58252,165 +56166,133 @@ sync.render("ui_board", function(obj, app, scope) {
                 i : 0
               });
               sendAlert({text : "Tile Sheet Added"});
+              if (!scope.local) {
+                obj.sync("updateAsset");
+              }
+              else {
+                obj.update();
+              }
             }
             else {
-               data.layers[scope.layer].p.push({
-                x : xPos, y : yPos,
-                w : (data.pW || data.gridW || 64),
-                h : (data.pH || data.gridH || 64),
-                i : img.src
-              });
+              var newP = {
+                 x : xPos, y : yPos,
+                 w : (data.pW || data.gridW || 64),
+                 h : (data.pH || data.gridH || 64),
+                 i : url
+               };
+              boardApi.pix.addObject(newP, scope.layer, "p", obj);
               sendAlert({text : "Token Added"});
-            }
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
             }
           }
         }
-        else if (dt.getData("OBJ")) {
+        else if (dt && dt.getData("OBJ")) {
           var ent = JSON.parse(dt.getData("OBJ"));
-
-          if (ent._t == "a") {
-            if (!game.config.data.offline) {
-              runCommand("createAdventure", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "b") {
-            if (!game.config.data.offline) {
-              runCommand("createBoard", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "c") {
-            createCharacter(ent, true);
-            game.entities.update();
-          }
-          else if (ent._t == "i") {
-            if (!game.config.data.offline) {
-              runCommand("createItem", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "p") {
-            if (!game.config.data.offline) {
-              runCommand("createPage", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-          else if (ent._t == "v") {
-            if (!game.config.data.offline) {
-              runCommand("createVehicle", ent);
-            }
-            else {
-              game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-              game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-              game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-              game.entities.update();
-            }
-          }
-
-
-          game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-          var lastKeys = Object.keys(game.entities.data);
-          game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-            var change = true;
-            var keyIndex;
-            for (var key in game.entities.data) {
-              if (!util.contains(lastKeys, key)) {
-                game.locals["newAssetList"].push(key);
-                keyIndex = key;
-                change = false;
-              }
-            }
-            var ent = getEnt(keyIndex);
-            if (ent && hasSecurity(userID, "Rights", ent.data)) {
-              if (!_down["16"] && hasGrid) {
-                xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
-                yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
-              }
-
-              if (!_down["16"]) {
-                for (var index in data.layers[scope.layer].p) {
-                  if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == keyIndex) {
-                    data.layers[scope.layer].p[index].x = xPos;
-                    data.layers[scope.layer].p[index].y = yPos;
-                    if (!scope.local) {
-                      runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
-                      boardApi.pix.moveObject(scope.layer, "p", index, obj);
-                    }
-                    else {
-                      obj.update();
-                    }
-                    return;
-                  }
-                }
-              }
-              var newP = {
-                x : xPos,
-                y : yPos,
-                w : (data.pW || data.gridW || 64),
-                h : (data.pH || data.gridH || 64),
-                d : (data.pD || null),
-                c : (data.pC || null),
-                eID : keyIndex,
-                i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
-              };
-              if (newP.eID) {
-                var ent = getEnt(newP.eID);
-                if (ent.data._t == "c") {
-                  ent = duplicate(ent);
-                  var context = sync.defaultContext();
-                  context[ent.data._t] = ent.data;
-
-                  for (var i in ent.data.info.img.modifiers) {
-                    var val = ent.data.info.img.modifiers[i];
-                    if (val) {
-                      newP[i] = sync.eval(val, context);
-                    }
-                  }
-                  if (ent.data.info.img.modifiers) {
-                    if (ent.data.info.img.modifiers.w) {
-                      newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
-                    }
-                    if (ent.data.info.img.modifiers.h) {
-                      newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
-                    }
-                  }
-                }
-              }
-              if (hasSecurity(userID, "Rights", data)) {
-                boardApi.pix.addObject(newP, scope.layer, "p", obj);
+          if (ent._t != "i") {
+            if (ent._t == "b") {
+              if (!game.config.data.offline) {
+                runCommand("createBoard", ent);
               }
               else {
-                //boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+                game.entities.update();
+              }
+            }
+            else if (ent._t == "c") {
+              createCharacter(ent, true);
+              game.entities.update();
+            }
+            else if (ent._t == "p") {
+              if (!game.config.data.offline) {
+                runCommand("createPage", ent);
+              }
+              else {
+                game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                game.entities.data["tempObj"+game.config.data.offline++].data = ent;
+                game.entities.update();
               }
             }
 
-            return change;
+
+            game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+            var lastKeys = Object.keys(game.entities.data);
+            game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+              var change = true;
+              var keyIndex;
+              for (var key in game.entities.data) {
+                if (!util.contains(lastKeys, key)) {
+                  game.locals["newAssetList"].push(key);
+                  keyIndex = key;
+                  change = false;
+                }
+              }
+              var ent = getEnt(keyIndex);
+              if (ent && hasSecurity(userID, "Rights", ent.data)) {
+                if (!_down["16"] && hasGrid) {
+                  xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
+                  yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
+                }
+
+                if (!_down["16"]) {
+                  for (var index in data.layers[scope.layer].p) {
+                    if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == keyIndex) {
+                      data.layers[scope.layer].p[index].x = xPos;
+                      data.layers[scope.layer].p[index].y = yPos;
+                      if (!scope.local) {
+                        runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
+                        boardApi.pix.moveObject(scope.layer, "p", index, obj);
+                      }
+                      else {
+                        obj.update();
+                      }
+                      return;
+                    }
+                  }
+                }
+                var newP = {
+                  x : xPos,
+                  y : yPos,
+                  w : (data.pW || data.gridW || 64),
+                  h : (data.pH || data.gridH || 64),
+                  d : (data.pD || null),
+                  c : (data.pC || null),
+                  eID : keyIndex,
+                  i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
+                };
+                if (newP.eID) {
+                  var ent = getEnt(newP.eID);
+                  if (ent.data._t == "c") {
+                    ent = duplicate(ent);
+                    var context = sync.defaultContext();
+                    context[ent.data._t] = ent.data;
+
+                    for (var i in ent.data.info.img.modifiers) {
+                      var val = ent.data.info.img.modifiers[i];
+                      if (val) {
+                        newP[i] = sync.eval(val, context);
+                      }
+                    }
+                    if (ent.data.info.img.modifiers) {
+                      if (ent.data.info.img.modifiers.w) {
+                        newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
+                      }
+                      if (ent.data.info.img.modifiers.h) {
+                        newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
+                      }
+                    }
+                  }
+                }
+                if (hasSecurity(userID, "Rights", data)) {
+                  boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                }
+                else {
+                  //boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                }
+              }
+              return change;
+            }
           }
         }
         layout.coverlay(app.attr("id")+"-drag-overlay");
@@ -58484,64 +56366,66 @@ sync.render("ui_board", function(obj, app, scope) {
         }
         else if ($(ui.item).attr("index")) {
           var ent = getEnt($(ui.item).attr("index"));
-          if (ent && hasSecurity(userID, "Rights", ent.data)) {
-            if (!_down["16"] && hasGrid) {
-              xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
-              yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
-            }
-
-            if (!_down["16"]) {
-              for (var index in data.layers[scope.layer].p) {
-                if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == $(ui.item).attr("index")) {
-                  var oldData = data.layers[scope.layer].p[index];
-                  data.layers[scope.layer].p[index].x = xPos;
-                  data.layers[scope.layer].p[index].y = yPos;
-                  if (!scope.local) {
-                    runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
-                    boardApi.pix.moveObject(scope.layer, "p", index, obj);
-                  }
-                  else {
-                    obj.update();
-                  }
-                  return;
-                }
+          if (ent.data._t != "i") {
+            if (ent && hasSecurity(userID, "Rights", ent.data)) {
+              if (!_down["16"] && hasGrid) {
+                xPos = (data.gridX || 0) + (Math.floor((xPos-(data.gridX || 0))/data.gridW)) * data.gridW;
+                yPos = (data.gridY || 0) + (Math.floor((yPos-(data.gridY || 0))/data.gridH)) * data.gridH;
               }
-            }
-            var newP = {
-              x : xPos,
-              y : yPos,
-              w : (data.pW || data.gridW || 64),
-              h : (data.pH || data.gridH || 64),
-              d : (data.pD || null),
-              c : (data.pC || null),
-              eID : $(ui.item).attr("index"),
-              i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
-            };
-            if (newP.eID) {
-              var ent = getEnt(newP.eID);
-              if (ent.data._t == "c") {
-                ent = duplicate(ent);
-                var context = sync.defaultContext();
-                context[ent.data._t] = ent.data;
 
-                for (var i in ent.data.info.img.modifiers) {
-                  var val = ent.data.info.img.modifiers[i];
-                  if (val) {
-                    newP[i] = sync.eval(val, context);
-                  }
-                }
-                if (ent.data.info.img.modifiers) {
-                  if (ent.data.info.img.modifiers.w) {
-                    newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
-                  }
-                  if (ent.data.info.img.modifiers.h) {
-                    newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
+              if (!_down["16"]) {
+                for (var index in data.layers[scope.layer].p) {
+                  if (data.layers[scope.layer].p[index] && data.layers[scope.layer].p[index].eID == $(ui.item).attr("index")) {
+                    var oldData = data.layers[scope.layer].p[index];
+                    data.layers[scope.layer].p[index].x = xPos;
+                    data.layers[scope.layer].p[index].y = yPos;
+                    if (!scope.local) {
+                      runCommand("boardMove", {id : obj.id(), index : index, layer : scope.layer, type : "p", data : data.layers[scope.layer].p[index]});
+                      boardApi.pix.moveObject(scope.layer, "p", index, obj);
+                    }
+                    else {
+                      obj.update();
+                    }
+                    return;
                   }
                 }
               }
-            }
-            if (hasSecurity(userID, "Rights", data)) {
-              boardApi.pix.addObject(newP, scope.layer, "p", obj);
+              var newP = {
+                x : xPos,
+                y : yPos,
+                w : (data.pW || data.gridW || 64),
+                h : (data.pH || data.gridH || 64),
+                d : (data.pD || null),
+                c : (data.pC || null),
+                eID : $(ui.item).attr("index"),
+                i : (ent.data.info.img != null)?(ent.data.info.img.min):(null)
+              };
+              if (newP.eID) {
+                var ent = getEnt(newP.eID);
+                if (ent.data._t == "c") {
+                  ent = duplicate(ent);
+                  var context = sync.defaultContext();
+                  context[ent.data._t] = ent.data;
+
+                  for (var i in ent.data.info.img.modifiers) {
+                    var val = ent.data.info.img.modifiers[i];
+                    if (val) {
+                      newP[i] = sync.eval(val, context);
+                    }
+                  }
+                  if (ent.data.info.img.modifiers) {
+                    if (ent.data.info.img.modifiers.w) {
+                      newP.w = Math.max(newP.w/(data.options.unitScale || 1), 10);
+                    }
+                    if (ent.data.info.img.modifiers.h) {
+                      newP.h = Math.max(newP.h/(data.options.unitScale || 1), 10);
+                    }
+                  }
+                }
+              }
+              if (hasSecurity(userID, "Rights", data)) {
+                boardApi.pix.addObject(newP, scope.layer, "p", obj);
+              }
             }
           }
         }
@@ -60406,6 +58290,8 @@ sync.render("ui_board", function(obj, app, scope) {
     //}
     setTimeout(function(){
       var loaded = {};
+      app.attr("divWidth", divRow.width());
+      app.attr("divHeight", divRow.height());
       function checkLoaded(sheet) {
         var fullLoaded = true;
         for (var i=0; i<data.sheets.length; i++) {
@@ -60417,32 +58303,29 @@ sync.render("ui_board", function(obj, app, scope) {
           if (hasRights) {
             app.attr("hideCursor", "true");
           }
-          app.attr("divWidth", divRow.width());
-          app.attr("divHeight", divRow.height());
           obj.update();
         }
       }
-
-      for (var i=0; i<data.sheets.length; i++) {
-        function loadWrap(sheet) {
-          if (!data.sheets[sheet].i || PIXI.loader.resources[data.sheets[sheet].i]) {
+      function loadWrap(sheet) {
+        if (!data.sheets[sheet].i || PIXI.loader.resources[data.sheets[sheet].i]) {
+          loaded[sheet] = true;
+          checkLoaded(sheet);
+          if (data.sheets[Number(sheet)+1]) {
+            loadWrap(Number(sheet)+1);
+          }
+        }
+        else {
+          PIXI.loader.add(data.sheets[sheet].i).load(setup);
+          function setup() {
             loaded[sheet] = true;
-            checkLoaded(sheet);
             if (data.sheets[Number(sheet)+1]) {
               loadWrap(Number(sheet)+1);
             }
-          }
-          else {
-            PIXI.loader.add(data.sheets[sheet].i).load(setup);
-            function setup() {
-              loaded[sheet] = true;
-              if (data.sheets[Number(sheet)+1]) {
-                loadWrap(Number(sheet)+1);
-              }
-              checkLoaded(sheet);
-            }
+            checkLoaded(sheet);
           }
         }
+      }
+      for (var i=0; i<data.sheets.length; i++) {
         loadWrap(i);
         break;
       }
@@ -60450,8 +58333,6 @@ sync.render("ui_board", function(obj, app, scope) {
         if (hasRights) {
           app.attr("hideCursor", "true");
         }
-        app.attr("divWidth", divRow.width());
-        app.attr("divHeight", divRow.height());
         setTimeout(function(){obj.update();}, 100);
       }
     }, 200);
@@ -66976,7 +64857,6 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
     newMenu.css("transition", "opacity 0.1s");
     newMenu.css("pointer-events", "none");
   }
-
 
   var optionsBar = $("<div>").appendTo(newMenu);
   optionsBar.addClass("flexcolumn boardMenu");

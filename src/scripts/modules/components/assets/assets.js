@@ -889,10 +889,10 @@ sync.render("ui_assetList", function(entities, app, scope) {
         olay.append("<b>Drop to Create</b>");
       }
     });
-    listedWrap.on('drop', function(ev){
+    listedWrap.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
       var ent = JSON.parse(dt.getData("OBJ"));
 
       game.locals["newAssetList"] = game.locals["newAssetList"] || [];

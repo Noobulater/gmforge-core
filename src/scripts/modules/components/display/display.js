@@ -126,7 +126,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
 
             game.state.data.tabs = game.state.data.tabs || [];
             var charObj = getEnt($(ui.item).attr("index"));
-
             var useTab = true;
             for (var i in game.state.data.tabs) {
               if (game.state.data.tabs[i].index == charObj.id()) {
@@ -145,10 +144,7 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                 }
                 else if ($(this).attr("default") && !found) {
                   found = true;
-                  if (charObj.data._t == "a") {
-                    finalOrder.push({index : charObj.id(), ui : "ui_planner"});
-                  }
-                  else if (charObj.data._t == "b") {
+                  if (charObj.data._t == "b") {
                     finalOrder.push({index : charObj.id(), ui : "ui_board"});
                   }
                   else if (charObj.data._t == "c") {
@@ -156,9 +152,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                   }
                   else if (charObj.data._t == "p") {
                     finalOrder.push({index : charObj.id(), ui : "ui_renderPage"});
-                  }
-                  else if (charObj.data._t == "v") {
-                    finalOrder.push({index : charObj.id(), ui : "ui_vehicle"});
                   }
                 }
               });

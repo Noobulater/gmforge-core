@@ -970,6 +970,14 @@ function controlsKeyDown(e) {
 
                 typeData.indexs.sort();
                 for (var idx=typeData.indexs.length-1; idx>=0; idx--) {
+                  if (board.data.layers[layer][type][typeData.indexs[idx]] && board.data.layers[layer][type][typeData.indexs[idx]].eID) {
+                    var delEnt = getEnt(board.data.layers[layer][type][typeData.indexs[idx]].eID);
+                    if (delEnt && delEnt.data && delEnt.data.tags && delEnt.data.tags["temp"]) {
+                      if (hasSecurity(getCookie("UserID"), "Owner", delEnt.data)) {
+                        delEnt.sync("deleteAsset");
+                      }
+                    }
+                  }
                   board.data.layers[layer][type].splice(typeData.indexs[idx], 1);
                 }
               }

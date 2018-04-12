@@ -100,7 +100,6 @@ sync.render("ui_library", function(obj, app, scope) {
   }
   if (localList) {
     // loads the content package so we can merge it's contents
-    //sync.render("ui_contentEditor")(pck, app, scope);
     if (localList.a && localList.a.length) {
       obj.data.a = obj.data.a.concat(duplicate(localList.a));
     }
@@ -422,12 +421,12 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
             olay.append("<b>Drop to Insert</b>");
           }
       	});
-        listedChars.on('drop', function(ev){
+        listedChars.on('drop', function(ev, ui ){
           ev.preventDefault();
           ev.stopPropagation();
           if (!_dragTransfer) {
-            var dt = ev.originalEvent.dataTransfer;
-            if (dt.getData("OBJ")) {
+            var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
+            if (dt && dt.getData("OBJ")) {
               var entData = JSON.parse(dt.getData("OBJ"));
               if (entData._t == "i") {
                 entData._s = {}; // clear security
@@ -603,7 +602,10 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
       charList.attr("index", i);
       charList.on("dragstart", function(ev){
         var dt = ev.originalEvent.dataTransfer;
-        dt.setData("OBJ", JSON.stringify(obj.data[target][$(this).attr("index")]));
+        var tempObj = duplicate(obj.data[target][$(this).attr("index")]);
+        tempObj.tags = tempObj.tags || {};
+        tempObj.tags["temp"] = true;
+        dt.setData("OBJ", JSON.stringify(tempObj));
         if (target == "spellbook") {
           dt.setData("spell", true);
         }

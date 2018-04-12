@@ -1743,6 +1743,13 @@ util.parse = {
   }
 }
 
+util.resourceTypes = [
+  "Rich Text",
+  "HTML",
+  "Image",
+  "Roll Table"
+]
+
 util.processPage = function(pageData, obj, app, scope) {
   scope = scope || {};
   app = app || $("<div>");
@@ -2710,8 +2717,9 @@ util.interfaces = {
   "Inputs" : {
     "Field" : {
       content : {
+        classes : "flexrow",
         target : "%Target%",
-        edit : {classes : "line"}
+        edit : {classes : "line lrmargin"}
       },
       arguments : {
         "%Target%" : {
@@ -2735,14 +2743,22 @@ util.interfaces = {
     },
     "Image" : {
       content : {
-        classes : "flexcolumn smooth outline flex white",
-        ui : "ui_image",
-        target : "info.img",
-        style : {"min-width" : "100px", "min-height" : "100px"},
+        classes : "flexcolumn flex flexcontainer smooth outline white margin",
+        style : {"position" : "relative"},
+        display : [
+          {
+            classes : "flexcolumn flex",
+            ui : "ui_image",
+            target : "info.img",
+            style : {"min-width" : "100px", "min-height" : "100px"},
+          },
+          {style : {"position" : "absolute", "right" : "0", "bottom" : "0"}, title : "Map Token", target : "info.img", ui : "ui_token", scope : {classes : "smooth outline white"}}
+        ]
       },
     },
     "Label" : {
       content : {
+        classes : "bold flexmiddle",
         value : "%Value%",
       },
       arguments : {
@@ -2753,8 +2769,8 @@ util.interfaces = {
     },
     "Notes" : {
       content : {
-        classes : "flexcolumn flex padding",
-        ui : "ui_characterNotes",
+        classes : "flexcolumn flex padding white smooth outline",
+        ui : "ui_rawNotes",
       }
     },
   },

@@ -56,7 +56,9 @@ sync.render("ui_ent", function(ent, app, scope) {
       imgWrap.css("background-repeat", "no-repeat");
       imgWrap.css("background-position", "center 25%");
     }
-
+    if (ent.data.tags["temp"]) {
+      imgWrap.append("<b class='inactive smooth spadding subtitle' title='Assets tagged with 'temp' are deleted when their tokens are removed from a map'>Temp.</b>");
+    }
     if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
       imgWrap.addClass("hover2");
       imgWrap.click(function(ev){
@@ -84,6 +86,7 @@ sync.render("ui_ent", function(ent, app, scope) {
       img.addClass("flexcolumn");
       img.attr("viewOnly", true);
       img.attr("mode", "preview");
+      img.attr("showTemp", true);
       img.css("width", ((parseInt(scope.height) || 20) * 3) + "px");
       img.css("height", scope.height || "auto");
       ent.addApp(img);
@@ -384,10 +387,10 @@ sync.render("ui_assetManager", function(obj, app, scope) {
         olay.append("<b>Drop to Create</b>");
       }
   	});
-    listedChars.on('drop', function(ev){
+    listedChars.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
       var ent = JSON.parse(dt.getData("OBJ"));
 
       game.locals["newAssetList"] = game.locals["newAssetList"] || [];
@@ -403,18 +406,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
         return change;
       }
       app.attr("category", ent._t);
-      if (ent._t == "a") {
-        if (!game.config.data.offline) {
-          runCommand("createAdventure", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "b") {
+      if (ent._t == "b") {
         if (!game.config.data.offline) {
           runCommand("createBoard", ent);
         }
@@ -1412,36 +1404,62 @@ sync.render("ui_assetManager", function(obj, app, scope) {
   });
 
 
-    var button = genIcon("file", "New Resource");
-    button.attr("title", "Create a new Resource");
-    button.appendTo(creationBar);
-    button.click(function() {
-      app.attr("category", "p");
-      game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-      var lastKeys = Object.keys(game.entities.data);
-      game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-        var change = true;
-        for (var key in game.entities.data) {
-          if (!util.contains(lastKeys, key)) {
-            game.locals["newAssetList"].push(key);
-            change = false;
-          }
+  var button = genIcon("file", "New Resource");
+  button.attr("title", "Create a new Resource");
+  button.appendTo(creationBar);
+  button.click(function() {
+    app.attr("category", "p");
+    game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+    var lastKeys = Object.keys(game.entities.data);
+    game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+      var change = true;
+      for (var key in game.entities.data) {
+        if (!util.contains(lastKeys, key)) {
+          game.locals["newAssetList"].push(key);
+          change = false;
         }
-        return change;
       }
-      app.removeAttr("hideAssets");
-      if (!game.config.data.offline) {
-        runCommand("createPage", {data : {}});
+      return change;
+    }
+    app.removeAttr("hideAssets");
+    if (!game.config.data.offline) {
+      var content = $("<div>");
+      var contentList = $("<div>").appendTo(content);
+      for (var key in util.resourceTypes) {
+        var button = $("<div>")
+        button.addClass("hover2 alttext spadding flexmiddle");
+        button.attr("type", util.resourceTypes[key]);
+        if (util.resourceTypes[key] == "Rich Text") {
+          button.appendTo(content);
+          button.addClass("highlight");
+          button.text("Normal Notes");
+        }
+        else {
+          button.addClass("background subtitle");
+          button.appendTo(contentList);
+          button.text(util.resourceTypes[key]);
+        }
+        button.click(function(){
+          runCommand("createPage", {data : {override : {info : {mode : sync.newValue("Mode", $(this).attr("type"))}}}});
+          layout.coverlay("resource-select");
+          sendAlert({text : "Created Resource"});
+        });
       }
-      else {
-        game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-        game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-        game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.page);
-        game.entities.update();
-      }
-      sendAlert({text : "Created Resource"});
-    });
-  //}
+      ui_popOut({
+        prompt : true,
+        title : "Type",
+        align : "top",
+        target : $(this),
+        id : "resource-select"
+      }, content);
+    }
+    else {
+      game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+      game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+      game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.page);
+      game.entities.update();
+    }
+  });
 
 
   return div;

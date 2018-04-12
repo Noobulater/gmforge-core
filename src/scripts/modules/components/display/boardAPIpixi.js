@@ -809,6 +809,7 @@ boardApi.pix.destroyObject = function(layer, type, index, obj) {
     cmd : "destroy",
     type : type,
   };
+  var pieceData = duplicate(obj.data.layers[layer][type][index]);
   obj.data.layers[layer][type].splice(index, 1);
   update.result = duplicate(obj.data.layers[layer]);
   update.index = index;
@@ -1016,6 +1017,8 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
           var pieces = layer.children[2];
           if (pieces.children && pieces.children.length) {
             if (data.cmd == "destroy") {
+              data.rebuild = data.rebuild || {};
+              data.rebuild.r = true;
               pieces.removeChildren();
               for (var i=0; i<layerData.p.length; i++) {
                 var newChild = boardApi.pix.createPiece({data : layerData.p[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});

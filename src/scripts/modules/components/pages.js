@@ -109,9 +109,10 @@ sync.render("ui_editPage", function(obj, app, scope){
       select.css("width", "100px");
       select.css("color", "#333");
       select.css("text-shadow", "none");
-      select.append("<option>Rich Text</option>");
-      select.append("<option>HTML</option>");
-      select.append("<option>Image</option>");
+
+      for (var key in util.resourceTypes) {
+        select.append("<option>"+util.resourceTypes[key]+"</option>");
+      }
       select.children().each(function(){
         if ($(this).text() == sync.rawVal(obj.data.info.mode)) {
           $(this).attr("selected", "selected");
@@ -290,6 +291,111 @@ sync.render("ui_editPage", function(obj, app, scope){
     scope.lookup = "info.img";
     content.addClass("smooth outline white");
     sync.render("ui_image")(obj, app, scope).appendTo(content);
+  }
+  else if (sync.rawVal(obj.data.info.mode) == "Roll Table") {
+    var tableData;
+
+    if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "{") {
+      try {
+        tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+      }
+      catch (e) {
+        tableData = {headers : [], contents : []};
+      }
+    }
+    else {
+      tableData = {headers : [], contents : []};
+    }
+
+    var tableOptions = $("<div>").appendTo(content);
+    tableOptions.addClass("flexcolumn foreground alttext");
+
+    var tableConfig = $("<div>").appendTo(tableOptions);
+
+    var headers = $("<div>").appendTo(tableOptions);
+    headers.addClass("flexrow flexbetween");
+
+      if (tableData.headers.length < 2) {
+        tableData.headers = [{name : "d100"}, {name : "Crazy Table"}];
+      }
+
+    for (var i=0; i<tableData.headers.length; i++) {
+      var headerData = tableData.headers[i];
+
+      var headerWrap = $("<div>").appendTo(headers);
+      headerWrap.addClass("flexcolumn flexmiddle flex");
+      if (i == 0) {
+        headerWrap.removeClass("flex");
+        headerWrap.append("<b class='subtitle dull'>Dice to Roll</b>");
+      }
+      else {
+        headerWrap.append("<b class='subtitle dull'>Description</b>");
+      }
+
+      var headerInput = genInput({
+        parent : headerWrap,
+        classes : "line middle lrmargin",
+        value : headerData.name,
+        index : i
+      });
+      headerInput.change(function(){
+        tableData.headers[$(this).attr("index")].name = $(this).val();
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+    }
+
+    var tableContent = $("<div>").appendTo(content);
+    tableContent.addClass("flexcolumn");
+
+    for (var i=0; i<tableData.contents.length; i++) {
+      var contentData = tableData.contents[i];
+
+      var headerWrap = $("<div>").appendTo(tableContent);
+      headerWrap.addClass("flexrow fit-x");
+
+      var headerInput = genInput({
+        parent : headerWrap,
+        classes : "line middle lrmargin",
+        value : contentData.name,
+        placeholder : "Dice Range (ex. 32-46)",
+        index : i
+      });
+      headerInput.change(function(){
+        tableData.contents[$(this).attr("index")].name = $(this).val();
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+
+      var valueInput = genInput({
+        parent : headerWrap,
+        classes : "line middle flex lrmargin",
+        value : contentData.value,
+        index : i
+      });
+      valueInput.change(function(){
+        tableData.contents[$(this).attr("index")].value = $(this).val();
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+
+      var remove = genIcon("remove").appendTo(headerWrap);
+      remove.addClass("destroy");
+      remove.attr("index", i);
+      remove.click(function(){
+        tableData.contents.splice($(this).attr("index"), 1);
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.sync("updateAsset");
+      });
+    }
+
+    var newRow = genIcon("plus", "New Row").appendTo(tableContent);
+    newRow.addClass("fit-x flexmiddle subtitle bold");
+    newRow.click(function(){
+      tableData.contents.push({});
+      sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+      obj.update();
+    });
   }
   else {
     var saveWrap = $("<div>").appendTo(optionsBar);
@@ -1315,6 +1421,116 @@ sync.render("ui_renderPage", function(obj, app, scope){
     scope.lookup = "info.img";
     scope.viewOnly = true;
     sync.render("ui_image")(obj, app, scope).appendTo(contentWrap);
+  }
+  else if (sync.rawVal(obj.data.info.mode) == "Roll Table") {
+    var tableData;
+
+    if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "{") {
+      try {
+        tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+      }
+      catch (e) {
+        tableData = {headers : [], contents : []};
+      }
+    }
+    else {
+      tableData = {headers : [], contents : []};
+    }
+
+    var tableContent = $("<div>").appendTo(contentWrap);
+
+    for (var i=0; i<tableData.contents.length; i++) {
+      var contentData = tableData.contents[i];
+
+      var headerWrap = $("<div>").appendTo(tableContent);
+      headerWrap.addClass("flexrow fit-x outlinebottom");
+
+      var rollButton = $("<button>").appendTo(headerWrap);
+      rollButton.css("width", "100px");
+      rollButton.attr("index", i);
+      rollButton.text(contentData.name);
+      rollButton.click(function(){
+        var msg = "Selected "+tableData.contents[$(this).attr("index")].name+" on " + sync.rawVal(obj.data.info.name);
+        sendAlert({text : msg});
+        util.chatEvent(msg, null, null, $("<input>"), null, true);
+        util.chatEvent(tableData.contents[$(this).attr("index")].value, null, null, $("<input>"), null, true);
+      });
+
+      headerWrap.append("<p class='spadding flex'>"+(contentData.value || "")+"</p>");
+    }
+
+    var tableOptions = $("<div>").appendTo(contentWrap);
+    tableOptions.addClass("fit-x flexmiddle");
+
+    var rollButton = $("<button>").appendTo(tableOptions);
+    rollButton.addClass("bold flexmiddle button spadding");
+    rollButton.text("Roll");
+    rollButton.click(function(){
+      var result = sync.eval(tableData.headers[0].name, {});
+      var rangeRegex = /(\d+)-(\d+)/i;
+      for (var i=0; i<tableData.contents.length; i++) {
+        var contentName = tableData.contents[i].name;
+        var rangeMatch = contentName.match(rangeRegex);
+        if (rangeMatch) {
+          if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+            var temp = Number(rangeMatch[1]);
+            rangeMatch[1] = Number(rangeMatch[2]);
+            rangeMatch[2] = temp;
+          }
+          if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+            var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+            sendAlert({text : msg});
+            util.chatEvent(msg, null, null, $("<input>"), null, true);
+            util.chatEvent(tableData.contents[i].value, null, null, $("<input>"), null, true);
+            return;
+          }
+        }
+        else if (!isNaN(contentName) && contentName == result) {
+          var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+          sendAlert({text : msg});
+          util.chatEvent(msg, null, null, $("<input>"), null, true);
+          util.chatEvent(tableData.contents[i].value, null, null, $("<input>"), null, true);
+          return;
+        }
+      }
+    });
+
+    var rollButton = $("<button>").appendTo(tableOptions);
+    rollButton.addClass("bold flexmiddle background alttext spadding");
+    rollButton.text("Roll Private");
+    rollButton.click(function(){
+      var result = sync.eval(tableData.headers[0].name, {});
+      var rangeRegex = /(\d+)-(\d+)/i;
+      for (var i=0; i<tableData.contents.length; i++) {
+        var contentName = tableData.contents[i].name;
+        var rangeMatch = contentName.match(rangeRegex);
+        if (rangeMatch) {
+          if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+            var temp = Number(rangeMatch[1]);
+            rangeMatch[1] = Number(rangeMatch[2]);
+            rangeMatch[2] = temp;
+          }
+          if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+            var whisper = {};
+            whisper[getCookie("UserID")] = 1;
+            var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+            sendAlert({text : msg});
+            util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+            util.chatEvent(tableData.contents[i].value, null, whisper, $("<input>"), null, true);
+            return;
+          }
+        }
+        else if (!isNaN(contentName) && contentName == result) {
+          var whisper = {};
+          whisper[getCookie("UserID")] = 1;
+          var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+          sendAlert({text : msg});
+          util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+          util.chatEvent(tableData.contents[i].value, null, whisper, $("<input>"), null, true);
+          return;
+        }
+      }
+    });
   }
   else {
     var content = $("<div>").appendTo(contentWrap);

@@ -122,9 +122,14 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
             target : $(this),
             confirm : "Delete Piece",
             click : function(ev, inputs){
-              board.data.layers[layer].p.splice(piece, 1);
+              var delEnt = getEnt(board.data.layers[layer].p[piece].eID);
+              if (delEnt && delEnt.data && delEnt.data.tags && delEnt.data.tags["temp"]) {
+                if (hasSecurity(getCookie("UserID"), "Owner", delEnt.data)) {
+                  delEnt.sync("deleteAsset");
+                }
+              }
               layout.coverlay("piece-popout-"+board.id()+"-"+layer+"-"+piece);
-              board.sync("updateAsset"); // TODO
+              boardApi.pix.destroyObject(layer, "p", piece, board);
             }
           });
           ev.stopPropagation();
@@ -254,6 +259,9 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
         runCommand("boardMove", {id : app.attr("target"), layer : layer, type : "p", index : piece, data : board.data.layers[layer].p[piece]});
       });
 
+      inWrap.append("<b class='subtitle'>"+(board.data.options.unit || "")+"</b>");
+
+
       var inWrap = $("<div>").appendTo(inputWrap);
       inWrap.addClass("flexrow flexmiddle");
 
@@ -287,6 +295,8 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
         boardApi.pix.updateObject(layer, "p", piece, board);
         runCommand("boardMove", {id : app.attr("target"), layer : layer, type : "p", index : piece, data : board.data.layers[layer].p[piece]});
       });
+
+      inWrap.append("<b class='subtitle'>"+(board.data.options.unit || "")+"</b>");
 
       var inputWrap = $("<div>").appendTo(imgPreview);
       inputWrap.addClass("flexrow fit-x dull");

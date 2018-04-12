@@ -11,10 +11,10 @@ sync.render("ui_processUI", function(obj, app, scope) {
       section.attr("id", (scope.markup || "")+lastLookup);
       if (sData.display && (!sData.classes || sData.classes.match("flexcontainer"))) {
         section.css("background", "rgba(235,235,228,0.05)");
-        section.css("padding-top", "24px");
-        section.css("padding-left", "8px");
-        section.css("padding-right", "8px");
-        section.css("padding-bottom", "8px");
+        section.css("padding-top", "12px");
+        section.css("padding-left", "4px");
+        section.css("padding-right", "4px");
+        section.css("padding-bottom", "4px");
         section.css("border", "2px dashed rgba(55,55,55,0.2)");
         returnSection = section;
 
@@ -210,9 +210,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
               for (var i in options) {
                 options[i] = sync.eval(options[i], ctx);
               }
-
               var final = util.injectContext(actionData.eventData.data, ctx, options);
-
               var eventData = {
                 f : sync.rawVal(obj.data.info.name),
                 icon : sData.click.icon,
@@ -607,7 +605,6 @@ sync.render("ui_processUI", function(obj, app, scope) {
               if (sData.edit) {
                 if (value.name || sData.name) {
                   var name = $("<b>").appendTo(section);
-
                   if ((sData.name || sData.name === "")) {
                     if (sData.link) {
                       name = genIcon(sData.link, sync.eval((sData.name === "")?("''"):(sData.name), scope.context)).appendTo(section);
@@ -624,6 +621,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
                   else {
                     name.text(value.name + " ");
                   }
+                  name.css("white-space", "nowrap");
                 }
                 var edit = {
                   parent : section,
@@ -673,6 +671,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
                     else {
                       name.text(value.name + " ");
                     }
+                    name.css("white-space", "nowrap");
                   }
                   val.appendTo(section);
                 }

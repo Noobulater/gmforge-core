@@ -4,7 +4,7 @@ function genIcon(options, name, reverse) {
     options = {icon : options, text : name, reverse : reverse};
   }
   var link = $('<a>');
-
+  link.css("white-space", "nowrap");
   var icon;
   if (options.reverse || reverse) {
     icon = $('<span>').appendTo(link);

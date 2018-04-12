@@ -280,7 +280,6 @@ sync.obj = function(id, defaultApps) {
   rObj.removeApp = function(newApp){
     for (var index in rObj["_apps"]) {
       if (rObj["_apps"][index] == newApp.attr("id")) {
-        console.log("spliced");
         rObj["_apps"].splice(index, 1);
       }
     }

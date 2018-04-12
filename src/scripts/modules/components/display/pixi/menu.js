@@ -31,7 +31,6 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
     newMenu.css("pointer-events", "none");
   }
 
-
   var optionsBar = $("<div>").appendTo(newMenu);
   optionsBar.addClass("flexcolumn boardMenu");
   optionsBar.css("width", "175px");

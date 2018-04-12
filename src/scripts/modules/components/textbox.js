@@ -652,10 +652,10 @@ sync.render("ui_textBox", function(obj, app, scope){
         olay.append("<b>Drop to Share</b>");
       }
     });
-    div.on('drop', function(ev){
+    div.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
       if (dt.getData("Text") && dt.getData("Text").trim()) {
         var flavor;
         var icon;

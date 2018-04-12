@@ -481,6 +481,38 @@ sync.render("ui_renderItem", function(obj, app, scope){
       var newField = genIcon("plus", "New Field").appendTo(content);
       newField.addClass("fit-x flexmiddle subtitle");
       newField.click(function(){
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in game.templates.character) {
+          invalidKeys[key] = key;
+        }
+        for (var key in game.templates.character.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in game.templates.character.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in game.templates.character.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in obj.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in obj.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in obj.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in obj.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
+
+
         ui_prompt({
           target : $(this),
           id : "add-field",
@@ -489,20 +521,30 @@ sync.render("ui_renderItem", function(obj, app, scope){
             "Field Name" : {placeholder : "(Optional)"},
           },
           click : function(ev, inputs) {
-            if (inputs["Field Key"].val()) {
-              if (!obj.data.weapon[inputs["Field Key"].val()]) {
-                obj.data.weapon[inputs["Field Key"].val()] = sync.newValue(inputs["Field Name"].val(), null);
-                obj.update();
+            var path = inputs["Field Key"].val();
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
+              path = replaceAll(path, " ", "_");
+              path = replaceAll(path, "@", "");
+              path = replaceAll(path, "(", "_");
+              path = replaceAll(path, ")", "_");
+              path = replaceAll(path, "[", "_");
+              path = replaceAll(path, "]", "_");
+              path = replaceAll(path, "!", "_");
+              path = replaceAll(path, "#", "_");
+              path = replaceAll(path, "$", "_");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
               }
               else {
-                sendAlert({text : "Field is already in use"});
+                obj.data.weapon[path] = sync.newValue(path, null);
+                obj.update();
               }
             }
             else {
-              sendAlert({text : "No Field Specified"});
+              sendAlert({text : "Invalid Field Key"});
             }
           }
-        })
+        });
       });
     }
   }
@@ -543,6 +585,38 @@ sync.render("ui_renderItem", function(obj, app, scope){
       var newField = genIcon("plus", "New Field").appendTo(content);
       newField.addClass("fit-x flexmiddle subtitle");
       newField.click(function(){
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in game.templates.character) {
+          invalidKeys[key] = key;
+        }
+        for (var key in game.templates.character.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in game.templates.character.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in game.templates.character.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in obj.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in obj.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in obj.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in obj.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
+
+
         ui_prompt({
           target : $(this),
           id : "add-field",
@@ -551,20 +625,30 @@ sync.render("ui_renderItem", function(obj, app, scope){
             "Field Name" : {placeholder : "(Optional)"},
           },
           click : function(ev, inputs) {
-            if (inputs["Field Key"].val()) {
-              if (!obj.data.spell[inputs["Field Key"].val()]) {
-                obj.data.spell[inputs["Field Key"].val()] = sync.newValue(inputs["Field Name"].val(), null);
-                obj.update();
+            var path = inputs["Field Key"].val();
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
+              path = replaceAll(path, " ", "_");
+              path = replaceAll(path, "@", "");
+              path = replaceAll(path, "(", "_");
+              path = replaceAll(path, ")", "_");
+              path = replaceAll(path, "[", "_");
+              path = replaceAll(path, "]", "_");
+              path = replaceAll(path, "!", "_");
+              path = replaceAll(path, "#", "_");
+              path = replaceAll(path, "$", "_");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
               }
               else {
-                sendAlert({text : "Field is already in use"});
+                obj.data.spell[path] = sync.newValue(path, null);
+                obj.update();
               }
             }
             else {
-              sendAlert({text : "No Field Specified"});
+              sendAlert({text : "Invalid Field Key"});
             }
           }
-        })
+        });
       });
     }
   }

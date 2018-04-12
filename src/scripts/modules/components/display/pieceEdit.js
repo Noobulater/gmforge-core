@@ -213,11 +213,14 @@ sync.render("ui_pieceQuickEdit", function(obj, app, scope){
           target : $(this),
           confirm : "Delete Piece",
           click : function(ev, inputs){
-            obj.data.layers[scope.layer].p.splice(scope.piece, 1);
+            var delEnt = getEnt(obj.data.layers[scope.layer].p[scope.piece].eID);
+            if (delEnt && delEnt.data && delEnt.data.tags && delEnt.data.tags["temp"]) {
+              if (hasSecurity(getCookie("UserID"), "Owner", delEnt.data)) {
+                delEnt.sync("deleteAsset");
+              }
+            }
             layout.coverlay($(".piece-quick-edit"));
-            runCommand("boardMove", {id : obj.id(), layer : scope.layer, type : "p", index : scope.piece, data : obj.data.layers[scope.layer].p[scope.piece]});
-            boardApi.pix.updateObject(scope.layer, "p", scope.piece, obj);
-            sync.updateApp(app, obj);
+            boardApi.pix.destroyObject(scope.layer, "p", scope.piece, obj);
           }
         });
       });
