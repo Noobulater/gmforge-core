@@ -1517,6 +1517,9 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
   var healthbar = new PIXI.Graphics();
   pieceWrap.addChild(healthbar);
 
+  var statusEffects = new PIXI.Container();
+  pieceWrap.addChild(statusEffects);
+
   pieceWrap.rebuild = function(objectData, rebuild) {
     var layer = pieceWrap.lookup.layer;
     var type = pieceWrap.lookup.type;
@@ -1671,6 +1674,33 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     }
     if (!showHP) {
       healthbar.visible = false;
+    }
+    if (objectData.rpg) {
+      for (var i=0; i<objectData.rpg.length; i++) {
+        var found = false;
+        for (var key=0; key<statusEffects.children.length; key++) {
+          if (statusEffects.children[key].img == objectData.rpg[i]) {
+            found = true;
+          }
+        }
+        if (!found) {
+          var effect = new PIXI.Sprite.fromImage(objectData.rpg[i]);
+          effect.width = 20;
+          effect.height = 20;
+          effect.img = objectData.rpg[i];
+          statusEffects.addChild(effect);
+        }
+      }
+      for (var key=statusEffects.children.length-1; key>=0; key--) {
+        statusEffects.children[key].x = objectData.w-key * 20-20;
+        statusEffects.children[key].y = 0;
+        if (!util.contains(objectData.rpg, statusEffects.children[key].img)) {
+          statusEffects.removeChild(statusEffects.children[key]);
+        }
+      }
+    }
+    else {
+      statusEffects.removeChildren();
     }
 
     if (objectData.t) {

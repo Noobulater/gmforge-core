@@ -2637,6 +2637,21 @@ util.art = {
     {src : "/content/nouns/coffin.png"},
     {src : "/content/nouns/pirate.png"},
   ],
+  Effects : [
+    {src : "/content/effects/skull.png"},
+    {src : "/content/effects/cripple.png"},
+    {src : "/content/effects/dazed.png"},
+    {src : "/content/effects/flame.png"},
+    {src : "/content/effects/bullseye.png"},
+    {src : "/content/effects/flag.png"},
+    {src : "/content/effects/pill.png"},
+    {src : "/content/effects/power.png"},
+    {src : "/content/effects/silence.png"},
+    {src : "/content/effects/snare.png"},
+    {src : "/content/effects/snow.png"},
+    {src : "/content/effects/strength.png"},
+    {src : "/content/effects/target.png"},
+  ],
   Icons : [
     "Amulet1000p.png",
     "Anvil1000p.png",
@@ -4801,1544 +4816,6 @@ util.customSheets = function(obj, app, scope, sheet){
       ]
     }
   ]
-}
-
-// This library is meant to provide an easy way (only for me most likely)
-// to automatically update document elements with live data. React was too bulky
-// for me to learn so I wrote this
-var _appuid = 0;
-var _render = {};
-var sync = {};
-
-sync.render = function(uiName, renderFunc) {
-  if (uiName && renderFunc) {
-    _render[uiName] = renderFunc;
-  }
-  else {
-    return _render[uiName];
-  }
-}
-
-sync.newApp = function(uiName, obj, scope) {
-  var rObj = $("<div>");
-  rObj.attr('ui-name', uiName);
-  rObj.attr('id', 'app_'+_appuid);
-  rObj.addClass("application flexcolumn");
-
-  rObj.scroll(function() {
-    $(this).attr("_lastScrollTop", $(this).scrollTop());
-    $(this).attr("_lastScrollLeft", $(this).scrollLeft());
-  });
-  _appuid = _appuid + 1;
-
-  if (_render[uiName] && (obj || scope)) {
-    var output = sync.render(uiName)(obj, rObj, scope);
-    output.appendTo(rObj);
-
-    output.find("[_lastScrollTop]").each(function(){
-      $(this).scrollTop($(this).attr("_lastScrollTop"));
-    });
-    output.find("[_lastScrollLeft]").each(function(){
-      $(this).scrollLeft($(this).attr("_lastScrollLeft"));
-    });
-  }
-
-  return rObj;
-}
-
-var _syncuid = 0;
-
-// javascript objects
-function _deepCompare(oldUi, newUi) {
-  var chillun = newUi.children();
-  var done = false;
-  for (var index in oldUi.children()) {
-    if (!done && newUi.children()[index] && newUi.children()[index] != oldUi.children()[index]) {
-      console.log(oldUi.children()[index]);
-      console.log(newUi.children()[index]);
-      $(oldUi.children()[index]).replaceWith(newUi.children()[index]);
-      done = true;
-    }
-  }
-}
-
-sync.updateApp = function(ref, obj){
-  if (obj.data) {
-    var output = sync.render(ref.attr("ui-name"))(obj, ref);
-    // compare output to the current element, replacing different parts
-    //_deepCompare(ref.children(), output);
-    ref.empty();
-    ref.append(output);
-    // preserve submenus
-    output.find("[_lastScrollTop]").each(function(){
-      $(this).scrollTop($(this).attr("_lastScrollTop"));
-    });
-    output.find("[_lastScrollLeft]").each(function(){
-      $(this).scrollLeft($(this).attr("_lastScrollLeft"));
-    });
-    if (ref.css("overflow-y") == "scroll") {
-      ref.scrollTop(ref.attr("_lastScrollTop"));
-    }
-    else {
-      output.scrollTop(ref.attr("_lastScrollTop"));
-    }
-
-    if (ref.css("overflow-y") == "scroll") {
-      ref.scrollLeft(ref.attr("_lastScrollLeft"));
-    }
-    else {
-      output.scrollLeft(ref.attr("_lastScrollLeft"));
-    }
-  }
-  return false;
-}
-
-sync.update = function(obj, newObj, keys) {
-  if (newObj) {
-    if (keys) {
-      for (var i in keys) {
-        obj.data[keys[i]] = newObj[keys[i]];
-      }
-    }
-    else {
-      obj.data = newObj;
-    }
-  }
-  if (game.config && game.config.data.offline && getCookie("offlineGame")) {
-    localStorage.setItem(getCookie("offlineGame"), JSON.stringify(game));
-  }
-  // re-renders all apps that are connected to it
-  if (obj["_apps"].length > 0) {
-    for (var index = obj["_apps"].length - 1; index >= 0; index--) {
-      var ref = $("#"+obj["_apps"][index]);
-      if (ref.length > 0) { // not empty
-        if (obj.data) {
-          var output = sync.render(ref.attr("ui-name"))(obj, ref);
-          // compare output to the current element, replacing different parts
-          //_deepCompare(ref.children(), output);
-          ref.empty();
-          ref.append(output);
-          // preserve submenus
-          output.find("[_lastScrollTop]").each(function(){
-            $(this).scrollTop($(this).attr("_lastScrollTop"));
-          });
-          output.find("[_lastScrollLeft]").each(function(){
-            $(this).scrollLeft($(this).attr("_lastScrollLeft"));
-          });
-          if (ref.css("overflow-y") == "scroll") {
-            ref.scrollTop(ref.attr("_lastScrollTop"));
-          }
-          else {
-            output.scrollTop(ref.attr("_lastScrollTop"));
-          }
-
-          if (ref.css("overflow-y") == "scroll") {
-            ref.scrollLeft(ref.attr("_lastScrollLeft"));
-          }
-          else {
-            output.scrollLeft(ref.attr("_lastScrollLeft"));
-          }
-        }
-      }
-      else {
-        // garbage collect apps that are no longer in existence
-        obj["_apps"].splice(index, 1);
-      }
-    }
-  }
-}
-
-sync.copy = function(obj) {
-  var recurseCopy;
-  return newObj;
-}
-
-sync.rebuildApp = function(targetApp) {
-  var found = false;
-  for (var id in _syncList) {
-    var obj = _syncList[id];
-    if (util.contains(obj._apps, targetApp)) {
-      obj.update();
-      found = true;
-    }
-  }
-}
-
-sync.replaceApps = function(data) {
-  var appList = $(".application");
-  for (var i=0; i<appList.length; i++) {
-    var app = appList[i];
-    if (util.contains(data.apps, $(app).attr("ui-name"))) {
-      // i don't add it to the object because the first time should track down
-      // the appropriate object for that app
-      var newApp = sync.newApp(data.newApp);
-      for (var j=0; j<app.attributes.length; j++) {
-        var attrib = app.attributes[j];
-        if (attrib.specified == true && attrib.name != "ui-name" && attrib.name != "id") {
-          if (attrib.name == "class") {
-            newApp.addClass(attrib.value);
-          }
-          else if (attrib.name == "style" && attrib.value){
-            var split = attrib.value.split(";");
-            for (var key in split) {
-              var subSplit = split[key].split(":");
-              if (subSplit) {
-                newApp.css(subSplit[0], subSplit[1]);
-              }
-            }
-          }
-          else {
-            newApp.attr(attrib.name, attrib.value);
-          }
-        }
-      }
-      newApp.attr("_lastApp", $(app).attr("ui-name"));
-      var parent = $(app).parent();
-      $(app).remove();
-      parent.append(newApp);
-      newApp.append(sync.render(newApp.attr("ui-name"))(null, newApp, {}));
-      if (!data.all) { // only do one
-        break;
-      }
-    }
-  }
-}
-
-var _syncList = {};
-
-sync.dummyObj = function(id, defaultApps) {
-  var apps = [];
-  if (defaultApps) {
-    apps = defaultApps;
-  }
-  var rObj = {
-    _lid : id, // index
-    _apps : apps, // array of id's that represent applications
-    listen : [],
-  };
-  rObj.removeApp = function(newApp){
-    for (var index in rObj["_apps"]) {
-      if (rObj["_apps"][index] == newApp.attr("id")) {
-        rObj["_apps"].splice(index, 1);
-      }
-    }
-  }
-  rObj.addApp = function(newApp){
-    for (var index in rObj["_apps"]) {
-      if (rObj["_apps"][index] == newApp.attr("id")) {
-        return;
-      }
-    }
-    rObj["_apps"].push(newApp.attr("id"));
-    if (rObj.data != null) {
-      var output = sync.render(newApp.attr("ui-name"))(rObj, newApp);
-      // compare output to the current element, replacing different parts
-      //_deepCompare(ref.children(), output);
-      newApp.empty();
-      newApp.append(output);
-      newApp.find("[_lastScrollTop]").each(function(){
-        $(this).scrollTop($(this).attr("_lastScrollTop"));
-      });
-      newApp.find("[_lastScrollLeft]").each(function(){
-        $(this).scrollLeft($(this).attr("_lastScrollLeft"));
-      });
-    }
-  };
-  rObj.update = function(newObj, target){
-    for (var i in rObj.listen) {
-      if (rObj.listen[i] && !rObj.listen[i](rObj, newObj, target)) {
-        delete rObj.listen[i];
-      }
-    }
-    sync.update(rObj, newObj, target);
-  }; // locally updates
-  rObj.id = function(){return rObj["_lid"]};
-  rObj.sync = function(cmd, target) {
-    rObj.update();
-    if (connection.alive && !rObj.local) {
-      if (!rObj.data._t || ((rObj.data._t == "pk" || rObj.data._t == "a" || rObj.data._t == "b") || JSON.stringify(rObj.data).length < 100000)) { // 0.01 mb
-        runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
-        // don't respond to the client, they already have this message
-      }
-      else {
-        layout.page({title : "Your character sheet has become too large to store, please trim down some of your content in order to properly send this object " + rObj.id(), blur : 0.5});
-      }
-    }
-    else {
-      sendAlert({text : "CONNECTION IS BROKEN"});
-    }
-  };
-  return rObj;
-}
-
-sync.obj = function(id, defaultApps) {
-  var apps = [];
-  if (defaultApps) {
-    apps = defaultApps;
-  }
-  var rObj = {
-    _lid : id, // index
-    _uid : _syncuid, // internal use only
-    listen : {},
-    _apps : apps, // array of id's that represent applications
-  };
-  rObj.removeApp = function(newApp){
-    for (var index in rObj["_apps"]) {
-      if (rObj["_apps"][index] == newApp.attr("id")) {
-        rObj["_apps"].splice(index, 1);
-      }
-    }
-  }
-  rObj.addApp = function(newApp){
-    for (var index in rObj["_apps"]) {
-      if (rObj["_apps"][index] == newApp.attr("id")) {
-        return;
-      }
-    }
-    rObj["_apps"].push(newApp.attr("id"));
-    if (rObj.data != null) {
-      var output = sync.render(newApp.attr("ui-name"))(rObj, newApp);
-      // compare output to the current element, replacing different parts
-      //_deepCompare(ref.children(), output);
-      newApp.empty();
-      newApp.append(output);
-      newApp.find("[_lastScrollTop]").each(function(){
-        $(this).scrollTop($(this).attr("_lastScrollTop"));
-      });
-      newApp.find("[_lastScrollLeft]").each(function(){
-        $(this).scrollLeft($(this).attr("_lastScrollLeft"));
-      });
-    }
-  };
-  rObj.update = function(newObj, target){
-     // locally updates
-     for (var i in rObj.listen) {
-       if (rObj.listen[i] && !rObj.listen[i](rObj, newObj, target)) {
-         delete rObj.listen[i];
-       }
-     }
-     sync.update(rObj, newObj, target);
-  };
-  rObj.id = function(){return rObj["_lid"]};
-  rObj.sync = function(cmd, target) {
-    rObj.update();
-    if (connection.alive && !rObj.local) {
-      if (!rObj.data._t || ((rObj.data._t == "pk" || rObj.data._t == "a" || rObj.data._t == "b") || JSON.stringify(rObj.data).length < 100000)) { // 0.01 mb
-        runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
-        // don't respond to the client, they already have this message
-      }
-      else {
-        layout.page({title : "Your character sheet has become too large to store, please trim down some of your content in order to properly send this object", blur : 0.5});
-      }
-    }
-  };
-  _syncList[_syncuid] = rObj; // save the pointer
-  _syncuid = _syncuid + 1;
-  return rObj;
-} // generates an object that has a unique id associated with it
-
-function parseValue(value) {
-  if (value === "") {
-    return null;
-  }
-  if (value == null || isNaN(value)) {
-    return value;
-  }
-  return eval(value);
-}
-
-// values
-sync.newValue = function(name, value, min, max, modifiers) {
-  /* {
-    name : name,
-    current : parseValue(value),
-    min : parseValue(min),
-    max : parseValue(max),
-    modifiers : modifiers
-  };*/
-  // in order to save space, all these if statements
-  var rObj = {};
-  if (name != null) {
-    rObj.name = name;
-  }
-  if (value != null) {
-    rObj.current = parseValue(value);
-  }
-  if (min != null) {
-    rObj.min = parseValue(min);
-  }
-  if (max != null) {
-    rObj.max = parseValue(max);
-  }
-  if (modifiers != null) {
-    rObj.modifiers = modifiers;
-  }
-  return rObj;
-}
-
-sync.modifier = function(valueObj, key, newVal) {
-  if (!valueObj) {return;}
-  if (newVal != null) {
-    if (!valueObj.modifiers) {
-      valueObj.modifiers = {};
-    }
-    valueObj.modifiers[key] = parseValue(newVal);
-  }
-  else {
-    if (!valueObj.modifiers) {
-      return null;
-    }
-  }
-  return valueObj.modifiers[key];
-}
-
-sync.removeModifier = function(valueObj, key) {
-  if (!valueObj) {return;}
-  if (!valueObj.modifiers) {
-    return null;
-  }
-  delete valueObj.modifiers[key];
-  if (Object.keys(valueObj.modifiers).length < 1) {
-    delete valueObj.modifiers; // keep this concise for database purposes
-  }
-}
-
-sync.clamped = function(valueObj, inVal) {
-  if (!valueObj || inVal == null) {return;}
-  var result = inVal;
-  if (!isNaN(inVal)) {
-    if (valueObj.min != null) {
-      result = Math.max(result, valueObj.min);
-    }
-    if (valueObj.max != null) {
-      result = Math.min(result, valueObj.max);
-    }
-  }
-  return result;
-}
-
-sync.modified = function(valueObj, compareValue, clamped) {
-  if (!valueObj) {return;}
-  var total = 0;
-  if (compareValue == null) {
-    compareValue = valueObj.current;
-  }
-  if (isNaN(compareValue)) {
-    total = "";
-  }
-  else {
-    var ctx = sync.defaultContext();
-    for (var key in valueObj.modifiers) {
-      if (valueObj.modifiers[key] != "none") {
-        total = total + sync.eval(valueObj.modifiers[key], ctx) || 0;
-      }
-    }
-  }
-  if (clamped) {
-    return sync.clamped(valueObj, Number(compareValue) + Number(total));
-  }
-  else {
-    return compareValue + total;
-  }
-}
-
-sync.val = function(valueObj, newVal) {
-  if (!valueObj) {return;}
-  if (!(valueObj instanceof Object)) {
-    return valueObj;
-  }
-  if (newVal != null) {
-    valueObj.current = sync.clamped(valueObj, parseValue(newVal));
-  }
-  else {
-    if (valueObj.current == null || isNaN(valueObj.current)) {
-      return valueObj.current;
-    }
-    return sync.clamped(valueObj, sync.modified(valueObj, Number(valueObj.current)));
-  }
-}
-
-sync.unModified = function(valueObj) {
-  if (!valueObj) {return;}
-  return sync.clamped(valueObj, Number(valueObj.current));
-}
-
-sync.rawVal = function(valueObj, newVal) {
-  if (!valueObj) {return;}
-  if (!(valueObj instanceof Object)) {
-    return valueObj;
-  }
-  if (newVal != null) {
-    valueObj.current = newVal;
-  }
-  else {
-    return valueObj.current;
-  }
-}
-
-
-// regular Expressions, define them once
-var diceAddRegex = /([0-9]*)[\s]*([+|-])[\s]*([-]*[0-9]*)/; // find addition
-var diceNumber = /\d+/;
-var diceRegex = /(\d*)d(\d+)([k|d]([l|h])?[\d+])?/i; // find a <x>d<y>
-var diceQuery = /([^\[]*)\[([^\[^\]]+)\]([\+|-].*)*/i; // how many times will it run
-var queryType = /([\d|\)|}])([B|R|W])([\d|\(|{])?/i;
-var clampRegex =  /\(([^(^)]*)\)([frc])*([_][\d]*)*([|][\d]*)*/i;
-var lookupMatch = /([RM])?@([\w|.]*)/i;
-var variableRegex = /([#|$])([\w\.]*)([ ])*(=[^;]*;)/i;
-
-sync.executeQuery = function(equation, targets, noRoll) {
-  var str = String(equation || "");
-  var match = str.match(diceQuery);
-  var returnEqs = {
-    str : equation,
-    pool : {},
-    loc : svd.location,
-    equations : [],
-  };
-  if (match) {
-    match[1] = String(sync.result(match[1], targets));
-    var query = match[1].match(queryType);
-    var rolls = 1;
-    var type;
-    var selector;
-    var compare;
-    if (query) {
-      rolls = sync.eval(match[1].substring(0, query.index+1), targets, noRoll) || 1;
-      type = query[2];
-      selector = sync.eval(query[3], targets, noRoll) || 1;
-    }
-    else {
-      rolls = sync.eval(match[1], targets, noRoll);
-    }
-    for (var i=0; i<rolls; i++) {
-      var val = sync.process(match[2], targets, noRoll);
-      if (type && type.toLowerCase() == "r") {
-        if (returnEqs.equations.length < selector) {
-          returnEqs.equations.push(val);
-        }
-      }
-      else {
-        returnEqs.equations.push(val);
-      }
-    }
-    if (type && type.toLowerCase() == "w") {
-      returnEqs.equations.sort(function(a,b){return a.v-b.v;});
-      var newEqs = [];
-      for (var j=returnEqs.equations.length-1; j>=selector; j--) {
-        newEqs.push(returnEqs.equations[j].v);
-        returnEqs.equations.splice(j, 1);
-      }
-      returnEqs.pool.discarded = newEqs;
-    }
-    else if (type && type.toLowerCase() == "b") {
-      returnEqs.equations.sort(function(a,b){return b.v-a.v;});
-      var newEqs = [];
-      for (var j=returnEqs.equations.length-1; j>=selector; j--) {
-        newEqs.push(returnEqs.equations[j].v);
-        returnEqs.equations.splice(j, 1);
-      }
-      returnEqs.pool.discarded = newEqs;
-    }
-    if (match[3]) {
-      var newEqs = sync.executeQuery(match[3].substring(1, match[3].length), targets, noRoll);
-      for (var i in newEqs.equations) {
-        returnEqs.equations.push(newEqs.equations[i]);
-      }
-    }
-  }
-  else {
-    returnEqs.equations = [sync.process(str, targets)];
-  }
-  var total = 0;
-  var rolled = {};
-  for (var index in returnEqs.equations) {
-    if (!returnEqs.equations[index].ctx) {
-      returnEqs.equations[index].ctx = {};
-    }
-    returnEqs.equations[index].ctx.total = sync.newValue(null, returnEqs.equations[index].v);
-    total += returnEqs.equations[index].v || 0;
-    if (returnEqs.equations[index].ctx.die) {
-      var diceData = game.templates.dice.pool[sync.rawVal(returnEqs.equations[index].ctx.die)];
-      rolled[sync.rawVal(returnEqs.equations[index].ctx.die)] = rolled[sync.rawVal(returnEqs.equations[index].ctx.die)] || 0;
-      rolled[sync.rawVal(returnEqs.equations[index].ctx.die)] += 1;
-      if (diceData && diceData.results) {
-        var valueData = diceData.results[returnEqs.equations[index].v];
-        if (noRoll && diceData.results[returnEqs.equations[index].e]) {
-          valueData = diceData.results[returnEqs.equations[index].e];
-          returnEqs.equations[index].v = returnEqs.equations[index].e;
-        }
-        for (var key in valueData) {
-          if (returnEqs.pool[key]) {
-            returnEqs.pool[key] += valueData[key];
-          }
-          else {
-            returnEqs.pool[key] = valueData[key];
-          }
-        }
-      }
-    }
-  }
-  if (returnEqs.equations && returnEqs.equations.length) {
-    returnEqs.pool["dice"] = returnEqs.equations.length;
-    returnEqs.pool["rolled"] = rolled;
-  }
-  returnEqs.pool["total"] = total;
-  return returnEqs;
-}
-
-var svd = {};
-sync.context = function(equation, targets, noRoll) {
-  var str = equation;
-  var context = {};
-  targets = targets || {};
-
-  var maxLoop = 1000;
-  var loop = 0;
-  var vMatch = variableRegex.exec(str);
-  // save localVaribles
-  var cmps = /([\/><\!\~\=])/; // important for conditional logic
-  while (vMatch) {
-    if (vMatch[2] && vMatch[4] && vMatch[4][0] == "=") {
-      var stack = [0];
-      for (var i=1; i<vMatch[4].length; i++) {
-        if (vMatch[4][i] == "=" && !((vMatch[4][i-1] || "").match(cmps) || (vMatch[4][i+1] || "").match(cmps))) {
-          stack.push(i);
-        }
-        else if (vMatch[4][i] == ";") {
-          stack.pop();
-          if (stack.length == 0) {
-            stack = i+1; // record the successful index
-            break;
-          }
-        }
-      }
-      if (!(stack instanceof Object)) {
-        var evalStr = vMatch[4].substring(1, stack-1);
-        // this is what should be evaluated
-        var res = evalStr;
-        if (vMatch[1] == "#") {
-          if (noRoll) {
-            res = evalStr;
-          }
-          else {
-            res = sync.eval(evalStr, targets);
-          }
-        }
-        if (sync.traverse(targets, vMatch[2]) instanceof Object) {
-          sync.rawVal(sync.traverse(targets, vMatch[2]), res);
-        }
-        else {
-          sync.traverse(targets, vMatch[2], sync.newValue(null, res));
-        }
-        sync.traverse(context, vMatch[2], sync.newValue(null, res));
-        vMatch[0] = (vMatch[1] || "") +(vMatch[2] || "") + (vMatch[3] || "") + vMatch[4].substring(0, stack);
-      }
-    }
-    str = str.replace(vMatch[0], "");
-    vMatch = variableRegex.exec(str);
-    loop++;
-    if (loop > maxLoop) {
-      sendAlert({text : "Error Processing Equation"});
-      console.log(equation);
-      return "0";
-    }
-  }
-
-  var tmatch = str.match(tableMatch);
-  if (calcAPI["table"] || calcAPI["constant"]) {
-    while (tmatch) {
-      var cmd = "table";
-      var trav = tmatch[1];
-      var fn = tmatch[2];
-      var val = "";
-      var parenths = [];
-      var args = [fn];
-      if (tmatch.index + tmatch[0].length < str.length) {
-        if (str[tmatch.index + tmatch[0].length] == "(") {
-          parenths.push(tmatch.index + tmatch[0].length);
-          var lastIndex = parenths[0];
-          for (var i=parenths[0]+1;i<str.length;i++) {
-            if (str[i] == "(") {
-              parenths.push(i);
-            }
-            else if (str[i] == ")") {
-              parenths.splice(parenths.length-1,1);
-            }
-            lastIndex = i;
-            if (parenths.length == 0) {
-              var splitList = str.substring(tmatch.index+tmatch[0].length+1, lastIndex).split(",");
-              for (var i=0; i<splitList.length; i++) {
-                args.push(splitList[i]);
-              }
-              tmatch[0] = tmatch[0] + str.substring(tmatch.index+tmatch[0].length, lastIndex+1);
-              break;
-            }
-          }
-        }
-        else {
-          cmd = "constant";
-        }
-      }
-      else {
-        cmd = "constant";
-      }
-      val = calcAPI[cmd](args, targets);
-      if (val instanceof Object) {
-        val = JSON.stringify(val);
-      }
-      str = str.replace(tmatch[0], val);
-      tmatch = str.match(tableMatch);
-      loop++;
-      if (loop > maxLoop) {
-        sendAlert({text : "Error Processing Equation"});
-        console.log(equation);
-        return "0";
-      }
-    }
-  }
-
-  if (!context.die) {
-    if (game.templates && game.templates.dice && game.templates.dice.pool[str]) {
-      context.die = sync.newValue(null, str);
-      if (str != game.templates.dice.pool[str].value) {
-        str = game.templates.dice.pool[str].value;
-      }
-    }
-    else {
-      var d = diceRegex.exec(equation);
-      if (d) {
-        if (!d[3]) {
-          context.die = d[0];
-        }
-        else {
-          context.die = "d"+d[2];
-        }
-      }
-    }
-  }
-  return {context : context, str : str};
-}
-
-sync.process = function(equation, targets, noRoll) {
-  var returnObj = {};
-
-  var context = sync.context(equation, targets);
-  returnObj.ctx = duplicate(context.context);
-  merge(context.context, targets);
-  returnObj.e = context.str;
-  if (!noRoll) {
-    returnObj.r = sync.reduce(context.str, context.context);
-    returnObj.v = sync.eval(returnObj.r, context.context);
-  }
-  return returnObj;
-}
-
-sync.keySearch = function(key, targets) {
-  if (targets.eval) {
-    for (var refKey in targets.eval) {
-      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
-        return targets.eval[refKey];
-      }
-    }
-  }
-  if (targets[key] && !Array.isArray(targets[key])) {
-    return targets[key];
-  }
-  if (isNaN(key)) {
-    for (var refKey in targets) {
-      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
-        return targets[refKey];
-      }
-    }
-  }
-  for (var cmKey in targets) {
-    if (cmKey[0] != "_") {
-      if (!Array.isArray(targets[cmKey]) && targets[cmKey] instanceof Object) {
-        if (targets[cmKey][key]) {
-          return targets[cmKey][key];
-        }
-        else {
-          var res = sync.keySearch(key, targets[cmKey]);
-          if (res) {
-            return res;
-          }
-        }
-      }
-    }
-  }
-}
-
-sync.reduce = function(equation, targets, noRoll, fillOnce) {
-  var str = String(equation);
-
-  // insurance
-  var maxLoop = 1000;
-  var loop = 0;
-
-  var fmatch = str.match(fnMatch);
-  while (fmatch) {
-    var trav = fmatch[1];
-    var fn = fmatch[2];
-    var val = "";
-    if (calcAPI[fn]) {
-      var parenths = [];
-      var args = [];
-      if (fmatch.index + fmatch[0].length < str.length && str[fmatch.index + fmatch[0].length] == "(") {
-        parenths.push(fmatch.index + fmatch[0].length);
-        var lastIndex = parenths[0];
-        for (var i=parenths[0]+1;i<str.length;i++) {
-          if (str[i] == "(") {
-            parenths.push(i);
-          }
-          else if (str[i] == ")") {
-            parenths.splice(parenths.length-1,1);
-          }
-          lastIndex = i;
-          if (parenths.length == 0) {
-            var splitList = str.substring(fmatch.index+fmatch[0].length+1, lastIndex).split(",");
-            for (var i=0; i<splitList.length; i++) {
-              args.push(splitList[i]);
-            }
-            fmatch[0] = fmatch[0] + str.substring(fmatch.index+fmatch[0].length, lastIndex+1);
-            break;
-          }
-        }
-      }
-      val = calcAPI[fn](args, targets);
-      if (val instanceof Object) {
-        val = JSON.stringify(val);
-      }
-    }
-    str = str.replace(fmatch[0], val);
-    fmatch = str.match(fnMatch);
-    loop++;
-    if (loop > maxLoop) {
-      sendAlert({text : "Error Processing Equation"});
-      console.log(equation);
-      return "0";
-    }
-  }
-
-  var tmatch = str.match(tableMatch);
-  if (calcAPI["table"] || calcAPI["constant"]) {
-    while (tmatch) {
-      var cmd = "table";
-      var trav = tmatch[1];
-      var fn = tmatch[2];
-      var val = "";
-      var parenths = [];
-      var args = [fn];
-      if (tmatch.index + tmatch[0].length < str.length) {
-        if (str[tmatch.index + tmatch[0].length] == "(") {
-          parenths.push(tmatch.index + tmatch[0].length);
-          var lastIndex = parenths[0];
-          for (var i=parenths[0]+1;i<str.length;i++) {
-            if (str[i] == "(") {
-              parenths.push(i);
-            }
-            else if (str[i] == ")") {
-              parenths.splice(parenths.length-1,1);
-            }
-            lastIndex = i;
-            if (parenths.length == 0) {
-              var splitList = str.substring(tmatch.index+tmatch[0].length+1, lastIndex).split(",");
-              for (var i=0; i<splitList.length; i++) {
-                args.push(splitList[i]);
-              }
-              tmatch[0] = tmatch[0] + str.substring(tmatch.index+tmatch[0].length, lastIndex+1);
-              break;
-            }
-          }
-        }
-        else {
-          cmd = "constant";
-        }
-      }
-      else {
-        cmd = "constant";
-      }
-      val = calcAPI[cmd](args, targets);
-      if (val instanceof Object) {
-        val = JSON.stringify(val);
-      }
-      str = str.replace(tmatch[0], val);
-      tmatch = str.match(tableMatch);
-      loop++;
-      if (loop > maxLoop) {
-        sendAlert({text : "Error Processing Equation"});
-        console.log(equation);
-        return "0";
-      }
-    }
-  }
-
-  var varMatch = str.match(lookupMatch);
-  while (varMatch) {
-    // search the targets for a value
-    // typically {game : {}, me : {}, local : {}, c : {}, i : {}}
-    // recursively search for the key
-    var val;
-    if (varMatch[2].match("\\.")) {
-      val = sync.traverse(targets, varMatch[2]);
-    }
-    else {
-      // look for it myself
-      val = sync.keySearch(varMatch[2], targets);
-    }
-    if (val != null && val !== false) {
-      if (val instanceof Object) {
-        if (varMatch[1] == "R") {
-          val = sync.rawVal(val);
-        }
-        else if (varMatch[1] == "M") {
-          val = sync.modified(val, 0);
-        }
-        else {
-          val = sync.val(val);
-        }
-      }
-    }
-    if (val) {
-      str = str.replace(varMatch[0], val);
-    }
-    else {
-      str = str.replace(varMatch[0], "0");
-    }
-    varMatch = str.match(lookupMatch);
-    loop++;
-    if (loop > maxLoop) {
-      sendAlert({text : "Error Processing Equation"});
-      console.log(equation);
-      return "0";
-    }
-  }
-  if (!fillOnce) {
-    var tmatch = str.match(tableMatch);
-    if (calcAPI["table"] || calcAPI["constant"]) {
-      while (tmatch) {
-        var cmd = "table";
-        var trav = tmatch[1];
-        var fn = tmatch[2];
-        var val = "";
-        var parenths = [];
-        var args = [fn];
-        if (tmatch.index + tmatch[0].length < str.length) {
-          if (str[tmatch.index + tmatch[0].length] == "(") {
-            parenths.push(tmatch.index + tmatch[0].length);
-            var lastIndex = parenths[0];
-            for (var i=parenths[0]+1;i<str.length;i++) {
-              if (str[i] == "(") {
-                parenths.push(i);
-              }
-              else if (str[i] == ")") {
-                parenths.splice(parenths.length-1,1);
-              }
-              lastIndex = i;
-              if (parenths.length == 0) {
-                var splitList = str.substring(tmatch.index+tmatch[0].length+1, lastIndex).split(",");
-                for (var i=0; i<splitList.length; i++) {
-                  args.push(splitList[i]);
-                }
-                tmatch[0] = tmatch[0] + str.substring(tmatch.index+tmatch[0].length, lastIndex+1);
-                break;
-              }
-            }
-          }
-          else {
-            cmd = "constant";
-          }
-        }
-        else {
-          cmd = "constant";
-        }
-        val = calcAPI[cmd](args, targets);
-        if (val instanceof Object) {
-          val = JSON.stringify(val);
-        }
-        str = str.replace(tmatch[0], val);
-        tmatch = str.match(tableMatch);
-        loop++;
-        if (loop > maxLoop) {
-          sendAlert({text : "Error Processing Equation"});
-          console.log(equation);
-          return "0";
-        }
-      }
-    }
-  }
-
-  if (!noRoll) {
-    var diceMatch = diceRegex.exec(str);
-    while (diceMatch) {
-      var rep = sync.evalDice(diceMatch[0]);
-      if (str.match(diceMatch[0]+"]")) {
-        str = str.replace(diceMatch[0]+"]", diceMatch[0]);
-      }
-      str = str.replace(diceMatch[0], rep);
-
-      diceMatch = diceRegex.exec(str);
-    }
-  }
-
-  str = replaceAll(str, "--", "+");
-  str = replaceAll(str, "+-", "-");
-  str = replaceAll(str, "-+", "+");
-  str = replaceAll(str, "++", "+");
-
-  return str || "0";
-}
-
-var fnMatch = /(@):([\w]*)/i
-
-var tableMatch = /(#):([\w]*)/i
-var condMatch = /(\?):([\w]*)/i
-
-var calcAPI = {
-  sign : function(args, targets){
-    var val = (Number(sync.eval(args[0], targets))>=0)?("+"+Number(sync.eval(args[0], targets))):(Number(sync.eval(args[0], targets)));
-    return "'"+val+"'";
-  },
-  int : function(args, targets){
-    return parseInt(sync.eval(args[0], targets));
-  },
-  num : function(args, targets){
-    return parseFloat(sync.eval(args[0], targets));
-  },
-  str : function(args, targets) {
-    return String(args[0]);
-  },
-  raw : function(args, targets) {
-    return String(sync.reduce(args[0], targets, true, true));
-  },
-  gm : function(args, targets){
-    if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-      return "1";
-    }
-    return "0";
-  },
-  armor : function(args, targets) {
-    if (!targets || !game.templates || !game.templates.display) {return "0"}
-    if (targets["c"] && !args[1]) {
-      var val;
-      if (game.templates.display.sheet.rules && game.templates.display.sheet.rules.baseArmor) {
-        val = duplicate(sync.rawVal(game.templates.display.sheet.rules.baseArmor)) || 0;
-      }
-      else {
-        val = sync.eval(game.templates.constants.basearmor, targets) || 0;
-      }
-      if (val instanceof Object) {
-        for (var k in val) {
-          val[k] = sync.eval(val[k], targets);
-        }
-      }
-      else {
-        val = sync.eval(val, targets);
-      }
-      if (targets["c"].inventory) {
-        for (var index in targets["c"].inventory) {
-          var itemData = targets["c"].inventory[index];
-          itemData.tags = itemData.tags || {};
-          var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
-          if (itemData.tags["equipped"] && itemArmor) {
-            var armorBonus = 0;
-            for (var i in itemData.equip.armor.modifiers) {
-              armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
-            }
-            if (itemArmor instanceof Object) {
-              for (var k in val) {
-                if (itemArmor[k]) {
-                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
-                }
-                else {
-                  val[k] += armorBonus;
-                }
-              }
-            }
-            else {
-              val += sync.eval(itemArmor, targets) + armorBonus;
-            }
-          }
-        }
-      }
-      if (args[0]){
-        return val[args[0]];
-      }
-      else {
-        return val;
-      }
-    }
-    if (targets["i"]) {
-      var itemData = targets["i"];
-      var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
-      if (itemArmor) {
-        if (args[1]) {
-          itemArmor = 0;
-        }
-        var armorBonus = 0;
-        for (var i in itemData.equip.armor.modifiers) {
-          armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
-        }
-        if (itemArmor instanceof Object) {
-          for (var k in itemArmor) {
-            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
-          }
-        }
-        else {
-          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
-        }
-        return itemArmor;
-      }
-      return 0;
-    }
-    return 0;
-  },
-  weight : function(args, targets) {
-    if (!targets || !game.templates || !game.templates.display) {return "0"}
-    if (targets["c"]) {
-      var weight = 0;
-      for (var index in targets["c"].inventory) {
-        weight += (sync.rawVal(targets["c"].inventory[index].info.quantity) || 0) * (sync.rawVal(targets["c"].inventory[index].info.weight) || 0);
-      }
-      return weight;
-    }
-  },
-  equip : function(args, targets) {
-    if (!targets || !game.templates || !game.templates.display) {return "0"}
-    if (targets["c"]) {
-      if (game.templates.display.sheet.rules && game.templates.display.sheet.rules[args[0]]) {
-        val = duplicate(sync.rawVal(game.templates.display.sheet.rules[args[0]])) || 0;
-      }
-      else {
-        val = sync.eval(game.templates.constants[args[0]], targets) || 0;
-      }
-      if (val instanceof Object) {
-        for (var k in val) {
-          val[k] = sync.eval(val[k], targets);
-        }
-      }
-      else {
-        val = sync.eval(val, targets);
-      }
-      if (targets["c"].inventory) {
-        for (var index in targets["c"].inventory) {
-          var itemData = targets["c"].inventory[index];
-          itemData.tags = itemData.tags || {};
-          var itemArmor = duplicate(sync.rawVal(itemData.equip[args[1]])) || 0;
-          if (itemData.tags["equipped"] && itemArmor) {
-            var armorBonus = 0;
-            for (var i in itemData.equip[args[1]].modifiers) {
-              armorBonus += sync.eval(itemData.equip[args[1]].modifiers[i], targets);
-            }
-            if (itemArmor instanceof Object) {
-              for (var k in val) {
-                if (itemArmor[k]) {
-                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
-                }
-                else {
-                  val[k] += armorBonus;
-                }
-              }
-            }
-            else {
-              val += sync.eval(itemArmor, targets) + armorBonus;
-            }
-          }
-        }
-      }
-      return val;
-    }
-    if (targets["i"]) {
-      var itemData = targets["i"];
-      var itemArmor = duplicate(sync.rawVal(itemData.equip[args[0]])) || 0;
-      if (itemArmor) {
-        var armorBonus = 0;
-        for (var i in itemData.equip[args[0]].modifiers) {
-          armorBonus += sync.eval(itemData.equip[args[0]].modifiers[i], targets);
-        }
-        if (itemArmor instanceof Object) {
-          for (var k in itemArmor) {
-            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
-          }
-        }
-        else {
-          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
-        }
-        return itemArmor;
-      }
-      return 0;
-    }
-    return 0;
-  },
-  t : function(args, targets) {
-    if (!targets) {return "0"}
-    if (targets["c"] && !args[1]) {
-      if (targets["c"].tags[args[0]]) {
-        return 1;
-      }
-      else {
-        return 0;
-      }
-    }
-    if (targets[args[1]]) {
-      if (targets[args[1]].tags[args[0]]) {
-        return 1;
-      }
-      else {
-        return 0;
-      }
-    }
-  },
-  "!" : function(args, targets) {
-    var maxLoop = 1000;
-    var loop = 0;
-    var cachedTargets = duplicate(targets);
-    var expVal = sync.eval(args[0], cachedTargets);
-    cachedTargets.val = expVal;
-    var cond = sync.eval(args[1], cachedTargets);
-    while (cond) {
-      cachedTargets.val = sync.eval(args[0], cachedTargets);
-      expVal = expVal + cachedTargets.val;
-      cond = sync.eval(args[1], cachedTargets);
-      loop++;
-      if (loop > maxLoop) {
-        sendAlert({text : "Error Processing Equation"});
-        console.log(equation);
-        return "0";
-      }
-    }
-    return expVal;
-  },
-  total : function(args, targets) {
-    var maxLoop = 1000;
-    var loop = 0;
-    var expVal = sync.eval(args[0], targets);
-    var cond = sync.eval(args[1], targets);
-    while (loop < cond) {
-      expVal = expVal + sync.eval(args[0], targets);
-      cond = sync.eval(args[1], targets);
-      loop++;
-      if (loop > maxLoop) {
-        sendAlert({text : "Error Processing Equation"});
-        console.log(equation);
-        return "0";
-      }
-    }
-    return expVal;
-  },
-  /*roll : function(args, targets) {
-    setTimeout(function(){
-      util.processEvent(args[0]);
-    }, 100);
-  },
-  chat : function(args, targets) {
-    setTimeout(function(){
-      util.chatEvent(args[0], sync.eval(args[1] || "@me.name", targets));
-    }, 100);
-  },*/
-  rand : function(args, targets) {
-    if (Number(args[0]) >= Math.random()) {
-      return 1;
-    }
-    return 0;
-  },
-  table : function(args, targets) {
-    var maxLoop = 1000;
-    var loop = 0;
-    var expVal = sync.eval(args[0], targets);
-    var cond = sync.eval(args[1], targets);
-
-    if (game.templates.tables[expVal]) {
-      if (game.templates.tables[expVal][cond]) {
-        return sync.eval(game.templates.tables[expVal][cond], targets);
-      }
-      else {
-        var reg = /(\d*)-(\d*)/i;
-        var keys = Object.keys(game.templates.tables[expVal]);
-        for (var i in keys) {
-          var val = keys[i];
-          var match = val.match(reg);
-          if (match) {
-            if (match[1] <= cond && cond <= match[2]) {
-              return sync.eval(game.templates.tables[expVal][val], targets);
-            }
-            loop++;
-            if (loop > maxLoop) {
-              sendAlert({text : "Error Processing Equation"});
-              console.log(equation);
-              return "0";
-            }
-          }
-        }
-      }
-    }
-    return "0";
-  },
-  constant : function(args, targets) {
-    var key = sync.eval(args[0], targets);
-    if (game.templates.constants && (game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()])) {
-      return sync.eval(game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()], targets);
-    }
-    return "0";
-  },
-  empty : function(args, targets) {
-    var key = sync.eval(args[0], targets);
-    if (key instanceof Object) {
-      return Object.keys(key).length;
-    }
-    return "0";
-  },
-};
-
-sync.result = function(equation, targets, noRoll, fillOnce) {
-  var str = sync.reduce(String(equation), targets, noRoll, fillOnce);
-  str = replaceAll(str, "<?<", "(");
-  str = replaceAll(str, ">?>", ")");
-  var maxLoop = 1000;
-  var loop = 0;
-
-  var match = str.match(clampRegex);
-  while (match) {
-    if (match[2] || match[3] || match[4] || match[5]) {
-      var res = match[1];
-      if (match[2] == "c") {
-        res = Math.ceil(sync.eval(res, targets));
-      }
-      else if (match[2] == "f") {
-        res = Math.floor(sync.eval(res, targets));
-      }
-      else if (match[2] == "r") {
-        res = Math.round(sync.eval(res, targets));
-      }
-      if (match[3] != null) {
-        res = Math.max(sync.eval(res, targets), Number(match[3].replace("_", "")));
-      }
-      if (match[4] != null) {
-        res = Math.min(sync.eval(res, targets), Number(match[4].replace("|", "")));
-      }
-      if (match[5] != null) {
-        res = Math.pow(sync.eval(res, targets), Number(match[5].replace("^", "")));
-      }
-      str = str.replace(match[0], (res || 0));
-    }
-    else {
-      // skip over this one
-      str = str.replace(match[0], "<?<"+match[1]+">?>");
-    }
-    match = str.match(clampRegex);
-    loop++;
-    if (loop > maxLoop) {
-      sendAlert({text : "Error Processing Equation"});
-      console.log(equation);
-      return "0";
-    }
-  }
-  str = replaceAll(str, "<?<", "(");
-  str = replaceAll(str, ">?>", ")");
-  str = replaceAll(str, "--", "+");
-  str = replaceAll(str, "+-", "-");
-  str = replaceAll(str, "-+", "+");
-  str = replaceAll(str, "++", "+");
-
-
-  return str || "0";
-}
-
-sync.eval = function(equation, targets) {
-  var res = sync.result(equation, targets);
-  if (equation != null && String(equation).length > 400) {
-    sendAlert({text : "Macro is too large"});
-    console.log(equation);
-    return 0;
-  }
-  try {
-    if (res[0] = "{" && res[res.length-1] == "}") {
-      return JSON.parse(res);
-    }
-    else {
-      var evl = eval(res);
-      if (evl instanceof Function) {
-        return res;
-      }
-      else {
-        return evl;
-      }
-    }
-  }
-  catch(err) {
-    return res;
-  }
-}
-
-sync.evalDice = function(term) {
-  var dice = term.match(diceRegex);
-  if (isNaN(term) && dice) {
-    var res;
-    if (dice) {
-      var values = [];
-      for (var i=0; i<(dice[1] || 1); i++) {
-        values.push(Math.ceil(chance.natural({min: 1, max: dice[2]})));
-      }
-      if (dice[3]) {
-        //descending order;
-        values.sort(function(a,b){
-          if (b > a) {
-            return -1;
-          }
-          else if (a > b) {
-            return 1;
-          }
-          return 0;
-        });
-        if (dice[3][0] == "k") {
-          if (dice[4]) {
-            var amount = dice[3].substring(2, dice[3].length);
-            if (dice[4] == "h") {
-              values.splice(values.length-amount-1, values.length-amount);
-            }
-            else if (dice[4] == "l") {
-              values.splice(amount, values.length-amount);
-            }
-          }
-          else {
-            var amount = dice[3].substring(1, dice[3].length);
-            values.splice(amount, values.length-amount);
-          }
-        }
-        else if (dice[3][0] == "d") {
-          if (dice[4]) {
-            var amount = dice[3].substring(2, dice[3].length);
-            if (dice[4] == "h") {
-              values.splice(0, amount);
-            }
-            else if (dice[4] == "l") {
-              values.splice(values.length-amount-1, amount);
-            }
-          }
-          else {
-            var amount = dice[3].substring(1, dice[3].length);
-            values.splice(values.length-amount-1, amount);
-          }
-        }
-      }
-
-      res = "(" + values[0];
-      for (var j=1; j<values.length; j++) {
-        res = res + "+" + values[j]; // its a bit long winded, but we want to track everything
-      }
-      res = res + ")";
-      /*for (var i=0; i<(dice[1] || 1); i++) {
-        res = "(" + Math.ceil(chance.natural({min: 1, max: dice[2]}));
-        for (var j=0; j<dice[1]-1; j++) {
-          var val = Math.ceil(chance.natural({min: 1, max: dice[2]}));
-          res = res + "+" + val; // its a bit long winded, but we want to track everything
-        }
-        res = res + ")";
-      }*/
-    }
-    return res || 0;
-  }
-  else {
-    return term;
-  }
-}
-
-sync.defaultContext = function() {
-  var context = {
-    setting : duplicate(game.state.setting),
-    me : {
-      cName : getPlayerCharacterName(getCookie("UserID")),
-      char : getPlayerCharacter(getCookie("UserID")),
-      pName : getPlayerName(getCookie("UserID")),
-      name : "(`@me.cName`!=`0`)?(`@me.cName(@me.pName)`):(`@me.pName`)",
-    },
-    location : svd.location
-  };
-
-  if (game.templates && game.templates.security) {
-    for (var priv in game.templates.security.player) {
-      if (game.players.data[getCookie("UserID")] && game.players.data[getCookie("UserID")].rank == game.templates.security.player[priv]) {
-        context.me.rank = "'"+priv+"'";
-      }
-    }
-  }
-  return context;
-}
-
-sync.traverse = function(object, string, value) {
-  var split = String(string || "").split(".");
-  var target = object;
-  while (string && split.length) {
-    var key = split[0];
-    split.splice(0, 1);
-    if (target[key] && (value == null || split.length)) {
-      target = target[key];
-    }
-    else if (isNaN(key) && !target[key] && (value == null || split.length)) { // reading only
-      // case insensitive reading
-      var searching = false;
-      for (var refKey in target) {
-        if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
-          target = target[refKey];
-          searching = true;
-          break;
-        }
-      }
-      if (!searching) {
-        if (value != null && split.length) {
-          if (!target[key]) {
-            target[key] = {};
-          }
-          target = target[key];
-        }
-        else if (value != null) {
-          if (value === "") {
-            if (Array.isArray(target)) {
-              target.splice(key, 1);
-            }
-            else {
-              delete target[key];
-            }
-            return;
-          }
-          else {
-            target[key] = value;
-            target = target[key];
-          }
-        }
-        else {
-          return false;
-        }
-      }
-    }
-    else {
-      if (value != null && split.length) {
-        if (!target[key]) {
-          target[key] = {};
-        }
-        target = target[key];
-      }
-      else if (value != null) {
-        if (value === "") {
-          if (Array.isArray(target)) {
-            target.splice(key, 1);
-          }
-          else {
-            delete target[key];
-          }
-          return;
-        }
-        else {
-          target[key] = value;
-          target = target[key];
-        }
-      }
-      else {
-        return false;
-      }
-    }
-  }
-  return target;
 }
 
 var _alertCount = 0;
@@ -11364,6 +9841,1544 @@ function loadNotify(){
   //var content = $("<div>").load("/tabs/newlayout.html");
 
   //notify(content, {title : "New Layout!"});
+}
+
+// This library is meant to provide an easy way (only for me most likely)
+// to automatically update document elements with live data. React was too bulky
+// for me to learn so I wrote this
+var _appuid = 0;
+var _render = {};
+var sync = {};
+
+sync.render = function(uiName, renderFunc) {
+  if (uiName && renderFunc) {
+    _render[uiName] = renderFunc;
+  }
+  else {
+    return _render[uiName];
+  }
+}
+
+sync.newApp = function(uiName, obj, scope) {
+  var rObj = $("<div>");
+  rObj.attr('ui-name', uiName);
+  rObj.attr('id', 'app_'+_appuid);
+  rObj.addClass("application flexcolumn");
+
+  rObj.scroll(function() {
+    $(this).attr("_lastScrollTop", $(this).scrollTop());
+    $(this).attr("_lastScrollLeft", $(this).scrollLeft());
+  });
+  _appuid = _appuid + 1;
+
+  if (_render[uiName] && (obj || scope)) {
+    var output = sync.render(uiName)(obj, rObj, scope);
+    output.appendTo(rObj);
+
+    output.find("[_lastScrollTop]").each(function(){
+      $(this).scrollTop($(this).attr("_lastScrollTop"));
+    });
+    output.find("[_lastScrollLeft]").each(function(){
+      $(this).scrollLeft($(this).attr("_lastScrollLeft"));
+    });
+  }
+
+  return rObj;
+}
+
+var _syncuid = 0;
+
+// javascript objects
+function _deepCompare(oldUi, newUi) {
+  var chillun = newUi.children();
+  var done = false;
+  for (var index in oldUi.children()) {
+    if (!done && newUi.children()[index] && newUi.children()[index] != oldUi.children()[index]) {
+      console.log(oldUi.children()[index]);
+      console.log(newUi.children()[index]);
+      $(oldUi.children()[index]).replaceWith(newUi.children()[index]);
+      done = true;
+    }
+  }
+}
+
+sync.updateApp = function(ref, obj){
+  if (obj.data) {
+    var output = sync.render(ref.attr("ui-name"))(obj, ref);
+    // compare output to the current element, replacing different parts
+    //_deepCompare(ref.children(), output);
+    ref.empty();
+    ref.append(output);
+    // preserve submenus
+    output.find("[_lastScrollTop]").each(function(){
+      $(this).scrollTop($(this).attr("_lastScrollTop"));
+    });
+    output.find("[_lastScrollLeft]").each(function(){
+      $(this).scrollLeft($(this).attr("_lastScrollLeft"));
+    });
+    if (ref.css("overflow-y") == "scroll") {
+      ref.scrollTop(ref.attr("_lastScrollTop"));
+    }
+    else {
+      output.scrollTop(ref.attr("_lastScrollTop"));
+    }
+
+    if (ref.css("overflow-y") == "scroll") {
+      ref.scrollLeft(ref.attr("_lastScrollLeft"));
+    }
+    else {
+      output.scrollLeft(ref.attr("_lastScrollLeft"));
+    }
+  }
+  return false;
+}
+
+sync.update = function(obj, newObj, keys) {
+  if (newObj) {
+    if (keys) {
+      for (var i in keys) {
+        obj.data[keys[i]] = newObj[keys[i]];
+      }
+    }
+    else {
+      obj.data = newObj;
+    }
+  }
+  if (game.config && game.config.data.offline && getCookie("offlineGame")) {
+    localStorage.setItem(getCookie("offlineGame"), JSON.stringify(game));
+  }
+  // re-renders all apps that are connected to it
+  if (obj["_apps"].length > 0) {
+    for (var index = obj["_apps"].length - 1; index >= 0; index--) {
+      var ref = $("#"+obj["_apps"][index]);
+      if (ref.length > 0) { // not empty
+        if (obj.data) {
+          var output = sync.render(ref.attr("ui-name"))(obj, ref);
+          // compare output to the current element, replacing different parts
+          //_deepCompare(ref.children(), output);
+          ref.empty();
+          ref.append(output);
+          // preserve submenus
+          output.find("[_lastScrollTop]").each(function(){
+            $(this).scrollTop($(this).attr("_lastScrollTop"));
+          });
+          output.find("[_lastScrollLeft]").each(function(){
+            $(this).scrollLeft($(this).attr("_lastScrollLeft"));
+          });
+          if (ref.css("overflow-y") == "scroll") {
+            ref.scrollTop(ref.attr("_lastScrollTop"));
+          }
+          else {
+            output.scrollTop(ref.attr("_lastScrollTop"));
+          }
+
+          if (ref.css("overflow-y") == "scroll") {
+            ref.scrollLeft(ref.attr("_lastScrollLeft"));
+          }
+          else {
+            output.scrollLeft(ref.attr("_lastScrollLeft"));
+          }
+        }
+      }
+      else {
+        // garbage collect apps that are no longer in existence
+        obj["_apps"].splice(index, 1);
+      }
+    }
+  }
+}
+
+sync.copy = function(obj) {
+  var recurseCopy;
+  return newObj;
+}
+
+sync.rebuildApp = function(targetApp) {
+  var found = false;
+  for (var id in _syncList) {
+    var obj = _syncList[id];
+    if (util.contains(obj._apps, targetApp)) {
+      obj.update();
+      found = true;
+    }
+  }
+}
+
+sync.replaceApps = function(data) {
+  var appList = $(".application");
+  for (var i=0; i<appList.length; i++) {
+    var app = appList[i];
+    if (util.contains(data.apps, $(app).attr("ui-name"))) {
+      // i don't add it to the object because the first time should track down
+      // the appropriate object for that app
+      var newApp = sync.newApp(data.newApp);
+      for (var j=0; j<app.attributes.length; j++) {
+        var attrib = app.attributes[j];
+        if (attrib.specified == true && attrib.name != "ui-name" && attrib.name != "id") {
+          if (attrib.name == "class") {
+            newApp.addClass(attrib.value);
+          }
+          else if (attrib.name == "style" && attrib.value){
+            var split = attrib.value.split(";");
+            for (var key in split) {
+              var subSplit = split[key].split(":");
+              if (subSplit) {
+                newApp.css(subSplit[0], subSplit[1]);
+              }
+            }
+          }
+          else {
+            newApp.attr(attrib.name, attrib.value);
+          }
+        }
+      }
+      newApp.attr("_lastApp", $(app).attr("ui-name"));
+      var parent = $(app).parent();
+      $(app).remove();
+      parent.append(newApp);
+      newApp.append(sync.render(newApp.attr("ui-name"))(null, newApp, {}));
+      if (!data.all) { // only do one
+        break;
+      }
+    }
+  }
+}
+
+var _syncList = {};
+
+sync.dummyObj = function(id, defaultApps) {
+  var apps = [];
+  if (defaultApps) {
+    apps = defaultApps;
+  }
+  var rObj = {
+    _lid : id, // index
+    _apps : apps, // array of id's that represent applications
+    listen : [],
+  };
+  rObj.removeApp = function(newApp){
+    for (var index in rObj["_apps"]) {
+      if (rObj["_apps"][index] == newApp.attr("id")) {
+        rObj["_apps"].splice(index, 1);
+      }
+    }
+  }
+  rObj.addApp = function(newApp){
+    for (var index in rObj["_apps"]) {
+      if (rObj["_apps"][index] == newApp.attr("id")) {
+        return;
+      }
+    }
+    rObj["_apps"].push(newApp.attr("id"));
+    if (rObj.data != null) {
+      var output = sync.render(newApp.attr("ui-name"))(rObj, newApp);
+      // compare output to the current element, replacing different parts
+      //_deepCompare(ref.children(), output);
+      newApp.empty();
+      newApp.append(output);
+      newApp.find("[_lastScrollTop]").each(function(){
+        $(this).scrollTop($(this).attr("_lastScrollTop"));
+      });
+      newApp.find("[_lastScrollLeft]").each(function(){
+        $(this).scrollLeft($(this).attr("_lastScrollLeft"));
+      });
+    }
+  };
+  rObj.update = function(newObj, target){
+    for (var i in rObj.listen) {
+      if (rObj.listen[i] && !rObj.listen[i](rObj, newObj, target)) {
+        delete rObj.listen[i];
+      }
+    }
+    sync.update(rObj, newObj, target);
+  }; // locally updates
+  rObj.id = function(){return rObj["_lid"]};
+  rObj.sync = function(cmd, target) {
+    rObj.update();
+    if (connection.alive && !rObj.local) {
+      if (!rObj.data._t || ((rObj.data._t == "pk" || rObj.data._t == "a" || rObj.data._t == "b") || JSON.stringify(rObj.data).length < 100000)) { // 0.01 mb
+        runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
+        // don't respond to the client, they already have this message
+      }
+      else {
+        layout.page({title : "Your character sheet has become too large to store, please trim down some of your content in order to properly send this object " + rObj.id(), blur : 0.5});
+      }
+    }
+    else {
+      sendAlert({text : "CONNECTION IS BROKEN"});
+    }
+  };
+  return rObj;
+}
+
+sync.obj = function(id, defaultApps) {
+  var apps = [];
+  if (defaultApps) {
+    apps = defaultApps;
+  }
+  var rObj = {
+    _lid : id, // index
+    _uid : _syncuid, // internal use only
+    listen : {},
+    _apps : apps, // array of id's that represent applications
+  };
+  rObj.removeApp = function(newApp){
+    for (var index in rObj["_apps"]) {
+      if (rObj["_apps"][index] == newApp.attr("id")) {
+        rObj["_apps"].splice(index, 1);
+      }
+    }
+  }
+  rObj.addApp = function(newApp){
+    for (var index in rObj["_apps"]) {
+      if (rObj["_apps"][index] == newApp.attr("id")) {
+        return;
+      }
+    }
+    rObj["_apps"].push(newApp.attr("id"));
+    if (rObj.data != null) {
+      var output = sync.render(newApp.attr("ui-name"))(rObj, newApp);
+      // compare output to the current element, replacing different parts
+      //_deepCompare(ref.children(), output);
+      newApp.empty();
+      newApp.append(output);
+      newApp.find("[_lastScrollTop]").each(function(){
+        $(this).scrollTop($(this).attr("_lastScrollTop"));
+      });
+      newApp.find("[_lastScrollLeft]").each(function(){
+        $(this).scrollLeft($(this).attr("_lastScrollLeft"));
+      });
+    }
+  };
+  rObj.update = function(newObj, target){
+     // locally updates
+     for (var i in rObj.listen) {
+       if (rObj.listen[i] && !rObj.listen[i](rObj, newObj, target)) {
+         delete rObj.listen[i];
+       }
+     }
+     sync.update(rObj, newObj, target);
+  };
+  rObj.id = function(){return rObj["_lid"]};
+  rObj.sync = function(cmd, target) {
+    rObj.update();
+    if (connection.alive && !rObj.local) {
+      if (!rObj.data._t || ((rObj.data._t == "pk" || rObj.data._t == "a" || rObj.data._t == "b") || JSON.stringify(rObj.data).length < 100000)) { // 0.01 mb
+        runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
+        // don't respond to the client, they already have this message
+      }
+      else {
+        layout.page({title : "Your character sheet has become too large to store, please trim down some of your content in order to properly send this object", blur : 0.5});
+      }
+    }
+  };
+  _syncList[_syncuid] = rObj; // save the pointer
+  _syncuid = _syncuid + 1;
+  return rObj;
+} // generates an object that has a unique id associated with it
+
+function parseValue(value) {
+  if (value === "") {
+    return null;
+  }
+  if (value == null || isNaN(value)) {
+    return value;
+  }
+  return eval(value);
+}
+
+// values
+sync.newValue = function(name, value, min, max, modifiers) {
+  /* {
+    name : name,
+    current : parseValue(value),
+    min : parseValue(min),
+    max : parseValue(max),
+    modifiers : modifiers
+  };*/
+  // in order to save space, all these if statements
+  var rObj = {};
+  if (name != null) {
+    rObj.name = name;
+  }
+  if (value != null) {
+    rObj.current = parseValue(value);
+  }
+  if (min != null) {
+    rObj.min = parseValue(min);
+  }
+  if (max != null) {
+    rObj.max = parseValue(max);
+  }
+  if (modifiers != null) {
+    rObj.modifiers = modifiers;
+  }
+  return rObj;
+}
+
+sync.modifier = function(valueObj, key, newVal) {
+  if (!valueObj) {return;}
+  if (newVal != null) {
+    if (!valueObj.modifiers) {
+      valueObj.modifiers = {};
+    }
+    valueObj.modifiers[key] = parseValue(newVal);
+  }
+  else {
+    if (!valueObj.modifiers) {
+      return null;
+    }
+  }
+  return valueObj.modifiers[key];
+}
+
+sync.removeModifier = function(valueObj, key) {
+  if (!valueObj) {return;}
+  if (!valueObj.modifiers) {
+    return null;
+  }
+  delete valueObj.modifiers[key];
+  if (Object.keys(valueObj.modifiers).length < 1) {
+    delete valueObj.modifiers; // keep this concise for database purposes
+  }
+}
+
+sync.clamped = function(valueObj, inVal) {
+  if (!valueObj || inVal == null) {return;}
+  var result = inVal;
+  if (!isNaN(inVal)) {
+    if (valueObj.min != null) {
+      result = Math.max(result, valueObj.min);
+    }
+    if (valueObj.max != null) {
+      result = Math.min(result, valueObj.max);
+    }
+  }
+  return result;
+}
+
+sync.modified = function(valueObj, compareValue, clamped) {
+  if (!valueObj) {return;}
+  var total = 0;
+  if (compareValue == null) {
+    compareValue = valueObj.current;
+  }
+  if (isNaN(compareValue)) {
+    total = "";
+  }
+  else {
+    var ctx = sync.defaultContext();
+    for (var key in valueObj.modifiers) {
+      if (valueObj.modifiers[key] != "none") {
+        total = total + sync.eval(valueObj.modifiers[key], ctx) || 0;
+      }
+    }
+  }
+  if (clamped) {
+    return sync.clamped(valueObj, Number(compareValue) + Number(total));
+  }
+  else {
+    return compareValue + total;
+  }
+}
+
+sync.val = function(valueObj, newVal) {
+  if (!valueObj) {return;}
+  if (!(valueObj instanceof Object)) {
+    return valueObj;
+  }
+  if (newVal != null) {
+    valueObj.current = sync.clamped(valueObj, parseValue(newVal));
+  }
+  else {
+    if (valueObj.current == null || isNaN(valueObj.current)) {
+      return valueObj.current;
+    }
+    return sync.clamped(valueObj, sync.modified(valueObj, Number(valueObj.current)));
+  }
+}
+
+sync.unModified = function(valueObj) {
+  if (!valueObj) {return;}
+  return sync.clamped(valueObj, Number(valueObj.current));
+}
+
+sync.rawVal = function(valueObj, newVal) {
+  if (!valueObj) {return;}
+  if (!(valueObj instanceof Object)) {
+    return valueObj;
+  }
+  if (newVal != null) {
+    valueObj.current = newVal;
+  }
+  else {
+    return valueObj.current;
+  }
+}
+
+
+// regular Expressions, define them once
+var diceAddRegex = /([0-9]*)[\s]*([+|-])[\s]*([-]*[0-9]*)/; // find addition
+var diceNumber = /\d+/;
+var diceRegex = /(\d*)d(\d+)([k|d]([l|h])?[\d+])?/i; // find a <x>d<y>
+var diceQuery = /([^\[]*)\[([^\[^\]]+)\]([\+|-].*)*/i; // how many times will it run
+var queryType = /([\d|\)|}])([B|R|W])([\d|\(|{])?/i;
+var clampRegex =  /\(([^(^)]*)\)([frc])*([_][\d]*)*([|][\d]*)*/i;
+var lookupMatch = /([RM])?@([\w|.]*)/i;
+var variableRegex = /([#|$])([\w\.]*)([ ])*(=[^;]*;)/i;
+
+sync.executeQuery = function(equation, targets, noRoll) {
+  var str = String(equation || "");
+  var match = str.match(diceQuery);
+  var returnEqs = {
+    str : equation,
+    pool : {},
+    loc : svd.location,
+    equations : [],
+  };
+  if (match) {
+    match[1] = String(sync.result(match[1], targets));
+    var query = match[1].match(queryType);
+    var rolls = 1;
+    var type;
+    var selector;
+    var compare;
+    if (query) {
+      rolls = sync.eval(match[1].substring(0, query.index+1), targets, noRoll) || 1;
+      type = query[2];
+      selector = sync.eval(query[3], targets, noRoll) || 1;
+    }
+    else {
+      rolls = sync.eval(match[1], targets, noRoll);
+    }
+    for (var i=0; i<rolls; i++) {
+      var val = sync.process(match[2], targets, noRoll);
+      if (type && type.toLowerCase() == "r") {
+        if (returnEqs.equations.length < selector) {
+          returnEqs.equations.push(val);
+        }
+      }
+      else {
+        returnEqs.equations.push(val);
+      }
+    }
+    if (type && type.toLowerCase() == "w") {
+      returnEqs.equations.sort(function(a,b){return a.v-b.v;});
+      var newEqs = [];
+      for (var j=returnEqs.equations.length-1; j>=selector; j--) {
+        newEqs.push(returnEqs.equations[j].v);
+        returnEqs.equations.splice(j, 1);
+      }
+      returnEqs.pool.discarded = newEqs;
+    }
+    else if (type && type.toLowerCase() == "b") {
+      returnEqs.equations.sort(function(a,b){return b.v-a.v;});
+      var newEqs = [];
+      for (var j=returnEqs.equations.length-1; j>=selector; j--) {
+        newEqs.push(returnEqs.equations[j].v);
+        returnEqs.equations.splice(j, 1);
+      }
+      returnEqs.pool.discarded = newEqs;
+    }
+    if (match[3]) {
+      var newEqs = sync.executeQuery(match[3].substring(1, match[3].length), targets, noRoll);
+      for (var i in newEqs.equations) {
+        returnEqs.equations.push(newEqs.equations[i]);
+      }
+    }
+  }
+  else {
+    returnEqs.equations = [sync.process(str, targets)];
+  }
+  var total = 0;
+  var rolled = {};
+  for (var index in returnEqs.equations) {
+    if (!returnEqs.equations[index].ctx) {
+      returnEqs.equations[index].ctx = {};
+    }
+    returnEqs.equations[index].ctx.total = sync.newValue(null, returnEqs.equations[index].v);
+    total += returnEqs.equations[index].v || 0;
+    if (returnEqs.equations[index].ctx.die) {
+      var diceData = game.templates.dice.pool[sync.rawVal(returnEqs.equations[index].ctx.die)];
+      rolled[sync.rawVal(returnEqs.equations[index].ctx.die)] = rolled[sync.rawVal(returnEqs.equations[index].ctx.die)] || 0;
+      rolled[sync.rawVal(returnEqs.equations[index].ctx.die)] += 1;
+      if (diceData && diceData.results) {
+        var valueData = diceData.results[returnEqs.equations[index].v];
+        if (noRoll && diceData.results[returnEqs.equations[index].e]) {
+          valueData = diceData.results[returnEqs.equations[index].e];
+          returnEqs.equations[index].v = returnEqs.equations[index].e;
+        }
+        for (var key in valueData) {
+          if (returnEqs.pool[key]) {
+            returnEqs.pool[key] += valueData[key];
+          }
+          else {
+            returnEqs.pool[key] = valueData[key];
+          }
+        }
+      }
+    }
+  }
+  if (returnEqs.equations && returnEqs.equations.length) {
+    returnEqs.pool["dice"] = returnEqs.equations.length;
+    returnEqs.pool["rolled"] = rolled;
+  }
+  returnEqs.pool["total"] = total;
+  return returnEqs;
+}
+
+var svd = {};
+sync.context = function(equation, targets, noRoll) {
+  var str = equation;
+  var context = {};
+  targets = targets || {};
+
+  var maxLoop = 1000;
+  var loop = 0;
+  var vMatch = variableRegex.exec(str);
+  // save localVaribles
+  var cmps = /([\/><\!\~\=])/; // important for conditional logic
+  while (vMatch) {
+    if (vMatch[2] && vMatch[4] && vMatch[4][0] == "=") {
+      var stack = [0];
+      for (var i=1; i<vMatch[4].length; i++) {
+        if (vMatch[4][i] == "=" && !((vMatch[4][i-1] || "").match(cmps) || (vMatch[4][i+1] || "").match(cmps))) {
+          stack.push(i);
+        }
+        else if (vMatch[4][i] == ";") {
+          stack.pop();
+          if (stack.length == 0) {
+            stack = i+1; // record the successful index
+            break;
+          }
+        }
+      }
+      if (!(stack instanceof Object)) {
+        var evalStr = vMatch[4].substring(1, stack-1);
+        // this is what should be evaluated
+        var res = evalStr;
+        if (vMatch[1] == "#") {
+          if (noRoll) {
+            res = evalStr;
+          }
+          else {
+            res = sync.eval(evalStr, targets);
+          }
+        }
+        if (sync.traverse(targets, vMatch[2]) instanceof Object) {
+          sync.rawVal(sync.traverse(targets, vMatch[2]), res);
+        }
+        else {
+          sync.traverse(targets, vMatch[2], sync.newValue(null, res));
+        }
+        sync.traverse(context, vMatch[2], sync.newValue(null, res));
+        vMatch[0] = (vMatch[1] || "") +(vMatch[2] || "") + (vMatch[3] || "") + vMatch[4].substring(0, stack);
+      }
+    }
+    str = str.replace(vMatch[0], "");
+    vMatch = variableRegex.exec(str);
+    loop++;
+    if (loop > maxLoop) {
+      sendAlert({text : "Error Processing Equation"});
+      console.log(equation);
+      return "0";
+    }
+  }
+
+  var tmatch = str.match(tableMatch);
+  if (calcAPI["table"] || calcAPI["constant"]) {
+    while (tmatch) {
+      var cmd = "table";
+      var trav = tmatch[1];
+      var fn = tmatch[2];
+      var val = "";
+      var parenths = [];
+      var args = [fn];
+      if (tmatch.index + tmatch[0].length < str.length) {
+        if (str[tmatch.index + tmatch[0].length] == "(") {
+          parenths.push(tmatch.index + tmatch[0].length);
+          var lastIndex = parenths[0];
+          for (var i=parenths[0]+1;i<str.length;i++) {
+            if (str[i] == "(") {
+              parenths.push(i);
+            }
+            else if (str[i] == ")") {
+              parenths.splice(parenths.length-1,1);
+            }
+            lastIndex = i;
+            if (parenths.length == 0) {
+              var splitList = str.substring(tmatch.index+tmatch[0].length+1, lastIndex).split(",");
+              for (var i=0; i<splitList.length; i++) {
+                args.push(splitList[i]);
+              }
+              tmatch[0] = tmatch[0] + str.substring(tmatch.index+tmatch[0].length, lastIndex+1);
+              break;
+            }
+          }
+        }
+        else {
+          cmd = "constant";
+        }
+      }
+      else {
+        cmd = "constant";
+      }
+      val = calcAPI[cmd](args, targets);
+      if (val instanceof Object) {
+        val = JSON.stringify(val);
+      }
+      str = str.replace(tmatch[0], val);
+      tmatch = str.match(tableMatch);
+      loop++;
+      if (loop > maxLoop) {
+        sendAlert({text : "Error Processing Equation"});
+        console.log(equation);
+        return "0";
+      }
+    }
+  }
+
+  if (!context.die) {
+    if (game.templates && game.templates.dice && game.templates.dice.pool[str]) {
+      context.die = sync.newValue(null, str);
+      if (str != game.templates.dice.pool[str].value) {
+        str = game.templates.dice.pool[str].value;
+      }
+    }
+    else {
+      var d = diceRegex.exec(equation);
+      if (d) {
+        if (!d[3]) {
+          context.die = d[0];
+        }
+        else {
+          context.die = "d"+d[2];
+        }
+      }
+    }
+  }
+  return {context : context, str : str};
+}
+
+sync.process = function(equation, targets, noRoll) {
+  var returnObj = {};
+
+  var context = sync.context(equation, targets);
+  returnObj.ctx = duplicate(context.context);
+  merge(context.context, targets);
+  returnObj.e = context.str;
+  if (!noRoll) {
+    returnObj.r = sync.reduce(context.str, context.context);
+    returnObj.v = sync.eval(returnObj.r, context.context);
+  }
+  return returnObj;
+}
+
+sync.keySearch = function(key, targets) {
+  if (targets.eval) {
+    for (var refKey in targets.eval) {
+      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
+        return targets.eval[refKey];
+      }
+    }
+  }
+  if (targets[key] && !Array.isArray(targets[key])) {
+    return targets[key];
+  }
+  if (isNaN(key)) {
+    for (var refKey in targets) {
+      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
+        return targets[refKey];
+      }
+    }
+  }
+  for (var cmKey in targets) {
+    if (cmKey[0] != "_") {
+      if (!Array.isArray(targets[cmKey]) && targets[cmKey] instanceof Object) {
+        if (targets[cmKey][key]) {
+          return targets[cmKey][key];
+        }
+        else {
+          var res = sync.keySearch(key, targets[cmKey]);
+          if (res) {
+            return res;
+          }
+        }
+      }
+    }
+  }
+}
+
+sync.reduce = function(equation, targets, noRoll, fillOnce) {
+  var str = String(equation);
+
+  // insurance
+  var maxLoop = 1000;
+  var loop = 0;
+
+  var fmatch = str.match(fnMatch);
+  while (fmatch) {
+    var trav = fmatch[1];
+    var fn = fmatch[2];
+    var val = "";
+    if (calcAPI[fn]) {
+      var parenths = [];
+      var args = [];
+      if (fmatch.index + fmatch[0].length < str.length && str[fmatch.index + fmatch[0].length] == "(") {
+        parenths.push(fmatch.index + fmatch[0].length);
+        var lastIndex = parenths[0];
+        for (var i=parenths[0]+1;i<str.length;i++) {
+          if (str[i] == "(") {
+            parenths.push(i);
+          }
+          else if (str[i] == ")") {
+            parenths.splice(parenths.length-1,1);
+          }
+          lastIndex = i;
+          if (parenths.length == 0) {
+            var splitList = str.substring(fmatch.index+fmatch[0].length+1, lastIndex).split(",");
+            for (var i=0; i<splitList.length; i++) {
+              args.push(splitList[i]);
+            }
+            fmatch[0] = fmatch[0] + str.substring(fmatch.index+fmatch[0].length, lastIndex+1);
+            break;
+          }
+        }
+      }
+      val = calcAPI[fn](args, targets);
+      if (val instanceof Object) {
+        val = JSON.stringify(val);
+      }
+    }
+    str = str.replace(fmatch[0], val);
+    fmatch = str.match(fnMatch);
+    loop++;
+    if (loop > maxLoop) {
+      sendAlert({text : "Error Processing Equation"});
+      console.log(equation);
+      return "0";
+    }
+  }
+
+  var tmatch = str.match(tableMatch);
+  if (calcAPI["table"] || calcAPI["constant"]) {
+    while (tmatch) {
+      var cmd = "table";
+      var trav = tmatch[1];
+      var fn = tmatch[2];
+      var val = "";
+      var parenths = [];
+      var args = [fn];
+      if (tmatch.index + tmatch[0].length < str.length) {
+        if (str[tmatch.index + tmatch[0].length] == "(") {
+          parenths.push(tmatch.index + tmatch[0].length);
+          var lastIndex = parenths[0];
+          for (var i=parenths[0]+1;i<str.length;i++) {
+            if (str[i] == "(") {
+              parenths.push(i);
+            }
+            else if (str[i] == ")") {
+              parenths.splice(parenths.length-1,1);
+            }
+            lastIndex = i;
+            if (parenths.length == 0) {
+              var splitList = str.substring(tmatch.index+tmatch[0].length+1, lastIndex).split(",");
+              for (var i=0; i<splitList.length; i++) {
+                args.push(splitList[i]);
+              }
+              tmatch[0] = tmatch[0] + str.substring(tmatch.index+tmatch[0].length, lastIndex+1);
+              break;
+            }
+          }
+        }
+        else {
+          cmd = "constant";
+        }
+      }
+      else {
+        cmd = "constant";
+      }
+      val = calcAPI[cmd](args, targets);
+      if (val instanceof Object) {
+        val = JSON.stringify(val);
+      }
+      str = str.replace(tmatch[0], val);
+      tmatch = str.match(tableMatch);
+      loop++;
+      if (loop > maxLoop) {
+        sendAlert({text : "Error Processing Equation"});
+        console.log(equation);
+        return "0";
+      }
+    }
+  }
+
+  var varMatch = str.match(lookupMatch);
+  while (varMatch) {
+    // search the targets for a value
+    // typically {game : {}, me : {}, local : {}, c : {}, i : {}}
+    // recursively search for the key
+    var val;
+    if (varMatch[2].match("\\.")) {
+      val = sync.traverse(targets, varMatch[2]);
+    }
+    else {
+      // look for it myself
+      val = sync.keySearch(varMatch[2], targets);
+    }
+    if (val != null && val !== false) {
+      if (val instanceof Object) {
+        if (varMatch[1] == "R") {
+          val = sync.rawVal(val);
+        }
+        else if (varMatch[1] == "M") {
+          val = sync.modified(val, 0);
+        }
+        else {
+          val = sync.val(val);
+        }
+      }
+    }
+    if (val) {
+      str = str.replace(varMatch[0], val);
+    }
+    else {
+      str = str.replace(varMatch[0], "0");
+    }
+    varMatch = str.match(lookupMatch);
+    loop++;
+    if (loop > maxLoop) {
+      sendAlert({text : "Error Processing Equation"});
+      console.log(equation);
+      return "0";
+    }
+  }
+  if (!fillOnce) {
+    var tmatch = str.match(tableMatch);
+    if (calcAPI["table"] || calcAPI["constant"]) {
+      while (tmatch) {
+        var cmd = "table";
+        var trav = tmatch[1];
+        var fn = tmatch[2];
+        var val = "";
+        var parenths = [];
+        var args = [fn];
+        if (tmatch.index + tmatch[0].length < str.length) {
+          if (str[tmatch.index + tmatch[0].length] == "(") {
+            parenths.push(tmatch.index + tmatch[0].length);
+            var lastIndex = parenths[0];
+            for (var i=parenths[0]+1;i<str.length;i++) {
+              if (str[i] == "(") {
+                parenths.push(i);
+              }
+              else if (str[i] == ")") {
+                parenths.splice(parenths.length-1,1);
+              }
+              lastIndex = i;
+              if (parenths.length == 0) {
+                var splitList = str.substring(tmatch.index+tmatch[0].length+1, lastIndex).split(",");
+                for (var i=0; i<splitList.length; i++) {
+                  args.push(splitList[i]);
+                }
+                tmatch[0] = tmatch[0] + str.substring(tmatch.index+tmatch[0].length, lastIndex+1);
+                break;
+              }
+            }
+          }
+          else {
+            cmd = "constant";
+          }
+        }
+        else {
+          cmd = "constant";
+        }
+        val = calcAPI[cmd](args, targets);
+        if (val instanceof Object) {
+          val = JSON.stringify(val);
+        }
+        str = str.replace(tmatch[0], val);
+        tmatch = str.match(tableMatch);
+        loop++;
+        if (loop > maxLoop) {
+          sendAlert({text : "Error Processing Equation"});
+          console.log(equation);
+          return "0";
+        }
+      }
+    }
+  }
+
+  if (!noRoll) {
+    var diceMatch = diceRegex.exec(str);
+    while (diceMatch) {
+      var rep = sync.evalDice(diceMatch[0]);
+      if (str.match(diceMatch[0]+"]")) {
+        str = str.replace(diceMatch[0]+"]", diceMatch[0]);
+      }
+      str = str.replace(diceMatch[0], rep);
+
+      diceMatch = diceRegex.exec(str);
+    }
+  }
+
+  str = replaceAll(str, "--", "+");
+  str = replaceAll(str, "+-", "-");
+  str = replaceAll(str, "-+", "+");
+  str = replaceAll(str, "++", "+");
+
+  return str || "0";
+}
+
+var fnMatch = /(@):([\w]*)/i
+
+var tableMatch = /(#):([\w]*)/i
+var condMatch = /(\?):([\w]*)/i
+
+var calcAPI = {
+  sign : function(args, targets){
+    var val = (Number(sync.eval(args[0], targets))>=0)?("+"+Number(sync.eval(args[0], targets))):(Number(sync.eval(args[0], targets)));
+    return "'"+val+"'";
+  },
+  int : function(args, targets){
+    return parseInt(sync.eval(args[0], targets));
+  },
+  num : function(args, targets){
+    return parseFloat(sync.eval(args[0], targets));
+  },
+  str : function(args, targets) {
+    return String(args[0]);
+  },
+  raw : function(args, targets) {
+    return String(sync.reduce(args[0], targets, true, true));
+  },
+  gm : function(args, targets){
+    if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+      return "1";
+    }
+    return "0";
+  },
+  armor : function(args, targets) {
+    if (!targets || !game.templates || !game.templates.display) {return "0"}
+    if (targets["c"] && !args[1]) {
+      var val;
+      if (game.templates.display.sheet.rules && game.templates.display.sheet.rules.baseArmor) {
+        val = duplicate(sync.rawVal(game.templates.display.sheet.rules.baseArmor)) || 0;
+      }
+      else {
+        val = sync.eval(game.templates.constants.basearmor, targets) || 0;
+      }
+      if (val instanceof Object) {
+        for (var k in val) {
+          val[k] = sync.eval(val[k], targets);
+        }
+      }
+      else {
+        val = sync.eval(val, targets);
+      }
+      if (targets["c"].inventory) {
+        for (var index in targets["c"].inventory) {
+          var itemData = targets["c"].inventory[index];
+          itemData.tags = itemData.tags || {};
+          var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
+          if (itemData.tags["equipped"] && itemArmor) {
+            var armorBonus = 0;
+            for (var i in itemData.equip.armor.modifiers) {
+              armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
+            }
+            if (itemArmor instanceof Object) {
+              for (var k in val) {
+                if (itemArmor[k]) {
+                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
+                }
+                else {
+                  val[k] += armorBonus;
+                }
+              }
+            }
+            else {
+              val += sync.eval(itemArmor, targets) + armorBonus;
+            }
+          }
+        }
+      }
+      if (args[0]){
+        return val[args[0]];
+      }
+      else {
+        return val;
+      }
+    }
+    if (targets["i"]) {
+      var itemData = targets["i"];
+      var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
+      if (itemArmor) {
+        if (args[1]) {
+          itemArmor = 0;
+        }
+        var armorBonus = 0;
+        for (var i in itemData.equip.armor.modifiers) {
+          armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
+        }
+        if (itemArmor instanceof Object) {
+          for (var k in itemArmor) {
+            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
+          }
+        }
+        else {
+          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
+        }
+        return itemArmor;
+      }
+      return 0;
+    }
+    return 0;
+  },
+  weight : function(args, targets) {
+    if (!targets || !game.templates || !game.templates.display) {return "0"}
+    if (targets["c"]) {
+      var weight = 0;
+      for (var index in targets["c"].inventory) {
+        weight += (sync.rawVal(targets["c"].inventory[index].info.quantity) || 0) * (sync.rawVal(targets["c"].inventory[index].info.weight) || 0);
+      }
+      return weight;
+    }
+  },
+  equip : function(args, targets) {
+    if (!targets || !game.templates || !game.templates.display) {return "0"}
+    if (targets["c"]) {
+      if (game.templates.display.sheet.rules && game.templates.display.sheet.rules[args[0]]) {
+        val = duplicate(sync.rawVal(game.templates.display.sheet.rules[args[0]])) || 0;
+      }
+      else {
+        val = sync.eval(game.templates.constants[args[0]], targets) || 0;
+      }
+      if (val instanceof Object) {
+        for (var k in val) {
+          val[k] = sync.eval(val[k], targets);
+        }
+      }
+      else {
+        val = sync.eval(val, targets);
+      }
+      if (targets["c"].inventory) {
+        for (var index in targets["c"].inventory) {
+          var itemData = targets["c"].inventory[index];
+          itemData.tags = itemData.tags || {};
+          var itemArmor = duplicate(sync.rawVal(itemData.equip[args[1]])) || 0;
+          if (itemData.tags["equipped"] && itemArmor) {
+            var armorBonus = 0;
+            for (var i in itemData.equip[args[1]].modifiers) {
+              armorBonus += sync.eval(itemData.equip[args[1]].modifiers[i], targets);
+            }
+            if (itemArmor instanceof Object) {
+              for (var k in val) {
+                if (itemArmor[k]) {
+                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
+                }
+                else {
+                  val[k] += armorBonus;
+                }
+              }
+            }
+            else {
+              val += sync.eval(itemArmor, targets) + armorBonus;
+            }
+          }
+        }
+      }
+      return val;
+    }
+    if (targets["i"]) {
+      var itemData = targets["i"];
+      var itemArmor = duplicate(sync.rawVal(itemData.equip[args[0]])) || 0;
+      if (itemArmor) {
+        var armorBonus = 0;
+        for (var i in itemData.equip[args[0]].modifiers) {
+          armorBonus += sync.eval(itemData.equip[args[0]].modifiers[i], targets);
+        }
+        if (itemArmor instanceof Object) {
+          for (var k in itemArmor) {
+            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
+          }
+        }
+        else {
+          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
+        }
+        return itemArmor;
+      }
+      return 0;
+    }
+    return 0;
+  },
+  t : function(args, targets) {
+    if (!targets) {return "0"}
+    if (targets["c"] && !args[1]) {
+      if (targets["c"].tags[args[0]]) {
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    }
+    if (targets[args[1]]) {
+      if (targets[args[1]].tags[args[0]]) {
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    }
+  },
+  "!" : function(args, targets) {
+    var maxLoop = 1000;
+    var loop = 0;
+    var cachedTargets = duplicate(targets);
+    var expVal = sync.eval(args[0], cachedTargets);
+    cachedTargets.val = expVal;
+    var cond = sync.eval(args[1], cachedTargets);
+    while (cond) {
+      cachedTargets.val = sync.eval(args[0], cachedTargets);
+      expVal = expVal + cachedTargets.val;
+      cond = sync.eval(args[1], cachedTargets);
+      loop++;
+      if (loop > maxLoop) {
+        sendAlert({text : "Error Processing Equation"});
+        console.log(equation);
+        return "0";
+      }
+    }
+    return expVal;
+  },
+  total : function(args, targets) {
+    var maxLoop = 1000;
+    var loop = 0;
+    var expVal = sync.eval(args[0], targets);
+    var cond = sync.eval(args[1], targets);
+    while (loop < cond) {
+      expVal = expVal + sync.eval(args[0], targets);
+      cond = sync.eval(args[1], targets);
+      loop++;
+      if (loop > maxLoop) {
+        sendAlert({text : "Error Processing Equation"});
+        console.log(equation);
+        return "0";
+      }
+    }
+    return expVal;
+  },
+  /*roll : function(args, targets) {
+    setTimeout(function(){
+      util.processEvent(args[0]);
+    }, 100);
+  },
+  chat : function(args, targets) {
+    setTimeout(function(){
+      util.chatEvent(args[0], sync.eval(args[1] || "@me.name", targets));
+    }, 100);
+  },*/
+  rand : function(args, targets) {
+    if (Number(args[0]) >= Math.random()) {
+      return 1;
+    }
+    return 0;
+  },
+  table : function(args, targets) {
+    var maxLoop = 1000;
+    var loop = 0;
+    var expVal = sync.eval(args[0], targets);
+    var cond = sync.eval(args[1], targets);
+
+    if (game.templates.tables[expVal]) {
+      if (game.templates.tables[expVal][cond]) {
+        return sync.eval(game.templates.tables[expVal][cond], targets);
+      }
+      else {
+        var reg = /(\d*)-(\d*)/i;
+        var keys = Object.keys(game.templates.tables[expVal]);
+        for (var i in keys) {
+          var val = keys[i];
+          var match = val.match(reg);
+          if (match) {
+            if (match[1] <= cond && cond <= match[2]) {
+              return sync.eval(game.templates.tables[expVal][val], targets);
+            }
+            loop++;
+            if (loop > maxLoop) {
+              sendAlert({text : "Error Processing Equation"});
+              console.log(equation);
+              return "0";
+            }
+          }
+        }
+      }
+    }
+    return "0";
+  },
+  constant : function(args, targets) {
+    var key = sync.eval(args[0], targets);
+    if (game.templates.constants && (game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()])) {
+      return sync.eval(game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()], targets);
+    }
+    return "0";
+  },
+  empty : function(args, targets) {
+    var key = sync.eval(args[0], targets);
+    if (key instanceof Object) {
+      return Object.keys(key).length;
+    }
+    return "0";
+  },
+};
+
+sync.result = function(equation, targets, noRoll, fillOnce) {
+  var str = sync.reduce(String(equation), targets, noRoll, fillOnce);
+  str = replaceAll(str, "<?<", "(");
+  str = replaceAll(str, ">?>", ")");
+  var maxLoop = 1000;
+  var loop = 0;
+
+  var match = str.match(clampRegex);
+  while (match) {
+    if (match[2] || match[3] || match[4] || match[5]) {
+      var res = match[1];
+      if (match[2] == "c") {
+        res = Math.ceil(sync.eval(res, targets));
+      }
+      else if (match[2] == "f") {
+        res = Math.floor(sync.eval(res, targets));
+      }
+      else if (match[2] == "r") {
+        res = Math.round(sync.eval(res, targets));
+      }
+      if (match[3] != null) {
+        res = Math.max(sync.eval(res, targets), Number(match[3].replace("_", "")));
+      }
+      if (match[4] != null) {
+        res = Math.min(sync.eval(res, targets), Number(match[4].replace("|", "")));
+      }
+      if (match[5] != null) {
+        res = Math.pow(sync.eval(res, targets), Number(match[5].replace("^", "")));
+      }
+      str = str.replace(match[0], (res || 0));
+    }
+    else {
+      // skip over this one
+      str = str.replace(match[0], "<?<"+match[1]+">?>");
+    }
+    match = str.match(clampRegex);
+    loop++;
+    if (loop > maxLoop) {
+      sendAlert({text : "Error Processing Equation"});
+      console.log(equation);
+      return "0";
+    }
+  }
+  str = replaceAll(str, "<?<", "(");
+  str = replaceAll(str, ">?>", ")");
+  str = replaceAll(str, "--", "+");
+  str = replaceAll(str, "+-", "-");
+  str = replaceAll(str, "-+", "+");
+  str = replaceAll(str, "++", "+");
+
+
+  return str || "0";
+}
+
+sync.eval = function(equation, targets) {
+  var res = sync.result(equation, targets);
+  if (equation != null && String(equation).length > 400) {
+    sendAlert({text : "Macro is too large"});
+    console.log(equation);
+    return 0;
+  }
+  try {
+    if (res[0] = "{" && res[res.length-1] == "}") {
+      return JSON.parse(res);
+    }
+    else {
+      var evl = eval(res);
+      if (evl instanceof Function) {
+        return res;
+      }
+      else {
+        return evl;
+      }
+    }
+  }
+  catch(err) {
+    return res;
+  }
+}
+
+sync.evalDice = function(term) {
+  var dice = term.match(diceRegex);
+  if (isNaN(term) && dice) {
+    var res;
+    if (dice) {
+      var values = [];
+      for (var i=0; i<(dice[1] || 1); i++) {
+        values.push(Math.ceil(chance.natural({min: 1, max: dice[2]})));
+      }
+      if (dice[3]) {
+        //descending order;
+        values.sort(function(a,b){
+          if (b > a) {
+            return -1;
+          }
+          else if (a > b) {
+            return 1;
+          }
+          return 0;
+        });
+        if (dice[3][0] == "k") {
+          if (dice[4]) {
+            var amount = dice[3].substring(2, dice[3].length);
+            if (dice[4] == "h") {
+              values.splice(values.length-amount-1, values.length-amount);
+            }
+            else if (dice[4] == "l") {
+              values.splice(amount, values.length-amount);
+            }
+          }
+          else {
+            var amount = dice[3].substring(1, dice[3].length);
+            values.splice(amount, values.length-amount);
+          }
+        }
+        else if (dice[3][0] == "d") {
+          if (dice[4]) {
+            var amount = dice[3].substring(2, dice[3].length);
+            if (dice[4] == "h") {
+              values.splice(0, amount);
+            }
+            else if (dice[4] == "l") {
+              values.splice(values.length-amount-1, amount);
+            }
+          }
+          else {
+            var amount = dice[3].substring(1, dice[3].length);
+            values.splice(values.length-amount-1, amount);
+          }
+        }
+      }
+
+      res = "(" + values[0];
+      for (var j=1; j<values.length; j++) {
+        res = res + "+" + values[j]; // its a bit long winded, but we want to track everything
+      }
+      res = res + ")";
+      /*for (var i=0; i<(dice[1] || 1); i++) {
+        res = "(" + Math.ceil(chance.natural({min: 1, max: dice[2]}));
+        for (var j=0; j<dice[1]-1; j++) {
+          var val = Math.ceil(chance.natural({min: 1, max: dice[2]}));
+          res = res + "+" + val; // its a bit long winded, but we want to track everything
+        }
+        res = res + ")";
+      }*/
+    }
+    return res || 0;
+  }
+  else {
+    return term;
+  }
+}
+
+sync.defaultContext = function() {
+  var context = {
+    setting : duplicate(game.state.setting),
+    me : {
+      cName : getPlayerCharacterName(getCookie("UserID")),
+      char : getPlayerCharacter(getCookie("UserID")),
+      pName : getPlayerName(getCookie("UserID")),
+      name : "(`@me.cName`!=`0`)?(`@me.cName(@me.pName)`):(`@me.pName`)",
+    },
+    location : svd.location
+  };
+
+  if (game.templates && game.templates.security) {
+    for (var priv in game.templates.security.player) {
+      if (game.players.data[getCookie("UserID")] && game.players.data[getCookie("UserID")].rank == game.templates.security.player[priv]) {
+        context.me.rank = "'"+priv+"'";
+      }
+    }
+  }
+  return context;
+}
+
+sync.traverse = function(object, string, value) {
+  var split = String(string || "").split(".");
+  var target = object;
+  while (string && split.length) {
+    var key = split[0];
+    split.splice(0, 1);
+    if (target[key] && (value == null || split.length)) {
+      target = target[key];
+    }
+    else if (isNaN(key) && !target[key] && (value == null || split.length)) { // reading only
+      // case insensitive reading
+      var searching = false;
+      for (var refKey in target) {
+        if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
+          target = target[refKey];
+          searching = true;
+          break;
+        }
+      }
+      if (!searching) {
+        if (value != null && split.length) {
+          if (!target[key]) {
+            target[key] = {};
+          }
+          target = target[key];
+        }
+        else if (value != null) {
+          if (value === "") {
+            if (Array.isArray(target)) {
+              target.splice(key, 1);
+            }
+            else {
+              delete target[key];
+            }
+            return;
+          }
+          else {
+            target[key] = value;
+            target = target[key];
+          }
+        }
+        else {
+          return false;
+        }
+      }
+    }
+    else {
+      if (value != null && split.length) {
+        if (!target[key]) {
+          target[key] = {};
+        }
+        target = target[key];
+      }
+      else if (value != null) {
+        if (value === "") {
+          if (Array.isArray(target)) {
+            target.splice(key, 1);
+          }
+          else {
+            delete target[key];
+          }
+          return;
+        }
+        else {
+          target[key] = value;
+          target = target[key];
+        }
+      }
+      else {
+        return false;
+      }
+    }
+  }
+  return target;
 }
 
 var audioChannels = {};
@@ -27304,1302 +27319,6 @@ comms.initialize = function(){
   }
 }
 
-function ogg_import(xml, override) {
-  searchObj = {};
-  searchObj["Skills"] = function(src, output) {
-
-    var skillKeys = {
-      "RANGHVY" : "raH",
-      "RANGLT" : "raL",
-      "SW" : "str",
-      "LTSABER" : "lig",
-      "PILOTSP" : "pls",
-      "PILOTPL" : "plp",
-    }
-
-    src = src.CharSkill;
-
-    for (var key in src) {
-      // each skill
-      var current = 0;
-      var mods = {};
-
-      if (src[key]["isCareer"] && src[key]["isCareer"]["#text"]) {
-        current = 1;
-      }
-      if (src[key]["Rank"]) {
-        for (var rIndex in src[key]["Rank"]) {
-          if (rIndex != "#text") {
-            if (rIndex == "PurchasedRanks") {
-              mods["rank"] = (mods["ranks"] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
-            }
-            else if (rIndex != "NonCareerRanks") {
-              mods[rIndex] = (mods[rIndex] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
-            }
-          }
-        }
-      }
-      if (src[key]["Key"] && src[key]["Key"]["#text"] != null) {
-        if (src[key]["Key"]["#text"].length > 2 && !skillKeys[src[key]["Key"]["#text"]]) {
-          var matched = false;
-          for (var i in output.skills) {
-            if (output.skills[i].name.toLowerCase().match(src[key]["Key"]["#text"].toLowerCase())) {
-              output.skills[i].current = current;
-              output.skills[i].modifiers = mods;
-              matched = true;
-              break;
-            }
-          }
-          if (!matched) {
-            output.skills[src[key]["Key"]["#text"]] = output.skills[src[key]["Key"]["#text"]] || sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
-          }
-        }
-        else {
-          output.skills[skillKeys[src[key]["Key"]["#text"]]].current = current;
-          output.skills[skillKeys[src[key]["Key"]["#text"]]].modifiers = mods;
-        }
-      }
-      else {
-        var skillVal = sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
-        output.skills[src[key]["Key"]["#text"]] = (skillVal);
-      }
-    }
-  };
-
-  searchObj["Career"] = function(src, output) {
-    var current;
-    var mods = {};
-    if (src["CareerKey"]) {
-      current = src["CareerKey"]["#text"];
-    }
-    if (src["StartingSpecKey"]) {
-      current = current + " - " + src["StartingSpecKey"]["#text"];
-    }
-    output.info.career.current = current;
-  };
-
-  searchObj["Experience"] = function(src, output) {
-    var current;
-    var mods = {};
-    for (var key in src["ExperienceRanks"]) {
-      // each additon
-      if (src["ExperienceRanks"][key]) {
-        mods[key] = parseInt(src["ExperienceRanks"][key]["#text"] || 0);
-      }
-    }
-    output.counters.exp.modifiers = mods;
-    for (var key in src["UsedExperience"]) {
-      // each additon
-      if (src["UsedExperience"][key]) {
-        current = (current || 0) + parseInt(src["UsedExperience"][key]["#text"] || 0);
-      }
-    }
-    output.counters.exp.current = current;
-  };
-
-  searchObj["Characteristics"] = function(src, output) {
-    for (var key in src["CharCharacteristic"]) {
-      var statData = src["CharCharacteristic"][key];
-      if (statData) {
-        var stat = statData["Key"]["#text"].charAt(0) + statData["Key"]["#text"].substring(1,statData["Key"]["#text"].length).toLowerCase();
-
-        var current = 0;
-        var mods = {};
-        var rank = statData["Rank"];
-        if (!output.stats[stat]) {
-          for (var statIndex in output.stats) {
-            if (output.stats[statIndex].name == statData["Name"]["#text"]) {
-            stat = statIndex;
-              break;
-            }
-          }
-        }
-        for (var rIndex in rank) {
-          if (rank[rIndex] && rank[rIndex]["#text"]) {
-            if (!current) {
-              current = parseInt(rank[rIndex]["#text"]);
-            }
-            else {
-              mods[rIndex] = parseInt(rank[rIndex]["#text"]);
-            }
-          }
-        }
-        output.stats[stat].current = current;
-        output.stats[stat].modifiers = mods;
-      }
-    }
-  };
-  searchObj["Species"] = function(src, output) {
-    if (src["SpeciesKey"]) {
-      output.info.race.current = src["SpeciesKey"]["#text"];
-    }
-  };
-  searchObj["Description"] = function(src, output) {
-    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
-    if (src["CharName"]) {
-      output.info.name.current = src["CharName"]["#text"];
-    }
-    for (var index in src) {
-      if (index != "CharName" && src[index] && src[index]["#text"]) {
-        output.info.notes.current = (output.info.notes.current || "") + "<p><b>"+index + "&nbsp;-&nbsp;</b>" + src[index]["#text"] + "</p>";
-      }
-    }
-  };
-  searchObj["Credits"] = function(src, output) {
-    if (src["#text"]) {
-      var item = JSON.parse(JSON.stringify(game.templates.item));
-      sync.rawVal(item.info.name, "Credits");
-      sync.rawVal(item.info.quantity, parseInt(src["#text"]));
-    }
-  };
-
-  searchObj["Specializations"] = function(src, output) {
-    var obj = {
-      "ADV" : "Adversary",
-      "ANAT" : "Anatomy Lessons",
-      "ALLTERDRIV" : "All-Terrain Driver",
-      "ARM" : "Armor Master",
-      "ARMIMP" : "Armor Master (Improved)",
-      "BACT" : "Bacta Specialist",
-      "BADM" : "Bad Motivator",
-      "BAL" : "Balance",
-      "BAR" : "Barrage",
-      "BASICTRAIN" : "Basic Combat Training",
-      "BLA" : "Black Market Contacts",
-      "BLO" : "Blooded",
-      "BOD" : "Body Guard",
-      "BOUGHT" : "Bought Info",
-      "BRA" : "Brace",
-      "BRI" : "Brilliant Evasion",
-      "BYP" : "Bypass Security",
-      "CAREPLAN" : "Careful Planning",
-      "CLEVERSOLN" : "Clever Solution",
-      "COD" : "Codebreaker",
-      "COM" : "Command",
-      "COMMPRES" : "Commanding Presence",
-      "CONF" : "Confidence",
-      "CONT" : "Contraption",
-      "CONV" : "Convincing Demeanor",
-      "COORDASS" : "Coordinated Assault",
-      "CREATKILL" : "Creative Killer",
-      "CRIPV" : "Crippling Blow",
-      "DEAD" : "Dead to Rights",
-      "DEADIMP" : "Dead to Rights (Improved)",
-      "DEADACC" : "Deadly Accuracy",
-      "DEPSHOT" : "Debilitating Shot",
-      "DEDI" : "Dedication",
-      "DEFDRI" : "Defensive Driving",
-      "DEFSLI" : "Defensive Slicing",
-      "DEFSLIIMP" : "Defensive Slicing (Improved)",
-      "DEFSTA" : "Defensive Stance",
-      "DISOR" : "Disorient",
-      "DODGE" : "Dodge",
-      "DURA" : "Durable",
-      "DYNFIRE" : "Dynamic Fire",
-      "ENDUR" : "Enduring",
-      "EXHPORT" : "Exhaust Port",
-      "EXTRACK" : "Expert Tracker",
-      "FAMSUNS" : "Familiar Suns",
-      "FERSTR" : "Feral Strength",
-      "FLDCOMM" : "Field Commander",
-      "FLDCOMMIMP" : "Field Commander (Improved)",
-      "FINETUN" : "Fine Tuning",
-      "FIRECON" : "Fire Control",
-      "FORAG" : "Forager",
-      "FORCEWILL" : "Force of Will",
-      "FORCERAT" : "Force Rating",
-      "FORMONME" : "Form On Me",
-      "FRENZ" : "Frenzied Attack",
-      "FULLSTOP" : "Full Stop",
-      "FULLTH" : "Full Throttle",
-      "FULLTHIMP" : "Full Throttle (Improved)",
-      "FULLTHSUP" : "Full Throttle (Supreme)",
-      "GALMAP" : "Galaxy Mapper",
-      "GEARHD" : "Gearhead",
-      "GREASE" : "Greased Palms",
-      "GRIT" : "Grit",
-      "HARDHD" : "Hard Headed",
-      "HARDHDIMP" : "Hard Headed (Improved)",
-      "HEIGHT" : "Heightened Awareness",
-      "HERO" : "Heroic Fortitude",
-      "HIDD" : "Hidden Storage",
-      "HOLDTOG" : "Hold Together",
-      "HUNT" : "Hunter",
-      "INCITE" : "Incite Rebellion",
-      "INDIS" : "Indistinguishable",
-      "INSIGHT" : "Insight",
-      "INSPRHET" : "Inspiring Rhetoric",
-      "INSPRHETIMP" : "Inspiring Rhetoric (Improved)",
-      "INSPRHETSUP" : "Inspiring Rhetoric (Supreme)",
-      "INTENSFOC" : "Intense Focus",
-      "INTENSPRE" : "Intense Presence",
-      "INTIM" : "Intimidating",
-      "INVENT" : "Inventor",
-      "INVIG" : "Invigorate",
-      "ITSNOTTHATBAD" : "It's Not that Bad",
-      "JUMP" : "Jump Up",
-      "JURY" : "Jury Rigged",
-      "KILL" : "Kill With Kindness",
-      "KNOCK" : "Knockdown",
-      "KNOWSOM" : "Know Somebody",
-      "KNOWSPEC" : "Knowledge Specialization",
-      "KNOWSCH" : "Known Schematic",
-      "LETSRIDE" : "Let's Ride",
-      "LETHALBL" : "Lethal Blows",
-      "MASDOC" : "Master Doctor",
-      "MASDRIV" : "Master Driver",
-      "MASGREN" : "Master Grenadier",
-      "MASLEAD" : "Master Leader",
-      "MASMERC" : "Master Merchant",
-      "MASSHAD" : "Master of Shadows",
-      "MASPIL" : "Master Pilot",
-      "MASSLIC" : "Master Slicer",
-      "MASSTAR" : "Master Starhopper",
-      "MENTFOR" : "Mental Fortress",
-      "NATBRAW" : "Natural Brawler",
-      "NATCHARM" : "Natural Charmer",
-      "NATDOC" : "Natural Doctor",
-      "NATDRIV" : "Natural Driver",
-      "NATENF" : "Natural Enforcer",
-      "NATHUN" : "Natural Hunter",
-      "NATLEAD" : "Natural Leader",
-      "NATMAR" : "Natural Marksman",
-      "NATNEG" : "Natural Negotiator",
-      "NATOUT" : "Natural Outdoorsman",
-      "NATPIL" : "Natural Pilot",
-      "NATPRO" : "Natural Programmer",
-      "NATROG" : "Natural Rogue",
-      "NATSCH" : "Natural Scholar",
-      "NATTIN" : "Natural Tinkerer",
-      "NOBFOOL" : "Nobody's Fool",
-      "OUTDOOR" : "Outdoorsman",
-      "OVEREM" : "Overwhelm Emotions",
-      "OVERDEF" : "Overwhelm Defenses",
-      "PHYSTRAIN" : "Physical Training",
-      "PLAUSDEN" : "Plausible Deniability",
-      "POINTBL" : "Point Blank",
-      "PWRBLST" : "Powerful Blast",
-      "PRECAIM" : "Precise Aim",
-      "PRESPNT" : "Pressure Point",
-      "QUICKDR" : "Quick Draw",
-      "QUICKFIX" : "Quick Fix",
-      "QUICKST" : "Quick Strike",
-      "RAPREA" : "Rapid Reaction",
-      "RAPREC" : "Rapid Recovery",
-      "REDUNSYS" : "Redundant Systems",
-      "RESEARCH" : "Researcher",
-      "RESOLVE" : "Resolve",
-      "RESPSCHOL" : "Respected Scholar",
-      "SCATH" : "Scathing Tirade",
-      "SCATHIMP" : "Scathing Tirade (Improved)",
-      "SCATHSUP" : "Scathing Tirade (Supreme)",
-      "SECWIND" : "Second Wind",
-      "SELDETON" : "Selective Detonation",
-      "SENSDANG" : "Sense Danger",
-      "SENSDEMO" : "Sense Emotions",
-      "SHORTCUT" : "Short Cut",
-      "SIDESTEP" : "Side Step",
-      "SITAWARE" : "Situational Awareness",
-      "SIXSENSE" : "Sixth Sense",
-      "SKILLJOCK" : "Skilled Jockey",
-      "SKILLSLIC" : "Skilled Slicer",
-      "SLEIGHTMIND" : "Sleight of Mind",
-      "SMOOTHTALK" : "Smooth Talker",
-      "SNIPSHOT" : "Sniper Shot",
-      "SOFTSP" : "Soft Spot",
-      "SOLREP" : "Solid Repairs",
-      "SOUNDINV" : "Sound Investments",
-      "SPARECL" : "Spare Clip",
-      "SPKBIN" : "Speaks Binary",
-      "STALK" : "Stalker",
-      "STNERV" : "Steely Nerves",
-      "STIMAP" : "Stim Application",
-      "STIMAPIMP" : "Stim Application (Improved)",
-      "STIMAPSUP" : "Stim Application (Supreme)",
-      "STIMSPEC" : "Stimpack Specialization",
-      "STRSMART" : "Street Smarts",
-      "STRGEN" : "Stroke of Genius",
-      "STRONG" : "Strong Arm",
-      "STUNBL" : "Stunning Blow",
-      "STUNBLIMP" : "Stunning Blow (Improved)",
-      "SUPREF" : "Superior Reflexes",
-      "SURG" : "Surgeon",
-      "SWIFT" : "Swift",
-      "TACTTRAIN" : "Tactical Combat Training",
-      "TARGBL" : "Targeted Blow",
-      "TECHAPT" : "Technical Aptitude",
-      "TIME2GO" : "Time to Go",
-      "TIME2GOIMP" : "Time to Go (Improved)",
-      "TINK" : "Tinkerer",
-      "TOUCH" : "Touch of Fate",
-      "TOUGH" : "Toughened",
-      "TRICK" : "Tricky Target",
-      "TRUEAIM" : "True Aim",
-      "UNCANREAC" : "Uncanny Reactions",
-      "UNCANSENS" : "Uncanny Senses",
-      "UNSTOP" : "Unstoppable",
-      "UTIL" : "Utility Belt",
-      "UTINNI" : "Utinni!",
-      "VEHTRAIN" : "Vehicle Combat Training",
-      "WELLROUND" : "Well Rounded",
-      "WELLTRAV" : "Well Travelled",
-      "WHEEL" : "Wheel and Deal",
-      "WORKLIKECHARM" : "Works Like A Charm",
-      "PIN" : "Pin",
-      "MUSEUMWORTHY" : "Museum Worthy",
-      "BRNGITDWN" : "Bring It Down",
-      "HUNTERQUARRY" : "Hunter's Quarry",
-      "HUNTQIMP" : "Hunter's Quarry (Improved)",
-      "BURLY" : "Burly",
-      "FEARSOME" : "Fearsome",
-      "HEAVYHITTER" : "Heavy Hitter",
-      "HEROICRES" : "Heroic Resilience",
-      "IMPDET" : "Improvised Detonation",
-      "IMPDETIMP" : "Improvised Detonation (Improved)",
-      "LOOM" : "Loom",
-      "RAINDEATH" : "Rain of Death",
-      "STEADYNERVES" : "Steady Nerves",
-      "TALKTALK" : "Talk the Talk",
-      "WALKWALK" : "Walk the Walk",
-      "IDEALIST" : "Idealist",
-      "AAO" : "Against All Odds",
-      "ANIMALBOND" : "Animal Bond",
-      "ANIMALEMP" : "Animal Empathy",
-      "ATARU" : "Ataru Technique",
-      "BODIMP" : "Body Guard (Improved)",
-      "CALMAURA" : "Calming Aura",
-      "CALMAURAIMP" : "Calming Aura (Improved)",
-      "CENTBEING" : "Center of Being",
-      "CENTBEINGIMP" : "Center of Being (Improved)",
-      "CIRCLESHELTER" : "Circle of Shelter",
-      "COMPTECH" : "Comprehend Technology",
-      "CONDITIONED" : "Conditioned",
-      "CONTPLAN" : "Contingency Plan",
-      "COUNTERST" : "Counterstrike",
-      "DEFCIRCLE" : "Defensive Circle",
-      "DEFTRAIN" : "Defensive Training",
-      "DISRUPSTRIKE" : "Disruptive Strike",
-      "DJEMSODEFL" : "Djem So Deflection",
-      "DRAWCLOSER" : "Draw Closer",
-      "DUELTRAIN" : "Duelist's Training",
-      "ENHLEAD" : "Enhanced Leader",
-      "FALLAVAL" : "Falling Avalanche",
-      "FEINT" : "Feint",
-      "FORCEASSAULT" : "Force Assault",
-      "FORCEPROT" : "Force Protection",
-      "FOREWARN" : "Forewarning",
-      "HAWKSWOOP" : "Hawk Bat Swoop",
-      "HEALTRANCE" : "Healing Trance",
-      "HEALTRANCEIMP" : "Healing Trance (Improved)",
-      "IMBUEITEM" : "Imbue Item",
-      "INTUITEVA" : "Intuitive Evasion",
-      "INTUITIMP" : "Intuitive Improvements",
-      "INTUITSHOT" : "Intuitive Shot",
-      "INTUITSTRIKE" : "Intuitive Strike",
-      "KEENEYED" : "Keen Eyed",
-      "KNOWPOW" : "Knowledge is Power",
-      "KNOWHEAL" : "Knowledgeable Healing",
-      "MAKFIN" : "Makashi Finish",
-      "MAKFLOUR" : "Makashi Flourish",
-      "MAKTECH" : "Makashi Technique",
-      "MASTART" : "Master Artisan",
-      "MENTBOND" : "Mental Bond",
-      "MENTTOOLS" : "Mental Tools",
-      "MULTOPP" : "Multiple Opponents",
-      "NATBLADE" : "Natural Blademaster",
-      "NATMYSTIC" : "Natural Mystic",
-      "NIMTECH" : "Niman Technique",
-      "NOWYOUSEE" : "Now You See Me",
-      "ONEUNI" : "One With The Universe",
-      "PARRY" : "Parry",
-      "PARRYIMP" : "Parry (Improved)",
-      "PARRYSUP" : "Parry (Supreme)",
-      "PHYSICIAN" : "Physician",
-      "PREEMAVOID" : "Preemptive Avoidance",
-      "PREYWEAK" : "Prey on the Weak",
-      "QUICKMOVE" : "Quick Movement",
-      "REFLECT" : "Reflect",
-      "REFLECTIMP" : "Reflect (Improved)",
-      "REFLECTSUP" : "Reflect (Supreme)",
-      "RESDISARM" : "Resist Disarm",
-      "SABERSW" : "Saber Swarm",
-      "SABERTHROW" : "Saber Throw",
-      "SARSWEEP" : "Sarlacc Sweep",
-      "SENSEADV" : "Sense Advantage",
-      "SHAREPAIN" : "Share Pain",
-      "SHIENTECH" : "Shien Technique",
-      "SHROUD" : "Shroud",
-      "SLIPMIND" : "Slippery Minded",
-      "SORESUTECH" : "Soresu Technique",
-      "STRATFORM" : "Strategic Form",
-      "SUMDJEM" : "Sum Djem",
-      "TERRIFY" : "Terrify",
-      "TERRIFYIMP" : "Terrify (Improved)",
-      "FORCEALLY" : "The Force Is My Ally",
-      "UNITYASSAULT" : "Unity Assault",
-      "VALFACT" : "Valuable Facts",
-      "BADCOP" : "Bad Cop",
-      "BIGGESTFAN" : "Biggest Fan",
-      "CONGENIAL" : "Congenial",
-      "COORDODGE" : "Coordination Dodge",
-      "DISBEH" : "Distracting Behavior",
-      "DISBEHIMP" : "Distracting Behavior (Improved)",
-      "DECEPTAUNT" : "Deceptive Taunt",
-      "GOODCOP" : "Good Cop",
-      "NATATHL" : "Natural Athlete",
-      "NATMERCH" : "Natural Merchant",
-      "THROWCRED" : "Throwing Credits",
-      "UNRELSKEP" : "Unrelenting Skeptic",
-      "UNRELSKEPIMP" : "Unrelenting Skeptic (Improved)",
-      "BEASTWRANG" : "Beast Wrangler",
-      "BOLSTARMOR" : "Bolstered Armor",
-      "CORSEND" : "Corellian Sendoff",
-      "CORSENDIMP" : "Corellian Sendoff (Improved)",
-      "CUSTCOOL" : "Customized Cooling Unit",
-      "EXHANDLER" : "Expert Handler",
-      "FANCPAINT" : "Fancy Paint Job",
-      "FORTVAC" : "Fortified Vacuum Seal",
-      "HIGHGTRAIN" : "High-G Training",
-      "KOITURN" : "Koiogran Turn",
-      "LARGEPROJ" : "Larger Project",
-      "NOTTODAY" : "Not Today",
-      "OVERAMMO" : "Overstocked Ammo",
-      "REINFRAME" : "Reinforced Frame",
-      "SHOWBOAT" : "Showboat",
-      "SIGVEH" : "Signature Vehicle",
-      "SOOTHTONE" : "Soothing Tone",
-      "SPUR" : "Spur",
-      "SPURIMP" : "Spur (Improved)",
-      "SPURSUP" : "Spur (Supreme)",
-      "TUNEDTHRUST" : "Tuned Maneuvering Thrusters",
-      "CALLEM" : "Call 'Em",
-      "DISARMSMILE" : "Disarming Smile",
-      "DONTSHOOT" : "Don't Shoot!",
-      "DOUBLEORNOTHING" : "Double or Nothing",
-      "DOUBLEORNOTHINGIMP" : "Double or Nothing (Improved)",
-      "DOUBLEORNOTHINGSUP" : "Double or Nothing (Supreme)",
-      "FORTFAVORBOLD" : "Fortune Favors the Bold",
-      "GUNSBLAZING" : "Guns Blazing",
-      "JUSTKID" : "Just Kidding!",
-      "QUICKDRIMP" : "Quickdraw (Improved)",
-      "SECCHANCE" : "Second Chances",
-      "SORRYMESS" : "Sorry About the Mess",
-      "SPITFIRE" : "Spitfire",
-      "UPANTE" : "Up the Ante",
-      "WORKLIKECHARM" : "Works Like a Charm",
-      "BADPRESS" : "Bad Press",
-      "BLACKMAIL" : "Blackmail",
-      "CUTQUEST" : "Cutting Question",
-      "DISCREDIT" : "Discredit",
-      "ENCCOMM" : "Encoded Communique",
-      "ENCWORD" : "Encouraging Words",
-      "INKNOW" : "In The Know",
-      "INKNOWIMP" : "In The Know (Improved)",
-      "INFORM" : "Informant",
-      "INTERJECT" : "Interjection",
-      "KNOWALL" : "Know-It-All",
-      "PLAUSDENIMP" : "Plausible Deniability (Improved)",
-      "POSSPIN" : "Positive Spin",
-      "POSSPINIMP" : "Positive Spin (Improved)",
-      "RESEARCHIMP" : "Researcher (Improved)",
-      "SUPPEVI" : "Supporting Evidence",
-      "THORASS" : "Thorough Assessment",
-      "TWISTWORD" : "Twisted Words",
-      "DRIVEBACK" : "Drive Back",
-      "ARMSUP" : "Armor Master (Supreme)",
-      "BALEGAZE" : "Baleful Gaze",
-      "BLINDSPOT" : "Blind Spot",
-      "GRAPPLE" : "Grapple",
-      "NOESC" : "No Escape",
-      "OVERBAL" : "Overbalance",
-      "PRECSTR" : "Precision Strike",
-      "PRIMEPOS" : "Prime Positions",
-      "PRESSHOT" : "Prescient Shot",
-      "PROPAIM" : "Prophetic Aim",
-      "REINITEM" : "Reinforce Item",
-      "SUPPRFIRE" : "Suppressing Fire",
-      "CALMCOMM" : "Calm Commander",
-      "CLEVCOMM" : "Clever Commander",
-      "COMMPRESIMP" : "Commanding Presence (Improved)",
-      "CONFIMP" : "Confidence (Improved)",
-      "MASINST" : "Master Instructor",
-      "MASSTRAT" : "Master Strategist",
-      "NATINST" : "Natural Instructor",
-      "READANY" : "Ready for Anything",
-      "READANYIMP" : "Ready for Anything (Improved)",
-      "THATHOWDONE" : "That's How It's Done",
-      "WELLREAD" : "Well Read",
-      "CUSTLOAD" : "Custom Loadout",
-      "CYBERNETICIST" : "Cyberneticist",
-      "DEFTMAKER" : "Deft Maker",
-      "ENGREDUN" : "Engineered Redundancies",
-      "EYEDET" : "Eye for Detail",
-      "ENERGTRANS" : "Energy Transfer",
-      "MACHMEND" : "Machine Mender",
-      "MOREMACH" : "More Machine Than Man",
-      "OVERCHARGE" : "Overcharge",
-      "OVERCHARGEIMP" : "Improved Overcharge",
-      "OVERCHARGESUP" : "Supreme Overcharge",
-      "REROUTEPROC" : "Reroute Processors",
-      "RESOURCEREFIT" : "Resourceful Refit",
-      "SPKBINIMP" : "Improved Speaks Binary",
-      "SPKBINSUP" : "Supreme Speaks Binary",
-    }
-
-    var charSpec = src["CharSpecialization"];
-    for (var _ in charSpec["Talents"]) {
-      for (var index in charSpec["Talents"][_]) {
-        var charTalent = charSpec["Talents"][_][index];
-        if (charTalent["Key"] && charTalent["Key"]["#text"]) {
-          var selected = "";
-          if (charTalent["SelectedSkills"]) {
-            for (var key in charTalent["SelectedSkills"]) {
-              if (charTalent["SelectedSkills"][key] && charTalent["SelectedSkills"][key]["#text"]) {
-                if (skillRef[charTalent["SelectedSkills"][key]["#text"]]) {
-                  selected = selected + game.templates.character.skills[skillRef[charTalent["SelectedSkills"][key]["#text"]]].name + "\n";
-                }
-                else {
-                  selected = selected + charTalent["SelectedSkills"][key]["#text"] + "\n";
-                }
-              }
-            }
-          }
-          if (charTalent["Purchased"]) {
-            var insert = true;
-            for (var tIndex in output.talents) {
-              if (output.talents[tIndex].name == obj[charTalent["Key"]["#text"]]) {
-                output.talents[tIndex] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
-                insert = false;
-                break;
-              }
-            }
-            if (insert) {
-              output.talents[obj[charTalent["Key"]["#text"]]] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
-            }
-          }
-        }
-      }
-    }
-  }
-
-  searchObj["Attributes"] = function(src, output) {
-    var wTotal = 0;
-    for (var key in src["WoundThreshold"]) {
-      if (src["WoundThreshold"][key] && src["WoundThreshold"][key]["#text"]) {
-        wTotal = parseInt(wTotal) + parseInt(src["WoundThreshold"][key]["#text"]);
-      }
-    }
-    output.counters.wounds.current = wTotal;
-    output.counters.wounds.max = wTotal;
-
-    var sTotal = 0;
-    for (var key in src["StrainThreshold"]) {
-      if (src["StrainThreshold"][key] && src["StrainThreshold"][key]["#text"]) {
-        sTotal = parseInt(sTotal) + parseInt(src["StrainThreshold"][key]["#text"]);
-      }
-    }
-    output.counters.stress.current = sTotal;
-    output.counters.stress.max = sTotal;
-
-    if (src["DefenseRanged"]) {
-      output.counters.rdf.current = parseInt(src["DefenseRanged"]["#text"] || 0);
-    }
-    if (src["DefenseMelee"]) {
-      output.counters.mdf.current = parseInt(["DefenseMelee"]["#text"] || 0);
-    }
-  }
-
-  var weapon = {
-    "BLASTHOLD" : {name : "Holdout Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTHOLDTT24" : {name : "TT24 Holdout Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "MILHOLDBLAST" : {name : "Military Holdout Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "VARHOLDBLAST" : {name : "Variable Holdout Blaster", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "QUICKFIRE" : {name : "Model Q4 Quickfire", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "12DEFEND" : {name : "12 Defender", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "DEFSPBLAST" : {name : "Defender Sporting Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "ELG3ABLAST" : {name : "ELG-3A Blaster Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTLT" : {name : "Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTLTHL27" : {name : "HL-27 Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "POCKPIS" : {name : "Pocket Blaster Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPIS" : {name : "Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISCDEF" : {name : "CDEF Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTPISK23" : {name : "Relby-K23 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "DUELPIS" : {name : "Dueling Pistol", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "BLASTPISXL2" : {name : "XL-2 'Flashfire' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISH7" : {name : "H-7 'Equalizer' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
-    "BLASTPISDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTCARBDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster (Carbine Mode)", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTBOONTA" : {name : "Boonta Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTATAPULSE" : {name : "Greff-Timms ATA Pulse-Wave Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHVY" : {name : "Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHVYGEO" : {name : "Geonosian Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
-    "SECURITYS5" : {name : "Security S-5 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "KO-2HSP" : {name : "KO-2 Heavy Stun Pistol", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "MODEL44BLASTPIST" : {name : "Model 44 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "MODEL80BLASTPIST" : {name : "Model 80 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
-    "IR5BLASTPIST" : {name : "IR-5 'Intimidator' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHVYCR2" : {name : "CR-2 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "SITE145PISTOL" : {name : "Site-145 Replica Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "X30LANCER" : {name : "x-30 Lancer", d : 5, r : "wrLong", s : "Ranged - Light (Ag)", c : "4"},
-    "BLASTPISTDL19C" : {name : "DL-19C Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "DL7HBLASTPISTHVY" : {name : "DL-7h Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTPISHH50" : {name : "HH-50 Heavy Blaster Pistol", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "MONCALBAT" : {name : "Mon Calamari Battle Baton", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "ENSLING" : {name : "Energy Slingshot", d : 3, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "BLASTCARB" : {name : "Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTCARBGEO" : {name : "Geonosian Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "2"},
-    "OK98BLASTCARB" : {name : "OK-98 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTCARBE5" : {name : "E5 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BOLACARB" : {name : "Bola Carbine", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "DLS12HBR" : {name : "DLS-12 Heavy Blaster Carbine", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTRIF" : {name : "Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTRIFGEO" : {name : "Geonosian Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "BLASTRIFSKZ" : {name : "SKZ Sporting Blaster Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
-    "BLASTLANCE" : {name : "Weequay Blaster Lance", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTRIFDDCMR6" : {name : "DDC-MR6 Modular Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "ACPREPEATER" : {name : "ACP Repeater Gun", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "ACPARRAYGUN" : {name : "ACP Array Gun", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
-    "SWE2SONIC" : {name : "SWE/2 Sonic Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "6"},
-    "BLASTRIFHVY" : {name : "Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "DHXBLASTRIFHVY" : {name : "DH-X Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "E11SNIPER" : {name : "E-11S Sniper Rifle", d : 10, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "LBR9STUNRIFLE" : {name : "LBR-9 Stun Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "BLASTLTREP" : {name : "Light Repeating Blaster", d : 11, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "SE14RBLASTLTREP" : {name : "SE-14r Light Repeating Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "BLASTHVYREP" : {name : "Heavy Repeating Blaster", d : 15, r : "wrLong", s : "Gunnery (Ag)", c : "2"},
-    "VXBLASTREP" : {name : "VX 'Sidewinder' Repeating Blaster", d : 12, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
-    "HOBBLASTREPHVY" : {name : "HOB Heavy Repeating Blaster", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "D29REPULSOR" : {name : "D-29 Repulsor Rifle", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "MONCALSPBLAST" : {name : "Mon Calamari Spear Blaster (Blaster)", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MONCALSPBLASTSP" : {name : "Mon Calamari Spear Blaster (Spear)", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ELECTPULSEDIS" : {name : "Electromag-Pulse Disruptor", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "BOWCAST" : {name : "Bowcaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "BLASTION" : {name : "Ion Blaster", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "DROIDDIS" : {name : "Droid Disruptor", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "DISRPIS" : {name : "Disruptor Pistol", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "DISRRIF" : {name : "Disruptor Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "SLUGPIS" : {name : "Slugthrower Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "SLUGPISASP9" : {name : "ASP-9 'Vrelt' Autopistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "FIVERSLUGPIST" : {name : "Model C 'Fiver' Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "SLUGKD30" : {name : "KD-30 'Dissuader' Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "STEALTH2VX" : {name : "Stealth-2VX Palm Shooter", d : 1, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "VODRANRIFLE" : {name : "Vodran Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
-    "SLUGRIF" : {name : "Slugthrower Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
-    "SLUGRIFMKV" : {name : "Mark V 'Sand Panther' Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
-    "ASSAULTSLUGCARB" : {name : "FYR Assault Carbine", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
-    "SLUGRIFSELSHARD" : {name : "Selonian Shard Shooter", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MODEL77" : {name : "Model 77 Air Rifle", d : 6, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "MODEL38" : {name : "Model 38 Sharpshooter's Rifle", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MODEL38DET" : {name : "Model 38 Sharpshooter's Rifle (Detonator Round)", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "HAMMER" : {name : "KS-23 Hammer", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
-    "DFD1" : {name : "DF-D1 Duo-Flechette Rifle", d : 9, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
-    "VERPSHATPIS" : {name : "Verpine Shatter Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "VERPSHATRIF" : {name : "Verpine Shatter Rifle", d : 12, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
-    "VERPSHATHVYRIF" : {name : "Verpine Heavy Shatter Rifle", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "BOLA" : {name : "Bola/Net", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "ELECTRONET" : {name : "Electronet", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "FLAME" : {name : "Flame Projector", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MISS" : {name : "Missile Tube", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "L70ACID" : {name : "L70 Acid Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
-    "NETGUN" : {name : "AO14 'Aranea' Net Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "0"},
-    "STOKHLI" : {name : "Stokhli Spray Stick", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "RIOTRIFLE" : {name : "R-88 Supressor Riot Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
-    "TANGLEGUN" : {name : "Tangle Gun", d : 1, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
-    "FRAGGR" : {name : "Frag Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "STUNGR" : {name : "Stun Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "THERMDET" : {name : "Thermal Detonator", d : 20, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "THERMDETMINI" : {name : "Mini Thermal Detonator", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "APGREN" : {name : "Armor Piercing Grenade", d : 13, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "N4NOISEGREN" : {name : "N-4 Noise Grenade", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "6"},
-    "WIPE3GREN" : {name : "Wipe-3 Data-Purge Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "HICMERCYGREN" : {name : "HIC 'Mercy' Grenade", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "SPOREBSTUNGREN" : {name : "Spore/B Stun Grenade", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "AVMINE" : {name : "Anti-Vehicle Mine", d : 25, r : "wrEngaged", s : "Mechanics (Int)", c : "2"},
-    "APMINE" : {name : "Anti-Personnel Mine", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
-    "KNOCKMINE" : {name : "Knockout Mine", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "GLOPGRND" : {name : "Glop Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "INFERGREND" : {name : "D-24 Inferno Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "CONCGREND" : {name : "G2 Concussion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "IONGREND" : {name : "Lightning 22 Ion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "PLASGREND" : {name : "NOVA40 Plasma Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "HVYFRGGREND" : {name : "Mk.4 Heavy Frag Grenade", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "POISONGR" : {name : "Poison Gas Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "CONCMISSILEMK10" : {name : "Mk.10 Concussion Missile", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
-    "FRAGMISSILEC88" : {name : "C-88 Fragmentation Missile", d : 12, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
-    "PLASMISSILESK44" : {name : "SK-44 Plasma Missile", d : 16, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "INCENMISSILEC908" : {name : "C-908 Incendiary Missile", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "BARADIUMCHRG" : {name : "Baradium Charge", d : 3, r : "wrLong", s : "Mechanics (Int)", c : "0"},
-    "DETONITECHRG" : {name : "Detonite Charge", d : 15, r : "wrShort", s : "Mechanics (Int)", c : "0"},
-    "PLASMACHRG" : {name : "Plasma Charge", d : 9, r : "wrMedium", s : "Mechanics (Int)", c : "0"},
-    "PROTONGRNAD" : {name : "Proton Grenade", d : 10, r : "wrShort", s : "Mechanics (Int)", c : "0"},
-    "COMPBOW" : {name : "Corellian Compound Bow", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
-    "COMPBOWEXP" : {name : "Corellian Compound Bow (Explosive Tipped)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "COMPBOWSTUN" : {name : "Corellian Compound Bow (Stun)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "0"},
-    "STYANAX" : {name : "Styanax Lance", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
-    "CZ28FLAME" : {name : "CZ-28 Flamestrike", d : 9, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
-    "FC1FLECHETTE" : {name : "FC1 Flechette Launcher (Anti-Infantry)", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "FC1FLECHETTEVEH" : {name : "FC1 Flechette Launcher (Anti-Vehicle)", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
-    "GRENADLAUNCHZ50" : {name : "Z50 Grenade Launcher", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "MINTORPLAUNCH" : {name : "Mini-Torpedo Launcher", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MINTORPAP" : {name : "Mini-Torpedo, Anti-Personnel", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MINTORPARMP" : {name : "Mini-Torpedo, Armor Piercing", d : 12, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "MINTORPINK" : {name : "Mini-Torpedo, Ink", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
-    "MINTORPION" : {name : "Mini-Torpedo, Ion", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "MINTORPNET" : {name : "Mini-Torpedo, Net", d : 0, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
-    "MINTORPSTUN" : {name : "Mini-Torpedo, Stun", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
-    "AURBOOM" : {name : "Aurateran Boomerang", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "5"},
-    "GUNGATL" : {name : "Gungan Atlatl", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "GUNGPLAS" : {name : "Gungan Plasma Ball", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "LONGBOW" : {name : "Long Bow", d : 5, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
-    "BRASS" : {name : "Brass Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "SHOCKGL" : {name : "Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "REFCORTCAUNT" : {name : "Refined Cortosis Gauntlets", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "BLSTKNUK" : {name : "Blast Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "VAMBLADES1" : {name : "S-1 Vamblade (Single)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "VAMBLADE2S1" : {name : "S-1 Vamblade (Paired)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "VIBROKNUK" : {name : "Vibroknucklers", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "2"},
-    "BACKHANDSHKGLV" : {name : "Backhand Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "NEEDLEGLOVES" : {name : "Needle Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "SHIELDGAUNT" : {name : "Shield Gauntlet", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "KNIFE" : {name : "Combat Knife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "CUTLASSCOR" : {name : "Corellian Cutlass", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "LONGWHIP" : {name : "Longeing Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "5"},
-    "PERSUADER" : {name : "Sorosuub 'Persuader' Shock Prod", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "CERBLADE" : {name : "Ceremonial Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "STAFFOFF" : {name : "Staff of Office", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "ANCIENTSWORD" : {name : "Ancient Sword", d : 0, r : "wrEngaged", s : "LTSABER", c : "3"},
-    "CORTSHIELD" : {name : "Cortosis Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "CORTSWORD" : {name : "Cortosis Sword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ELECSTAFF" : {name : "Electrostaff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "REFCORTSTAFF" : {name : "Refined Cortosis Staff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "GAFF" : {name : "Gaffi Stick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "FLASHSTICK" : {name : "Drall Flashstick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "0"},
-    "FORCEP" : {name : "Force Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "DIIRO" : {name : "Diiro", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "CORALPIKE" : {name : "Coral Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "ENERGYLANCE" : {name : "Energy Lance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "CS12STUNMAST" : {name : "CS-12 Stun Master", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ENERGYBUCK" : {name : "Energy Buckler", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "PARRVIBRO" : {name : "Parrying Vibroblade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "PARRDAGG" : {name : "Parrying Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "CRYOWHIP" : {name : "Rodian Cryogen Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "3"},
-    "SITHSHIELD" : {name : "Sith Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "SNAPBATON" : {name : "Snap Baton", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "BARDLANCE" : {name : "Bardottan Electrolance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "GUNGPOLE" : {name : "Gungan Electropole", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "GUNGPOLET" : {name : "Gungan Electropole (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "GUNGPES" : {name : "Gungan Personal Energy Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "TRAINSTICK" : {name : "Training Stick", d : 0, r : "wrEngaged", s : "LTSABER", c : "5"},
-    "VOSSWARSP" : {name : "Voss Warspear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "VOSSWARSPT" : {name : "Voss Warspear (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "WEIKGS" : {name : "Weik Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "THERMCUTW" : {name : "Thermal Cutter", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "SVT300" : {name : "SVT-300 Stun Cloak", d : 7, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
-    "LTSABER" : {name : "Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
-    "LTSABERBASIC" : {name : "Basic Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERDBL" : {name : "Double-Bladed Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERPIKE" : {name : "Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERSHOTO" : {name : "Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERTRAIN" : {name : "Training Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERGUASH" : {name : "Guard Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERTEMGUAPIKE" : {name : "Temple Guard Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
-    "LTSABERBASICHILT" : {name : "Basic Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERDBLHILT" : {name : "Double-Bladed Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERPIKEHILT" : {name : "Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERSHOTOHILT" : {name : "Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERTEMGUAPIKEHILT" : {name : "Temple Guard Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERGUASHHILT" : {name : "Guard Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
-    "LTSABERLODAKA" : {name : "Master Lodaka's Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
-    "TRUNCH" : {name : "Truncheon", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "STUNCLUB" : {name : "Stun Club", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "PULSEDRILL" : {name : "G9-GP Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "PULSEDRILLGX" : {name : "G9-GX Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "BEAMDRILLJ7B" : {name : "J-7b Beamdrill", d : 9, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "ENTRENCHTOOL" : {name : "Entrenching Tool (Improvised)", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "GLAIVESEL" : {name : "Selonian Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBAX" : {name : "Vibro-ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "VIBKN" : {name : "Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "STVIBKN" : {name : "Stealth Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "VIBSW" : {name : "Vibrosword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "SWORDCANE" : {name : "Sword Cane", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBROSPR" : {name : "Huntsman Vibrospear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBROSAW" : {name : "Mk. VIII Vibrosaw", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "FUSCUT" : {name : "Fusion Cutter", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "RYYKBLADE" : {name : "Ryyk Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "VIBROGRTSWRDVX" : {name : "VX 'Czerhander' Vibro-Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "THERMAXMOD7" : {name : "Model 7 Therm-Ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "ARGGAROK" : {name : "Arg'garok", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "VIBROGLAIVE" : {name : "Vibro-Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "MORCORTSTAFF" : {name : "Morgukai Cortosis Staff", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "1"},
-    "NEURWHIP" : {name : "Neuronic Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "4"},
-    "TUSKPIKE" : {name : "Tuskbeast Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "AUTOBLAST" : {name : "Auto-Blaster", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "5"},
-    "BLASTCANLT" : {name : "Light Blaster Cannon", d : 4, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "BLASTCANHVY" : {name : "Heavy Blaster Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "CML" : {name : "Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "AFCML" : {name : "Alternating-Fire Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "ACML" : {name : "Assault Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "CMLHK" : {name : "Hunter Killer Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "IONLT" : {name : "Light Ion Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "IONMED" : {name : "Medium Ion Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
-    "IONHVY" : {name : "Heavy Ion Cannon", d : 7, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "IONLONG" : {name : "Long-Barrelled Ion Cannon", d : 9, r : "wrLong", s : "Gunnery (Ag)", c : "4"},
-    "IONBATT" : {name : "Battleship Ion Cannon", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
-    "LASERLT" : {name : "Light Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "LASERMED" : {name : "Medium Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "LASERHVY" : {name : "Heavy Laser Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "LASERPTDEF" : {name : "Point Defense Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "LASERLONG" : {name : "Long-Nosed Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "PTL" : {name : "Proton Torpedo Launcher", d : 8, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
-    "LASERQUAD" : {name : "Quad Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "TRACTLT" : {name : "Light Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "TRACTMED" : {name : "Medium Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "TRACTHVY" : {name : "Heavy Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "TURBOLT" : {name : "Light Turbolaser", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "TURBOMED" : {name : "Medium Turbolaser", d : 10, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
-    "TURBOHVY" : {name : "Heavy Turbolaser", d : 11, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
-    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
-    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "SUPPRESSCANNON" : {name : "Light Suppression Cannon", d : 10, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "ELECHARPOON" : {name : "Electromagnetic Harpoon", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "CONGRENLAUNCH" : {name : "Concussion Grenade Launcher", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
-    "PROTONBOMB" : {name : "Proton Bomb Release Chute", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "PROTONBAY" : {name : "Proton Bomb Bay", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "2"},
-    "BEAMDRILHVY" : {name : "Heavy Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "BEAMDRIL" : {name : "Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "MINIROCKET" : {name : "Mini-Rocket Launcher", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
-    "MASSDRIVMSL" : {name : "Mass Driver Missile Launchers", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "MISSILEPACK" : {name : "Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
-    "MISSILEPACKMINI" : {name : "Mini-Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
-    "MINIMISSILETUBE" : {name : "MM-XT Mini-Missile Tube", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
-    "TRACTOR213" : {name : "Grappler 213 Tactical Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "MISSCONCMINI" : {name : "Concussion Missile (Mini)", d : 4, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
-    "MISSJAM" : {name : "Jammer Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "MISSDECOY" : {name : "Decoy Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
-    "MISSJAMMINI" : {name : "Jammer Missile (Mini)", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
-    "MISSUNGROCK" : {name : "Unguided Rocket", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "MISSUNGROCKMINI" : {name : "Unguided Rocket (Mini)", d : 3, r : "wrEngaged", s : "Gunnery (Ag)", c : "4"},
-    "ROTREPBLASTCAN" : {name : "Rotary Repeating Blaster Cannon", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "LASCAN" : {name : "Laser Cannon", d : 9, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
-    "FLAKLT" : {name : "Light Flak Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "FLAKMED" : {name : "Medium Flak Cannon", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "FLAKHVY" : {name : "Heavy Flak Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "VL6" : {name : "VL-6 Warhead Launcher System", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
-    "A95STING" : {name : "A95 Stingbeam", d : 5, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
-    "L7LIGHTPISTOL" : {name : "L7 Light Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "411HOLDOUT" : {name : "411 Holdout Blaster", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
-    "M53QUICKTRIGGER" : {name : "Model 53 'Quicktrigger' Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "M1NOVAVIPER" : {name : "Model-1 'Nova Viper' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "C10DRAGONEYE" : {name : "C-10 'Dragoneye Reaper' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "RENHEAVYBLAST" : {name : "'Renegade' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "HBT4HUNTING" : {name : "HBt-4 Hunting Blaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "VES700PULSE" : {name : "VES-700 Pulse Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
-    "FDROIDDISABLER" : {name : "Droid Disabler", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "FWG5FLECHETTE" : {name : "FWG-5 Flechette Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
-    "8GAUGESCATTER" : {name : "8-Gauge Scatter Gun", d : 7, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "6"},
-    "ASCIANTHROWDAG" : {name : "Ascian Throwing Dagger", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
-    "KNOCKOUTGRENADE" : {name : "Knockout Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "TAGCRYOPROJ" : {name : "Cryoban Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
-    "SSB1STATIC" : {name : "SSB-1 Static Pistol", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "SHOCKBOOTS" : {name : "Shock Boots", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
-    "PUNCHDAGGER" : {name : "Punch Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
-    "BLADEBREAKER" : {name : "Blade-Breaker", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "VIBRORAPIER" : {name : "Vibrorapier", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "LTTRACTCOUPLE" : {name : "Light Tractor Beam Coupler", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "1"},
-    "TORPLAUNCH" : {name : "Torpedo Launcher", d : 6, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
-    "PROTTORPHVY" : {name : "Heavy Proton Torpedo Launcher", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
-    "CLUSTERBOMB" : {name : "Cluster Bomb Launcher", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
-    "IONTHRUST" : {name : "Ion Thruster Gun", d : 5, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
-    "MULTIGOO" : {name : "Multi-Goo Gun", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
-    "REPULSORGUN" : {name : "Repulsor Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
-    "RIVETGUN" : {name : "Rivet Gun", d : 4, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
-    "HANDGRID" : {name : "Hand Grinder", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
-    "WELDINGROD" : {name : "Welding Rod", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "BMWEAPTEMP1" : {name : "Fist Weapon (Template)", d : 3, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
-    "BMWEAPTEMP2" : {name : "Blunt Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "BMWEAPTEMP3" : {name : "Shield (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
-    "BMWEAPTEMP4" : {name : "Bladed Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "BMWEAPTEMP5" : {name : "Vibro-weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "BMWEAPTEMP6" : {name : "Powered Melee Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
-    "RWEAPTEMP1" : {name : "Simple Projectile Weapon (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "RWEAPTEMP2" : {name : "Solid Projectile Pistol (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
-    "RWEAPTEMP3" : {name : "Solid Projectile Rifle (Template)", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
-    "RWEAPTEMP4" : {name : "Energy Pistol (Template)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
-    "RWEAPTEMP5" : {name : "Energy Rifle (Template)", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "RWEAPTEMP6" : {name : "Heavy Energy Rifle (Template)", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
-    "RWEAPTEMP7" : {name : "Missile Launcher (Template)", d : 0, r : "wrEngaged", s : "Gunnery (Ag)", c : "0"},
-    "RWEAPTEMP8" : {name : "Missile (Template)", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
-    "RWEAPTEMP9" : {name : "Grenade (Template)", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
-    "RWEAPTEMP10" : {name : "Mine (Template)", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
-  };
-
-  var armor = {
-    "AEG" : {name : "Adverse Environmental Gear", s : 1},
-    "AC" : {name : "Armored Clothing", s : 1},
-    "ARMROBE" : {name : "Armored Robes", s : 2},
-    "CONROBE" : {name : "Concealing Robes", s : 1},
-    "HBA" : {name : "Heavy Battle Armor", s : 2},
-    "HC" : {name : "Heavy Clothing", s : 1},
-    "LAM" : {name : "Laminate", s : 2},
-    "PDS" : {name : "Personal Deflector Shield", s : 0},
-    "PAD" : {name : "Padded Armor", s : 2},
-    "ENVIROSUIT" : {name : "Enviro-suit", s : 2},
-    "CRASHSUIT" : {name : "A/KT Shockrider Crash Suit", s : 2},
-    "UTILITYVEST" : {name : "A/KT Tracker Utility Vest", s : 0},
-    "MOUNTARMOR" : {name : "A/KT Mountaineer Armor", s : 1},
-    "CATCHVEST" : {name : "Catch Vest", s : 1},
-    "NOMADCOAT" : {name : "Nomad Greatcoat", s : 1},
-    "MODARMORIII" : {name : "Type III 'Berethron' Personal Modular Armor", s : 1},
-    "FLIGHTTX3" : {name : "TX-3 Combat Flight Suit", s : 0},
-    "BEASTHIDE" : {name : "Beast-Hide Armor", s : 1},
-    "CHARGESUIT" : {name : "'Storm' Charge Suit", s : 2},
-    "FLAKVEST" : {name : "Mk. III Flak Vest", s : 1},
-    "PROTECTOR" : {name : "Protector 1 Combat Armor", s : 2},
-    "STEELSKIN" : {name : "Mk.II 'Steelskin' Anti-Concussive Armor", s : 3},
-    "POWARMOR" : {name : "PX-11 'Battlement' Powered Armor", s : 3},
-    "TAILOREDJACKET" : {name : "Tailored Armored Jacket", s : 2},
-    "REINFENVIRO" : {name : "Reinforced Environment Gear", s : 1},
-    "RIOTARMOR" : {name : "Mk.IV Riot Armor", s : 1},
-    "WINGCOMMANDER" : {name : "A/KT Wing Commander Armored Flight Suit", s : 1},
-    "RIDINGTACK" : {name : "Caballerin-Series Riding Tack", s : 0},
-    "CAPARIBEAST" : {name : "Capari-Series Padded Beast Armor", s : 2},
-    "DESTRIBEAST" : {name : "Destri-Series Laminated Beast Armor", s : 4},
-    "MEGAFAUNA" : {name : "H-Series Megafauna Carriage", s : 0},
-    "HUTTSHELLARMOR" : {name : "Hutt Shell Armor", s : 2},
-    "SAKSHADOW" : {name : "Sakiyan Shadowsuit", s : 1},
-    "BLASTVEST" : {name : "Blast Vest", s : 1},
-    "MIMETICSUIT" : {name : "Mimetic Suit", s : 1},
-    "SMUGGLERSTRENCHCOAT" : {name : "Smuggler's Trenchcoat", s : 1},
-    "BANAL" : {name : "Banal Apparel", s : 0},
-    "CARGOCL" : {name : "Cargo Apparel", s : 0},
-    "DIPROBE" : {name : "Diplomat's Robes", s : 0},
-    "FLAREJACK" : {name : "Flare Jacket", s : 1},
-    "HAULHARN" : {name : "Hauling Harness", s : 1},
-    "HOLOCOST" : {name : "Holographic Costume", s : 0},
-    "LECOUT" : {name : "Lector's Outfit", s : 1},
-    "NOBREG" : {name : "Noble Regalia", s : 0},
-    "PERFATT" : {name : "Performer's Attire", s : 0},
-    "POWCAPARM" : {name : "Powered Capacitive Armor", s : 1},
-    "RESPROBES" : {name : "Resplendent Robes", s : 1},
-    "SECSKIN" : {name : "Second Skin Armor", s : 1},
-    "BODYSUIT" : {name : "Polis Masson Bodysuit", s : 1},
-    "LEVPOWARM" : {name : "Leviathan Power Armor", s : 2},
-    "VERPFIBUARM" : {name : "Verpine Fiber Ultramesh Armor", s : 1},
-    "CRESHARMOR" : {name : "Cresh 'Luck' Armor", s : 2},
-    "JEDIBA" : {name : "Jedi Battle Armor", s : 2},
-    "JEDITEMGUAARM" : {name : "Jedi Temple Guard Armor", s : 1},
-    "JEDITRAINSUITW" : {name : "Jedi Training Suit (Weighted)", s : 2},
-    "JEDITRAINSUIT" : {name : "Jedi Training Suit (Unweighted)", s : 2},
-    "KAVDANNPA" : {name : "Kav-Dann Power Armor", s : 2},
-    "KOROHALFVEST" : {name : "Koromondian Half-Vest", s : 1},
-    "RIOTARM" : {name : "Riot Armor", s : 2},
-    "ARMTEMP1" : {name : "Reinforced Clothing (Template)", s : 1},
-    "ARMTEMP2" : {name : "Light Armor (Template)", s : 2},
-    "ARMTEMP3" : {name : "Customizable Armor (Template)", s : 1},
-    "ARMTEMP4" : {name : "Deflective Armor (Template)", s : 1},
-    "ARMTEMP5" : {name : "Combat Armor (Template)", s : 2},
-    "ARMTEMP6" : {name : "Segmented Armor (Template)", s : 2},
-    "ARMTEMP7" : {name : "Augmentaive Armor (Template)", s : 2},
-    "CLOAKCOAT" : {name : "Cloaking Coat", s : 1},
-    "MECHUTILSUIT" : {name : "Mechanic's Utility Suit", s : 2},
-    "N57" : {name : "N-57 Armor", s : 2},
-    "P14" : {name : "P-14 Hazardous Industry Suit", s : 2},
-  };
-
-  searchObj["Weapons"] = function(src, output) {
-    for (var key in src.CharWeapon) {
-      // each skill
-      if (src["CharWeapon"][key] && src["CharWeapon"][key]["ItemKey"] && src["CharWeapon"][key]["ItemKey"]["#text"]) {
-        var item = JSON.parse(JSON.stringify(game.templates.item));
-        if (weapon[src["CharWeapon"][key]["ItemKey"]["#text"]]) {
-          item.info.name.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].name;
-          item.info.skill.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].s;
-          item.weapon.damage.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].d;
-          item.weapon.range.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].r;
-          item.weapon.crit.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].c;
-          output.inventory.push(item);
-        }
-        else {
-          item.info.name.current = src["CharWeapon"][key]["ItemKey"]["#text"];
-          output.inventory.push(item);
-        }
-      }
-    }
-  }
-  searchObj["Armor"] = function(src, output) {
-    for (var key in src.CharArmor) {
-      if (src["CharArmor"][key] && src["CharArmor"][key]["ItemKey"] && src["CharArmor"][key]["ItemKey"]["#text"]) {
-        var item = JSON.parse(JSON.stringify(game.templates.item));
-        if (armor[src["CharArmor"][key]["ItemKey"]["#text"]]) {
-          item.info.name.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].name;
-          item.equip.armor.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].s;
-          output.inventory.push(item);
-        }
-        else {
-          item.info.name.current = src["CharArmor"][key]["ItemKey"]["#text"];
-          output.inventory.push(item);
-        }
-      }
-    }
-  }
-  searchObj["Gear"] = function(src, output) {
-    for (var key in src.CharGear) {
-      if (src["CharGear"][key] && src["CharGear"][key]["ItemKey"] && src["CharGear"][key]["ItemKey"]["#text"]) {
-        var item = JSON.parse(JSON.stringify(game.templates.item));
-        item.info.name.current = src["CharGear"][key]["ItemKey"]["#text"];
-        output.inventory.push(item);
-      }
-    }
-  }
-
-  // create it right here
-  function recurseSearch(src, keys, output) {
-    for (var key in src) {
-      if (src[key] instanceof Object) {
-        if (src[key] && keys[key]) {
-          keys[key](src[key], output);
-        }
-        else {
-          recurseSearch(src[key], keys, output);
-        }
-      }
-    }
-  }
-  recurseSearch(xml, searchObj, override);
-}
-
-function pcgen_import(xml, override) {
-  var table = {};
-  var list = xml.nodehandler.nodehandler;
-  for (var key in list) {
-    var data = list[key]["@attributes"];
-    table[data.name] = list[key]["nodehandler"];
-  }
-  var importRule = {};
-  importRule["Combat"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data["@attributes"]) {
-        if (data["@attributes"].name.toLowerCase().match("current hp")) {
-          sync.rawVal(override.counters.hp, eval(data["@attributes"].name.match(diceNumber)[0]));
-          override.counters.hp.max = eval(data["@attributes"].name.match(diceNumber)[0]);
-        }
-        else if (data["@attributes"].name.toLowerCase().match(" Saving Throw")) {
-          var options = data.list.option;
-          var saving = sync.rawVal(override.counters.saving);
-          for (var i in options) {
-            for (var j in saving) {
-              var match = options[i]["#text"].toLowerCase().match(saving[j].name.toLowerCase());
-              if (match) {
-                var firstNumber = /[+-]\d+/;
-                var d = firstNumber.exec(options[i]["#text"]);
-                sync.rawVal(saving[j], eval(d[0]));
-              }
-            }
-          }
-          sync.rawVal(override.counters.saving, saving);
-        }
-        else if (data["@attributes"].name.toLowerCase() == "weapons") {
-          for (var j in data.nodehandler) {
-            var item = data.nodehandler[j];
-
-            var newItem = duplicate(game.templates.item);
-            sync.val(newItem.info.name, item["@attributes"].name);
-            var dmgreg = /Damage\s*\[(\d*d\d+\+\d*)/i
-            var weaponInf = item.nodehandler[0].nodehandler.text["#text"].match(dmgreg);
-
-            if (weaponInf) {
-              sync.rawVal(newItem.weapon.damage, weaponInf[1]);
-            }
-            override.inventory.push(newItem);
-          }
-        }
-      }
-    }
-  }
-  importRule["Description"] = function(src, override) {
-    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
-
-    for (var key in src) {
-      var data = src[key];
-      if (data.text["#text"]) {
-        override.info.notes.current = (override.info.notes.current || "") + "<p>" + data.text["#text"] + "</p>";
-      }
-    }
-  }
-  importRule["Details"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      for (var j in override.info) {
-        if (data["@attributes"].name.toLowerCase().match(override.info[j].name.toLowerCase())) {
-          if (j == "name") {
-            sync.rawVal(override.info[j], data.text["#text"]);
-          }
-          else {
-            sync.rawVal(override.info[j], (sync.rawVal(override.info[j]) || "") + " " + data.text["#text"]);
-          }
-        }
-        else if (data["@attributes"].name.toLowerCase() == "speed") {
-          var firstNumber = /[+-]*\d+/;
-          var match = firstNumber.exec(data.text["#text"]);
-          if (match) {
-            sync.rawVal(override.counters.speed, eval(match[0]));
-          }
-        }
-        else if (data["@attributes"].name.toLowerCase() == "abilities") {
-          for (var i in data.grid.row) {
-            var stt = data.grid.row[i];
-            for (var s in override.stats) {
-              if (s.toLowerCase() == stt.cell[0]["#text"].toLowerCase().trim()) {
-                sync.rawVal(override.stats[s], parseInt(stt.cell[1]["#text"]));
-                sync.modifier(override.stats[s], "Stat-Bonus", Math.floor(sync.rawVal(override.stats[s])/30*15) + -5);
-              }
-            }
-          }
-        }
-        else if (data["@attributes"].name.toLowerCase() == "skills") {
-          for (var i in data.grid.row) {
-            var stt = data.grid.row[i];
-            for (var j in override.skills) {
-              if (override.skills[j].name.toLowerCase().match(stt.cell[0]["#text"].toLowerCase().trim())) {
-                if (eval(stt.cell[2]["#text"])) {
-                  sync.rawVal(override.skills[j], 1);
-                  sync.modifier(override.skills[j], "rank", eval(stt.cell[2]["#text"]));
-                }
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  importRule["Equipment"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      var newItem = duplicate(game.templates.item);
-      sync.val(newItem.info.name, data["@attributes"].name);
-      sync.rawVal(newItem.info.notes, data.text["#text"]);
-      var weaponInf = data.text["#text"].split("\n");
-      var push = true;
-      for (var i in weaponInf) {
-        if (weaponInf[i].toLowerCase().match("damage")) {
-          // all weapons are taken care of in combat section
-          push = false;
-          break;
-        }
-      }
-      if (push) {
-        override.inventory.push(newItem);
-      }
-    }
-  }
-  importRule["Magic"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data.nodehandler) {
-        var spells = data.nodehandler.nodehandler;
-        for (var j in spells) {
-          var firstNumber = /\d+/;
-          var spellLevel = spells[j]["@attributes"].name.match(firstNumber);
-          var actualSpells = spells[j].text["#text"].split("\n");
-
-          actualSpells.splice(0, 1);
-          actualSpells.splice(actualSpells.length, 1);
-          for (var b=0; b<actualSpells.length; b=b+4) {
-            if (actualSpells[b+3] != null) {
-              var newItem = duplicate(game.templates.item);
-              sync.val(newItem.info.name, actualSpells[b+0]);
-              sync.modifier(newItem.spell.required, "level", spellLevel[0]);
-              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+1]);
-              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+2]);
-              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+3]);
-              override.spellbook.push(newItem);
-            }
-            else {
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-  importRule["Misc."] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data["@attributes"].name.toLowerCase().match("languages")) {
-        var lang = data.text["#text"].split(",");
-        for (var k in lang) {
-          if (lang[k].trim()) {
-            override.proficient["Language "+lang[k].trim()] = true;
-          }
-        }
-      }
-      else if(data["@attributes"].name && data.text && data.text["#text"]) {
-        sync.rawVal(override.info.notes, (sync.rawVal(override.info.notes) || "") + data["@attributes"].name + " : " + data.text["#text"] + "\n");
-      }
-    }
-  }
-  importRule["Special Abilities"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      if (data.text) {
-        var split = (data.text["#text"] || "").split("\n");
-        for (var i in split) {
-          if (split[i] && split[i].trim()) {
-            override.talents.push(sync.newValue(split[i]));
-          }
-        }
-      }
-    }
-  }
-  importRule["Weapon Summary"] = function(src, override) {
-    for (var key in src) {
-      var data = src[key];
-      var newItem = duplicate(game.templates.item);
-      sync.val(newItem.info.name, data["@attributes"].name);
-      sync.rawVal(newItem.info.notes, data.text["#text"]);
-      var weaponInf = data.text["#text"].split("\n");
-      var push = true;
-      for (var i in weaponInf) {
-        if (weaponInf[i].toLowerCase().match("damage")) {
-          // all weapons are taken care of in combat section
-          push = false;
-          break;
-        }
-      }
-      if (push) {
-        override.inventory.push(newItem);
-      }
-    }
-  }
-  console.log(table);
-  for (var key in table) {
-    if (importRule[key]) {
-      importRule[key](table[key], override);
-    }
-  }
-}
-
-sync.render("ui_renderHelp", function(obj, app, scope){
-  var div = $("<div>");
-  div.addClass("fit-xy flexcolumn");
-  div.load("https://files.gmforge.io/file/help/main.html", function( response, status, xhr ) {
-    if (status == "error") {
-      var reload = $("<button>").appendTo(div);
-      reload.append("Unable to load docs");
-    }
-  });
-
-  return div;
-});
-
 sync.render("ui_armorValue", function(obj, app, scope) {
   var itemData = scope.itemData || obj.data;
   var char;
@@ -31470,6 +30189,1302 @@ sync.render("ui_tagList", function(obj, app, scope){
       });
     }
   }
+
+  return div;
+});
+
+function ogg_import(xml, override) {
+  searchObj = {};
+  searchObj["Skills"] = function(src, output) {
+
+    var skillKeys = {
+      "RANGHVY" : "raH",
+      "RANGLT" : "raL",
+      "SW" : "str",
+      "LTSABER" : "lig",
+      "PILOTSP" : "pls",
+      "PILOTPL" : "plp",
+    }
+
+    src = src.CharSkill;
+
+    for (var key in src) {
+      // each skill
+      var current = 0;
+      var mods = {};
+
+      if (src[key]["isCareer"] && src[key]["isCareer"]["#text"]) {
+        current = 1;
+      }
+      if (src[key]["Rank"]) {
+        for (var rIndex in src[key]["Rank"]) {
+          if (rIndex != "#text") {
+            if (rIndex == "PurchasedRanks") {
+              mods["rank"] = (mods["ranks"] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
+            }
+            else if (rIndex != "NonCareerRanks") {
+              mods[rIndex] = (mods[rIndex] || 0) + parseInt(src[key]["Rank"][rIndex]["#text"] || 0);
+            }
+          }
+        }
+      }
+      if (src[key]["Key"] && src[key]["Key"]["#text"] != null) {
+        if (src[key]["Key"]["#text"].length > 2 && !skillKeys[src[key]["Key"]["#text"]]) {
+          var matched = false;
+          for (var i in output.skills) {
+            if (output.skills[i].name.toLowerCase().match(src[key]["Key"]["#text"].toLowerCase())) {
+              output.skills[i].current = current;
+              output.skills[i].modifiers = mods;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) {
+            output.skills[src[key]["Key"]["#text"]] = output.skills[src[key]["Key"]["#text"]] || sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
+          }
+        }
+        else {
+          output.skills[skillKeys[src[key]["Key"]["#text"]]].current = current;
+          output.skills[skillKeys[src[key]["Key"]["#text"]]].modifiers = mods;
+        }
+      }
+      else {
+        var skillVal = sync.newValue(src[key]["Key"]["#text"], current, null, null, mods);
+        output.skills[src[key]["Key"]["#text"]] = (skillVal);
+      }
+    }
+  };
+
+  searchObj["Career"] = function(src, output) {
+    var current;
+    var mods = {};
+    if (src["CareerKey"]) {
+      current = src["CareerKey"]["#text"];
+    }
+    if (src["StartingSpecKey"]) {
+      current = current + " - " + src["StartingSpecKey"]["#text"];
+    }
+    output.info.career.current = current;
+  };
+
+  searchObj["Experience"] = function(src, output) {
+    var current;
+    var mods = {};
+    for (var key in src["ExperienceRanks"]) {
+      // each additon
+      if (src["ExperienceRanks"][key]) {
+        mods[key] = parseInt(src["ExperienceRanks"][key]["#text"] || 0);
+      }
+    }
+    output.counters.exp.modifiers = mods;
+    for (var key in src["UsedExperience"]) {
+      // each additon
+      if (src["UsedExperience"][key]) {
+        current = (current || 0) + parseInt(src["UsedExperience"][key]["#text"] || 0);
+      }
+    }
+    output.counters.exp.current = current;
+  };
+
+  searchObj["Characteristics"] = function(src, output) {
+    for (var key in src["CharCharacteristic"]) {
+      var statData = src["CharCharacteristic"][key];
+      if (statData) {
+        var stat = statData["Key"]["#text"].charAt(0) + statData["Key"]["#text"].substring(1,statData["Key"]["#text"].length).toLowerCase();
+
+        var current = 0;
+        var mods = {};
+        var rank = statData["Rank"];
+        if (!output.stats[stat]) {
+          for (var statIndex in output.stats) {
+            if (output.stats[statIndex].name == statData["Name"]["#text"]) {
+            stat = statIndex;
+              break;
+            }
+          }
+        }
+        for (var rIndex in rank) {
+          if (rank[rIndex] && rank[rIndex]["#text"]) {
+            if (!current) {
+              current = parseInt(rank[rIndex]["#text"]);
+            }
+            else {
+              mods[rIndex] = parseInt(rank[rIndex]["#text"]);
+            }
+          }
+        }
+        output.stats[stat].current = current;
+        output.stats[stat].modifiers = mods;
+      }
+    }
+  };
+  searchObj["Species"] = function(src, output) {
+    if (src["SpeciesKey"]) {
+      output.info.race.current = src["SpeciesKey"]["#text"];
+    }
+  };
+  searchObj["Description"] = function(src, output) {
+    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
+    if (src["CharName"]) {
+      output.info.name.current = src["CharName"]["#text"];
+    }
+    for (var index in src) {
+      if (index != "CharName" && src[index] && src[index]["#text"]) {
+        output.info.notes.current = (output.info.notes.current || "") + "<p><b>"+index + "&nbsp;-&nbsp;</b>" + src[index]["#text"] + "</p>";
+      }
+    }
+  };
+  searchObj["Credits"] = function(src, output) {
+    if (src["#text"]) {
+      var item = JSON.parse(JSON.stringify(game.templates.item));
+      sync.rawVal(item.info.name, "Credits");
+      sync.rawVal(item.info.quantity, parseInt(src["#text"]));
+    }
+  };
+
+  searchObj["Specializations"] = function(src, output) {
+    var obj = {
+      "ADV" : "Adversary",
+      "ANAT" : "Anatomy Lessons",
+      "ALLTERDRIV" : "All-Terrain Driver",
+      "ARM" : "Armor Master",
+      "ARMIMP" : "Armor Master (Improved)",
+      "BACT" : "Bacta Specialist",
+      "BADM" : "Bad Motivator",
+      "BAL" : "Balance",
+      "BAR" : "Barrage",
+      "BASICTRAIN" : "Basic Combat Training",
+      "BLA" : "Black Market Contacts",
+      "BLO" : "Blooded",
+      "BOD" : "Body Guard",
+      "BOUGHT" : "Bought Info",
+      "BRA" : "Brace",
+      "BRI" : "Brilliant Evasion",
+      "BYP" : "Bypass Security",
+      "CAREPLAN" : "Careful Planning",
+      "CLEVERSOLN" : "Clever Solution",
+      "COD" : "Codebreaker",
+      "COM" : "Command",
+      "COMMPRES" : "Commanding Presence",
+      "CONF" : "Confidence",
+      "CONT" : "Contraption",
+      "CONV" : "Convincing Demeanor",
+      "COORDASS" : "Coordinated Assault",
+      "CREATKILL" : "Creative Killer",
+      "CRIPV" : "Crippling Blow",
+      "DEAD" : "Dead to Rights",
+      "DEADIMP" : "Dead to Rights (Improved)",
+      "DEADACC" : "Deadly Accuracy",
+      "DEPSHOT" : "Debilitating Shot",
+      "DEDI" : "Dedication",
+      "DEFDRI" : "Defensive Driving",
+      "DEFSLI" : "Defensive Slicing",
+      "DEFSLIIMP" : "Defensive Slicing (Improved)",
+      "DEFSTA" : "Defensive Stance",
+      "DISOR" : "Disorient",
+      "DODGE" : "Dodge",
+      "DURA" : "Durable",
+      "DYNFIRE" : "Dynamic Fire",
+      "ENDUR" : "Enduring",
+      "EXHPORT" : "Exhaust Port",
+      "EXTRACK" : "Expert Tracker",
+      "FAMSUNS" : "Familiar Suns",
+      "FERSTR" : "Feral Strength",
+      "FLDCOMM" : "Field Commander",
+      "FLDCOMMIMP" : "Field Commander (Improved)",
+      "FINETUN" : "Fine Tuning",
+      "FIRECON" : "Fire Control",
+      "FORAG" : "Forager",
+      "FORCEWILL" : "Force of Will",
+      "FORCERAT" : "Force Rating",
+      "FORMONME" : "Form On Me",
+      "FRENZ" : "Frenzied Attack",
+      "FULLSTOP" : "Full Stop",
+      "FULLTH" : "Full Throttle",
+      "FULLTHIMP" : "Full Throttle (Improved)",
+      "FULLTHSUP" : "Full Throttle (Supreme)",
+      "GALMAP" : "Galaxy Mapper",
+      "GEARHD" : "Gearhead",
+      "GREASE" : "Greased Palms",
+      "GRIT" : "Grit",
+      "HARDHD" : "Hard Headed",
+      "HARDHDIMP" : "Hard Headed (Improved)",
+      "HEIGHT" : "Heightened Awareness",
+      "HERO" : "Heroic Fortitude",
+      "HIDD" : "Hidden Storage",
+      "HOLDTOG" : "Hold Together",
+      "HUNT" : "Hunter",
+      "INCITE" : "Incite Rebellion",
+      "INDIS" : "Indistinguishable",
+      "INSIGHT" : "Insight",
+      "INSPRHET" : "Inspiring Rhetoric",
+      "INSPRHETIMP" : "Inspiring Rhetoric (Improved)",
+      "INSPRHETSUP" : "Inspiring Rhetoric (Supreme)",
+      "INTENSFOC" : "Intense Focus",
+      "INTENSPRE" : "Intense Presence",
+      "INTIM" : "Intimidating",
+      "INVENT" : "Inventor",
+      "INVIG" : "Invigorate",
+      "ITSNOTTHATBAD" : "It's Not that Bad",
+      "JUMP" : "Jump Up",
+      "JURY" : "Jury Rigged",
+      "KILL" : "Kill With Kindness",
+      "KNOCK" : "Knockdown",
+      "KNOWSOM" : "Know Somebody",
+      "KNOWSPEC" : "Knowledge Specialization",
+      "KNOWSCH" : "Known Schematic",
+      "LETSRIDE" : "Let's Ride",
+      "LETHALBL" : "Lethal Blows",
+      "MASDOC" : "Master Doctor",
+      "MASDRIV" : "Master Driver",
+      "MASGREN" : "Master Grenadier",
+      "MASLEAD" : "Master Leader",
+      "MASMERC" : "Master Merchant",
+      "MASSHAD" : "Master of Shadows",
+      "MASPIL" : "Master Pilot",
+      "MASSLIC" : "Master Slicer",
+      "MASSTAR" : "Master Starhopper",
+      "MENTFOR" : "Mental Fortress",
+      "NATBRAW" : "Natural Brawler",
+      "NATCHARM" : "Natural Charmer",
+      "NATDOC" : "Natural Doctor",
+      "NATDRIV" : "Natural Driver",
+      "NATENF" : "Natural Enforcer",
+      "NATHUN" : "Natural Hunter",
+      "NATLEAD" : "Natural Leader",
+      "NATMAR" : "Natural Marksman",
+      "NATNEG" : "Natural Negotiator",
+      "NATOUT" : "Natural Outdoorsman",
+      "NATPIL" : "Natural Pilot",
+      "NATPRO" : "Natural Programmer",
+      "NATROG" : "Natural Rogue",
+      "NATSCH" : "Natural Scholar",
+      "NATTIN" : "Natural Tinkerer",
+      "NOBFOOL" : "Nobody's Fool",
+      "OUTDOOR" : "Outdoorsman",
+      "OVEREM" : "Overwhelm Emotions",
+      "OVERDEF" : "Overwhelm Defenses",
+      "PHYSTRAIN" : "Physical Training",
+      "PLAUSDEN" : "Plausible Deniability",
+      "POINTBL" : "Point Blank",
+      "PWRBLST" : "Powerful Blast",
+      "PRECAIM" : "Precise Aim",
+      "PRESPNT" : "Pressure Point",
+      "QUICKDR" : "Quick Draw",
+      "QUICKFIX" : "Quick Fix",
+      "QUICKST" : "Quick Strike",
+      "RAPREA" : "Rapid Reaction",
+      "RAPREC" : "Rapid Recovery",
+      "REDUNSYS" : "Redundant Systems",
+      "RESEARCH" : "Researcher",
+      "RESOLVE" : "Resolve",
+      "RESPSCHOL" : "Respected Scholar",
+      "SCATH" : "Scathing Tirade",
+      "SCATHIMP" : "Scathing Tirade (Improved)",
+      "SCATHSUP" : "Scathing Tirade (Supreme)",
+      "SECWIND" : "Second Wind",
+      "SELDETON" : "Selective Detonation",
+      "SENSDANG" : "Sense Danger",
+      "SENSDEMO" : "Sense Emotions",
+      "SHORTCUT" : "Short Cut",
+      "SIDESTEP" : "Side Step",
+      "SITAWARE" : "Situational Awareness",
+      "SIXSENSE" : "Sixth Sense",
+      "SKILLJOCK" : "Skilled Jockey",
+      "SKILLSLIC" : "Skilled Slicer",
+      "SLEIGHTMIND" : "Sleight of Mind",
+      "SMOOTHTALK" : "Smooth Talker",
+      "SNIPSHOT" : "Sniper Shot",
+      "SOFTSP" : "Soft Spot",
+      "SOLREP" : "Solid Repairs",
+      "SOUNDINV" : "Sound Investments",
+      "SPARECL" : "Spare Clip",
+      "SPKBIN" : "Speaks Binary",
+      "STALK" : "Stalker",
+      "STNERV" : "Steely Nerves",
+      "STIMAP" : "Stim Application",
+      "STIMAPIMP" : "Stim Application (Improved)",
+      "STIMAPSUP" : "Stim Application (Supreme)",
+      "STIMSPEC" : "Stimpack Specialization",
+      "STRSMART" : "Street Smarts",
+      "STRGEN" : "Stroke of Genius",
+      "STRONG" : "Strong Arm",
+      "STUNBL" : "Stunning Blow",
+      "STUNBLIMP" : "Stunning Blow (Improved)",
+      "SUPREF" : "Superior Reflexes",
+      "SURG" : "Surgeon",
+      "SWIFT" : "Swift",
+      "TACTTRAIN" : "Tactical Combat Training",
+      "TARGBL" : "Targeted Blow",
+      "TECHAPT" : "Technical Aptitude",
+      "TIME2GO" : "Time to Go",
+      "TIME2GOIMP" : "Time to Go (Improved)",
+      "TINK" : "Tinkerer",
+      "TOUCH" : "Touch of Fate",
+      "TOUGH" : "Toughened",
+      "TRICK" : "Tricky Target",
+      "TRUEAIM" : "True Aim",
+      "UNCANREAC" : "Uncanny Reactions",
+      "UNCANSENS" : "Uncanny Senses",
+      "UNSTOP" : "Unstoppable",
+      "UTIL" : "Utility Belt",
+      "UTINNI" : "Utinni!",
+      "VEHTRAIN" : "Vehicle Combat Training",
+      "WELLROUND" : "Well Rounded",
+      "WELLTRAV" : "Well Travelled",
+      "WHEEL" : "Wheel and Deal",
+      "WORKLIKECHARM" : "Works Like A Charm",
+      "PIN" : "Pin",
+      "MUSEUMWORTHY" : "Museum Worthy",
+      "BRNGITDWN" : "Bring It Down",
+      "HUNTERQUARRY" : "Hunter's Quarry",
+      "HUNTQIMP" : "Hunter's Quarry (Improved)",
+      "BURLY" : "Burly",
+      "FEARSOME" : "Fearsome",
+      "HEAVYHITTER" : "Heavy Hitter",
+      "HEROICRES" : "Heroic Resilience",
+      "IMPDET" : "Improvised Detonation",
+      "IMPDETIMP" : "Improvised Detonation (Improved)",
+      "LOOM" : "Loom",
+      "RAINDEATH" : "Rain of Death",
+      "STEADYNERVES" : "Steady Nerves",
+      "TALKTALK" : "Talk the Talk",
+      "WALKWALK" : "Walk the Walk",
+      "IDEALIST" : "Idealist",
+      "AAO" : "Against All Odds",
+      "ANIMALBOND" : "Animal Bond",
+      "ANIMALEMP" : "Animal Empathy",
+      "ATARU" : "Ataru Technique",
+      "BODIMP" : "Body Guard (Improved)",
+      "CALMAURA" : "Calming Aura",
+      "CALMAURAIMP" : "Calming Aura (Improved)",
+      "CENTBEING" : "Center of Being",
+      "CENTBEINGIMP" : "Center of Being (Improved)",
+      "CIRCLESHELTER" : "Circle of Shelter",
+      "COMPTECH" : "Comprehend Technology",
+      "CONDITIONED" : "Conditioned",
+      "CONTPLAN" : "Contingency Plan",
+      "COUNTERST" : "Counterstrike",
+      "DEFCIRCLE" : "Defensive Circle",
+      "DEFTRAIN" : "Defensive Training",
+      "DISRUPSTRIKE" : "Disruptive Strike",
+      "DJEMSODEFL" : "Djem So Deflection",
+      "DRAWCLOSER" : "Draw Closer",
+      "DUELTRAIN" : "Duelist's Training",
+      "ENHLEAD" : "Enhanced Leader",
+      "FALLAVAL" : "Falling Avalanche",
+      "FEINT" : "Feint",
+      "FORCEASSAULT" : "Force Assault",
+      "FORCEPROT" : "Force Protection",
+      "FOREWARN" : "Forewarning",
+      "HAWKSWOOP" : "Hawk Bat Swoop",
+      "HEALTRANCE" : "Healing Trance",
+      "HEALTRANCEIMP" : "Healing Trance (Improved)",
+      "IMBUEITEM" : "Imbue Item",
+      "INTUITEVA" : "Intuitive Evasion",
+      "INTUITIMP" : "Intuitive Improvements",
+      "INTUITSHOT" : "Intuitive Shot",
+      "INTUITSTRIKE" : "Intuitive Strike",
+      "KEENEYED" : "Keen Eyed",
+      "KNOWPOW" : "Knowledge is Power",
+      "KNOWHEAL" : "Knowledgeable Healing",
+      "MAKFIN" : "Makashi Finish",
+      "MAKFLOUR" : "Makashi Flourish",
+      "MAKTECH" : "Makashi Technique",
+      "MASTART" : "Master Artisan",
+      "MENTBOND" : "Mental Bond",
+      "MENTTOOLS" : "Mental Tools",
+      "MULTOPP" : "Multiple Opponents",
+      "NATBLADE" : "Natural Blademaster",
+      "NATMYSTIC" : "Natural Mystic",
+      "NIMTECH" : "Niman Technique",
+      "NOWYOUSEE" : "Now You See Me",
+      "ONEUNI" : "One With The Universe",
+      "PARRY" : "Parry",
+      "PARRYIMP" : "Parry (Improved)",
+      "PARRYSUP" : "Parry (Supreme)",
+      "PHYSICIAN" : "Physician",
+      "PREEMAVOID" : "Preemptive Avoidance",
+      "PREYWEAK" : "Prey on the Weak",
+      "QUICKMOVE" : "Quick Movement",
+      "REFLECT" : "Reflect",
+      "REFLECTIMP" : "Reflect (Improved)",
+      "REFLECTSUP" : "Reflect (Supreme)",
+      "RESDISARM" : "Resist Disarm",
+      "SABERSW" : "Saber Swarm",
+      "SABERTHROW" : "Saber Throw",
+      "SARSWEEP" : "Sarlacc Sweep",
+      "SENSEADV" : "Sense Advantage",
+      "SHAREPAIN" : "Share Pain",
+      "SHIENTECH" : "Shien Technique",
+      "SHROUD" : "Shroud",
+      "SLIPMIND" : "Slippery Minded",
+      "SORESUTECH" : "Soresu Technique",
+      "STRATFORM" : "Strategic Form",
+      "SUMDJEM" : "Sum Djem",
+      "TERRIFY" : "Terrify",
+      "TERRIFYIMP" : "Terrify (Improved)",
+      "FORCEALLY" : "The Force Is My Ally",
+      "UNITYASSAULT" : "Unity Assault",
+      "VALFACT" : "Valuable Facts",
+      "BADCOP" : "Bad Cop",
+      "BIGGESTFAN" : "Biggest Fan",
+      "CONGENIAL" : "Congenial",
+      "COORDODGE" : "Coordination Dodge",
+      "DISBEH" : "Distracting Behavior",
+      "DISBEHIMP" : "Distracting Behavior (Improved)",
+      "DECEPTAUNT" : "Deceptive Taunt",
+      "GOODCOP" : "Good Cop",
+      "NATATHL" : "Natural Athlete",
+      "NATMERCH" : "Natural Merchant",
+      "THROWCRED" : "Throwing Credits",
+      "UNRELSKEP" : "Unrelenting Skeptic",
+      "UNRELSKEPIMP" : "Unrelenting Skeptic (Improved)",
+      "BEASTWRANG" : "Beast Wrangler",
+      "BOLSTARMOR" : "Bolstered Armor",
+      "CORSEND" : "Corellian Sendoff",
+      "CORSENDIMP" : "Corellian Sendoff (Improved)",
+      "CUSTCOOL" : "Customized Cooling Unit",
+      "EXHANDLER" : "Expert Handler",
+      "FANCPAINT" : "Fancy Paint Job",
+      "FORTVAC" : "Fortified Vacuum Seal",
+      "HIGHGTRAIN" : "High-G Training",
+      "KOITURN" : "Koiogran Turn",
+      "LARGEPROJ" : "Larger Project",
+      "NOTTODAY" : "Not Today",
+      "OVERAMMO" : "Overstocked Ammo",
+      "REINFRAME" : "Reinforced Frame",
+      "SHOWBOAT" : "Showboat",
+      "SIGVEH" : "Signature Vehicle",
+      "SOOTHTONE" : "Soothing Tone",
+      "SPUR" : "Spur",
+      "SPURIMP" : "Spur (Improved)",
+      "SPURSUP" : "Spur (Supreme)",
+      "TUNEDTHRUST" : "Tuned Maneuvering Thrusters",
+      "CALLEM" : "Call 'Em",
+      "DISARMSMILE" : "Disarming Smile",
+      "DONTSHOOT" : "Don't Shoot!",
+      "DOUBLEORNOTHING" : "Double or Nothing",
+      "DOUBLEORNOTHINGIMP" : "Double or Nothing (Improved)",
+      "DOUBLEORNOTHINGSUP" : "Double or Nothing (Supreme)",
+      "FORTFAVORBOLD" : "Fortune Favors the Bold",
+      "GUNSBLAZING" : "Guns Blazing",
+      "JUSTKID" : "Just Kidding!",
+      "QUICKDRIMP" : "Quickdraw (Improved)",
+      "SECCHANCE" : "Second Chances",
+      "SORRYMESS" : "Sorry About the Mess",
+      "SPITFIRE" : "Spitfire",
+      "UPANTE" : "Up the Ante",
+      "WORKLIKECHARM" : "Works Like a Charm",
+      "BADPRESS" : "Bad Press",
+      "BLACKMAIL" : "Blackmail",
+      "CUTQUEST" : "Cutting Question",
+      "DISCREDIT" : "Discredit",
+      "ENCCOMM" : "Encoded Communique",
+      "ENCWORD" : "Encouraging Words",
+      "INKNOW" : "In The Know",
+      "INKNOWIMP" : "In The Know (Improved)",
+      "INFORM" : "Informant",
+      "INTERJECT" : "Interjection",
+      "KNOWALL" : "Know-It-All",
+      "PLAUSDENIMP" : "Plausible Deniability (Improved)",
+      "POSSPIN" : "Positive Spin",
+      "POSSPINIMP" : "Positive Spin (Improved)",
+      "RESEARCHIMP" : "Researcher (Improved)",
+      "SUPPEVI" : "Supporting Evidence",
+      "THORASS" : "Thorough Assessment",
+      "TWISTWORD" : "Twisted Words",
+      "DRIVEBACK" : "Drive Back",
+      "ARMSUP" : "Armor Master (Supreme)",
+      "BALEGAZE" : "Baleful Gaze",
+      "BLINDSPOT" : "Blind Spot",
+      "GRAPPLE" : "Grapple",
+      "NOESC" : "No Escape",
+      "OVERBAL" : "Overbalance",
+      "PRECSTR" : "Precision Strike",
+      "PRIMEPOS" : "Prime Positions",
+      "PRESSHOT" : "Prescient Shot",
+      "PROPAIM" : "Prophetic Aim",
+      "REINITEM" : "Reinforce Item",
+      "SUPPRFIRE" : "Suppressing Fire",
+      "CALMCOMM" : "Calm Commander",
+      "CLEVCOMM" : "Clever Commander",
+      "COMMPRESIMP" : "Commanding Presence (Improved)",
+      "CONFIMP" : "Confidence (Improved)",
+      "MASINST" : "Master Instructor",
+      "MASSTRAT" : "Master Strategist",
+      "NATINST" : "Natural Instructor",
+      "READANY" : "Ready for Anything",
+      "READANYIMP" : "Ready for Anything (Improved)",
+      "THATHOWDONE" : "That's How It's Done",
+      "WELLREAD" : "Well Read",
+      "CUSTLOAD" : "Custom Loadout",
+      "CYBERNETICIST" : "Cyberneticist",
+      "DEFTMAKER" : "Deft Maker",
+      "ENGREDUN" : "Engineered Redundancies",
+      "EYEDET" : "Eye for Detail",
+      "ENERGTRANS" : "Energy Transfer",
+      "MACHMEND" : "Machine Mender",
+      "MOREMACH" : "More Machine Than Man",
+      "OVERCHARGE" : "Overcharge",
+      "OVERCHARGEIMP" : "Improved Overcharge",
+      "OVERCHARGESUP" : "Supreme Overcharge",
+      "REROUTEPROC" : "Reroute Processors",
+      "RESOURCEREFIT" : "Resourceful Refit",
+      "SPKBINIMP" : "Improved Speaks Binary",
+      "SPKBINSUP" : "Supreme Speaks Binary",
+    }
+
+    var charSpec = src["CharSpecialization"];
+    for (var _ in charSpec["Talents"]) {
+      for (var index in charSpec["Talents"][_]) {
+        var charTalent = charSpec["Talents"][_][index];
+        if (charTalent["Key"] && charTalent["Key"]["#text"]) {
+          var selected = "";
+          if (charTalent["SelectedSkills"]) {
+            for (var key in charTalent["SelectedSkills"]) {
+              if (charTalent["SelectedSkills"][key] && charTalent["SelectedSkills"][key]["#text"]) {
+                if (skillRef[charTalent["SelectedSkills"][key]["#text"]]) {
+                  selected = selected + game.templates.character.skills[skillRef[charTalent["SelectedSkills"][key]["#text"]]].name + "\n";
+                }
+                else {
+                  selected = selected + charTalent["SelectedSkills"][key]["#text"] + "\n";
+                }
+              }
+            }
+          }
+          if (charTalent["Purchased"]) {
+            var insert = true;
+            for (var tIndex in output.talents) {
+              if (output.talents[tIndex].name == obj[charTalent["Key"]["#text"]]) {
+                output.talents[tIndex] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
+                insert = false;
+                break;
+              }
+            }
+            if (insert) {
+              output.talents[obj[charTalent["Key"]["#text"]]] = sync.newValue(obj[charTalent["Key"]["#text"]], selected, null, null, {"rank" : "Spec Tree - " + charSpec["Name"]["#text"]});
+            }
+          }
+        }
+      }
+    }
+  }
+
+  searchObj["Attributes"] = function(src, output) {
+    var wTotal = 0;
+    for (var key in src["WoundThreshold"]) {
+      if (src["WoundThreshold"][key] && src["WoundThreshold"][key]["#text"]) {
+        wTotal = parseInt(wTotal) + parseInt(src["WoundThreshold"][key]["#text"]);
+      }
+    }
+    output.counters.wounds.current = wTotal;
+    output.counters.wounds.max = wTotal;
+
+    var sTotal = 0;
+    for (var key in src["StrainThreshold"]) {
+      if (src["StrainThreshold"][key] && src["StrainThreshold"][key]["#text"]) {
+        sTotal = parseInt(sTotal) + parseInt(src["StrainThreshold"][key]["#text"]);
+      }
+    }
+    output.counters.stress.current = sTotal;
+    output.counters.stress.max = sTotal;
+
+    if (src["DefenseRanged"]) {
+      output.counters.rdf.current = parseInt(src["DefenseRanged"]["#text"] || 0);
+    }
+    if (src["DefenseMelee"]) {
+      output.counters.mdf.current = parseInt(["DefenseMelee"]["#text"] || 0);
+    }
+  }
+
+  var weapon = {
+    "BLASTHOLD" : {name : "Holdout Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTHOLDTT24" : {name : "TT24 Holdout Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "MILHOLDBLAST" : {name : "Military Holdout Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "VARHOLDBLAST" : {name : "Variable Holdout Blaster", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "QUICKFIRE" : {name : "Model Q4 Quickfire", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "12DEFEND" : {name : "12 Defender", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "DEFSPBLAST" : {name : "Defender Sporting Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "ELG3ABLAST" : {name : "ELG-3A Blaster Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTLT" : {name : "Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTLTHL27" : {name : "HL-27 Light Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "POCKPIS" : {name : "Pocket Blaster Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPIS" : {name : "Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISCDEF" : {name : "CDEF Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTPISK23" : {name : "Relby-K23 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "DUELPIS" : {name : "Dueling Pistol", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "BLASTPISXL2" : {name : "XL-2 'Flashfire' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISH7" : {name : "H-7 'Equalizer' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
+    "BLASTPISDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTCARBDR45" : {name : "DR-45 'Dragoon' Cavalry Blaster (Carbine Mode)", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTBOONTA" : {name : "Boonta Blaster", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTATAPULSE" : {name : "Greff-Timms ATA Pulse-Wave Blaster", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHVY" : {name : "Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHVYGEO" : {name : "Geonosian Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
+    "SECURITYS5" : {name : "Security S-5 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "KO-2HSP" : {name : "KO-2 Heavy Stun Pistol", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "MODEL44BLASTPIST" : {name : "Model 44 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "MODEL80BLASTPIST" : {name : "Model 80 Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "2"},
+    "IR5BLASTPIST" : {name : "IR-5 'Intimidator' Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHVYCR2" : {name : "CR-2 Heavy Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "SITE145PISTOL" : {name : "Site-145 Replica Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "X30LANCER" : {name : "x-30 Lancer", d : 5, r : "wrLong", s : "Ranged - Light (Ag)", c : "4"},
+    "BLASTPISTDL19C" : {name : "DL-19C Blaster Pistol", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "DL7HBLASTPISTHVY" : {name : "DL-7h Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTPISHH50" : {name : "HH-50 Heavy Blaster Pistol", d : 7, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "MONCALBAT" : {name : "Mon Calamari Battle Baton", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "ENSLING" : {name : "Energy Slingshot", d : 3, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "BLASTCARB" : {name : "Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTCARBGEO" : {name : "Geonosian Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "2"},
+    "OK98BLASTCARB" : {name : "OK-98 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTCARBE5" : {name : "E5 Blaster Carbine", d : 9, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BOLACARB" : {name : "Bola Carbine", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "DLS12HBR" : {name : "DLS-12 Heavy Blaster Carbine", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTRIF" : {name : "Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTRIFGEO" : {name : "Geonosian Blaster Rifle", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "BLASTRIFSKZ" : {name : "SKZ Sporting Blaster Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
+    "BLASTLANCE" : {name : "Weequay Blaster Lance", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTRIFDDCMR6" : {name : "DDC-MR6 Modular Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "ACPREPEATER" : {name : "ACP Repeater Gun", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "ACPARRAYGUN" : {name : "ACP Array Gun", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
+    "SWE2SONIC" : {name : "SWE/2 Sonic Rifle", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "6"},
+    "BLASTRIFHVY" : {name : "Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "DHXBLASTRIFHVY" : {name : "DH-X Heavy Blaster Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "E11SNIPER" : {name : "E-11S Sniper Rifle", d : 10, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "LBR9STUNRIFLE" : {name : "LBR-9 Stun Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "BLASTLTREP" : {name : "Light Repeating Blaster", d : 11, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "SE14RBLASTLTREP" : {name : "SE-14r Light Repeating Blaster", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "BLASTHVYREP" : {name : "Heavy Repeating Blaster", d : 15, r : "wrLong", s : "Gunnery (Ag)", c : "2"},
+    "VXBLASTREP" : {name : "VX 'Sidewinder' Repeating Blaster", d : 12, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
+    "HOBBLASTREPHVY" : {name : "HOB Heavy Repeating Blaster", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "D29REPULSOR" : {name : "D-29 Repulsor Rifle", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "MONCALSPBLAST" : {name : "Mon Calamari Spear Blaster (Blaster)", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MONCALSPBLASTSP" : {name : "Mon Calamari Spear Blaster (Spear)", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ELECTPULSEDIS" : {name : "Electromag-Pulse Disruptor", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "BOWCAST" : {name : "Bowcaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "BLASTION" : {name : "Ion Blaster", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "DROIDDIS" : {name : "Droid Disruptor", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "DISRPIS" : {name : "Disruptor Pistol", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "DISRRIF" : {name : "Disruptor Rifle", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "SLUGPIS" : {name : "Slugthrower Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "SLUGPISASP9" : {name : "ASP-9 'Vrelt' Autopistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "FIVERSLUGPIST" : {name : "Model C 'Fiver' Pistol", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "SLUGKD30" : {name : "KD-30 'Dissuader' Pistol", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "STEALTH2VX" : {name : "Stealth-2VX Palm Shooter", d : 1, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "VODRANRIFLE" : {name : "Vodran Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "4"},
+    "SLUGRIF" : {name : "Slugthrower Rifle", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
+    "SLUGRIFMKV" : {name : "Mark V 'Sand Panther' Hunting Rifle", d : 7, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
+    "ASSAULTSLUGCARB" : {name : "FYR Assault Carbine", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
+    "SLUGRIFSELSHARD" : {name : "Selonian Shard Shooter", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MODEL77" : {name : "Model 77 Air Rifle", d : 6, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "MODEL38" : {name : "Model 38 Sharpshooter's Rifle", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MODEL38DET" : {name : "Model 38 Sharpshooter's Rifle (Detonator Round)", d : 8, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "HAMMER" : {name : "KS-23 Hammer", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
+    "DFD1" : {name : "DF-D1 Duo-Flechette Rifle", d : 9, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
+    "VERPSHATPIS" : {name : "Verpine Shatter Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "VERPSHATRIF" : {name : "Verpine Shatter Rifle", d : 12, r : "wrExtreme", s : "Ranged - Heavy (Ag)", c : "3"},
+    "VERPSHATHVYRIF" : {name : "Verpine Heavy Shatter Rifle", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "BOLA" : {name : "Bola/Net", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "ELECTRONET" : {name : "Electronet", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "FLAME" : {name : "Flame Projector", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MISS" : {name : "Missile Tube", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "L70ACID" : {name : "L70 Acid Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
+    "NETGUN" : {name : "AO14 'Aranea' Net Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "0"},
+    "STOKHLI" : {name : "Stokhli Spray Stick", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "RIOTRIFLE" : {name : "R-88 Supressor Riot Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
+    "TANGLEGUN" : {name : "Tangle Gun", d : 1, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
+    "FRAGGR" : {name : "Frag Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "STUNGR" : {name : "Stun Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "THERMDET" : {name : "Thermal Detonator", d : 20, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "THERMDETMINI" : {name : "Mini Thermal Detonator", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "APGREN" : {name : "Armor Piercing Grenade", d : 13, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "N4NOISEGREN" : {name : "N-4 Noise Grenade", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "6"},
+    "WIPE3GREN" : {name : "Wipe-3 Data-Purge Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "HICMERCYGREN" : {name : "HIC 'Mercy' Grenade", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "SPOREBSTUNGREN" : {name : "Spore/B Stun Grenade", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "AVMINE" : {name : "Anti-Vehicle Mine", d : 25, r : "wrEngaged", s : "Mechanics (Int)", c : "2"},
+    "APMINE" : {name : "Anti-Personnel Mine", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
+    "KNOCKMINE" : {name : "Knockout Mine", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "GLOPGRND" : {name : "Glop Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "INFERGREND" : {name : "D-24 Inferno Grenade", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "CONCGREND" : {name : "G2 Concussion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "IONGREND" : {name : "Lightning 22 Ion Grenade", d : 10, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "PLASGREND" : {name : "NOVA40 Plasma Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "HVYFRGGREND" : {name : "Mk.4 Heavy Frag Grenade", d : 9, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "POISONGR" : {name : "Poison Gas Grenade", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "CONCMISSILEMK10" : {name : "Mk.10 Concussion Missile", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
+    "FRAGMISSILEC88" : {name : "C-88 Fragmentation Missile", d : 12, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
+    "PLASMISSILESK44" : {name : "SK-44 Plasma Missile", d : 16, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "INCENMISSILEC908" : {name : "C-908 Incendiary Missile", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "BARADIUMCHRG" : {name : "Baradium Charge", d : 3, r : "wrLong", s : "Mechanics (Int)", c : "0"},
+    "DETONITECHRG" : {name : "Detonite Charge", d : 15, r : "wrShort", s : "Mechanics (Int)", c : "0"},
+    "PLASMACHRG" : {name : "Plasma Charge", d : 9, r : "wrMedium", s : "Mechanics (Int)", c : "0"},
+    "PROTONGRNAD" : {name : "Proton Grenade", d : 10, r : "wrShort", s : "Mechanics (Int)", c : "0"},
+    "COMPBOW" : {name : "Corellian Compound Bow", d : 5, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
+    "COMPBOWEXP" : {name : "Corellian Compound Bow (Explosive Tipped)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "COMPBOWSTUN" : {name : "Corellian Compound Bow (Stun)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "0"},
+    "STYANAX" : {name : "Styanax Lance", d : 8, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "3"},
+    "CZ28FLAME" : {name : "CZ-28 Flamestrike", d : 9, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
+    "FC1FLECHETTE" : {name : "FC1 Flechette Launcher (Anti-Infantry)", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "FC1FLECHETTEVEH" : {name : "FC1 Flechette Launcher (Anti-Vehicle)", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
+    "GRENADLAUNCHZ50" : {name : "Z50 Grenade Launcher", d : 8, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "MINTORPLAUNCH" : {name : "Mini-Torpedo Launcher", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MINTORPAP" : {name : "Mini-Torpedo, Anti-Personnel", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MINTORPARMP" : {name : "Mini-Torpedo, Armor Piercing", d : 12, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "MINTORPINK" : {name : "Mini-Torpedo, Ink", d : 0, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "0"},
+    "MINTORPION" : {name : "Mini-Torpedo, Ion", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "MINTORPNET" : {name : "Mini-Torpedo, Net", d : 0, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "0"},
+    "MINTORPSTUN" : {name : "Mini-Torpedo, Stun", d : 8, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "2"},
+    "AURBOOM" : {name : "Aurateran Boomerang", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "5"},
+    "GUNGATL" : {name : "Gungan Atlatl", d : 5, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "GUNGPLAS" : {name : "Gungan Plasma Ball", d : 5, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "LONGBOW" : {name : "Long Bow", d : 5, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "5"},
+    "BRASS" : {name : "Brass Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "SHOCKGL" : {name : "Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "REFCORTCAUNT" : {name : "Refined Cortosis Gauntlets", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "BLSTKNUK" : {name : "Blast Knuckles", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "VAMBLADES1" : {name : "S-1 Vamblade (Single)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "VAMBLADE2S1" : {name : "S-1 Vamblade (Paired)", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "VIBROKNUK" : {name : "Vibroknucklers", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "2"},
+    "BACKHANDSHKGLV" : {name : "Backhand Shock Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "NEEDLEGLOVES" : {name : "Needle Gloves", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "SHIELDGAUNT" : {name : "Shield Gauntlet", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "KNIFE" : {name : "Combat Knife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "CUTLASSCOR" : {name : "Corellian Cutlass", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "LONGWHIP" : {name : "Longeing Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "5"},
+    "PERSUADER" : {name : "Sorosuub 'Persuader' Shock Prod", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "CERBLADE" : {name : "Ceremonial Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "STAFFOFF" : {name : "Staff of Office", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "ANCIENTSWORD" : {name : "Ancient Sword", d : 0, r : "wrEngaged", s : "LTSABER", c : "3"},
+    "CORTSHIELD" : {name : "Cortosis Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "CORTSWORD" : {name : "Cortosis Sword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ELECSTAFF" : {name : "Electrostaff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "REFCORTSTAFF" : {name : "Refined Cortosis Staff", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "GAFF" : {name : "Gaffi Stick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "FLASHSTICK" : {name : "Drall Flashstick", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "0"},
+    "FORCEP" : {name : "Force Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "DIIRO" : {name : "Diiro", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "CORALPIKE" : {name : "Coral Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "ENERGYLANCE" : {name : "Energy Lance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "CS12STUNMAST" : {name : "CS-12 Stun Master", d : 6, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ENERGYBUCK" : {name : "Energy Buckler", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "PARRVIBRO" : {name : "Parrying Vibroblade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "PARRDAGG" : {name : "Parrying Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "CRYOWHIP" : {name : "Rodian Cryogen Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "3"},
+    "SITHSHIELD" : {name : "Sith Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "SNAPBATON" : {name : "Snap Baton", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "BARDLANCE" : {name : "Bardottan Electrolance", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "GUNGPOLE" : {name : "Gungan Electropole", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "GUNGPOLET" : {name : "Gungan Electropole (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "GUNGPES" : {name : "Gungan Personal Energy Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "TRAINSTICK" : {name : "Training Stick", d : 0, r : "wrEngaged", s : "LTSABER", c : "5"},
+    "VOSSWARSP" : {name : "Voss Warspear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "VOSSWARSPT" : {name : "Voss Warspear (thrown)", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "WEIKGS" : {name : "Weik Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "THERMCUTW" : {name : "Thermal Cutter", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "SVT300" : {name : "SVT-300 Stun Cloak", d : 7, r : "wrEngaged", s : "Brawl (Br)", c : "3"},
+    "LTSABER" : {name : "Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
+    "LTSABERBASIC" : {name : "Basic Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERDBL" : {name : "Double-Bladed Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERPIKE" : {name : "Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERSHOTO" : {name : "Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERTRAIN" : {name : "Training Lightsaber", d : 6, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERGUASH" : {name : "Guard Shoto", d : 5, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERTEMGUAPIKE" : {name : "Temple Guard Lightsaber Pike", d : 6, r : "wrEngaged", s : "LTSABER", c : "2"},
+    "LTSABERBASICHILT" : {name : "Basic Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERDBLHILT" : {name : "Double-Bladed Lightsaber Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERPIKEHILT" : {name : "Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERSHOTOHILT" : {name : "Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERTEMGUAPIKEHILT" : {name : "Temple Guard Lightsaber Pike Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERGUASHHILT" : {name : "Guard Shoto Hilt", d : 0, r : "wrEngaged", s : "LTSABER", c : "0"},
+    "LTSABERLODAKA" : {name : "Master Lodaka's Lightsaber", d : 10, r : "wrEngaged", s : "LTSABER", c : "1"},
+    "TRUNCH" : {name : "Truncheon", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "STUNCLUB" : {name : "Stun Club", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "PULSEDRILL" : {name : "G9-GP Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "PULSEDRILLGX" : {name : "G9-GX Pulse Drill", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "BEAMDRILLJ7B" : {name : "J-7b Beamdrill", d : 9, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "ENTRENCHTOOL" : {name : "Entrenching Tool (Improvised)", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "GLAIVESEL" : {name : "Selonian Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBAX" : {name : "Vibro-ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "VIBKN" : {name : "Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "STVIBKN" : {name : "Stealth Vibroknife", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "VIBSW" : {name : "Vibrosword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "SWORDCANE" : {name : "Sword Cane", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBROSPR" : {name : "Huntsman Vibrospear", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBROSAW" : {name : "Mk. VIII Vibrosaw", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "FUSCUT" : {name : "Fusion Cutter", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "RYYKBLADE" : {name : "Ryyk Blade", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "VIBROGRTSWRDVX" : {name : "VX 'Czerhander' Vibro-Greatsword", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "THERMAXMOD7" : {name : "Model 7 Therm-Ax", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "ARGGAROK" : {name : "Arg'garok", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "VIBROGLAIVE" : {name : "Vibro-Glaive", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "MORCORTSTAFF" : {name : "Morgukai Cortosis Staff", d : 8, r : "wrEngaged", s : "Melee (Br)", c : "1"},
+    "NEURWHIP" : {name : "Neuronic Whip", d : 0, r : "wrShort", s : "Melee (Br)", c : "4"},
+    "TUSKPIKE" : {name : "Tuskbeast Pike", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "AUTOBLAST" : {name : "Auto-Blaster", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "5"},
+    "BLASTCANLT" : {name : "Light Blaster Cannon", d : 4, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "BLASTCANHVY" : {name : "Heavy Blaster Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "CML" : {name : "Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "AFCML" : {name : "Alternating-Fire Concussion Missile Launcher", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "ACML" : {name : "Assault Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "CMLHK" : {name : "Hunter Killer Concussion Missile Launcher", d : 7, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "IONLT" : {name : "Light Ion Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "IONMED" : {name : "Medium Ion Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
+    "IONHVY" : {name : "Heavy Ion Cannon", d : 7, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "IONLONG" : {name : "Long-Barrelled Ion Cannon", d : 9, r : "wrLong", s : "Gunnery (Ag)", c : "4"},
+    "IONBATT" : {name : "Battleship Ion Cannon", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "4"},
+    "LASERLT" : {name : "Light Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "LASERMED" : {name : "Medium Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "LASERHVY" : {name : "Heavy Laser Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "LASERPTDEF" : {name : "Point Defense Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "LASERLONG" : {name : "Long-Nosed Laser Cannon", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "PTL" : {name : "Proton Torpedo Launcher", d : 8, r : "wrShort", s : "Gunnery (Ag)", c : "2"},
+    "LASERQUAD" : {name : "Quad Laser Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "TRACTLT" : {name : "Light Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "TRACTMED" : {name : "Medium Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "TRACTHVY" : {name : "Heavy Tractor Beam", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "TURBOLT" : {name : "Light Turbolaser", d : 9, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "TURBOMED" : {name : "Medium Turbolaser", d : 10, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
+    "TURBOHVY" : {name : "Heavy Turbolaser", d : 11, r : "wrLong", s : "Gunnery (Ag)", c : "3"},
+    "RIOTSHIELD" : {name : "Riot Shield", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "MOLSTILETTO" : {name : "Molecular Stiletto", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "STUNBATON" : {name : "Stun Baton", d : 2, r : "wrEngaged", s : "Melee (Br)", c : "6"},
+    "THNDRBOLT" : {name : "Thunderbolt Shock Prod", d : 5, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "SUPPRESSCANNON" : {name : "Light Suppression Cannon", d : 10, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "ELECHARPOON" : {name : "Electromagnetic Harpoon", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "CONGRENLAUNCH" : {name : "Concussion Grenade Launcher", d : 10, r : "wrExtreme", s : "Gunnery (Ag)", c : "4"},
+    "PROTONBOMB" : {name : "Proton Bomb Release Chute", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "PROTONBAY" : {name : "Proton Bomb Bay", d : 7, r : "wrClose", s : "Gunnery (Ag)", c : "2"},
+    "BEAMDRILHVY" : {name : "Heavy Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "BEAMDRIL" : {name : "Beamdrill", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "MINIROCKET" : {name : "Mini-Rocket Launcher", d : 3, r : "wrClose", s : "Gunnery (Ag)", c : "4"},
+    "MASSDRIVMSL" : {name : "Mass Driver Missile Launchers", d : 14, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "MISSILEPACK" : {name : "Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
+    "MISSILEPACKMINI" : {name : "Mini-Missile Pack", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
+    "MINIMISSILETUBE" : {name : "MM-XT Mini-Missile Tube", d : 0, r : "wrExtreme", s : "Gunnery (Ag)", c : "0"},
+    "TRACTOR213" : {name : "Grappler 213 Tactical Tractor Beam", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "MISSCONCMINI" : {name : "Concussion Missile (Mini)", d : 4, r : "wrShort", s : "Gunnery (Ag)", c : "4"},
+    "MISSJAM" : {name : "Jammer Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "MISSDECOY" : {name : "Decoy Missile", d : 0, r : "wrShort", s : "Gunnery (Ag)", c : "0"},
+    "MISSJAMMINI" : {name : "Jammer Missile (Mini)", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "0"},
+    "MISSUNGROCK" : {name : "Unguided Rocket", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "MISSUNGROCKMINI" : {name : "Unguided Rocket (Mini)", d : 3, r : "wrEngaged", s : "Gunnery (Ag)", c : "4"},
+    "ROTREPBLASTCAN" : {name : "Rotary Repeating Blaster Cannon", d : 15, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "LASCAN" : {name : "Laser Cannon", d : 9, r : "wrExtreme", s : "Gunnery (Ag)", c : "3"},
+    "FLAKLT" : {name : "Light Flak Cannon", d : 5, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "FLAKMED" : {name : "Medium Flak Cannon", d : 5, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "FLAKHVY" : {name : "Heavy Flak Cannon", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "VL6" : {name : "VL-6 Warhead Launcher System", d : 6, r : "wrShort", s : "Gunnery (Ag)", c : "3"},
+    "A95STING" : {name : "A95 Stingbeam", d : 5, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
+    "L7LIGHTPISTOL" : {name : "L7 Light Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "411HOLDOUT" : {name : "411 Holdout Blaster", d : 4, r : "wrMedium", s : "Ranged - Light (Ag)", c : "4"},
+    "M53QUICKTRIGGER" : {name : "Model 53 'Quicktrigger' Blaster Pistol", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "M1NOVAVIPER" : {name : "Model-1 'Nova Viper' Blaster Pistol", d : 7, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "C10DRAGONEYE" : {name : "C-10 'Dragoneye Reaper' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "RENHEAVYBLAST" : {name : "'Renegade' Heavy Blaster Pistol", d : 8, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "HBT4HUNTING" : {name : "HBt-4 Hunting Blaster", d : 10, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "VES700PULSE" : {name : "VES-700 Pulse Rifle", d : 8, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "3"},
+    "FDROIDDISABLER" : {name : "Droid Disabler", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "FWG5FLECHETTE" : {name : "FWG-5 Flechette Pistol", d : 6, r : "wrShort", s : "Ranged - Light (Ag)", c : "3"},
+    "8GAUGESCATTER" : {name : "8-Gauge Scatter Gun", d : 7, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "6"},
+    "ASCIANTHROWDAG" : {name : "Ascian Throwing Dagger", d : 0, r : "wrShort", s : "Ranged - Light (Ag)", c : "2"},
+    "KNOCKOUTGRENADE" : {name : "Knockout Grenade", d : 12, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "TAGCRYOPROJ" : {name : "Cryoban Projector", d : 6, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "2"},
+    "SSB1STATIC" : {name : "SSB-1 Static Pistol", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "SHOCKBOOTS" : {name : "Shock Boots", d : 0, r : "wrEngaged", s : "Brawl (Br)", c : "5"},
+    "PUNCHDAGGER" : {name : "Punch Dagger", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "3"},
+    "BLADEBREAKER" : {name : "Blade-Breaker", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "VIBRORAPIER" : {name : "Vibrorapier", d : 0, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "LTTRACTCOUPLE" : {name : "Light Tractor Beam Coupler", d : 0, r : "wrClose", s : "Gunnery (Ag)", c : "1"},
+    "TORPLAUNCH" : {name : "Torpedo Launcher", d : 6, r : "wrMedium", s : "Gunnery (Ag)", c : "3"},
+    "PROTTORPHVY" : {name : "Heavy Proton Torpedo Launcher", d : 10, r : "wrMedium", s : "Gunnery (Ag)", c : "2"},
+    "CLUSTERBOMB" : {name : "Cluster Bomb Launcher", d : 6, r : "wrClose", s : "Gunnery (Ag)", c : "3"},
+    "IONTHRUST" : {name : "Ion Thruster Gun", d : 5, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "4"},
+    "MULTIGOO" : {name : "Multi-Goo Gun", d : 2, r : "wrShort", s : "Ranged - Light (Ag)", c : "0"},
+    "REPULSORGUN" : {name : "Repulsor Gun", d : 3, r : "wrShort", s : "Ranged - Heavy (Ag)", c : "5"},
+    "RIVETGUN" : {name : "Rivet Gun", d : 4, r : "wrEngaged", s : "Ranged - Light (Ag)", c : "3"},
+    "HANDGRID" : {name : "Hand Grinder", d : 4, r : "wrEngaged", s : "Melee (Br)", c : "4"},
+    "WELDINGROD" : {name : "Welding Rod", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "BMWEAPTEMP1" : {name : "Fist Weapon (Template)", d : 3, r : "wrEngaged", s : "Brawl (Br)", c : "4"},
+    "BMWEAPTEMP2" : {name : "Blunt Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "BMWEAPTEMP3" : {name : "Shield (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "5"},
+    "BMWEAPTEMP4" : {name : "Bladed Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "BMWEAPTEMP5" : {name : "Vibro-weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "BMWEAPTEMP6" : {name : "Powered Melee Weapon (Template)", d : 3, r : "wrEngaged", s : "Melee (Br)", c : "2"},
+    "RWEAPTEMP1" : {name : "Simple Projectile Weapon (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "RWEAPTEMP2" : {name : "Solid Projectile Pistol (Template)", d : 4, r : "wrShort", s : "Ranged - Light (Ag)", c : "5"},
+    "RWEAPTEMP3" : {name : "Solid Projectile Rifle (Template)", d : 7, r : "wrMedium", s : "Ranged - Heavy (Ag)", c : "5"},
+    "RWEAPTEMP4" : {name : "Energy Pistol (Template)", d : 6, r : "wrMedium", s : "Ranged - Light (Ag)", c : "3"},
+    "RWEAPTEMP5" : {name : "Energy Rifle (Template)", d : 9, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "RWEAPTEMP6" : {name : "Heavy Energy Rifle (Template)", d : 10, r : "wrLong", s : "Ranged - Heavy (Ag)", c : "3"},
+    "RWEAPTEMP7" : {name : "Missile Launcher (Template)", d : 0, r : "wrEngaged", s : "Gunnery (Ag)", c : "0"},
+    "RWEAPTEMP8" : {name : "Missile (Template)", d : 20, r : "wrExtreme", s : "Gunnery (Ag)", c : "2"},
+    "RWEAPTEMP9" : {name : "Grenade (Template)", d : 8, r : "wrShort", s : "Ranged - Light (Ag)", c : "4"},
+    "RWEAPTEMP10" : {name : "Mine (Template)", d : 12, r : "wrEngaged", s : "Mechanics (Int)", c : "3"},
+  };
+
+  var armor = {
+    "AEG" : {name : "Adverse Environmental Gear", s : 1},
+    "AC" : {name : "Armored Clothing", s : 1},
+    "ARMROBE" : {name : "Armored Robes", s : 2},
+    "CONROBE" : {name : "Concealing Robes", s : 1},
+    "HBA" : {name : "Heavy Battle Armor", s : 2},
+    "HC" : {name : "Heavy Clothing", s : 1},
+    "LAM" : {name : "Laminate", s : 2},
+    "PDS" : {name : "Personal Deflector Shield", s : 0},
+    "PAD" : {name : "Padded Armor", s : 2},
+    "ENVIROSUIT" : {name : "Enviro-suit", s : 2},
+    "CRASHSUIT" : {name : "A/KT Shockrider Crash Suit", s : 2},
+    "UTILITYVEST" : {name : "A/KT Tracker Utility Vest", s : 0},
+    "MOUNTARMOR" : {name : "A/KT Mountaineer Armor", s : 1},
+    "CATCHVEST" : {name : "Catch Vest", s : 1},
+    "NOMADCOAT" : {name : "Nomad Greatcoat", s : 1},
+    "MODARMORIII" : {name : "Type III 'Berethron' Personal Modular Armor", s : 1},
+    "FLIGHTTX3" : {name : "TX-3 Combat Flight Suit", s : 0},
+    "BEASTHIDE" : {name : "Beast-Hide Armor", s : 1},
+    "CHARGESUIT" : {name : "'Storm' Charge Suit", s : 2},
+    "FLAKVEST" : {name : "Mk. III Flak Vest", s : 1},
+    "PROTECTOR" : {name : "Protector 1 Combat Armor", s : 2},
+    "STEELSKIN" : {name : "Mk.II 'Steelskin' Anti-Concussive Armor", s : 3},
+    "POWARMOR" : {name : "PX-11 'Battlement' Powered Armor", s : 3},
+    "TAILOREDJACKET" : {name : "Tailored Armored Jacket", s : 2},
+    "REINFENVIRO" : {name : "Reinforced Environment Gear", s : 1},
+    "RIOTARMOR" : {name : "Mk.IV Riot Armor", s : 1},
+    "WINGCOMMANDER" : {name : "A/KT Wing Commander Armored Flight Suit", s : 1},
+    "RIDINGTACK" : {name : "Caballerin-Series Riding Tack", s : 0},
+    "CAPARIBEAST" : {name : "Capari-Series Padded Beast Armor", s : 2},
+    "DESTRIBEAST" : {name : "Destri-Series Laminated Beast Armor", s : 4},
+    "MEGAFAUNA" : {name : "H-Series Megafauna Carriage", s : 0},
+    "HUTTSHELLARMOR" : {name : "Hutt Shell Armor", s : 2},
+    "SAKSHADOW" : {name : "Sakiyan Shadowsuit", s : 1},
+    "BLASTVEST" : {name : "Blast Vest", s : 1},
+    "MIMETICSUIT" : {name : "Mimetic Suit", s : 1},
+    "SMUGGLERSTRENCHCOAT" : {name : "Smuggler's Trenchcoat", s : 1},
+    "BANAL" : {name : "Banal Apparel", s : 0},
+    "CARGOCL" : {name : "Cargo Apparel", s : 0},
+    "DIPROBE" : {name : "Diplomat's Robes", s : 0},
+    "FLAREJACK" : {name : "Flare Jacket", s : 1},
+    "HAULHARN" : {name : "Hauling Harness", s : 1},
+    "HOLOCOST" : {name : "Holographic Costume", s : 0},
+    "LECOUT" : {name : "Lector's Outfit", s : 1},
+    "NOBREG" : {name : "Noble Regalia", s : 0},
+    "PERFATT" : {name : "Performer's Attire", s : 0},
+    "POWCAPARM" : {name : "Powered Capacitive Armor", s : 1},
+    "RESPROBES" : {name : "Resplendent Robes", s : 1},
+    "SECSKIN" : {name : "Second Skin Armor", s : 1},
+    "BODYSUIT" : {name : "Polis Masson Bodysuit", s : 1},
+    "LEVPOWARM" : {name : "Leviathan Power Armor", s : 2},
+    "VERPFIBUARM" : {name : "Verpine Fiber Ultramesh Armor", s : 1},
+    "CRESHARMOR" : {name : "Cresh 'Luck' Armor", s : 2},
+    "JEDIBA" : {name : "Jedi Battle Armor", s : 2},
+    "JEDITEMGUAARM" : {name : "Jedi Temple Guard Armor", s : 1},
+    "JEDITRAINSUITW" : {name : "Jedi Training Suit (Weighted)", s : 2},
+    "JEDITRAINSUIT" : {name : "Jedi Training Suit (Unweighted)", s : 2},
+    "KAVDANNPA" : {name : "Kav-Dann Power Armor", s : 2},
+    "KOROHALFVEST" : {name : "Koromondian Half-Vest", s : 1},
+    "RIOTARM" : {name : "Riot Armor", s : 2},
+    "ARMTEMP1" : {name : "Reinforced Clothing (Template)", s : 1},
+    "ARMTEMP2" : {name : "Light Armor (Template)", s : 2},
+    "ARMTEMP3" : {name : "Customizable Armor (Template)", s : 1},
+    "ARMTEMP4" : {name : "Deflective Armor (Template)", s : 1},
+    "ARMTEMP5" : {name : "Combat Armor (Template)", s : 2},
+    "ARMTEMP6" : {name : "Segmented Armor (Template)", s : 2},
+    "ARMTEMP7" : {name : "Augmentaive Armor (Template)", s : 2},
+    "CLOAKCOAT" : {name : "Cloaking Coat", s : 1},
+    "MECHUTILSUIT" : {name : "Mechanic's Utility Suit", s : 2},
+    "N57" : {name : "N-57 Armor", s : 2},
+    "P14" : {name : "P-14 Hazardous Industry Suit", s : 2},
+  };
+
+  searchObj["Weapons"] = function(src, output) {
+    for (var key in src.CharWeapon) {
+      // each skill
+      if (src["CharWeapon"][key] && src["CharWeapon"][key]["ItemKey"] && src["CharWeapon"][key]["ItemKey"]["#text"]) {
+        var item = JSON.parse(JSON.stringify(game.templates.item));
+        if (weapon[src["CharWeapon"][key]["ItemKey"]["#text"]]) {
+          item.info.name.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].name;
+          item.info.skill.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].s;
+          item.weapon.damage.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].d;
+          item.weapon.range.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].r;
+          item.weapon.crit.current = weapon[src["CharWeapon"][key]["ItemKey"]["#text"]].c;
+          output.inventory.push(item);
+        }
+        else {
+          item.info.name.current = src["CharWeapon"][key]["ItemKey"]["#text"];
+          output.inventory.push(item);
+        }
+      }
+    }
+  }
+  searchObj["Armor"] = function(src, output) {
+    for (var key in src.CharArmor) {
+      if (src["CharArmor"][key] && src["CharArmor"][key]["ItemKey"] && src["CharArmor"][key]["ItemKey"]["#text"]) {
+        var item = JSON.parse(JSON.stringify(game.templates.item));
+        if (armor[src["CharArmor"][key]["ItemKey"]["#text"]]) {
+          item.info.name.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].name;
+          item.equip.armor.current = armor[src["CharArmor"][key]["ItemKey"]["#text"]].s;
+          output.inventory.push(item);
+        }
+        else {
+          item.info.name.current = src["CharArmor"][key]["ItemKey"]["#text"];
+          output.inventory.push(item);
+        }
+      }
+    }
+  }
+  searchObj["Gear"] = function(src, output) {
+    for (var key in src.CharGear) {
+      if (src["CharGear"][key] && src["CharGear"][key]["ItemKey"] && src["CharGear"][key]["ItemKey"]["#text"]) {
+        var item = JSON.parse(JSON.stringify(game.templates.item));
+        item.info.name.current = src["CharGear"][key]["ItemKey"]["#text"];
+        output.inventory.push(item);
+      }
+    }
+  }
+
+  // create it right here
+  function recurseSearch(src, keys, output) {
+    for (var key in src) {
+      if (src[key] instanceof Object) {
+        if (src[key] && keys[key]) {
+          keys[key](src[key], output);
+        }
+        else {
+          recurseSearch(src[key], keys, output);
+        }
+      }
+    }
+  }
+  recurseSearch(xml, searchObj, override);
+}
+
+function pcgen_import(xml, override) {
+  var table = {};
+  var list = xml.nodehandler.nodehandler;
+  for (var key in list) {
+    var data = list[key]["@attributes"];
+    table[data.name] = list[key]["nodehandler"];
+  }
+  var importRule = {};
+  importRule["Combat"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data["@attributes"]) {
+        if (data["@attributes"].name.toLowerCase().match("current hp")) {
+          sync.rawVal(override.counters.hp, eval(data["@attributes"].name.match(diceNumber)[0]));
+          override.counters.hp.max = eval(data["@attributes"].name.match(diceNumber)[0]);
+        }
+        else if (data["@attributes"].name.toLowerCase().match(" Saving Throw")) {
+          var options = data.list.option;
+          var saving = sync.rawVal(override.counters.saving);
+          for (var i in options) {
+            for (var j in saving) {
+              var match = options[i]["#text"].toLowerCase().match(saving[j].name.toLowerCase());
+              if (match) {
+                var firstNumber = /[+-]\d+/;
+                var d = firstNumber.exec(options[i]["#text"]);
+                sync.rawVal(saving[j], eval(d[0]));
+              }
+            }
+          }
+          sync.rawVal(override.counters.saving, saving);
+        }
+        else if (data["@attributes"].name.toLowerCase() == "weapons") {
+          for (var j in data.nodehandler) {
+            var item = data.nodehandler[j];
+
+            var newItem = duplicate(game.templates.item);
+            sync.val(newItem.info.name, item["@attributes"].name);
+            var dmgreg = /Damage\s*\[(\d*d\d+\+\d*)/i
+            var weaponInf = item.nodehandler[0].nodehandler.text["#text"].match(dmgreg);
+
+            if (weaponInf) {
+              sync.rawVal(newItem.weapon.damage, weaponInf[1]);
+            }
+            override.inventory.push(newItem);
+          }
+        }
+      }
+    }
+  }
+  importRule["Description"] = function(src, override) {
+    output.info.notes.current = '<h2 style="margin: 0; font-size: 1.4em; font-weight: bold;" data-mce-style="margin: 0; font-size: 1.4em; font-weight: bold;">Description</h2><hr style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;" data-mce-style="display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;">';
+
+    for (var key in src) {
+      var data = src[key];
+      if (data.text["#text"]) {
+        override.info.notes.current = (override.info.notes.current || "") + "<p>" + data.text["#text"] + "</p>";
+      }
+    }
+  }
+  importRule["Details"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      for (var j in override.info) {
+        if (data["@attributes"].name.toLowerCase().match(override.info[j].name.toLowerCase())) {
+          if (j == "name") {
+            sync.rawVal(override.info[j], data.text["#text"]);
+          }
+          else {
+            sync.rawVal(override.info[j], (sync.rawVal(override.info[j]) || "") + " " + data.text["#text"]);
+          }
+        }
+        else if (data["@attributes"].name.toLowerCase() == "speed") {
+          var firstNumber = /[+-]*\d+/;
+          var match = firstNumber.exec(data.text["#text"]);
+          if (match) {
+            sync.rawVal(override.counters.speed, eval(match[0]));
+          }
+        }
+        else if (data["@attributes"].name.toLowerCase() == "abilities") {
+          for (var i in data.grid.row) {
+            var stt = data.grid.row[i];
+            for (var s in override.stats) {
+              if (s.toLowerCase() == stt.cell[0]["#text"].toLowerCase().trim()) {
+                sync.rawVal(override.stats[s], parseInt(stt.cell[1]["#text"]));
+                sync.modifier(override.stats[s], "Stat-Bonus", Math.floor(sync.rawVal(override.stats[s])/30*15) + -5);
+              }
+            }
+          }
+        }
+        else if (data["@attributes"].name.toLowerCase() == "skills") {
+          for (var i in data.grid.row) {
+            var stt = data.grid.row[i];
+            for (var j in override.skills) {
+              if (override.skills[j].name.toLowerCase().match(stt.cell[0]["#text"].toLowerCase().trim())) {
+                if (eval(stt.cell[2]["#text"])) {
+                  sync.rawVal(override.skills[j], 1);
+                  sync.modifier(override.skills[j], "rank", eval(stt.cell[2]["#text"]));
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  importRule["Equipment"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      var newItem = duplicate(game.templates.item);
+      sync.val(newItem.info.name, data["@attributes"].name);
+      sync.rawVal(newItem.info.notes, data.text["#text"]);
+      var weaponInf = data.text["#text"].split("\n");
+      var push = true;
+      for (var i in weaponInf) {
+        if (weaponInf[i].toLowerCase().match("damage")) {
+          // all weapons are taken care of in combat section
+          push = false;
+          break;
+        }
+      }
+      if (push) {
+        override.inventory.push(newItem);
+      }
+    }
+  }
+  importRule["Magic"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data.nodehandler) {
+        var spells = data.nodehandler.nodehandler;
+        for (var j in spells) {
+          var firstNumber = /\d+/;
+          var spellLevel = spells[j]["@attributes"].name.match(firstNumber);
+          var actualSpells = spells[j].text["#text"].split("\n");
+
+          actualSpells.splice(0, 1);
+          actualSpells.splice(actualSpells.length, 1);
+          for (var b=0; b<actualSpells.length; b=b+4) {
+            if (actualSpells[b+3] != null) {
+              var newItem = duplicate(game.templates.item);
+              sync.val(newItem.info.name, actualSpells[b+0]);
+              sync.modifier(newItem.spell.required, "level", spellLevel[0]);
+              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+1]);
+              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+2]);
+              sync.rawVal(newItem.info.notes, (sync.rawVal(newItem.info.notes) || "") + actualSpells[b+3]);
+              override.spellbook.push(newItem);
+            }
+            else {
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  importRule["Misc."] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data["@attributes"].name.toLowerCase().match("languages")) {
+        var lang = data.text["#text"].split(",");
+        for (var k in lang) {
+          if (lang[k].trim()) {
+            override.proficient["Language "+lang[k].trim()] = true;
+          }
+        }
+      }
+      else if(data["@attributes"].name && data.text && data.text["#text"]) {
+        sync.rawVal(override.info.notes, (sync.rawVal(override.info.notes) || "") + data["@attributes"].name + " : " + data.text["#text"] + "\n");
+      }
+    }
+  }
+  importRule["Special Abilities"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      if (data.text) {
+        var split = (data.text["#text"] || "").split("\n");
+        for (var i in split) {
+          if (split[i] && split[i].trim()) {
+            override.talents.push(sync.newValue(split[i]));
+          }
+        }
+      }
+    }
+  }
+  importRule["Weapon Summary"] = function(src, override) {
+    for (var key in src) {
+      var data = src[key];
+      var newItem = duplicate(game.templates.item);
+      sync.val(newItem.info.name, data["@attributes"].name);
+      sync.rawVal(newItem.info.notes, data.text["#text"]);
+      var weaponInf = data.text["#text"].split("\n");
+      var push = true;
+      for (var i in weaponInf) {
+        if (weaponInf[i].toLowerCase().match("damage")) {
+          // all weapons are taken care of in combat section
+          push = false;
+          break;
+        }
+      }
+      if (push) {
+        override.inventory.push(newItem);
+      }
+    }
+  }
+  console.log(table);
+  for (var key in table) {
+    if (importRule[key]) {
+      importRule[key](table[key], override);
+    }
+  }
+}
+
+sync.render("ui_renderHelp", function(obj, app, scope){
+  var div = $("<div>");
+  div.addClass("fit-xy flexcolumn");
+  div.load("https://files.gmforge.io/file/help/main.html", function( response, status, xhr ) {
+    if (status == "error") {
+      var reload = $("<button>").appendTo(div);
+      reload.append("Unable to load docs");
+    }
+  });
 
   return div;
 });
@@ -42687,7 +42702,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
     calcList.css("left", "0");
     if ((!obj.data._s || hasSecurity(getCookie("UserID"), "Rights", obj.data)) && (!char || hasSecurity(getCookie("UserID"), "Rights", char.data))) {
       calcList.sortable({
-        handle : ".inventoryContent",
+        filter : ".inventoryContent",
         update : function(ev, ui) {
           var newIndex;
           var count = 0;
@@ -54595,6 +54610,62 @@ sync.render("ui_pieceQuickEdit", function(obj, app, scope){
           }
         });
       });
+
+      var statusEffects = genIcon("exclamation-sign").appendTo(leftPadWrap);
+      statusEffects.addClass("flexmiddle spadding");
+      statusEffects.attr("title", "Effects");
+      statusEffects.click(function(){
+        var optionList = [];
+        var content = $("<div>");
+        content.addClass("flexcolumn");
+
+        for (var key in util.art.Effects) {
+          var img = $("<img>").appendTo(content);
+          img.addClass("hover2");
+          img.attr("src", util.art.Effects[key].src);
+          img.attr("width", "30px");
+          img.attr("height", "30px");
+          if (obj.data.layers[scope.layer].p[scope.piece].rpg && util.contains(obj.data.layers[scope.layer].p[scope.piece].rpg, util.art.Effects[key].src)) {
+            img.addClass("highlight outline smooth");
+          }
+          img.click(function(){
+            obj.data.layers[scope.layer].p[scope.piece].rpg = obj.data.layers[scope.layer].p[scope.piece].rpg || [];
+            var rpg = obj.data.layers[scope.layer].p[scope.piece].rpg;
+            if (rpg && util.contains(rpg, $(this).attr("src"))) {
+              for (var key=0; key<rpg.length; key++) {
+                if (rpg[key] == $(this).attr("src")) {
+                  rpg.splice(key, 1);
+                  break;
+                }
+              }
+            }
+            else {
+              rpg.push($(this).attr("src"));
+            }
+            runCommand("boardMove", {id : obj.id(), layer : scope.layer, type : "p", index : scope.piece, data : obj.data.layers[scope.layer].p[scope.piece]});
+            boardApi.pix.updateObject(scope.layer, "p", scope.piece, obj);
+            statusEffects.click();
+          });
+        }
+
+        optionList.push({
+          name : content,
+          style : {"color" : "transparent"},
+        });
+        var menu = ui_dropMenu($(this), optionList, {"id" : "color-picker", hideClose : true, align : "center"});
+        menu.removeClass("outline");
+      });
+      statusEffects.contextmenu(function(ev){
+        delete obj.data.layers[scope.layer].p[scope.piece].rpg;
+        runCommand("boardMove", {id : obj.id(), layer : scope.layer, type : "p", index : scope.piece, data : obj.data.layers[scope.layer].p[scope.piece]});
+        boardApi.pix.updateObject(scope.layer, "p", scope.piece, obj);
+        sync.updateApp(app, obj);
+        layout.coverlay("icons-picker");
+        ev.preventDefault();
+        ev.stopPropagation();
+        return false;
+      });
+
     }
 
     var padding = $("<div>").appendTo(leftPad);
@@ -54968,96 +55039,6 @@ sync.render("ui_pieceQuickEdit", function(obj, app, scope){
           ev.preventDefault();
           ev.stopPropagation();
         });
-
-        var additionalAsset = $("<div>")//.appendTo(rightPad);
-        additionalAsset.addClass("hover2 create outline smooth white flexmiddle");
-        additionalAsset.attr("title", "Stack more links");
-        additionalAsset.css("width", "25px");
-        additionalAsset.css("height", "25px");
-        additionalAsset.append(genIcon("plus"));
-        var ignore = {};
-        if (charIndex instanceof Object) {
-          for (var key in obj.data.layers[scope.layer].p[scope.piece].eID) {
-            ignore[obj.data.layers[scope.layer].p[scope.piece].eID[key]] = true;
-          }
-        }
-        else {
-          ignore[obj.data.layers[scope.layer].p[scope.piece].eID] = true;
-        }
-
-        additionalAsset.click(function(){
-          var content = sync.render("ui_assetPicker")(obj, app, {
-            rights : "Visible",
-            category : "b",
-            ignore : ignore,
-            select : function(ev, ui, ent, options){
-              var indx = obj.data.layers[scope.layer].p[scope.piece].eID;
-              if (!(indx instanceof Object)) {
-                obj.data.layers[scope.layer].p[scope.piece].eID = [];
-                if (indx != null) {
-                  obj.data.layers[scope.layer].p[scope.piece].eID.push(indx);
-                }
-              }
-              obj.data.layers[scope.layer].p[scope.piece].eID.push(ent.id());
-              runCommand("boardMove", {id : obj.id(), layer : scope.layer, type : "p", index : scope.piece, data : obj.data.layers[scope.layer].p[scope.piece]});
-              boardApi.pix.updateObject(scope.layer, "p", scope.piece, obj);
-              options.data.ignore = options.data.ignore || {};
-              options.data.ignore[ent.id()] = true;
-              sync.updateApp(app, obj);
-              var board = $(".board-" + obj.id());
-              var zoom = Number(board.attr("zoom"))/100;
-              var scrollLeft = Number(board.attr("scrollLeft"));
-              var scrollTop = Number(board.attr("scrollTop"));
-              var left = Number(board.offset().left)+(Number(pieceData.x)+Number(pieceData.w)/2)*zoom-scrollLeft-Number($(".piece-quick-edit").width())/2;
-              var top = Number(board.offset().top)+(Number(pieceData.y)+Number(pieceData.h))*zoom-scrollTop;
-              $(".piece-quick-edit").offset({
-                left : Math.max(board.offset().left, Math.min(left, (board.offset().left+board.width())-$(".piece-quick-edit").width())),
-                top : Math.max(board.offset().top, Math.min(top, (board.offset().top+board.height())-$(".piece-quick-edit").height())),
-              });
-              return true;
-            }
-          });
-
-          var popOut = ui_popOut({
-            target : $("body"),
-            prompt : true,
-            id : "add-asset",
-            title : "Attach Link",
-            align : "right",
-            style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
-          }, content);
-          popOut.resizable();
-        });
-
-        var reduceAsset = $("<div>")//.appendTo(rightPad);
-        reduceAsset.addClass("hover2 destroy outline smooth white flexmiddle");
-        reduceAsset.attr("title", "Empty asset links");
-        reduceAsset.css("width", "25px");
-        reduceAsset.css("height", "25px");
-        reduceAsset.append(genIcon("remove"));
-        reduceAsset.click(function(){
-          if (charIndex instanceof Object) {
-            obj.data.layers[scope.layer].p[scope.piece].eID = obj.data.layers[scope.layer].p[scope.piece].eID[0];
-          }
-          else {
-            delete obj.data.layers[scope.layer].p[scope.piece].eID;
-          }
-          layout.coverlay("icons-picker");
-          runCommand("boardMove", {id : obj.id(), layer : scope.layer, type : "p", index : scope.piece, data : obj.data.layers[scope.layer].p[scope.piece]});
-          boardApi.pix.updateObject(scope.layer, "p", scope.piece, obj);
-          sync.updateApp(app, obj);
-
-          var board = $(".board-" + obj.id());
-          var zoom = Number(board.attr("zoom"))/100;
-          var scrollLeft = Number(board.attr("scrollLeft"));
-          var scrollTop = Number(board.attr("scrollTop"));
-          var left = Number(board.offset().left)+(Number(pieceData.x)+Number(pieceData.w)/2)*zoom-scrollLeft-Number($(".piece-quick-edit").width())/2;
-          var top = Number(board.offset().top)+(Number(pieceData.y)+Number(pieceData.h))*zoom-scrollTop;
-          $(".piece-quick-edit").offset({
-            left : Math.max(board.offset().left, Math.min(left, (board.offset().left+board.width())-$(".piece-quick-edit").width())),
-            top : Math.max(board.offset().top, Math.min(top, (board.offset().top+board.height())-$(".piece-quick-edit").height())),
-          });
-        });
       }
 
 
@@ -55194,453 +55175,6 @@ sync.render("ui_pieceQuickEdit", function(obj, app, scope){
         }
       }
     }
-  }
-  else {
-    div.append("<b>Piece not Found</b>");
-  }
-
-
-  return div;
-});
-
-sync.render("ui_pieceEdit", function(obj, app, scope){
-  scope = scope || {
-    layer : app.attr("layer"),
-    board : app.attr("board"),
-    piece : app.attr("piece"),
-  };
-  var div = $("<div>");
-
-  var pieceData = obj.data.layers[scope.layer].p[scope.piece];
-  if (pieceData) {
-    var charIndex = pieceData.eID;
-    var noteIndex = pieceData.nID;
-
-    var misc = $("<div>");
-    misc.addClass("fit-x");
-
-    var miscWrap = $("<div>").appendTo(misc);
-    miscWrap.addClass("flexrow flex");
-    miscWrap.css("font-size", "1.2em");
-
-    var invisible = pieceData.v;
-    var reveal = genIcon("eye-open");
-    reveal.appendTo(miscWrap);
-    reveal.addClass("flex flexmiddle spadding");
-    reveal.attr("title", "Piece's visibility to players");
-    reveal.click(function(){
-      invisible = !invisible;
-      if (invisible) {
-        reveal.changeIcon("eye-close");
-      }
-      else {
-        reveal.changeIcon("eye-open");
-      }
-    });
-    if (invisible) {
-      reveal.changeIcon("eye-close");
-    }
-
-    var locked = pieceData.l;
-    var pin = genIcon("pushpin").appendTo(miscWrap)
-    pin.addClass("flex flexmiddle spadding");
-    pin.attr("title", "Piece can only be interacted with when on this layer");
-    pin.click(function(){
-      locked = !locked;
-      if (locked) {
-        pin.addClass("highlight2 alttext");
-      }
-      else {
-        pin.removeClass("highlight2 alttext");
-      }
-    });
-    if (locked) {
-      pin.addClass("highlight2 alttext");
-    }
-
-    var del = genIcon("trash").appendTo(miscWrap);
-    del.addClass("flex flexmiddle spadding");
-    del.attr("title", "Delete this piece");
-    del.click(function(){
-      ui_prompt({
-        target : $(this),
-        confirm : "Delete Piece",
-        click : function(ev, inputs){
-          obj.data.layers[scope.layer].p.splice(scope.piece, 1);
-          layout.coverlay("piece-popout-"+obj.id()+"-"+scope.layer+"-"+scope.piece);
-          if (!scope.local) {
-            obj.sync("updateAsset");
-          }
-          else {
-            obj.update();
-          }
-        }
-      });
-    });
-
-    var parent = $("<div>").appendTo(div);
-    parent.addClass("subtitle");
-
-    var positions = $("<div>");
-    positions.addClass("flexrow");
-
-    var xPos = genInput({
-      parent : positions,
-      type : "number",
-      min : 0,
-      placeholder : "xPos",
-      value : pieceData.x,
-      style : {"width" : "50px"},
-    });
-
-    var yPos = genInput({
-      parent : positions,
-      type : "number",
-      min : 0,
-      placeholder : "yPos",
-      value : pieceData.y,
-      style : {"width" : "50px"},
-    });
-
-    var sizes = $("<div>");
-    sizes.addClass("flexrow");
-
-    var wPos = genInput({
-      parent : sizes,
-      type : "number",
-      min : 16,
-      placeholder : "width",
-      value : pieceData.w,
-      style : {"width" : "50px"},
-    });
-
-    var hPos = genInput({
-      parent : sizes,
-      type : "number",
-      min : 16,
-      placeholder : "height",
-      value : pieceData.h,
-      style : {"width" : "50px"},
-    });
-
-    var colorDiv = $("<div>");
-    colorDiv.addClass("flexrow");
-    var col = genInput({
-      parent : colorDiv,
-      placeholder : "rgba or hex",
-      value : pieceData.c,
-      style : {"width" : "100px"},
-    });
-
-    var colBackground = $("<div>").appendTo(colorDiv);
-    colBackground.addClass("flexmiddle");
-
-    var content = $("<div>");
-    content.addClass("flexcolumn flex flexmiddle");
-
-    function colorOptions(){
-      sync.render("ui_shapePicker")(obj, content, {
-        color : col.val(),
-        shapeChange : function(ev, ui, newShape) {
-          content.empty();
-          shape = newShape;
-          colorOptions();
-
-          colBckground.empty();
-          buildShape(shape || 0, col.val()).appendTo(colBckground);
-        }
-      }).addClass("fit-x").appendTo(content);
-    }
-    colorOptions();
-
-    var colBckground = $("<button>").appendTo(colorDiv);
-    colBckground.addClass("flexcolumn");
-    colBckground.css("padding", "0px");
-
-    var shape = pieceData.d;
-    var colr = pieceData.c;
-    var colPreview = buildShape(pieceData.d || 0, pieceData.c).appendTo(colBckground);
-
-    var bgButton = $("<button>").appendTo(colorDiv);
-    bgButton.addClass("padding outline smooth");
-    bgButton.css("background", pieceData.c || "white");
-    bgButton.css("width", "2em");
-    bgButton.click(function(){
-      var optionList = [];
-      var submenu = [
-        "rgba(34,34,34,1)",
-        "rgba(187,0,0,1)",
-        "rgba(255,153,0,1)",
-        "rgba(255,240,0,1)",
-        "rgba(0,187,0,1)",
-        "rgba(0,115,230,1)",
-        "rgba(176,0,187,1)",
-        "rgba(255,115,255,1)",
-        "rgba(255,255,255,1)",
-      ];
-      for (var i in submenu) {
-        optionList.push({
-          icon : "tint",
-          style : {"background-color" : submenu[i], "color" : "transparent"},
-          click : function(ev, ui){
-            bgButton.css("background", ui.css("background-color"));
-
-            content.empty();
-            col.val(ui.css("background-color"));
-            colorOptions();
-
-            colBckground.empty();
-            buildShape(shape || 0, col.val()).appendTo(colBckground);
-          },
-        });
-      }
-      optionList.push({
-        icon : "tint",
-        style : {"background-image" : "url('/content/checkered.png')", "color" : "transparent"},
-        click : function(ev, ui){
-          bgButton.css("background", "rgba(0,0,0,0)");
-
-          content.empty();
-          col.val("rgba(0,0,0,0)");
-          colorOptions();
-
-          colBckground.empty();
-          buildShape(shape || 0, col.val()).appendTo(colBckground);
-        },
-      });
-      optionList.push({
-        icon : "cog",
-        click : function(){
-          var primaryCol = sync.render("ui_colorPicker")(obj, app, {
-            hideColor : true,
-            custom : true,
-            colorChange : function(ev, ui, value){
-              bgButton.css("background", value);
-
-              content.empty();
-              col.val(value);
-              colorOptions();
-
-              colBckground.empty();
-              buildShape(shape || 0, col.val()).appendTo(colBckground);
-              layout.coverlay("piece-color");
-            }
-          });
-
-          ui_popOut({
-            target : bgButton,
-            id : "piece-color",
-          }, primaryCol);
-        },
-      });
-      var menu = ui_dropMenu($(this), optionList, {"id" : "color-picker", hideClose : true});
-      menu.removeClass("outline");
-    });
-
-    var rot = genInput({
-      type : "number",
-      step : 45,
-      placeholder : "Rot(deg)",
-      value : pieceData.r,
-      style : {"width" : "60px"},
-    });
-
-    var alt = genInput({
-      type : "number",
-      placeholder : "Vertical Distance",
-      value : pieceData.a,
-      style : {"width" : "60px"},
-    });
-
-    var threat = genInput({
-      placeholder : "Range (Macro)",
-      value : pieceData.tr,
-    });
-    var inputs = {
-      "" : misc,
-      "Piece Title" : {placeholder : "Label", value : pieceData.t},
-      "Position(X,Y)" : positions,
-      "Size(W,H)" : sizes,
-      "Rotation (Deg)" : rot,
-    }
-    inputs["Altitude ("+(obj.data.options.unit || "un")+")"] = alt;
-    inputs["Threat Range ("+(obj.data.options.unit || "un")+")"] = threat;
-    inputs["Color/Shape"] = colorDiv;
-    inputs["Token Scale"] = {type : "range", step : 25, value : Number(pieceData.ts || 1)*100, min : 50, max : 200};
-    inputs[" "] = content;
-
-    var triggers = pieceData.e;
-
-    var triggerControls = $("<select>");
-    triggerControls.addClass("flexmiddle");
-
-    triggerControls.append("<option value=0>None</option>");
-    triggerControls.append("<option value=1>Manual</option>");
-    triggerControls.append("<option value=2>Pressure Plate</option>");
-    triggerControls.append("<option value=3>Trip Wire</option>");
-    if (triggers && triggers.t) {
-      triggerControls.children().each(function(){
-        if ($(this).attr("value") == triggers.t) {
-          $(this).attr("selected", true);
-        }
-      });
-    }
-    triggerControls.change(function(){
-      if ($(this).val()) {
-        triggers = {t : $(this).val(), calc : []};
-        triggers.t = Number($(this).val());
-        rebuildTriggers();
-      }
-      else {
-        triggers = null;
-        rebuildTriggers();
-      }
-    });
-
-    inputs["Triggers"] = triggerControls;
-
-    var triggerList = $("<div>");
-    triggerList.addClass("flexcolumn fit-x");
-
-    function rebuildTriggers(){
-      triggerList.empty();
-      if (triggers && triggers.t) {
-        for (var i in triggers.calc) {
-          var triggerPlate = $("<div>").appendTo(triggerList);
-          triggerPlate.addClass("flexrow flexmiddle outline smooth hover2");
-          triggerPlate.attr("index", i);
-
-          triggerPlate.click(function(){
-            var index = $(this).attr("index");
-
-            var newTrigger = sync.dummyObj();
-            newTrigger.data = triggers.calc[index];
-
-            var content = $("<div>");
-            content.addClass("flexcolumn flex lrpadding");
-
-            var newApp = sync.newApp("ui_triggerBuilder").appendTo(content);
-            newApp.attr("board", scope.board);
-            newApp.attr("piece", scope.piece);
-            newApp.attr("layer", scope.layer);
-
-            newTrigger.addApp(newApp);
-
-            var confirm = $("<button>").appendTo(content);
-            confirm.append("Confirm");
-            confirm.click(function(){
-              triggers = triggers || {t : 1, calc : []};
-              triggers.calc[index] = newTrigger.data;
-              rebuildTriggers();
-              layout.coverlay("create-trigger");
-            });
-
-            var pop = ui_popOut({
-              id : "create-trigger",
-              target : $(this),
-              title : "New Trigger",
-              resizable : true,
-              style : {"width" : "200px"}
-            }, content);
-          });
-
-          if (triggers.calc[i].e == 1) {
-            triggerPlate.append("<b class='flex flexmiddle'>Hide Layer</b>");
-          }
-          else if (triggers.calc[i].e == 2) {
-            triggerPlate.append("<b class='flex flexmiddle'>Reveal Layer</b>");
-          }
-          else if (triggers.calc[i].e == 3) {
-            triggerPlate.append("<b class='flex flexmiddle'>Toggle Layer</b>");
-          }
-          else if (triggers.calc[i].e == 4) {
-            triggerPlate.append("<b class='flex flexmiddle'>Roll Dice</b>");
-          }
-          var remove = genIcon("remove").appendTo(triggerPlate);
-          remove.addClass("destroy");
-          remove.attr("index", i);
-          remove.click(function(){
-            triggers.calc.splice($(this).attr("index"), 1);
-            rebuildTriggers();
-          });
-        }
-        var addTrigger = genIcon("plus", "Add Trigger").appendTo(triggerList);
-        addTrigger.addClass("create spadding");
-
-        addTrigger.click(function(){
-          var newTrigger = sync.dummyObj();
-          newTrigger.data = {data : game.templates.dice.default, e : 4};
-
-          var content = $("<div>");
-          content.addClass("flexcolumn flex");
-
-          var newApp = sync.newApp("ui_triggerBuilder").appendTo(content);
-          newApp.attr("board", scope.board);
-          newApp.attr("piece", scope.piece);
-          newApp.attr("layer", scope.layer);
-
-          newTrigger.addApp(newApp);
-
-          var confirm = $("<button>").appendTo(content);
-          confirm.append("Confirm");
-          confirm.click(function(){
-            triggers = triggers || {t : 1, calc : []};
-            triggers.calc.push(newTrigger.data);
-            rebuildTriggers();
-            layout.coverlay("create-trigger");
-          });
-
-          var pop = ui_popOut({
-            id : "create-trigger",
-            target : $(this),
-            title : "New Trigger",
-            resizable : true,
-            style : {"width" : "200px"}
-          }, content);
-        });
-      }
-    }
-    rebuildTriggers();
-
-    inputs["   "] = triggerList;
-
-    var controls = ui_controlForm({
-      inputs : inputs,
-      lblStyle : "min-width : 70px;",
-      click : function(ev, inputs) {
-        var pieceData = obj.data.layers[scope.layer].p[scope.piece];
-        pieceData.t = inputs["Piece Title"].val() || "";
-        pieceData.x = Number(xPos.val());
-        pieceData.y = Number(yPos.val());
-        pieceData.w = Number(wPos.val());
-        pieceData.h = Number(hPos.val());
-        pieceData.r = Number(rot.val());
-        pieceData.a = Number(alt.val());
-        //pieceData.tr = threat.val();
-        pieceData.d = Number(shape);
-        pieceData.c = col.val() || "";
-        pieceData.l = locked;
-        pieceData.v = invisible;
-        pieceData.e = triggers;
-        pieceData.ts = Number(inputs["Token Scale"].val())/100;
-        if (!triggers) {
-          delete pieceData.e;
-        }
-        if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
-          if (!scope.local) {
-            obj.sync("updateAsset");
-          }
-          else {
-            obj.update();
-          }
-        }
-        else if (getEnt(pieceData.eID) && hasSecurity(getCookie("UserID"), "Rights", getEnt(pieceData.eID))) {
-          runCommand("boardMove", {id : obj.id(), data : {layer : scope.layer, index : scope.piece, data : pieceData}});
-        }
-        layout.coverlay("piece-popout-"+obj.id()+"-"+scope.layer+"-"+scope.piece);
-        layout.coverlay("piece-popout-"+obj.id()+"-"+scope.layer+"-"+scope.piece+"-color");
-      }
-    }).appendTo(div);
   }
   else {
     div.append("<b>Piece not Found</b>");
@@ -63866,6 +63400,9 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
   var healthbar = new PIXI.Graphics();
   pieceWrap.addChild(healthbar);
 
+  var statusEffects = new PIXI.Container();
+  pieceWrap.addChild(statusEffects);
+
   pieceWrap.rebuild = function(objectData, rebuild) {
     var layer = pieceWrap.lookup.layer;
     var type = pieceWrap.lookup.type;
@@ -64020,6 +63557,33 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     }
     if (!showHP) {
       healthbar.visible = false;
+    }
+    if (objectData.rpg) {
+      for (var i=0; i<objectData.rpg.length; i++) {
+        var found = false;
+        for (var key=0; key<statusEffects.children.length; key++) {
+          if (statusEffects.children[key].img == objectData.rpg[i]) {
+            found = true;
+          }
+        }
+        if (!found) {
+          var effect = new PIXI.Sprite.fromImage(objectData.rpg[i]);
+          effect.width = 20;
+          effect.height = 20;
+          effect.img = objectData.rpg[i];
+          statusEffects.addChild(effect);
+        }
+      }
+      for (var key=statusEffects.children.length-1; key>=0; key--) {
+        statusEffects.children[key].x = objectData.w-key * 20-20;
+        statusEffects.children[key].y = 0;
+        if (!util.contains(objectData.rpg, statusEffects.children[key].img)) {
+          statusEffects.removeChild(statusEffects.children[key]);
+        }
+      }
+    }
+    else {
+      statusEffects.removeChildren();
     }
 
     if (objectData.t) {

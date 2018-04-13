@@ -685,7 +685,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
     calcList.css("left", "0");
     if ((!obj.data._s || hasSecurity(getCookie("UserID"), "Rights", obj.data)) && (!char || hasSecurity(getCookie("UserID"), "Rights", char.data))) {
       calcList.sortable({
-        handle : ".inventoryContent",
+        filter : ".inventoryContent",
         update : function(ev, ui) {
           var newIndex;
           var count = 0;
