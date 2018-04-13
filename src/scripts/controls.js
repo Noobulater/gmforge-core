@@ -1061,7 +1061,7 @@ function toggleHotKeysDisplay() {
     });
 
     var list = $("<div>").appendTo(show);
-    list.addClass("flexcolumn");
+    list.addClass("flexcolumn flexmiddle");
     list.css("width", "50%");
     list.css("width", "50%");
     list.css("margin", "auto");
@@ -1072,7 +1072,7 @@ function toggleHotKeysDisplay() {
       var hotkeyDiv = $("<div>").appendTo(list);
       hotkeyDiv.addClass("flexmiddle");
 
-      var title = $("<div class='flexmiddle highlight2 hardoutline' style='padding : 0.2em'><b class='alttext'>"+hotkey.name+"</b></div>").appendTo(hotkeyDiv);
+      var title = $("<div class='flexmiddle highlight2 outline smooth' style='padding : 0.2em'><b class='alttext'>"+hotkey.name+"</b></div>").appendTo(hotkeyDiv);
       hotkeyDiv.append("<div class='flexmiddle'><b class='alttext'>=</b></div>");
 
       var controls = hotkey.combo.split(":");
@@ -1148,7 +1148,7 @@ function toggleHotKeysDisplay() {
     layout.coverlay("overlay-hotkeys", 500);
   }
 }
-
+/*
 const _channel1 = "16,17,49";
 hotkeys[_channel1] = {
   name : "Voice Channel 1",
@@ -1199,3 +1199,4 @@ hotkeys[_channel3] = {
     }
   },
 }
+*/

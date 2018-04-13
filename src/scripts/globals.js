@@ -36,6 +36,7 @@ function setupGame() {
 
   game.logs = game.logs || sync.obj();
   game.logs.data = game.logs.data || {};
+
   game.components = {
     "Assets" : {
       _ui : [

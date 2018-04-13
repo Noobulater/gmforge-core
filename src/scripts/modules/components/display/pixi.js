@@ -145,6 +145,28 @@ sync.render("ui_board", function(obj, app, scope) {
       }
       if (app.attr("background") != "true") {
         cursorLayer.clear();
+        if (data.beacons) {
+          for (var i=data.beacons.length-1; i>=0; i--) {
+            var beaconData = data.beacons[i];
+            beaconData.size = beaconData.size || 0;
+            if (!beaconData.gfx) {
+              var beacon = new PIXI.Graphics();
+              beaconLayer.addChild(beacon);
+              beaconData.gfx = beacon;
+            }
+            if (beaconData.gfx && beaconData.size < 128) {
+              beaconData.gfx.clear();
+              beaconData.gfx.lineStyle(4, util.RGB_HEX(beaconData.col), 1-(beaconData.size/128));
+              beaconData.gfx.drawCircle(beaconData.x, beaconData.y, beaconData.size);
+              beaconData.gfx.endFill();
+              beaconData.size += 1 * delta;
+            }
+            else {
+              data.beacons.splice(i, 1);
+              beaconLayer.removeChild(beaconData.gfx);
+            }
+          }
+        }
         if (data.cursors) {
           var i = 0;
           if (cursorTextLayer.children && cursorTextLayer.children.length) {
@@ -1944,8 +1966,22 @@ sync.render("ui_board", function(obj, app, scope) {
                         boardApi.pix.selections[id].wrap.unselect();
                         delete boardApi.pix.selections[id];
                       }
+
+                      if (app.attr("_lastClick") + 400 >= Date.now() && util.dist(finalX, Number(app.attr("_lastClickX")), finalY, Number(app.attr("_lastClickY"))) < 5) { // double clicked
+                        app.removeAttr("_lastClick");
+                        app.removeAttr("_lastClickX");
+                        app.removeAttr("_lastClickY");
+                        runCommand("updateBoardCursor", {id : obj.id(), data : {x : finalX, y : finalY, l : scope.layer, b : true}});
+                        delete boardApi.pix.dragging;
+                        return;
+                      }
+                      app.attr("_lastClickX", finalX);
+                      app.attr("_lastClickY", finalY);
+                      app.attr("_lastClick", Date.now());
                     }
                   }
+
+
 
                   var sX = boardApi.pix.dragging.selectX;
                   var sY = boardApi.pix.dragging.selectY;
@@ -2596,6 +2632,9 @@ sync.render("ui_board", function(obj, app, scope) {
       fogCont.alpha = 0;
     }
     boardCanvas.stage.addChild(fogContainer);
+
+    var beaconLayer = new PIXI.Container();
+    boardCanvas.stage.addChild(beaconLayer);
 
     var cursorLayer = new PIXI.Graphics();
     boardCanvas.stage.addChild(cursorLayer);

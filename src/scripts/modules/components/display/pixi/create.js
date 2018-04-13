@@ -1,271 +1,3 @@
-boardApi.pix.createDrawing = function(options, obj, app, scope) {
-  var data = obj.data;
-  var isHex = data.options && data.options.hex;
-  var hasGrid = data.gridW && data.gridW;
-  var objectData = options.data;
-  options.type = "d";
-
-  var layer = options.layer;
-  var type = options.type;
-  var index = options.index;
-
-  var pieceWrap = boardApi.pix.createObject(options, obj, app, scope);
-  pieceWrap.lookup = {layer : layer, type : type, index : index};
-
-  pieceWrap.canInteract = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-    if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.drawing) {
-      return false;
-    }
-    if (app.attr("background")) {
-      return false;
-    }
-    if ((hasRights || objectData.uID == getCookie("UserID")) && app.attr("layer") == layer ) {
-      return true;
-    }
-    return false;
-  }
-  pieceWrap.resize = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-
-    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
-      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
-      return true;
-    }
-    return false;
-  }
-  pieceWrap.rotate = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-
-    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
-      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
-      return true;
-    }
-    return false;
-  }
-  pieceWrap.move = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
-      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
-      return true;
-    }
-    return false;
-  }
-
-  var piece = pieceWrap.children[0];
-  var pieceSelected = pieceWrap.children[1];
-  var outline = pieceSelected.children[0];
-
-  pieceWrap.rebuild = function(objectData) {
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    if (!objectData && layer != null && index != null) {
-      objectData = obj.data.layers[layer][type][index];
-    }
-
-    var x = objectData.x;
-    var y = objectData.y;
-    var width = Math.max(10, objectData.w);
-    var height = Math.max(10, objectData.h);
-
-    var recreate = false;
-    if (piece.children && piece.children.length && piece.children[0]) {
-      if (piece.children[0].drawing != objectData.drawing) {
-        piece.children[0].destroy(true);
-        recreate = true;
-      }
-    }
-    else {
-      recreate = true;
-    }
-
-    var token;
-    if (objectData.drawing == "box") {
-      if (objectData.i) {
-        var mask;
-        if (recreate) {
-          var text = new PIXI.Texture.fromImage(objectData.i);
-          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
-          token.drawing = objectData.drawing;
-          piece.addChild(token);
-
-          mask = new PIXI.Graphics();
-          piece.addChild(mask);
-        }
-        else {
-          token = piece.children[0];
-          mask = piece.children[1];
-        }
-
-        mask.clear();
-        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        mask.drawRect(0, 0, objectData.w, objectData.h);
-        mask.endFill();
-        mask.w = width;
-        mask.h = height;
-        token.mask = mask;
-      }
-      else {
-        if (recreate) {
-          token = new PIXI.Graphics();
-          piece.addChild(token);
-        }
-        else {
-          token = piece.children[0];
-        }
-        token.clear();
-        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        token.drawRect(0, 0, objectData.w, objectData.h);
-        token.endFill();
-        token.w = width;
-        token.h = height;
-      }
-    }
-    else if (objectData.drawing == "line") {
-      if (recreate) {
-        token = new PIXI.Graphics();
-        piece.addChild(token);
-      }
-      else {
-        token = piece.children[0];
-      }
-      token.clear();
-      token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1 || objectData.c2), util.RGB_ALPHA(objectData.c1 || objectData.c2));
-      token.moveTo(objectData.x1, objectData.y1);
-      token.lineTo(objectData.x2, objectData.y2);
-    }
-    else if (objectData.drawing == "circle") {
-      if (objectData.i) {
-        var mask;
-        if (recreate) {
-          var text = new PIXI.Texture.fromImage(objectData.i);
-          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
-          token.drawing = objectData.drawing;
-          piece.addChild(token);
-
-          mask = new PIXI.Graphics();
-          token.mask = mask;
-          piece.addChild(mask);
-        }
-        else {
-          token = piece.children[0];
-          mask = piece.children[1];
-        }
-
-        mask.clear();
-        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.drawCircle(objectData.radius,objectData.radius,objectData.radius);
-        mask.endFill();
-      }
-      else {
-        if (recreate) {
-          token = new PIXI.Graphics();
-          piece.addChild(token);
-        }
-        else {
-          token = piece.children[0];
-        }
-        token.clear();
-        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.drawCircle(objectData.radius,objectData.radius,objectData.radius);
-        token.endFill();
-      }
-    }
-    else if (objectData.drawing == "text") {
-      if (recreate) {
-        token = new PIXI.Text(null, new PIXI.TextStyle(objectData.style || boardApi.pix.fonts.default));
-        piece.addChild(token);
-      }
-      else {
-        token = piece.children[0];
-      }
-      if (JSON.stringify(token.style) != JSON.stringify(objectData.style)) {
-        token.style = objectData.style;
-        token.dirty = true;
-      }
-      token.text = objectData.text;
-    }
-    else if (objectData.drawing == "region") {
-      if (objectData.i) {
-        var mask;
-        if (recreate) {
-          var text = new PIXI.Texture.fromImage(objectData.i);
-          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
-          token.drawing = objectData.drawing;
-          piece.addChild(token);
-
-          mask = new PIXI.Graphics();
-          piece.addChild(mask);
-        }
-        else {
-          token = piece.children[0];
-          mask = piece.children[1];
-        }
-
-        mask.clear();
-        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        for (var i=1; i<objectData.regions.length; i++) {
-          var regionData = objectData.regions[i];
-          mask.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
-        }
-        mask.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        mask.closePath();
-        mask.endFill();
-        token.mask = mask;
-      }
-      else {
-        if (recreate) {
-          token = new PIXI.Graphics();
-          piece.addChild(token);
-        }
-        else {
-          token = piece.children[0];
-        }
-        token.clear();
-        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        for (var i=1; i<objectData.regions.length; i++) {
-          var regionData = objectData.regions[i];
-          token.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
-        }
-        token.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        token.closePath();
-        token.endFill();
-      }
-    }
-  }
-  pieceWrap.update(options.data);
-  return pieceWrap;
-}
-
 boardApi.pix.createObject = function(options, obj, app, scope) {
   var data = obj.data;
   var layer = options.layer;
@@ -918,6 +650,274 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
   }
   objectWrap.update(options.objectData);
   return objectWrap;
+}
+
+boardApi.pix.createDrawing = function(options, obj, app, scope) {
+  var data = obj.data;
+  var isHex = data.options && data.options.hex;
+  var hasGrid = data.gridW && data.gridW;
+  var objectData = options.data;
+  options.type = "d";
+
+  var layer = options.layer;
+  var type = options.type;
+  var index = options.index;
+
+  var pieceWrap = boardApi.pix.createObject(options, obj, app, scope);
+  pieceWrap.lookup = {layer : layer, type : type, index : index};
+
+  pieceWrap.canInteract = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+    if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.drawing) {
+      return false;
+    }
+    if (app.attr("background")) {
+      return false;
+    }
+    if ((hasRights || objectData.uID == getCookie("UserID")) && app.attr("layer") == layer ) {
+      return true;
+    }
+    return false;
+  }
+  pieceWrap.resize = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+
+    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
+      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
+      return true;
+    }
+    return false;
+  }
+  pieceWrap.rotate = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+
+    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
+      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
+      return true;
+    }
+    return false;
+  }
+  pieceWrap.move = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
+      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
+      return true;
+    }
+    return false;
+  }
+
+  var piece = pieceWrap.children[0];
+  var pieceSelected = pieceWrap.children[1];
+  var outline = pieceSelected.children[0];
+
+  pieceWrap.rebuild = function(objectData) {
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    if (!objectData && layer != null && index != null) {
+      objectData = obj.data.layers[layer][type][index];
+    }
+
+    var x = objectData.x;
+    var y = objectData.y;
+    var width = Math.max(10, objectData.w);
+    var height = Math.max(10, objectData.h);
+
+    var recreate = false;
+    if (piece.children && piece.children.length && piece.children[0]) {
+      if (piece.children[0].drawing != objectData.drawing) {
+        piece.children[0].destroy(true);
+        recreate = true;
+      }
+    }
+    else {
+      recreate = true;
+    }
+
+    var token;
+    if (objectData.drawing == "box") {
+      if (objectData.i) {
+        var mask;
+        if (recreate) {
+          var text = new PIXI.Texture.fromImage(objectData.i);
+          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
+          token.drawing = objectData.drawing;
+          piece.addChild(token);
+
+          mask = new PIXI.Graphics();
+          piece.addChild(mask);
+        }
+        else {
+          token = piece.children[0];
+          mask = piece.children[1];
+        }
+
+        mask.clear();
+        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        mask.drawRect(0, 0, objectData.w, objectData.h);
+        mask.endFill();
+        mask.w = width;
+        mask.h = height;
+        token.mask = mask;
+      }
+      else {
+        if (recreate) {
+          token = new PIXI.Graphics();
+          piece.addChild(token);
+        }
+        else {
+          token = piece.children[0];
+        }
+        token.clear();
+        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        token.drawRect(0, 0, objectData.w, objectData.h);
+        token.endFill();
+        token.w = width;
+        token.h = height;
+      }
+    }
+    else if (objectData.drawing == "line") {
+      if (recreate) {
+        token = new PIXI.Graphics();
+        piece.addChild(token);
+      }
+      else {
+        token = piece.children[0];
+      }
+      token.clear();
+      token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1 || objectData.c2), util.RGB_ALPHA(objectData.c1 || objectData.c2));
+      token.moveTo(objectData.x1, objectData.y1);
+      token.lineTo(objectData.x2, objectData.y2);
+    }
+    else if (objectData.drawing == "circle") {
+      if (objectData.i) {
+        var mask;
+        if (recreate) {
+          var text = new PIXI.Texture.fromImage(objectData.i);
+          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
+          token.drawing = objectData.drawing;
+          piece.addChild(token);
+
+          mask = new PIXI.Graphics();
+          token.mask = mask;
+          piece.addChild(mask);
+        }
+        else {
+          token = piece.children[0];
+          mask = piece.children[1];
+        }
+
+        mask.clear();
+        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.drawCircle(objectData.radius,objectData.radius,objectData.radius);
+        mask.endFill();
+      }
+      else {
+        if (recreate) {
+          token = new PIXI.Graphics();
+          piece.addChild(token);
+        }
+        else {
+          token = piece.children[0];
+        }
+        token.clear();
+        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.drawCircle(objectData.radius,objectData.radius,objectData.radius);
+        token.endFill();
+      }
+    }
+    else if (objectData.drawing == "text") {
+      if (recreate) {
+        token = new PIXI.Text(null, new PIXI.TextStyle(objectData.style || boardApi.pix.fonts.default));
+        piece.addChild(token);
+      }
+      else {
+        token = piece.children[0];
+      }
+      if (JSON.stringify(token.style) != JSON.stringify(objectData.style)) {
+        token.style = objectData.style;
+        token.dirty = true;
+      }
+      token.text = objectData.text;
+    }
+    else if (objectData.drawing == "region") {
+      if (objectData.i) {
+        var mask;
+        if (recreate) {
+          var text = new PIXI.Texture.fromImage(objectData.i);
+          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
+          token.drawing = objectData.drawing;
+          piece.addChild(token);
+
+          mask = new PIXI.Graphics();
+          piece.addChild(mask);
+        }
+        else {
+          token = piece.children[0];
+          mask = piece.children[1];
+        }
+
+        mask.clear();
+        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        for (var i=1; i<objectData.regions.length; i++) {
+          var regionData = objectData.regions[i];
+          mask.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
+        }
+        mask.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        mask.closePath();
+        mask.endFill();
+        token.mask = mask;
+      }
+      else {
+        if (recreate) {
+          token = new PIXI.Graphics();
+          piece.addChild(token);
+        }
+        else {
+          token = piece.children[0];
+        }
+        token.clear();
+        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        for (var i=1; i<objectData.regions.length; i++) {
+          var regionData = objectData.regions[i];
+          token.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
+        }
+        token.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        token.closePath();
+        token.endFill();
+      }
+    }
+  }
+  pieceWrap.update(options.data);
+  return pieceWrap;
 }
 
 boardApi.pix.createTile = function(options, obj, app, scope){

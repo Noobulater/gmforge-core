@@ -1,5 +1,89 @@
 boardApi.pix.menu = {}
 
+
+function buildHotKey(name, controls){
+  var hotkeyDiv = $("<div>");
+  hotkeyDiv.addClass("flexrow flexbetween fit-x");
+  if (name) {
+    var icon = $("<div>").appendTo(hotkeyDiv);
+    icon.addClass("flexmiddle alttext lrmargin");
+    icon.css("background-size", "contain");
+    icon.css("background-repeat", "no-repeat");
+    icon.css("background-position", "center");
+    icon.css("font-size", "1.2em");
+    icon.css("font-weight", "nonrmal");
+    icon.append(genIcon({raw : true, icon : name}));
+    hotkeyDiv.append("<div class='flexmiddle lrmargin'><b class='alttext'>=</b></div>");
+  }
+
+  var controlDiv = $("<div>").appendTo(hotkeyDiv);
+  controlDiv.addClass("flex flexrow");
+
+  var combos = controls.split("+");
+  for (var j in combos) {
+    var control = combos[j].trim();
+    var icon = $("<div>").appendTo(controlDiv);
+    icon.css("background-size", "contain");
+    icon.css("background-repeat", "no-repeat");
+    icon.css("background-position", "center");
+    var plusstr = "+";
+    if (control == "mright") {
+      icon.css("background-image", "url('/content/mouse_right.png')");
+      icon.css("width", "1.8em");
+      icon.css("height", "1.8em");
+    }
+    else if (control == "mleft") {
+      icon.css("background-image", "url('/content/mouse_left.png')");
+      icon.css("width", "1.8em");
+      icon.css("height", "1.8em");
+    }
+    else if (control == "middle") {
+      icon.css("background-image", "url('/content/mouse_middle.png')");
+      icon.css("width", "1.8em");
+      icon.css("height", "1.8em");
+    }
+    else if (control == "mouse") {
+      icon.css("background-image", "url('/content/mouse.png')");
+      icon.css("width", "1.8em");
+      icon.css("height", "1.8em");
+    }
+    else if (control == "arrow-left") {
+      icon.addClass("flexmiddle hardoutline spadding");
+      icon.css("background-color", "white");
+      icon.append(genIcon({raw : true, icon : "arrow-left"}));
+    }
+    else if (control == "arrow-up") {
+      icon.addClass("flexmiddle hardoutline spadding");
+      icon.css("background-color", "white");
+      icon.append(genIcon({raw : true, icon : "arrow-up"}));
+    }
+    else if (control == "arrow-right") {
+      icon.addClass("flexmiddle hardoutline spadding");
+      icon.css("background-color", "white");
+      icon.append(genIcon({raw : true, icon : "arrow-right"}));
+    }
+    else if (control == "arrow-down") {
+      icon.addClass("flexmiddle hardoutline spadding");
+      icon.css("background-color", "white");
+      icon.append(genIcon({raw : true, icon : "arrow-down"}));
+    }
+    else {
+      icon.addClass("flexmiddle hardoutline lrpadding");
+      icon.css("background-color", "white");
+      icon.css("font-weight", "bolder");
+      icon.css("color", "#333");
+      icon.css("text-shadow", "none");
+      icon.text(control);
+    }
+    if (j < combos.length-1) {
+      controlDiv.append("<b class='alttext lrmargin flexmiddle'>"+plusstr+"</b>");
+    }
+  }
+
+  return hotkeyDiv;
+}
+
+
 boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
   var data = obj.data;
 
@@ -15,6 +99,8 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
   var scrollTop = 0;
   var portWidth = app.attr("divWidth");
   var portHeight = app.attr("divHeight");
+
+
 
 
   var newMenu = $("<div>");
@@ -217,6 +303,33 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       var newObj = sync.dummyObj();
       newObj.data = {};
       newObj.addApp(menuContent);
+    }
+    if (menuContainer.children().length <= 1) {
+      menuContent = $("<div>").appendTo(menuContainer);
+      menuContent.addClass("boardMenu flexcolumn smooth lrmargin");
+      menuContent.css("pointer-events", "auto");
+      menuContent.css("overflow", "hidden");
+      menuContent.hover(function(){
+        newMenu.css("opacity", "1.0");
+      },
+      function(){
+        newMenu.css("opacity", "0.15");
+      });
+      menuContent.mousedown(function(ev){
+        _mouseupCleanup(ev);
+        ev.stopPropagation();
+      });
+
+      var hints = $("<div>").appendTo(menuContent);
+      hints.addClass("flexcolumn flexmiddle alttext subtitle");
+
+      buildHotKey("list-alt", "mright").appendTo(hints);
+      buildHotKey("hand-up", "mleft + mleft").appendTo(hints);
+      buildHotKey("move", "mright + mouse").appendTo(hints);
+      buildHotKey("resize-full", "mleft + mouse").appendTo(hints);
+      buildHotKey("resize-horizontal", "Ctrl + mleft").appendTo(hints);
+      
+      menuContainer.removeClass("padding")
     }
   }
   rebuildMenu();

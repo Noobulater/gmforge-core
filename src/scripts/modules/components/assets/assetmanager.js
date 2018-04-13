@@ -56,7 +56,7 @@ sync.render("ui_ent", function(ent, app, scope) {
       imgWrap.css("background-repeat", "no-repeat");
       imgWrap.css("background-position", "center 25%");
     }
-    if (ent.data.tags["temp"]) {
+    if (ent.data.tags && ent.data.tags["temp"]) {
       imgWrap.append("<b class='inactive smooth spadding subtitle' title='Assets tagged with 'temp' are deleted when their tokens are removed from a map'>Temp.</b>");
     }
     if (hasSecurity(getCookie("UserID"), "Assistant Master")) {

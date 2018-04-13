@@ -772,7 +772,7 @@ sync.render("ui_drawingControls", function(obj, app, scope){
     }
     else {
       var drawingWrap = $("<div>").appendTo(row);
-      drawingWrap.addClass("flexcolumn");
+      drawingWrap.addClass("flexcolumn spadding");
       drawingWrap.css("width", "400px");
 
       var colorRow = $("<div>").appendTo(drawingWrap);
