@@ -1067,6 +1067,16 @@ sync.render("ui_display", function(obj, app, scope){
                 ui_processLink(txt, function(link, newLink) {
                   obj.data.tabs[scope.tabKey].data = obj.data.tabs[scope.tabKey].data || {};
                   obj.data.tabs[scope.tabKey].data.media = txt;
+
+                  game.locals["imgHistory"] = game.locals["imgHistory"] || sync.obj();
+                  game.locals["imgHistory"].data = game.locals["imgHistory"].data || []
+                  var imgHistory = game.locals["imgHistory"].data;
+
+                  if (!util.contains(imgHistory, newLink)) {
+                    imgHistory.push(txt);
+                    game.locals["imgHistory"].update();
+                  }
+
                   obj.sync("updateState");
                 });
               }

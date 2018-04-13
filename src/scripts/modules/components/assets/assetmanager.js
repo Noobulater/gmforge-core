@@ -1009,7 +1009,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
             },
             click : function(ev, ui, charObj) {
               if (scope.category == "c") {
-                charClick(ev, ui, charObj, obj, app, scope);
+                charClick(ev, $("body"), charObj, obj, app, scope);
               }
               else if (scope.category == "b") {
                 game.state.data.tabs = game.state.data.tabs || [];
@@ -1035,8 +1035,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
                 content.attr("viewOnly", !hasSecurity(getCookie("UserID"), "Rights", charObj.data));
                 var popout = ui_popOut({
                   title : sync.rawVal(charObj.data.info.name),
-                  target : ui,
-                  align : "bottom",
+                  target : $("body"),
                   minimize : true,
                   maximize : true,
                   dragThickness : "0.5em",
@@ -1199,7 +1198,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     },
     click : function(ev, ui, charObj) {
       if (scope.category == "c") {
-        charClick(ev, ui, charObj, obj, app, scope);
+        charClick(ev, $("body"), charObj, obj, app, scope);
       }
       else if (scope.category == "b") {
         game.state.data.tabs = game.state.data.tabs || [];
@@ -1225,8 +1224,7 @@ sync.render("ui_assetManager", function(obj, app, scope) {
         content.attr("viewOnly", !hasSecurity(getCookie("UserID"), "Rights", charObj.data));
         var popout = ui_popOut({
           title : sync.rawVal(charObj.data.info.name),
-          target : ui,
-          align : "bottom",
+          target : $("body"),
           minimize : true,
           maximize : true,
           dragThickness : "0.5em",

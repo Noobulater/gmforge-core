@@ -415,7 +415,6 @@ input:not([type=checkbox]){
 	padding : 2px;
 	outline : 0;
 	border : 1px solid rgba(0,0,0,0.4);
-	box-shadow: inset 3px 3px 3px 0px #CCC;
 	border-radius: 2px;
 }
 

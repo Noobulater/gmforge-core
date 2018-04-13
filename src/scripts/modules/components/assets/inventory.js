@@ -685,7 +685,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
     calcList.css("left", "0");
     if ((!obj.data._s || hasSecurity(getCookie("UserID"), "Rights", obj.data)) && (!char || hasSecurity(getCookie("UserID"), "Rights", char.data))) {
       calcList.sortable({
-        filter : ".inventoryContent",
+        handle : ".inventoryContent",
         update : function(ev, ui) {
           var newIndex;
           var count = 0;
@@ -699,6 +699,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
           var old = calcs.splice($(ui.item).attr("index"), 1);
           util.insert(calcs, newIndex, old[0]);
           buildCalc();
+          $(ui.item).remove();
           ev.stopPropagation();
           ev.preventDefault();
         }

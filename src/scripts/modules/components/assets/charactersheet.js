@@ -38,7 +38,7 @@ function charClick(ev, ui, charObj, obj, app, scope) {
           }
           charObj.addApp(newApp);
           var pop = ui_popOut({
-            target : app,
+            target : ui,
             id : "char-sheet-"+charObj.id(),
             title : sync.rawVal(charObj.data.info.name),
             minimize : true,
@@ -468,6 +468,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
           var old = calcs.splice($(ui.item).attr("index"), 1);
           util.insert(calcs, newIndex, old[0]);
           buildCalc();
+          $(ui.item).remove();
           ev.stopPropagation();
           ev.preventDefault();
         }
@@ -735,6 +736,8 @@ sync.render("ui_characterSheet", function(obj, app, scope){
     }
     delete ctx["i"];
   }
+
+  ctx["c"] = obj.data;
 
   var data = obj.data || {info : {}};
 

@@ -85,7 +85,7 @@ sync.render("ui_image", function(obj, app, scope){
     imgContainer.css("background-position", "center 25%");
   }
 
-  if (app.attr("showTemp") && obj.data.tags["temp"]) {
+  if (app.attr("showTemp") && obj.data.tags && obj.data.tags["temp"]) {
     imgContainer.addClass("flexmiddle");
     imgContainer.append("<b class='inactive smooth smargin spadding' style='font-size : 8px; color:#333; text-shadow:none;' title='Assets tagged with `temp` are deleted when their tokens are removed from a map'>Temp.</b>");
   }

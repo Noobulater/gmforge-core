@@ -2905,7 +2905,7 @@ util.interfaces = {
     },
   },
   "Interactive" : {
-    "Roll Button" : {
+    "Equation Button" : {
       content : {
         classes : "bold hover2 spadding white outline smooth flexmiddle",
         value : "%Macro%",
