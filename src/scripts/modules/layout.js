@@ -2247,9 +2247,11 @@ layout.menu = function() {
     noCss : true,
     allowDock : true,
     hideclose : true,
+    pin : true,
     style : {"width" : assetTypes["assetPicker"].width, "height" : $(window).height() - 125}
   }, rightContentWrap);
   right.addClass("foreground");
+  right.attr("locked", "true");
   right.attr("fadeHide", "true")
   right.attr("docked-z", util.getMinZ(".ui-popout"));
   right.attr("docked", "right");

@@ -1276,10 +1276,10 @@ var calcAPI = {
     }
     return "0";
   },
-  empty : function(args, targets) {
-    var key = sync.eval(args[0], targets);
-    if (key instanceof Object) {
-      return Object.keys(key).length;
+  valid : function(args, targets) {
+    var key = sync.reduce(args[0], targets, true).trim();
+    if (key != null) {
+      return 1;
     }
     return "0";
   },

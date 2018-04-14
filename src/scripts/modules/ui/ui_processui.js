@@ -48,16 +48,16 @@ sync.render("ui_processUI", function(obj, app, scope) {
         var tabData = sData.tabs[k];
         if (tabData && !tabData.cond || sync.eval(tabData.cond, scope.context)) {
           var tab = $("<div>").appendTo(tabList);
-          tab.attr("tabKey", k);
+          tab.attr((sData.tabKey || "tabKey"), k);
           tab.text(k);
           tab.click(function(){
             tabList.children().removeClass(sData.selectClass || "highlight alttext subtitle spadding smooth outline").addClass(sData.tabClass || "subtitle button spadding smooth");
             $(this).removeClass(sData.tabClass || "subtitle button spadding smooth").addClass(sData.selectClass || "highlight alttext subtitle spadding smooth outline");
-            app.attr("tabKey", $(this).attr("tabKey"));
+            app.attr((sData.tabKey || "tabKey"), $(this).attr((sData.tabKey || "tabKey")));
             content.empty();
-            build(sData.tabs[$(this).attr("tabKey")], lastLookup+"-tab-"+$(this).attr("tabKey")).appendTo(content);
+            build(sData.tabs[$(this).attr((sData.tabKey || "tabKey"))], lastLookup+"-tab-"+$(this).attr("tabKey")).appendTo(content);
           });
-          if (k == (app.attr("tabKey") || sData.tab)) {
+          if (k == (app.attr((sData.tabKey || "tabKey")) || sData.tab)) {
             tab.addClass(sData.selectClass || "highlight alttext subtitle spadding smooth outline");
             tab.click();
           }
@@ -330,92 +330,10 @@ sync.render("ui_processUI", function(obj, app, scope) {
                   });
                 }
                 else if (sData.click.create == "inventory") {
-                  /*var frame = $("<div>");
-                  frame.addClass("flex flexcolumn");
-
-                  game.locals["createItem"] = game.locals["createItem"] || sync.obj("createItem");
-                  game.locals["createItem"].data = {};
-                  merge(game.locals["createItem"].data, duplicate(game.templates.item));
-
-                  var newApp = sync.newApp("ui_renderItem").appendTo(frame);
-                  newApp.attr("char-ref", obj.id());
-                  game.locals["createItem"].addApp(newApp);
-
-                  var buttonWrap = $("<div>").appendTo(frame);
-                  buttonWrap.addClass("flexrow");
-
-                  var confirm = $("<button>").appendTo(buttonWrap);
-                  confirm.addClass("flex");
-                  confirm.append("Create");
-                  confirm.click(function(){
-                    obj.data.inventory.push(duplicate(game.locals["createItem"].data));
-                    obj.sync("updateAsset");
-                  });
-
-                  var confirm = $("<button>").appendTo(buttonWrap);
-                  confirm.addClass("flex");
-                  confirm.append("Create and Close");
-                  confirm.click(function(){
-                    obj.data.inventory.push(duplicate(game.locals["createItem"].data));
-                    obj.sync("updateAsset");
-                    layout.coverlay("create-item");
-                  });
-                  var pop = ui_popOut({
-                    target : $(this),
-                    align : "top",
-                    id : "create-item",
-                    maximize : true,
-                    minimize : true,
-                    style : {"width" : assetTypes["i"].width, height : assetTypes["i"].height}
-                  }, frame);
-                  pop.resizable();*/
                   obj.data.inventory.push(duplicate(game.templates.item));
                   obj.update();
                 }
                 else if (sData.click.create == "spellbook") {
-                  /*var frame = $("<div>");
-                  frame.addClass("flex flexcolumn");
-
-                  game.locals["createSpell"] = game.locals["createSpell"] || sync.obj("createSpell");
-                  game.locals["createSpell"].data = {};
-                  merge(game.locals["createSpell"].data, duplicate(game.templates.item));
-
-                  var newApp = sync.newApp("ui_renderItem").appendTo(frame);
-                  newApp.attr("spell", "true");
-                  newApp.attr("info", true);
-                  newApp.attr("weapon", true);
-
-                  game.locals["createSpell"].addApp(newApp);
-
-                  var buttonWrap = $("<div>").appendTo(frame);
-                  buttonWrap.addClass("flexrow");
-
-                  var confirm = $("<button>").appendTo(buttonWrap);
-                  confirm.addClass("flex");
-                  confirm.append("Create");
-                  confirm.click(function(){
-                    obj.data.spellbook.push(duplicate(game.locals["createSpell"].data));
-                    obj.sync("updateAsset");
-                  });
-
-                  var confirm = $("<button>").appendTo(buttonWrap);
-                  confirm.addClass("flex");
-                  confirm.append("Create and Close");
-                  confirm.click(function(){
-                    obj.data.spellbook.push(duplicate(game.locals["createSpell"].data));
-                    obj.sync("updateAsset");
-                    layout.coverlay("create-spell");
-                  });
-                  var pop = ui_popOut({
-                    target : $(this),
-                    id : "create-spell",
-                    align : "top",
-                    maximize : true,
-                    minimize : true,
-                    style : {"width" : "500px", height : "350px"}
-                  }, frame);
-                  pop.resizable();*/
-
                   obj.data.spellbook.push(duplicate(game.templates.item));
                   obj.update();
                 }
@@ -452,8 +370,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
                     });
                   }
                   var pop = ui_popOut({
-                    target : $(this),
-                    align : "top",
+                    target : app,
                     id : "edit-item",
                     maximize : true,
                     minimize : true,
@@ -485,29 +402,39 @@ sync.render("ui_processUI", function(obj, app, scope) {
                     });
                   }
                   var pop = ui_popOut({
-                    target : $(this),
-                    align : "top",
+                    target : app,
                     maximize : true,
                     minimize : true,
                     style : {"width" : assetTypes["i"].width, "height" : assetTypes["i"].height}
                   }, frame);
                   pop.resizable();
                 }
-                else if (sData.click.edit == "talents") {
-                  var frame = layout.page({title : "Edit Talent", width : "75%", blur : 0.5, id : "edit-talent"});
+                else if (sData.click.edit == "talents" || sData.click.edit == "specials") {
+                  var frame = $("<div>");
+                  frame.addClass("flexcolumn flex");
+
+                  var talentData = duplicate(lookupValue);
 
                   game.locals["editTalent"] = game.locals["editTalent"] || sync.obj("editTalent");
-                  game.locals["editTalent"].data = duplicate(lookupValue);
+                  game.locals["editTalent"].data = duplicate(game.templates.page);
+                  game.locals["editTalent"].data._t = "t";
 
-                  var newApp = sync.newApp("ui_renderTalent").appendTo(frame);
+                  game.locals["editTalent"].data.info.name = sync.newValue("Name", duplicate(talentData.name));
+                  game.locals["editTalent"].data.info.img = sync.newValue("Img", null);
+                  game.locals["editTalent"].data.info.notes = sync.newValue("Notes", duplicate(talentData.current));
+
+                  var newApp = sync.newApp("ui_editPage").appendTo(frame);
+                  newApp.attr("autosave", true);
+                  newApp.attr("entry", true);
                   game.locals["editTalent"].addApp(newApp);
 
                   var confirm = $("<button>").appendTo(frame);
                   confirm.addClass("fit-x");
                   confirm.append("Confirm");
                   confirm.click(function(){
-                    if (game.locals["editTalent"].data.name) {
-                      sync.traverse(obj.data, sData.target, duplicate(game.locals["editTalent"].data));
+                    if (sync.rawVal(game.locals["editTalent"].data.info.name)) {
+                      sync.traverse(obj.data, sData.target+".name", duplicate(game.locals["editTalent"].data.info.name.current));
+                      sync.traverse(obj.data, sData.target+".current", duplicate(game.locals["editTalent"].data.info.notes.current));
                       obj.sync("updateAsset");
                       layout.coverlay("edit-talent");
                     }
@@ -515,30 +442,41 @@ sync.render("ui_processUI", function(obj, app, scope) {
                       sendAlert({text : "Name required"});
                     }
                   });
+
+                  var pop = ui_popOut({
+                    target : app,
+                    id : "edit-talent",
+                    title : "Editing",
+                    style : {width : "400px", height : "400px"}
+                  }, frame);
+                  pop.resizable();
                 }
-                else if (sData.click.edit == "specials") {
-                  var frame = layout.page({title : "Edit Special Rule", width : "75%", blur : 0.5, id : "edit-special"});
+              }
+              else if (sData.click.view && sData.target) {
+                if (sData.click.view == "talents" || sData.click.view == "specials") {
+                  var frame = $("<div>");
+                  frame.addClass("flexcolumn flex");
 
-                  game.locals["editSpecial"] = game.locals["editSpecial"] || sync.obj("editSpecial");
-                  game.locals["editSpecial"].data = duplicate(lookupValue);
+                  var talentData = duplicate(sync.traverse(obj.data, sData.target));
 
-                  var newApp = sync.newApp("ui_renderTalent").appendTo(frame);
-                  newApp.attr("lookup", "specials");
-                  game.locals["editSpecial"].addApp(newApp);
+                  var viewTalent = sync.obj("viewTalent");
+                  viewTalent.data = duplicate(game.templates.page);
+                  viewTalent.data._t = "t";
+                  viewTalent.data.info.name = sync.newValue("Name", duplicate(talentData.name));
+                  viewTalent.data.info.img = sync.newValue("Img", null);
+                  viewTalent.data.info.notes = sync.newValue("Notes", duplicate(talentData.current));
 
-                  var confirm = $("<button>").appendTo(frame);
-                  confirm.addClass("fit-x");
-                  confirm.append("Confirm");
-                  confirm.click(function(){
-                    if (game.locals["editSpecial"].data.name) {
-                      sync.traverse(obj.data, sData.target, duplicate(game.locals["editSpecial"].data));
-                      obj.sync("updateAsset");
-                      layout.coverlay("edit-special");
-                    }
-                    else {
-                      sendAlert({text : "Name required"});
-                    }
-                  });
+                  var newApp  = sync.newApp("ui_renderPage").appendTo(frame);
+                  newApp.attr("viewOnly", true);
+                  viewTalent.addApp(newApp);
+
+                  var pop = ui_popOut({
+                    target : app,
+                    id : "view-talent",
+                    title : sync.rawVal(talentData.name),
+                    style : {width : "400px", height : "400px"}
+                  }, frame);
+                  pop.resizable();
                 }
               }
               else if (sData.click.delete && (sData.target || sData.click.target) && hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
@@ -581,7 +519,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
           ev.preventDefault();
         });
       }
-      if (sData.target && (!sData.click || !sData.click.edit)) {
+      if (sData.target && (!sData.click || (!sData.click.edit && !sData.click.view))) {
         newScope = duplicate(scope);
         newScope.lookup = (scope.lookup || "") + sData.target;
         newScope.viewOnly = scope.viewOnly;
@@ -600,7 +538,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
              value = sync.traverse(obj.data, newScope.lookup, sync.newValue());
           }
           if (value instanceof Object) {
-            if ((sData.edit || value.current != null)) {
+            if ((sData.edit || value.current != null || value.name != null)) {
               var val = $("<text>");
               if (sData.edit) {
                 if (value.name || sData.name) {

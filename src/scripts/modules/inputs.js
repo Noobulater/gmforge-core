@@ -86,6 +86,27 @@ function genInput(options, delay) {
     });
   }
   if (options.value != null) {
+    input.click(function(ev){
+      if (_down["16"]) {
+        // increment the field
+        $(this).attr("title", "Add a # to this field");
+        $(this).tooltip({
+          content : "Add to value",
+          position: { my: "center bottom", at: "top center" }
+        });
+        $(this).tooltip("show");
+        $(this).attr("relative", $(this).val());
+        $(this).val("");
+      }
+    });
+    input.blur(function(){
+      if ($(this).attr("relative") != null) {
+        $(this).val($(this).attr("relative"));
+        $(this).tooltip("destroy");
+        $(this).removeAttr("relative");
+        $(this).removeAttr("title");
+      }
+    });
     if (options.type == "number" || options.type == "range") {
       input.bind('mousewheel', function(e) {
         if ($(this).prop("disabled") || (!$(this).is(':focus') && options.type != "range")) {return;}
@@ -164,50 +185,70 @@ function genInput(options, delay) {
         });
         if (options.cmd) {
           input.change(function() {
-            if (options.raw) {
-              if (options.raw == "min") {
-                value.min = $(this).val();
-              }
-              else if (options.raw == "max") {
-                value.max = $(this).val();
+            var newVal = $(this).val();
+            if ($(this).attr("relative") != null) {
+              if (options.mod) {
+                newVal = Number(sync.modifier(value, options.mod) || 0) + Number(newVal);
               }
               else {
-                sync.rawVal(value, $(this).val());
+                newVal = Number(sync.rawVal(value) || 0) + Number(newVal);
+              }
+              $(this).removeAttr("relative");
+            }
+            if (options.raw) {
+              if (options.raw == "min") {
+                value.min = newVal;
+              }
+              else if (options.raw == "max") {
+                value.max = newVal;
+              }
+              else {
+                sync.rawVal(value, newVal);
               }
             }
             else if (options.mod) {
-              sync.modifier(value, options.mod, $(this).val());
+              sync.modifier(value, options.mod, newVal);
             }
             else if (options.name) {
-              value.name = $(this).val();
+              value.name = newVal;
             }
             else {
-              sync.val(value, $(this).val());
+              sync.val(value, newVal);
             }
             _stageUpdate(options.obj, options.cmd, options.target);
           });
         }
         else {
           input.change(function() {
-            if (options.raw) {
-              if (options.raw == "min") {
-                value.min = $(this).val();
-              }
-              else if (options.raw == "max") {
-                value.max = $(this).val();
+            var newVal = $(this).val();
+            if ($(this).attr("relative") != null) {
+              if (options.mod) {
+                newVal = Number(sync.modifier(value, options.mod) || 0) + Number(newVal);
               }
               else {
-                sync.rawVal(value, $(this).val());
+                newVal = Number(sync.rawVal(value) || 0) + Number(newVal);
+              }
+              $(this).removeAttr("relative");
+            }
+            if (options.raw) {
+              if (options.raw == "min") {
+                value.min = newVal;
+              }
+              else if (options.raw == "max") {
+                value.max = newVal;
+              }
+              else {
+                sync.rawVal(value, newVal);
               }
             }
             else if (options.mod) {
-              sync.modifier(value, options.mod, $(this).val());
+              sync.modifier(value, options.mod, newVal);
             }
             else if (options.name) {
-              value.name = $(this).val();
+              value.name = newVal;
             }
             else {
-              sync.val(value, $(this).val());
+              sync.val(value, newVal);
             }
             _stageUpdate(options.obj, options.cmd, options.target);
           });
@@ -215,25 +256,35 @@ function genInput(options, delay) {
       }
       else {
         input.change(function() {
-          if (options.raw) {
-            if (options.raw == "min") {
-              value.min = $(this).val();
-            }
-            else if (options.raw == "max") {
-              value.max = $(this).val();
+          var newVal = $(this).val();
+          if ($(this).attr("relative") != null) {
+            if (options.mod) {
+              newVal = Number(sync.modifier(value, options.mod) || 0) + Number(newVal);
             }
             else {
-              sync.rawVal(value, $(this).val());
+              newVal = Number(sync.rawVal(value) || 0) + Number(newVal);
+            }
+            $(this).removeAttr("relative");
+          }
+          if (options.raw) {
+            if (options.raw == "min") {
+              value.min = newVal;
+            }
+            else if (options.raw == "max") {
+              value.max = newVal;
+            }
+            else {
+              sync.rawVal(value, newVal);
             }
           }
           else if (options.mod) {
-            sync.modifier(value, options.mod, $(this).val());
+            sync.modifier(value, options.mod, newVal);
           }
           else if (options.name) {
-            value.name = $(this).val();
+            value.name = newVal;
           }
           else {
-            sync.val(value, $(this).val());
+            sync.val(value, newVal);
           }
         });
       }
