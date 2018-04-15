@@ -1281,6 +1281,9 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     });
   }
 
+
+  $("<i class='subtitle fit-x flexmiddle'>Drop assets onto a map</i>").appendTo(div);
+
   var creationBar = $("<div>").appendTo(div);
   creationBar.addClass("flexrow flexbetween foreground padding subtitle alttext");
 

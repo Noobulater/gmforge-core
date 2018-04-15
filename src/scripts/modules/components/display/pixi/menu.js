@@ -328,7 +328,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       buildHotKey("move", "mright + mouse").appendTo(hints);
       buildHotKey("resize-full", "mleft + mouse").appendTo(hints);
       buildHotKey("resize-horizontal", "Ctrl + mleft").appendTo(hints);
-      
+
       menuContainer.removeClass("padding")
     }
   }
@@ -607,7 +607,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       game.locals["drawing"].data = {};
     }
     if ((app.attr("background") != "true") && hasRights) {
-      var option = $("<div>").appendTo(optionsBar);
+      var option = $("<div>");//.appendTo(optionsBar);
       option.addClass("alttext hover2 fit-x spadding option outline smooth");
       option.css("font-size", "1.2em");
       option.text("Create");

@@ -18177,7 +18177,7 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
     searchInput.css("color", "#333");
 
     if (data.custom) {
-      var insert = genIcon("share-alt", "Add").appendTo(search);
+      var insert = genIcon("share-alt", "Import").appendTo(search);
       insert.addClass("flex flexmiddle subtitle");
       insert.click(function(ev){
         var content = sync.render("ui_assetPicker")(obj, app, {
@@ -35813,6 +35813,9 @@ sync.render("ui_assetManager", function(obj, app, scope) {
     });
   }
 
+
+  $("<i class='subtitle fit-x flexmiddle'>Drop assets onto a map</i>").appendTo(div);
+
   var creationBar = $("<div>").appendTo(div);
   creationBar.addClass("flexrow flexbetween foreground padding subtitle alttext");
 
@@ -53381,7 +53384,7 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
           newApp.css("width", "400px");
           newApp.css("height", app.height());
 
-          content.append("<i class='subtitle alttext fit-x flexmiddle' style='background : rgba(0,0,0,0.8)'>Drop assets onto the map or right click on the map</i>");
+          content.append("<i class='subtitle alttext fit-x flexmiddle' style='background : rgba(0,0,0,0.8)'>Drag and Drop assets to create</i>");
           var pop = ui_popOut({
             target : app,
             noCss : true,
@@ -64750,7 +64753,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       buildHotKey("move", "mright + mouse").appendTo(hints);
       buildHotKey("resize-full", "mleft + mouse").appendTo(hints);
       buildHotKey("resize-horizontal", "Ctrl + mleft").appendTo(hints);
-      
+
       menuContainer.removeClass("padding")
     }
   }
@@ -65029,7 +65032,7 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
       game.locals["drawing"].data = {};
     }
     if ((app.attr("background") != "true") && hasRights) {
-      var option = $("<div>").appendTo(optionsBar);
+      var option = $("<div>");//.appendTo(optionsBar);
       option.addClass("alttext hover2 fit-x spadding option outline smooth");
       option.css("font-size", "1.2em");
       option.text("Create");

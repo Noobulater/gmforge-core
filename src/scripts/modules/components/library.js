@@ -347,7 +347,7 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
     searchInput.css("color", "#333");
 
     if (data.custom) {
-      var insert = genIcon("share-alt", "Add").appendTo(search);
+      var insert = genIcon("share-alt", "Import").appendTo(search);
       insert.addClass("flex flexmiddle subtitle");
       insert.click(function(ev){
         var content = sync.render("ui_assetPicker")(obj, app, {
