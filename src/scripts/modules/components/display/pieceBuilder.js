@@ -41,7 +41,7 @@ sync.render("ui_pieceBuilder", function(obj, app, scope){
           newApp.css("width", "400px");
           newApp.css("height", app.height());
 
-          content.append("<i class='subtitle alttext fit-x flexmiddle' style='background : rgba(0,0,0,0.8)'>Drag and Drop assets to create</i>");
+          content.append("<i class='subtitle alttext fit-x flexmiddle' style='background : rgba(0,0,0,0.8)'>Drop assets onto the map or right click on the map</i>");
           var pop = ui_popOut({
             target : app,
             noCss : true,

@@ -95,9 +95,6 @@ sync.render("ui_library", function(obj, app, scope) {
     spellbook : [],
     custom : true,
   };
-  for (var i in game.config.data.library) {
-    obj.data[i] = duplicate(game.config.data.library[i]);
-  }
   if (localList) {
     // loads the content package so we can merge it's contents
     if (localList.a && localList.a.length) {

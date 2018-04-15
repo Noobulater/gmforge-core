@@ -936,33 +936,36 @@ sync.render("ui_characterSheet", function(obj, app, scope){
             div.css("cursor", "");
           }
         });
+      }
+      if (!app.attr("homebrew")) {
         div.click(function(ev){
           if (_down["17"]) {
             if (optionsBar.hasClass("card-selected")) {
+              targetIcon.text("Target");
               optionsBar.removeClass("card-selected");
               util.untarget(obj.id());
               sendAlert({text : "Released Target"});
             }
             else {
               optionsBar.addClass("card-selected");
+              targetIcon.text("Release Target");
               util.target(obj.id());
               sendAlert({text : "Targeted"});
             }
           }
         });
-      }
-      if (!app.attr("homebrew")) {
-        var icon = $("<button>").appendTo(optionsBar);
-        icon.addClass("background subtitle alttext");
+
+        var targetIcon = $("<button>").appendTo(optionsBar);
+        targetIcon.addClass("background subtitle alttext");
         if (optionsBar.hasClass("card-selected")) {
-          icon.text("Release Target");
+          targetIcon.text("Release Target");
         }
         else {
-          icon.text("Target");
+          targetIcon.text("Target");
         }
-        icon.click(function() {
-          if ($(this).text() == "Target") {
-            $(this).text("Release Target");
+        targetIcon.click(function() {
+          if (targetIcon.text() == "Target") {
+            targetIcon.text("Release Target");
             if (optionsBar.hasClass("card-selected")) {
               optionsBar.removeClass("card-selected");
               util.untarget(obj.id());
@@ -973,7 +976,7 @@ sync.render("ui_characterSheet", function(obj, app, scope){
             }
           }
           else {
-            $(this).text("Target");
+            targetIcon.text("Target");
             if (optionsBar.hasClass("card-selected")) {
               optionsBar.removeClass("card-selected");
               util.untarget(obj.id());
