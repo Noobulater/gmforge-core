@@ -1,9 +1,10 @@
 boardApi.pix.menu = {}
 
 
-function buildHotKey(name, controls){
+function buildHotKey(desc, name, controls){
   var hotkeyDiv = $("<div>");
-  hotkeyDiv.addClass("flexrow flexbetween fit-x");
+  hotkeyDiv.addClass("flexrow flexbetween");
+  hotkeyDiv.css("margin-bottom","5px");
   if (name) {
     var icon = $("<div>").appendTo(hotkeyDiv);
     icon.addClass("flexmiddle alttext lrmargin");
@@ -68,10 +69,11 @@ function buildHotKey(name, controls){
       icon.append(genIcon({raw : true, icon : "arrow-down"}));
     }
     else {
-      icon.addClass("flexmiddle hardoutline lrpadding");
+      icon.addClass("flexmiddle lrpadding");
       icon.css("background-color", "white");
       icon.css("font-weight", "bolder");
       icon.css("color", "#333");
+      icon.css("border-radius","2px");
       icon.css("text-shadow", "none");
       icon.text(control);
     }
@@ -79,10 +81,13 @@ function buildHotKey(name, controls){
       controlDiv.append("<b class='alttext lrmargin flexmiddle'>"+plusstr+"</b>");
     }
   }
-
+  hotkeyDiv.attr("title",desc);
+  hotkeyDiv.tooltip({
+    container: 'body',
+    placement: 'right'
+  });
   return hotkeyDiv;
 }
-
 
 boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
   var data = obj.data;
@@ -322,13 +327,13 @@ boardApi.pix.buildMenu = function(obj, app, scope, opaque) {
 
       var hints = $("<div>").appendTo(menuContent);
       hints.addClass("flexcolumn flexmiddle alttext subtitle");
+      hints.css("align-items","flex-start");
+      buildHotKey("Map Menu","list-alt", "mright").appendTo(hints);
+      buildHotKey("Ping/Beacon", "hand-up", "mleft + mleft").appendTo(hints);
+      buildHotKey("Move around", "move", "mright + mouse").appendTo(hints);
+      buildHotKey("Select", "resize-full", "mleft + mouse").appendTo(hints);
+      buildHotKey("Measure","resize-horizontal", "Ctrl + mleft").appendTo(hints);
 
-      buildHotKey("list-alt", "mright").appendTo(hints);
-      buildHotKey("hand-up", "mleft + mleft").appendTo(hints);
-      buildHotKey("move", "mright + mouse").appendTo(hints);
-      buildHotKey("resize-full", "mleft + mouse").appendTo(hints);
-      buildHotKey("resize-horizontal", "Ctrl + mleft").appendTo(hints);
-      
       menuContainer.removeClass("padding")
     }
   }
