@@ -969,6 +969,7 @@ function ui_popOut(options, content) {
     pin.attr("title", "Lock this menu down");
     pin.css("pointer-events", "auto");
     pin.css("text-shadow", "0px 0px 4px white");
+    pin.css("margin-left","-4px");
     pin.click(function(){
       if (overlay.attr("locked")) {
         overlay.removeAttr("locked");
@@ -1008,8 +1009,12 @@ function ui_popOut(options, content) {
       title.text(options.title);
     }
   }
-  else if(!options.noCss){
+  else
+  {
     title.prepend("&nbsp;");
+  }
+  if(options.noCss){
+    title.css("pointer-events","none");
   }
 
 
