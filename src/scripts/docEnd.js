@@ -1,6 +1,11 @@
 var snd_diceRoll;
 
 $(document).ready(function() {
+  if (!layout.webclient) {
+    document.addEventListener('dragover', function(ev){ev.preventDefault();});
+    document.addEventListener('drop', function(ev){ev.preventDefault();});
+  }
+
   // firefox fix
 
   snd_diceRoll = new Audio("/sounds/dice.mp3");

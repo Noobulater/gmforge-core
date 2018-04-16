@@ -1559,7 +1559,7 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     if (recreate) {
       if (objectData.i) {
         objectData.i = String(objectData.i);
-        if (objectData.i[0] != "/") {
+        if (objectData.i[0] != "/" && layout.webclient) {
           objectData.i = "";
         }
         if (objectData.i && objectData.i.trim() && objectData.i.match(".mp4") || objectData.i.match(".webm") || objectData.i.match(".ogg")) {
