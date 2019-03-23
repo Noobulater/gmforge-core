@@ -1,0 +1,632 @@
+{
+  "info": {
+    "name": {
+      "name": "Name",
+      "current": "Custom Library"
+    },
+    "img": {
+      "name": "Art",
+      "current": "/content/games/custom.png"
+    },
+    "notes": {
+      "name": "Notes",
+      "current": ""
+    },
+    "mode": {
+      "name": "Mode",
+      "current": ""
+    }
+  },
+  "custom": true,
+  "content": {
+    "Actors": {
+      "_t": "c",
+      "data": [
+        {
+          "_t": "c",
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "Arsheviere"
+            },
+            "img": {
+              "name": "Character Art",
+              "current": "/custom//fallofharvest/harvest.jpg"
+            },
+            "notes": {
+              "name": "Notes"
+            },
+            "race": {
+              "name": "Race",
+              "current": "Human"
+            },
+            "class": {
+              "name": "Class"
+            },
+            "back": {
+              "name": "Background"
+            },
+            "size": {
+              "name": "Size",
+              "current": "Medium"
+            }
+          },
+          "stats": {
+            "Str": {
+              "name": "Strength",
+              "current": 10,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Dex": {
+              "name": "Dexterity",
+              "current": 8,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -1
+              }
+            },
+            "Con": {
+              "name": "Constitution",
+              "current": 6,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -2
+              }
+            },
+            "Int": {
+              "name": "Intelligence",
+              "current": 5,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -3
+              }
+            },
+            "Wis": {
+              "name": "Wisdom",
+              "current": 6,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -2
+              }
+            },
+            "Cha": {
+              "name": "Charisma",
+              "current": 8,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -1
+              }
+            }
+          },
+          "counters": {
+            "level": {
+              "name": "Level",
+              "current": 1,
+              "min": 0,
+              "modifiers": {}
+            },
+            "exp": {
+              "name": "Experience",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "hp": {
+              "name": "Hit Points",
+              "current": 10,
+              "min": 0,
+              "max": 10,
+              "modifiers": {}
+            },
+            "speed": {
+              "name": "Speed",
+              "current": 30,
+              "modifiers": {}
+            },
+            "armor": {
+              "name": "Base Armor",
+              "current": 10,
+              "modifiers": {}
+            },
+            "ac": {
+              "name": "Armor",
+              "current": 0,
+              "modifiers": {}
+            },
+            "proficiency": {
+              "name": "Proficiency",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "inspiration": {
+              "name": "Inspiration",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "hit": {
+              "name": "Hit Dice",
+              "current": "1d10"
+            },
+            "svStr": {
+              "name": "Strength Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": 0,
+                "Proficiency": 0
+              }
+            },
+            "svDex": {
+              "name": "Dexterity Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -1,
+                "Proficiency": 0
+              }
+            },
+            "svCon": {
+              "name": "Constitution Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -2,
+                "Proficiency": 0
+              }
+            },
+            "svInt": {
+              "name": "Intelligence Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -3,
+                "Proficiency": 0
+              }
+            },
+            "svWis": {
+              "name": "Wisdom Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -2,
+                "Proficiency": 0
+              }
+            },
+            "svCha": {
+              "name": "Charisma Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -1,
+                "Proficiency": 0
+              }
+            },
+            "svDeath": {
+              "name": "Death Save",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "svLife": {
+              "name": "Life Save",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "cp": {
+              "name": "CP",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "sp": {
+              "name": "SP",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "gp": {
+              "name": "GP",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "1st": {
+              "name": "1st",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "2nd": {
+              "name": "2nd",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "3rd": {
+              "name": "3rd",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "4th": {
+              "name": "4th",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "5th": {
+              "name": "5th",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "6th": {
+              "name": "6th",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "7th": {
+              "name": "7th",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "8th": {
+              "name": "8th",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            },
+            "9th": {
+              "name": "9th",
+              "current": 0,
+              "min": 0,
+              "modifiers": {}
+            }
+          },
+          "tags": {},
+          "skills": {
+            "acr": {
+              "name": "Acrobatics (Dex)"
+            },
+            "ani": {
+              "name": "Animal Handling (Wis)"
+            },
+            "arc": {
+              "name": "Arcana (Int)"
+            },
+            "ath": {
+              "name": "Athletics (Str)"
+            },
+            "dec": {
+              "name": "Deception (Cha)"
+            },
+            "his": {
+              "name": "History (Int)"
+            },
+            "ins": {
+              "name": "Insight (Wis)"
+            },
+            "int": {
+              "name": "Intimidation (Cha)"
+            },
+            "inv": {
+              "name": "Investigation (Int)"
+            },
+            "med": {
+              "name": "Medicine (Wis)"
+            },
+            "nat": {
+              "name": "Nature (Int)"
+            },
+            "per": {
+              "name": "Perception (Wis)"
+            },
+            "pfm": {
+              "name": "Performance (Cha)"
+            },
+            "prs": {
+              "name": "Persuasion (Cha)"
+            },
+            "rel": {
+              "name": "Religion (Int)"
+            },
+            "sle": {
+              "name": "Sleight of Hand (Dex)"
+            },
+            "ste": {
+              "name": "Stealth (Dex)"
+            },
+            "sur": {
+              "name": "Survival (Wis)"
+            }
+          },
+          "talents": {},
+          "inventory": [],
+          "spellbook": [],
+          "specials": {},
+          "spells": {},
+          "_s": {},
+          "_lclock": 0,
+          "_c": "localhost",
+          "_uid": null,
+          "_sync": null
+        },
+        {
+          "_t": "c",
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "Luther"
+            },
+            "img": {
+              "name": "Character Art",
+              "current": "/custom//rosenorchard/luther.png"
+            },
+            "race": {
+              "name": "Race",
+              "current": "Human"
+            },
+            "class": {
+              "name": "Class",
+              "current": "N/A"
+            },
+            "back": {
+              "name": "Background",
+              "current": "N/A"
+            },
+            "size": {
+              "name": "Size",
+              "current": "Medium"
+            },
+            "notes": {
+              "name": "Notes",
+              "current": "Luther is a tall slender Human, with clean messy hair. He has a unique short sword and wears a tattered tunic and backpack. From his physique it appears he is a fledgeling Adventurer, no older than 16. Luther is a friendly eager boy"
+            }
+          },
+          "stats": {
+            "Str": {
+              "name": "Strength",
+              "current": 11,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Dex": {
+              "name": "Dexterity",
+              "current": 14,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Con": {
+              "name": "Constitution",
+              "current": 10,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Int": {
+              "name": "Intelligence",
+              "current": 14,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Wis": {
+              "name": "Wisdom",
+              "current": 10,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Cha": {
+              "name": "Charisma",
+              "current": 9,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -1
+              }
+            }
+          },
+          "counters": {
+            "level": {
+              "name": "Level",
+              "current": 1,
+              "min": 0
+            },
+            "exp": {
+              "name": "Experience",
+              "current": 0,
+              "min": 0
+            },
+            "wounds": {
+              "name": "Hit Points",
+              "current": 10,
+              "min": 0,
+              "max": 10
+            },
+            "speed": {
+              "name": "Speed",
+              "current": 30
+            },
+            "proficiency": {
+              "name": "Proficiency",
+              "current": 0,
+              "min": 0
+            },
+            "hit": {
+              "name": "Hit Dice",
+              "current": "1d10",
+              "min": 0
+            },
+            "armor": {
+              "name": "Base Armor",
+              "current": 10
+            },
+            "svStr": {
+              "current": 0,
+              "name": "Strength",
+              "modifiers": {
+                "Stat-Bonus": 0,
+                "Proficiency": 0
+              }
+            },
+            "svDex": {
+              "current": 0,
+              "name": "Dexterity",
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svCon": {
+              "current": 0,
+              "name": "Constitution",
+              "modifiers": {
+                "Stat-Bonus": 0,
+                "Proficiency": 0
+              }
+            },
+            "svInt": {
+              "current": 0,
+              "name": "Intelligence",
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svWis": {
+              "current": 0,
+              "name": "Wisdom",
+              "modifiers": {
+                "Stat-Bonus": 0,
+                "Proficiency": 0
+              }
+            },
+            "svCha": {
+              "current": 0,
+              "name": "Charisma",
+              "modifiers": {
+                "Stat-Bonus": -1,
+                "Proficiency": 0
+              }
+            },
+            "hp": {
+              "name": "Hit Points",
+              "current": 10,
+              "min": 0,
+              "max": 10
+            },
+            "ac": {},
+            "inspiration": {},
+            "cp": {},
+            "sp": {},
+            "gp": {},
+            "1st": {},
+            "2nd": {},
+            "3rd": {},
+            "4th": {},
+            "5th": {},
+            "6th": {},
+            "7th": {},
+            "8th": {},
+            "9th": {}
+          },
+          "equipment": {},
+          "proficient": {
+            "Sword": true,
+            "Light Armor": true
+          },
+          "spells": {},
+          "skills": {
+            "17": {
+              "name": "Perception (Wis)"
+            },
+            "acr": {
+              "name": "Acrobatics (Dex)"
+            },
+            "ani": {
+              "name": "Animal Handling (Wis)"
+            },
+            "arc": {
+              "name": "Arcana (Int)"
+            },
+            "ath": {
+              "name": "Athletics (Str)"
+            },
+            "dec": {
+              "name": "Deception (Cha)"
+            },
+            "his": {
+              "name": "History (Int)"
+            },
+            "ins": {
+              "name": "Insight (Wis)"
+            },
+            "int": {
+              "name": "Intimidation (Cha)"
+            },
+            "inv": {
+              "name": "Investigation (Int)"
+            },
+            "med": {
+              "name": "Medicine (Wis)"
+            },
+            "nat": {
+              "name": "Nature (Int)"
+            },
+            "per": {
+              "name": "Persuasion (Cha)"
+            },
+            "pfm": {
+              "name": "Performance (Cha)"
+            },
+            "rel": {
+              "name": "Religion (Int)"
+            },
+            "sle": {
+              "name": "Sleight of Hand (Dex)"
+            },
+            "ste": {
+              "name": "Stealth (Dex)"
+            },
+            "sur": {
+              "name": "Survival (Wis)"
+            }
+          },
+          "talents": {},
+          "inventory": [],
+          "spellbook": [],
+          "specials": {},
+          "_s": {},
+          "_lclock": 11,
+          "_c": "s-76561197990379371",
+          "tags": {
+            "prof_Sword": 1,
+            "prof_Light Armor": 1
+          },
+          "_uTime": 1525292652226
+        }
+      ]
+    },
+    "Items": {
+      "_t": "i",
+      "data": []
+    },
+    "Maps": {
+      "_t": "b",
+      "data": []
+    },
+    "Resources": {
+      "_t": "p",
+      "data": []
+    }
+  }
+}

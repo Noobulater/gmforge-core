@@ -4,7 +4,7 @@ sync.render("ui_checkbox", function(obj, app, scope) {
 
   var data = obj.data;
   var value = sync.traverse(data, scope.lookup);
-  
+
   scope.style = scope.style || {};
   scope.style["margin-top"] = "0px";
 
@@ -14,9 +14,11 @@ sync.render("ui_checkbox", function(obj, app, scope) {
     type : "checkbox",
     style : scope.style
   });
-  if (scope.cond && sync.eval(scope.cond, {"c" : duplicate(data)})) {
+  scope.cond = scope.cond || "@_value_ == @_checked_";
+  if (scope.cond && sync.eval(scope.cond, {"c" : duplicate(data), _value_ : value, _checked_ : scope.checked})) {
     checkbox.prop("checked", true);
   }
+  scope.saveInto = scope.saveInto || scope.lookup;
   if (scope.saveInto) {
     checkbox.change(function(){
       var ctx = sync.defaultContext();
@@ -45,6 +47,10 @@ sync.render("ui_checkbox", function(obj, app, scope) {
         obj.update();
       }
     });
+  }
+
+  if (scope.text) {
+    div.append("<text>"+scope.text+"</text>");
   }
 
   return div;

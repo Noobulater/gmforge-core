@@ -236,6 +236,15 @@ util.RGB_HSL = function (r, g, b, a){
   return [h, s, l, a || 1];
 }
 
+
+util.HEX_TEXT = function(hexx){
+  var hex = hexx.toString();//force conversion
+  var str = '';
+  for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
+    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+  return str;
+}
+
 util.RGB_HEX = function(rgb){
   rgb = (rgb || "#000000").match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
   var res = (rgb && rgb.length === 4) ? "" +
@@ -466,6 +475,7 @@ function mergeName(ent, userID) {
 
 
 function getPlayerCharacter(userID) {
+  var userID = userID || getCookie("UserID");
   var pData = game.players.data[userID];
   if (pData && pData.entity && game.entities.data[pData.entity]) {
     return game.entities.data[pData.entity];
@@ -473,7 +483,14 @@ function getPlayerCharacter(userID) {
   return {};
 }
 
+function getPlayerCharacterID(userID) {
+  var userID = userID || getCookie("UserID");
+  var pData = game.players.data[userID];
+  return pData.entity;
+}
+
 function getPlayerCharacterName(userID) {
+  var userID = userID || getCookie("UserID");
   var pData = game.players.data[userID];
   var name = "";
   if (pData && pData.entity && game.entities.data[pData.entity]) {
@@ -483,6 +500,7 @@ function getPlayerCharacterName(userID) {
 }
 
 function getPlayerName(userID) {
+  var userID = userID || getCookie("UserID");
   var pData = game.players.data[userID];
   if (pData) {
     var name = pData.displayName;
@@ -558,8 +576,8 @@ util.dockReveal = function(overlay) {
   if (overlay.attr("docked")) {
     var max = util.getMaxZ(".ui-popout");
     overlay.css("z-index", max+1);
-    overlay.css("transition", "left 0.5s, top 0.5s, opacity 0.5s");
-    if (overlay.hasClass("main-dock")) {
+    overlay.css("transition", "left 0.1s, top 0.1s, opacity 0.1s");
+    if (overlay.attr("fadeHide")) {
       overlay.css("opacity", 1);
     }
     if (overlay.attr("docked") == "left") {
@@ -574,16 +592,19 @@ util.dockReveal = function(overlay) {
     else if (overlay.attr("docked") == "bottom") {
       overlay.css("top", $(window).height() - overlay.height());
     }
+    if (overlay.attr("fadeHide")) {
+      overlay.css("opacity", "1");
+    }
   }
   else {
-    overlay.css("transition", "opacity 0.5s");
+    overlay.css("transition", "opacity 0.1s");
   }
 }
 
 util.dockHide = function(overlay) {
   if (overlay.attr("docked") && !overlay.is(":hover")) {
     overlay.css("z-index", overlay.attr("docked-z"));
-    overlay.css("transition", "left 0.5s, top 0.5s, opacity 0.5s");
+    overlay.css("transition", "left 0.1s, top 0.1s, opacity 0.1s");
     if (overlay.attr("docked") == "left") {
       overlay.css("left", -1 * overlay.width() + 20);
     }
@@ -596,9 +617,12 @@ util.dockHide = function(overlay) {
     else if (overlay.attr("docked") == "bottom") {
       overlay.css("top", $(window).height() - 20);
     }
+    if (overlay.attr("fadeHide")) {
+      overlay.css("opacity", "0");
+    }
   }
   else {
-    overlay.css("transition", "opacity 0.5s");
+    overlay.css("transition", "opacity 0.1s");
   }
 }
 
@@ -711,6 +735,36 @@ util.intersectBox = function(x1,y1,x2,y2, x,y,w,h) {
   return false;
 }
 
+util.intersectLine = function(x1,y1,x2,y2, x3,y3,x4,y4) {
+  var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+  var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+  if (isNaN(x)||isNaN(y)) {
+    return false;
+  } else {
+    if (x1>=x2) {
+        if (!(x2<=x&&x<=x1)) {return false;}
+    } else {
+        if (!(x1<=x&&x<=x2)) {return false;}
+    }
+    if (y1>=y2) {
+        if (!(y2<=y&&y<=y1)) {return false;}
+    } else {
+        if (!(y1<=y&&y<=y2)) {return false;}
+    }
+    if (x3>=x4) {
+        if (!(x4<=x&&x<=x3)) {return false;}
+    } else {
+        if (!(x3<=x&&x<=x4)) {return false;}
+    }
+    if (y3>=y4) {
+        if (!(y4<=y&&y<=y3)) {return false;}
+    } else {
+        if (!(y3<=y&&y<=y4)) {return false;}
+    }
+  }
+  return true;
+}
+
 util.target = function(index){
   $(".application[ui-name='ui_board']").each(function(){
     var app = $(this);
@@ -721,9 +775,9 @@ util.target = function(index){
         var pieceData = layerData.p[pInd];
         if (pieceData.eID == index) {
           if (pieceData.x != null && pieceData.y != null) {
-            boardApi.pix.scrollTo(app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
+            boardApi.scrollTo(app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
           }
-          var pieceWrap = boardApi.pix.lookup(lid, "p", pInd, app);
+          var pieceWrap = boardApi.lookup(lid, "p", pInd, app);
           pieceWrap.select();
         }
       }
@@ -732,10 +786,10 @@ util.target = function(index){
 }
 
 util.untarget = function(index){
-  if (boardApi.pix.selections) {
-    for (var i in boardApi.pix.selections) {
-      boardApi.pix.selections[i].selected.visible = false;
-      delete boardApi.pix.selections[i];
+  if (boardApi.selections) {
+    for (var i in boardApi.selections) {
+      boardApi.selections[i].selected.visible = false;
+      delete boardApi.selections[i];
       // scroll to?
     }
   }
@@ -755,8 +809,8 @@ util.getTargets = function(noSelected) {
     }
   });
   if (!noSelected) {
-    for (var i in boardApi.pix.selections) {
-      var selectData = boardApi.pix.selections[i];
+    for (var i in boardApi.selections) {
+      var selectData = boardApi.selections[i];
       var board = getEnt(selectData.board);
       if (board && board.data && selectData.type == "p" && board.data.layers[selectData.layer]) {
         var pieceData = board.data.layers[selectData.layer][selectData.type][selectData.index];
@@ -1013,137 +1067,152 @@ util.shareYoutube = function(link) {
 
 util.art = {
   Tokens : [
-    {src : "/cdn/bluesword/tokens/human.png"},
-    {src : "/cdn/bluesword/tokens/abo.png"},
-    {src : "/cdn/bluesword/tokens/abo_blue.png"},
-    {src : "/cdn/bluesword/tokens/abo_demon.png"},
-    {src : "/cdn/bluesword/tokens/abo_orange.png"},
-    {src : "/cdn/bluesword/tokens/abomonination_green.png"},
-    {src : "/cdn/bluesword/tokens/abomonination_red.png"},
-    {src : "/cdn/bluesword/tokens/black_monster.png"},
-    {src : "/cdn/bluesword/tokens/black_monster_demon.png"},
-    {src : "/cdn/bluesword/tokens/blue_monster.png"},
-    {src : "/cdn/bluesword/tokens/cyan_monster.png"},
-    {src : "/cdn/bluesword/tokens/bop.png"},
-    {src : "/cdn/bluesword/tokens/bop_demon.png"},
-    {src : "/cdn/bluesword/tokens/hawk.png"},
-    {src : "/cdn/bluesword/tokens/bug.png"},
-    {src : "/cdn/bluesword/tokens/bug_cyan.png"},
-    {src : "/cdn/bluesword/tokens/bug_green.png"},
-    {src : "/cdn/bluesword/tokens/bug_pink.png"},
-    {src : "/cdn/bluesword/tokens/bug_green.png"},
-    {src : "/cdn/bluesword/tokens/bug_red.png"},
-    {src : "/cdn/bluesword/tokens/bug_large_blue.png"},
-    {src : "/cdn/bluesword/tokens/bug_large_cyan.png"},
-    {src : "/cdn/bluesword/tokens/bug_large_green.png"},
-    {src : "/cdn/bluesword/tokens/bug_large_pink.png"},
-    {src : "/cdn/bluesword/tokens/bug_large_red.png"},
-    {src : "/cdn/bluesword/tokens/caveinsert_cyan.png"},
-    {src : "/cdn/bluesword/tokens/caveinsert_green.png"},
-    {src : "/cdn/bluesword/tokens/caveinsert_pink.png"},
-    {src : "/cdn/bluesword/tokens/caveinsert_red.png"},
-    {src : "/cdn/bluesword/tokens/darkdragon.png"},
-    {src : "/cdn/bluesword/tokens/demondragon.png"},
-    {src : "/cdn/bluesword/tokens/emeralddragon.png"},
-    {src : "/cdn/bluesword/tokens/flamedragon.png"},
-    {src : "/cdn/bluesword/tokens/magmadragon.png"},
-    {src : "/cdn/bluesword/tokens/saphiredragon.png"},
-    {src : "/cdn/bluesword/tokens/stonedragon.png"},
-    {src : "/cdn/bluesword/tokens/stonedragon_wyrm.png"},
-    {src : "/cdn/bluesword/tokens/red_tribal_monster.png"},
-    {src : "/cdn/bluesword/tokens/green_tribal_monster.png"},
-    {src : "/cdn/bluesword/tokens/freybug.png"},
-    {src : "/cdn/bluesword/tokens/freybug_fire.png"},
-    {src : "/cdn/bluesword/tokens/freybugdemon.png"},
-    {src : "/cdn/bluesword/tokens/freybugdemon_fire.png"},
-    {src : "/cdn/bluesword/tokens/freybugspirit.png"},
-    {src : "/cdn/bluesword/tokens/freybugspirit_fire.png"},
-    {src : "/cdn/bluesword/tokens/frostgiant.png"},
-    {src : "/cdn/bluesword/tokens/crystalgiant.png"},
-    {src : "/cdn/bluesword/tokens/gemstonegiant.png"},
-    {src : "/cdn/bluesword/tokens/frostyeti.png"},
-    {src : "/cdn/bluesword/tokens/demonyeti.png"},
-    {src : "/cdn/bluesword/tokens/mountaingoat.png"},
-    {src : "/cdn/bluesword/tokens/worm_insert.png"},
-    {src : "/cdn/bluesword/tokens/worm_insect_blue.png"},
-    {src : "/cdn/bluesword/tokens/worm_insect_cyan.png"},
-    {src : "/cdn/bluesword/tokens/worm_insect_green.png"},
-    {src : "/cdn/bluesword/tokens/worm_insect_pink.png"},
-    {src : "/cdn/bluesword/tokens/worm_insect_red.png"},
-    {src : "/cdn/bluesword/tokens/lizard.png"},
-    {src : "/cdn/bluesword/tokens/lizard2.png"},
-    {src : "/cdn/bluesword/tokens/snake.png"},
-    {src : "/cdn/bluesword/tokens/snake2.png"},
-    {src : "/cdn/bluesword/tokens/scorpion.png"},
-    {src : "/cdn/bluesword/tokens/scorpion2.png"},
-    {src : "/cdn/bluesword/tokens/scorpion3.png"},
+    {src : "/content/bluesword/tokens/human.png"},
+    {src : "/content/bluesword/tokens/abo.png"},
+    {src : "/content/bluesword/tokens/abo_blue.png"},
+    {src : "/content/bluesword/tokens/abo_demon.png"},
+    {src : "/content/bluesword/tokens/abo_orange.png"},
+    {src : "/content/bluesword/tokens/abomonination_green.png"},
+    {src : "/content/bluesword/tokens/abomonination_red.png"},
+    {src : "/content/bluesword/tokens/black_monster.png"},
+    {src : "/content/bluesword/tokens/black_monster_demon.png"},
+    {src : "/content/bluesword/tokens/blue_monster.png"},
+    {src : "/content/bluesword/tokens/cyan_monster.png"},
+    {src : "/content/bluesword/tokens/bop.png"},
+    {src : "/content/bluesword/tokens/bop_demon.png"},
+    {src : "/content/bluesword/tokens/hawk.png"},
+    {src : "/content/bluesword/tokens/bug.png"},
+    {src : "/content/bluesword/tokens/bug_cyan.png"},
+    {src : "/content/bluesword/tokens/bug_green.png"},
+    {src : "/content/bluesword/tokens/bug_pink.png"},
+    {src : "/content/bluesword/tokens/bug_green.png"},
+    {src : "/content/bluesword/tokens/bug_red.png"},
+    {src : "/content/bluesword/tokens/bug_large_blue.png"},
+    {src : "/content/bluesword/tokens/bug_large_cyan.png"},
+    {src : "/content/bluesword/tokens/bug_large_green.png"},
+    {src : "/content/bluesword/tokens/bug_large_pink.png"},
+    {src : "/content/bluesword/tokens/bug_large_red.png"},
+    {src : "/content/bluesword/tokens/caveinsert_cyan.png"},
+    {src : "/content/bluesword/tokens/caveinsert_green.png"},
+    {src : "/content/bluesword/tokens/caveinsert_pink.png"},
+    {src : "/content/bluesword/tokens/caveinsert_red.png"},
+    {src : "/content/bluesword/tokens/darkdragon.png"},
+    {src : "/content/bluesword/tokens/demondragon.png"},
+    {src : "/content/bluesword/tokens/emeralddragon.png"},
+    {src : "/content/bluesword/tokens/flamedragon.png"},
+    {src : "/content/bluesword/tokens/magmadragon.png"},
+    {src : "/content/bluesword/tokens/saphiredragon.png"},
+    {src : "/content/bluesword/tokens/stonedragon.png"},
+    {src : "/content/bluesword/tokens/stonedragon_wyrm.png"},
+    {src : "/content/bluesword/tokens/red_tribal_monster.png"},
+    {src : "/content/bluesword/tokens/green_tribal_monster.png"},
+    {src : "/content/bluesword/tokens/freybug.png"},
+    {src : "/content/bluesword/tokens/freybug_fire.png"},
+    {src : "/content/bluesword/tokens/freybugdemon.png"},
+    {src : "/content/bluesword/tokens/freybugdemon_fire.png"},
+    {src : "/content/bluesword/tokens/freybugspirit.png"},
+    {src : "/content/bluesword/tokens/freybugspirit_fire.png"},
+    {src : "/content/bluesword/tokens/frostgiant.png"},
+    {src : "/content/bluesword/tokens/crystalgiant.png"},
+    {src : "/content/bluesword/tokens/gemstonegiant.png"},
+    {src : "/content/bluesword/tokens/frostyeti.png"},
+    {src : "/content/bluesword/tokens/demonyeti.png"},
+    {src : "/content/bluesword/tokens/mountaingoat.png"},
+    {src : "/content/bluesword/tokens/worm_insert.png"},
+    {src : "/content/bluesword/tokens/worm_insect_blue.png"},
+    {src : "/content/bluesword/tokens/worm_insect_cyan.png"},
+    {src : "/content/bluesword/tokens/worm_insect_green.png"},
+    {src : "/content/bluesword/tokens/worm_insect_pink.png"},
+    {src : "/content/bluesword/tokens/worm_insect_red.png"},
+    {src : "/content/bluesword/tokens/lizard.png"},
+    {src : "/content/bluesword/tokens/lizard2.png"},
+    {src : "/content/bluesword/tokens/snake.png"},
+    {src : "/content/bluesword/tokens/snake2.png"},
+    {src : "/content/bluesword/tokens/scorpion.png"},
+    {src : "/content/bluesword/tokens/scorpion2.png"},
+    {src : "/content/bluesword/tokens/scorpion3.png"},
   ],
   Nouns : [
-    {src : "/cdn/nouns/skull.png"},
-    {src : "/cdn/nouns/demon.png"},
-    {src : "/cdn/nouns/flag.png"},
-    {src : "/cdn/nouns/house.png"},
-    {src : "/cdn/nouns/castletower.png"},
-    {src : "/cdn/nouns/gas.png"},
-    {src : "/cdn/nouns/angel.png"},
-    {src : "/cdn/nouns/chalice.png"},
-    {src : "/cdn/nouns/cross.png"},
-    {src : "/cdn/nouns/church.png"},
-    {src : "/cdn/nouns/vatican.png"},
-    {src : "/cdn/nouns/castle.png"},
-    {src : "/cdn/nouns/pentagram.png"},
-    {src : "/cdn/nouns/bank.png"},
-    {src : "/cdn/nouns/library.png"},
-    {src : "/cdn/nouns/bridge.png"},
-    {src : "/cdn/nouns/factory.png"},
-    {src : "/cdn/nouns/arch.png"},
-    {src : "/cdn/nouns/obilisk.png"},
-    {src : "/cdn/nouns/minecart.png"},
-    {src : "/cdn/nouns/minecart_empty.png"},
-    {src : "/cdn/nouns/track_paw.png"},
-    {src : "/cdn/nouns/crate.png"},
-    {src : "/cdn/nouns/gravestone.png"},
-    {src : "/cdn/nouns/fire.png"},
-    {src : "/cdn/nouns/leaf.png"},
-    {src : "/cdn/nouns/rain.png"},
-    {src : "/cdn/nouns/snow.png"},
-    {src : "/cdn/nouns/thunder.png"},
-    {src : "/cdn/nouns/d20.png"},
-    {src : "/cdn/nouns/diamond.png"},
-    {src : "/cdn/nouns/spacefighter1.png"},
-    {src : "/cdn/nouns/spacefighter2.png"},
-    {src : "/cdn/nouns/spacefighter3.png"},
-    {src : "/cdn/nouns/squaretarget.png"},
-    {src : "/cdn/nouns/jetfighter.png"},
-    {src : "/cdn/nouns/jail.png"},
-    {src : "/cdn/nouns/compass.png"},
-    {src : "/cdn/nouns/tank.png"},
-    {src : "/cdn/nouns/bike.png"},
-    {src : "/cdn/nouns/boat.png"},
-    {src : "/cdn/nouns/truck.png"},
-    {src : "/cdn/nouns/flame.png"},
-    {src : "/cdn/nouns/target.png"},
-    {src : "/cdn/nouns/tree.png"},
-    {src : "/cdn/nouns/conifer.png"},
-    {src : "/cdn/nouns/satelite.png"},
-    {src : "/cdn/nouns/car.png"},
-    {src : "/cdn/nouns/jeep.png"},
-    {src : "/cdn/nouns/plane.png"},
-    {src : "/cdn/nouns/mountain.png"},
-    {src : "/cdn/nouns/palm.png"},
-    {src : "/cdn/nouns/port.png"},
-    {src : "/cdn/nouns/island.png"},
-    {src : "/cdn/nouns/clue.png"},
-    {src : "/cdn/nouns/globe.png"},
-    {src : "/cdn/nouns/bullseye.png"},
-    {src : "/cdn/nouns/radar.png"},
-    {src : "/cdn/nouns/turbine.png"},
-    {src : "/cdn/nouns/drill.png"},
-    {src : "/cdn/nouns/canister.png"},
-    {src : "/cdn/nouns/paw.png"},
-    {src : "/cdn/nouns/claw.png"},
-    {src : "/cdn/nouns/coffin.png"},
-    {src : "/cdn/nouns/pirate.png"},
+    {src : "/content/nouns/skull.png"},
+    {src : "/content/nouns/demon.png"},
+    {src : "/content/nouns/flag.png"},
+    {src : "/content/nouns/house.png"},
+    {src : "/content/nouns/castletower.png"},
+    {src : "/content/nouns/gas.png"},
+    {src : "/content/nouns/angel.png"},
+    {src : "/content/nouns/chalice.png"},
+    {src : "/content/nouns/cross.png"},
+    {src : "/content/nouns/church.png"},
+    {src : "/content/nouns/vatican.png"},
+    {src : "/content/nouns/castle.png"},
+    {src : "/content/nouns/pentagram.png"},
+    {src : "/content/nouns/bank.png"},
+    {src : "/content/nouns/library.png"},
+    {src : "/content/nouns/bridge.png"},
+    {src : "/content/nouns/factory.png"},
+    {src : "/content/nouns/arch.png"},
+    {src : "/content/nouns/obilisk.png"},
+    {src : "/content/nouns/minecart.png"},
+    {src : "/content/nouns/minecart_empty.png"},
+    {src : "/content/nouns/track_paw.png"},
+    {src : "/content/nouns/crate.png"},
+    {src : "/content/nouns/gravestone.png"},
+    {src : "/content/nouns/fire.png"},
+    {src : "/content/nouns/leaf.png"},
+    {src : "/content/nouns/rain.png"},
+    {src : "/content/nouns/snow.png"},
+    {src : "/content/nouns/thunder.png"},
+    {src : "/content/nouns/d20.png"},
+    {src : "/content/nouns/diamond.png"},
+    {src : "/content/nouns/spacefighter1.png"},
+    {src : "/content/nouns/spacefighter2.png"},
+    {src : "/content/nouns/spacefighter3.png"},
+    {src : "/content/nouns/squaretarget.png"},
+    {src : "/content/nouns/jetfighter.png"},
+    {src : "/content/nouns/jail.png"},
+    {src : "/content/nouns/compass.png"},
+    {src : "/content/nouns/tank.png"},
+    {src : "/content/nouns/bike.png"},
+    {src : "/content/nouns/boat.png"},
+    {src : "/content/nouns/truck.png"},
+    {src : "/content/nouns/flame.png"},
+    {src : "/content/nouns/target.png"},
+    {src : "/content/nouns/tree.png"},
+    {src : "/content/nouns/conifer.png"},
+    {src : "/content/nouns/satelite.png"},
+    {src : "/content/nouns/car.png"},
+    {src : "/content/nouns/jeep.png"},
+    {src : "/content/nouns/plane.png"},
+    {src : "/content/nouns/mountain.png"},
+    {src : "/content/nouns/palm.png"},
+    {src : "/content/nouns/port.png"},
+    {src : "/content/nouns/island.png"},
+    {src : "/content/nouns/clue.png"},
+    {src : "/content/nouns/globe.png"},
+    {src : "/content/nouns/bullseye.png"},
+    {src : "/content/nouns/radar.png"},
+    {src : "/content/nouns/turbine.png"},
+    {src : "/content/nouns/drill.png"},
+    {src : "/content/nouns/canister.png"},
+    {src : "/content/nouns/paw.png"},
+    {src : "/content/nouns/claw.png"},
+    {src : "/content/nouns/coffin.png"},
+    {src : "/content/nouns/pirate.png"},
+  ],
+  Effects : [
+    {src : "/content/effects/skull.png"},
+    {src : "/content/effects/cripple.png"},
+    {src : "/content/effects/dazed.png"},
+    {src : "/content/effects/flame.png"},
+    {src : "/content/effects/bullseye.png"},
+    {src : "/content/effects/flag.png"},
+    {src : "/content/effects/pill.png"},
+    {src : "/content/effects/power.png"},
+    {src : "/content/effects/silence.png"},
+    {src : "/content/effects/snare.png"},
+    {src : "/content/effects/snow.png"},
+    {src : "/content/effects/strength.png"},
+    {src : "/content/effects/target.png"},
   ],
   Icons : [
     "Amulet1000p.png",
@@ -1205,27 +1274,27 @@ util.art = {
     "Warhammer1000p.png",
   ],
   "Sci-fi" : [
-    {src : "/cdn/peter/basement.png"},
-    {src : "/cdn/peter/controlroom.png"},
-    {src : "/cdn/peter/dockingbay.png"},
+    {src : "/content/peter/basement.png"},
+    {src : "/content/peter/controlroom.png"},
+    {src : "/content/peter/dockingbay.png"},
   ],
   "Area" : [
-    {src : "/cdn/bluesword/island_cottage_gridless.jpg"},
-    {src : "/cdn/bluesword/pyramid_gridless.jpg"},
-    {src : "/cdn/bluesword/red_gridless_camp.jpg"},
-    {src : "/cdn/bluesword/ash.png"},
-    {src : "/cdn/bluesword/dirt.png"},
-    {src : "/cdn/bluesword/grass.png"},
-    {src : "/cdn/bluesword/plains.png"},
-    {src : "/cdn/bluesword/snow.png"}
+    {src : "/content/bluesword/island_cottage_gridless.jpg"},
+    {src : "/content/bluesword/pyramid_gridless.jpg"},
+    {src : "/content/bluesword/red_gridless_camp.jpg"},
+    {src : "/content/bluesword/ash.png"},
+    {src : "/content/bluesword/dirt.png"},
+    {src : "/content/bluesword/grass.png"},
+    {src : "/content/bluesword/plains.png"},
+    {src : "/content/bluesword/snow.png"}
   ],
   "Dungeons" : [
-    {src : "/cdn/etc/122abyssalengine-grid.jpg"},
-    {src : "/cdn/etc/jinxedsapphire-grid.jpg"},
-    {src : "/cdn/etc/sirhaggardscrypt-dm-grid.jpg"},
+    {src : "/content/etc/122abyssalengine-grid.jpg"},
+    {src : "/content/etc/jinxedsapphire-grid.jpg"},
+    {src : "/content/etc/sirhaggardscrypt-dm-grid.jpg"},
   ],
   "Worldmaps" : [
-    {src : "/cdn/worldmap_full.jpg"}
+    {src : "/content/worldmap_full.jpg"}
   ]
 
 };
@@ -1248,11 +1317,11 @@ util.mediaType = function(src) {
   }
 }
 
-util.buildActions = function(evID) {
+util.buildActions = function(roll) {
   var defContext = sync.defaultContext();
   var pChar = getPlayerCharacter(getCookie("UserID"));
-  if (pChar) {
-    defContext["c"] = duplicate(pChar.data);
+  if (pChar && pChar.data) {
+    defContext[pChar.data._t] = duplicate(pChar.data);
   }
   function buildActions(list) {
     var actionList;
@@ -1273,10 +1342,10 @@ util.buildActions = function(evID) {
               var targetData = {};
               var effID = ui.attr("index");
               var ctx = sync.defaultContext();
-              if (game.events.data[evID].data) {
-                ctx["pool"] = duplicate(game.events.data[evID].data.data.pool);
-                ctx["loc"] = duplicate(game.events.data[evID].data.data.loc);
-                ctx["var"] = duplicate(game.events.data[evID].data.data.var);
+              if (roll) {
+                ctx["pool"] = duplicate(roll.eventData.pool);
+                ctx["loc"] = duplicate(roll.eventData.loc);
+                ctx["var"] = duplicate(roll.eventData.var);
                 delete ctx.location;
               }
               for (var i in targets) {
@@ -1290,11 +1359,11 @@ util.buildActions = function(evID) {
                   sendAlert({text : sync.rawVal(ent.data.info.name) + " is not eligible"});
                 }
               }
-              runCommand("applyCheck", {msg : sync.eval((list[effID].msg || "0"), ctx), color : "rgb(235,235,228)", targets : targetData});
+              runCommand("applyCheck", {flavor : sync.eval((list[effID].msg || "0"), ctx), color : "rgb(235,235,228)", effects : targetData});
               util.unSelectTargets();
             }
             else {
-              sendAlert({text : "Target a character by ctrl + clicking them or selecting their piece"});
+              sendAlert({text : "Target a character by ctrl + clicking them or selecting their token"});
             }
             _dragTransfer = null;
           }
@@ -1315,23 +1384,28 @@ util.buildActions = function(evID) {
 util.pages = {
   "White" : {},
   "Grey Parchement" : {
-    "background-image": "url('/cdn/sheet1.png')",
+    "background-image": "url('/content/sheet1.png')",
     "background-size": "100% auto"
   },
   "Faded Parchment" : {
-    "background-image": "url('/cdn/sheet2.png')",
+    "background-image": "url('/content/sheet2.png')",
     "background-size": "100% auto"
   },
   "Lively Parchment" : {
-    "background-image": "url('/cdn/sheet3.png')",
+    "background-image": "url('/content/sheet3.png')",
     "background-size": "100% auto",
   },
 }
 
-util.processEvent = function(equation, overMessage, href, ic, whisper){
+util.processEvent = function(equation, overMessage, href, ic, whisper, eID){
   layout.coverlay("select-entity");
   var ctx = sync.defaultContext();
-
+  if (ic) {
+    var ent = getPlayerCharacter(getCookie("UserID"));
+    if (ent && ent.data) {
+      ctx[ent.data._t] = duplicate(ent.data);
+    }
+  }
   var eqs = equation.split("/r");
   var eqReg = /(~[^;]*~)? *(&[^;]*&)? *(%[^%]*%)? *(.+)/i;
   for (var i in eqs) {
@@ -1366,15 +1440,16 @@ util.processEvent = function(equation, overMessage, href, ic, whisper){
       var str = match[4];
       var evData = {
         icon : (ic!=null)?(href):(null),
-        msg : sync.eval(msg || overMessage || "@me.name+' rolled'", ctx),
-        ui : ui,
-        f : ic,
+        flavor : sync.eval(msg || overMessage || "@me.name+' rolled'", ctx),
+        person : ic,
+        eID : (ic!=null)?(eID || getPlayerCharacterID()):(eID),
         p : whisper,
-        data : sync.executeQuery(str, ctx),
+        eventData : sync.executeQuery(str, ctx),
         color : game.players.data[getCookie("UserID")].color,
-        var : varTable
       }
-      runCommand("diceCheck", evData);
+      evData.eventData.var = varTable;
+      evData.eventData.ui = ui;
+      runCommand("chatEvent", evData);
     }
   }
 }
@@ -1382,7 +1457,7 @@ util.processEvent = function(equation, overMessage, href, ic, whisper){
 var _lastChat = [];
 var _lastIndex;
 
-util.chatEvent = function(textInput, chatType, permissions, parentUI, href, ic) {
+util.chatEvent = function(textInput, chatType, permissions, parentUI, href, ic, eID) {
   layout.coverlay("select-entity");
   var textArray = [textInput];
   for (var i in textArray) {
@@ -1438,7 +1513,14 @@ util.chatEvent = function(textInput, chatType, permissions, parentUI, href, ic) 
         whisper.append("Send Whisper");
         whisper.click(function(){
           _whisperTargets[getCookie("UserID")] = true;
-          var chatData = {text : text, f : chatType, p : _whisperTargets, href : href, color : game.players.data[getCookie("UserID")].color};
+          var chatData = {
+            text : text,
+            person : chatType,
+            eID : (ic!=null)?(eID || getPlayerCharacterID()):(eID),
+            p : _whisperTargets,
+            icon : href,
+            color : game.players.data[getCookie("UserID")].color
+          };
           runCommand("chatEvent", chatData);
           layout.coverlay("whisper-helper");
         });
@@ -1451,7 +1533,13 @@ util.chatEvent = function(textInput, chatType, permissions, parentUI, href, ic) 
         whisper.focus();
       }
       else {
-        var chatData = {text : text, f : chatType, href : href, color : game.players.data[getCookie("UserID")].color};
+        var chatData = {
+          text : text,
+          person : chatType,
+          eID : (ic!=null)?(eID || getPlayerCharacterID()):(eID),
+          icon : href,
+          color : game.players.data[getCookie("UserID")].color
+        };
         runCommand("chatEvent", chatData);
       }
     }
@@ -1486,169 +1574,169 @@ util.hotIcons = {
 
 util.decks = {
   "Standard" : [
-    {src : "/cdn/cards/cardclubs2.png"},
-    {src : "/cdn/cards/carddiamonds2.png"},
-    {src : "/cdn/cards/cardhearts2.png"},
-    {src : "/cdn/cards/cardspades2.png"},
+    {src : "/content/cards/cardclubs2.png"},
+    {src : "/content/cards/carddiamonds2.png"},
+    {src : "/content/cards/cardhearts2.png"},
+    {src : "/content/cards/cardspades2.png"},
 
-    {src : "/cdn/cards/cardclubs3.png"},
-    {src : "/cdn/cards/carddiamonds3.png"},
-    {src : "/cdn/cards/cardhearts3.png"},
-    {src : "/cdn/cards/cardspades3.png"},
+    {src : "/content/cards/cardclubs3.png"},
+    {src : "/content/cards/carddiamonds3.png"},
+    {src : "/content/cards/cardhearts3.png"},
+    {src : "/content/cards/cardspades3.png"},
 
-    {src : "/cdn/cards/cardclubs4.png"},
-    {src : "/cdn/cards/carddiamonds4.png"},
-    {src : "/cdn/cards/cardhearts4.png"},
-    {src : "/cdn/cards/cardspades4.png"},
+    {src : "/content/cards/cardclubs4.png"},
+    {src : "/content/cards/carddiamonds4.png"},
+    {src : "/content/cards/cardhearts4.png"},
+    {src : "/content/cards/cardspades4.png"},
 
-    {src : "/cdn/cards/cardclubs5.png"},
-    {src : "/cdn/cards/carddiamonds5.png"},
-    {src : "/cdn/cards/cardhearts5.png"},
-    {src : "/cdn/cards/cardspades5.png"},
+    {src : "/content/cards/cardclubs5.png"},
+    {src : "/content/cards/carddiamonds5.png"},
+    {src : "/content/cards/cardhearts5.png"},
+    {src : "/content/cards/cardspades5.png"},
 
-    {src : "/cdn/cards/cardclubs6.png"},
-    {src : "/cdn/cards/carddiamonds6.png"},
-    {src : "/cdn/cards/cardhearts6.png"},
-    {src : "/cdn/cards/cardspades6.png"},
+    {src : "/content/cards/cardclubs6.png"},
+    {src : "/content/cards/carddiamonds6.png"},
+    {src : "/content/cards/cardhearts6.png"},
+    {src : "/content/cards/cardspades6.png"},
 
-    {src : "/cdn/cards/cardclubs7.png"},
-    {src : "/cdn/cards/carddiamonds7.png"},
-    {src : "/cdn/cards/cardhearts7.png"},
-    {src : "/cdn/cards/cardspades7.png"},
+    {src : "/content/cards/cardclubs7.png"},
+    {src : "/content/cards/carddiamonds7.png"},
+    {src : "/content/cards/cardhearts7.png"},
+    {src : "/content/cards/cardspades7.png"},
 
-    {src : "/cdn/cards/cardclubs8.png"},
-    {src : "/cdn/cards/carddiamonds8.png"},
-    {src : "/cdn/cards/cardhearts8.png"},
-    {src : "/cdn/cards/cardspades8.png"},
+    {src : "/content/cards/cardclubs8.png"},
+    {src : "/content/cards/carddiamonds8.png"},
+    {src : "/content/cards/cardhearts8.png"},
+    {src : "/content/cards/cardspades8.png"},
 
-    {src : "/cdn/cards/cardclubs9.png"},
-    {src : "/cdn/cards/carddiamonds9.png"},
-    {src : "/cdn/cards/cardhearts9.png"},
-    {src : "/cdn/cards/cardspades9.png"},
+    {src : "/content/cards/cardclubs9.png"},
+    {src : "/content/cards/carddiamonds9.png"},
+    {src : "/content/cards/cardhearts9.png"},
+    {src : "/content/cards/cardspades9.png"},
 
-    {src : "/cdn/cards/cardclubs10.png"},
-    {src : "/cdn/cards/carddiamonds10.png"},
-    {src : "/cdn/cards/cardhearts10.png"},
-    {src : "/cdn/cards/cardspades10.png"},
+    {src : "/content/cards/cardclubs10.png"},
+    {src : "/content/cards/carddiamonds10.png"},
+    {src : "/content/cards/cardhearts10.png"},
+    {src : "/content/cards/cardspades10.png"},
 
-    {src : "/cdn/cards/cardclubsj.png"},
-    {src : "/cdn/cards/carddiamondsj.png"},
-    {src : "/cdn/cards/cardheartsj.png"},
-    {src : "/cdn/cards/cardspadesj.png"},
+    {src : "/content/cards/cardclubsj.png"},
+    {src : "/content/cards/carddiamondsj.png"},
+    {src : "/content/cards/cardheartsj.png"},
+    {src : "/content/cards/cardspadesj.png"},
 
-    {src : "/cdn/cards/cardclubsq.png"},
-    {src : "/cdn/cards/carddiamondsq.png"},
-    {src : "/cdn/cards/cardheartsq.png"},
-    {src : "/cdn/cards/cardspadesq.png"},
+    {src : "/content/cards/cardclubsq.png"},
+    {src : "/content/cards/carddiamondsq.png"},
+    {src : "/content/cards/cardheartsq.png"},
+    {src : "/content/cards/cardspadesq.png"},
 
-    {src : "/cdn/cards/cardclubsk.png"},
-    {src : "/cdn/cards/carddiamondsk.png"},
-    {src : "/cdn/cards/cardheartsk.png"},
-    {src : "/cdn/cards/cardspadesk.png"},
+    {src : "/content/cards/cardclubsk.png"},
+    {src : "/content/cards/carddiamondsk.png"},
+    {src : "/content/cards/cardheartsk.png"},
+    {src : "/content/cards/cardspadesk.png"},
 
-    {src : "/cdn/cards/cardclubsa.png"},
-    {src : "/cdn/cards/carddiamondsa.png"},
-    {src : "/cdn/cards/cardheartsa.png"},
-    {src : "/cdn/cards/cardspadesa.png"},
+    {src : "/content/cards/cardclubsa.png"},
+    {src : "/content/cards/carddiamondsa.png"},
+    {src : "/content/cards/cardheartsa.png"},
+    {src : "/content/cards/cardspadesa.png"},
   ],
   "Jokers" : [
-    {src : "/cdn/cards/cardclubs2.png"},
-    {src : "/cdn/cards/carddiamonds2.png"},
-    {src : "/cdn/cards/cardhearts2.png"},
-    {src : "/cdn/cards/cardspades2.png"},
+    {src : "/content/cards/cardclubs2.png"},
+    {src : "/content/cards/carddiamonds2.png"},
+    {src : "/content/cards/cardhearts2.png"},
+    {src : "/content/cards/cardspades2.png"},
 
-    {src : "/cdn/cards/cardclubs3.png"},
-    {src : "/cdn/cards/carddiamonds3.png"},
-    {src : "/cdn/cards/cardhearts3.png"},
-    {src : "/cdn/cards/cardspades3.png"},
+    {src : "/content/cards/cardclubs3.png"},
+    {src : "/content/cards/carddiamonds3.png"},
+    {src : "/content/cards/cardhearts3.png"},
+    {src : "/content/cards/cardspades3.png"},
 
-    {src : "/cdn/cards/cardclubs4.png"},
-    {src : "/cdn/cards/carddiamonds4.png"},
-    {src : "/cdn/cards/cardhearts4.png"},
-    {src : "/cdn/cards/cardspades4.png"},
+    {src : "/content/cards/cardclubs4.png"},
+    {src : "/content/cards/carddiamonds4.png"},
+    {src : "/content/cards/cardhearts4.png"},
+    {src : "/content/cards/cardspades4.png"},
 
-    {src : "/cdn/cards/cardclubs5.png"},
-    {src : "/cdn/cards/carddiamonds5.png"},
-    {src : "/cdn/cards/cardhearts5.png"},
-    {src : "/cdn/cards/cardspades5.png"},
+    {src : "/content/cards/cardclubs5.png"},
+    {src : "/content/cards/carddiamonds5.png"},
+    {src : "/content/cards/cardhearts5.png"},
+    {src : "/content/cards/cardspades5.png"},
 
-    {src : "/cdn/cards/cardclubs6.png"},
-    {src : "/cdn/cards/carddiamonds6.png"},
-    {src : "/cdn/cards/cardhearts6.png"},
-    {src : "/cdn/cards/cardspades6.png"},
+    {src : "/content/cards/cardclubs6.png"},
+    {src : "/content/cards/carddiamonds6.png"},
+    {src : "/content/cards/cardhearts6.png"},
+    {src : "/content/cards/cardspades6.png"},
 
-    {src : "/cdn/cards/cardclubs7.png"},
-    {src : "/cdn/cards/carddiamonds7.png"},
-    {src : "/cdn/cards/cardhearts7.png"},
-    {src : "/cdn/cards/cardspades7.png"},
+    {src : "/content/cards/cardclubs7.png"},
+    {src : "/content/cards/carddiamonds7.png"},
+    {src : "/content/cards/cardhearts7.png"},
+    {src : "/content/cards/cardspades7.png"},
 
-    {src : "/cdn/cards/cardclubs8.png"},
-    {src : "/cdn/cards/carddiamonds8.png"},
-    {src : "/cdn/cards/cardhearts8.png"},
-    {src : "/cdn/cards/cardspades8.png"},
+    {src : "/content/cards/cardclubs8.png"},
+    {src : "/content/cards/carddiamonds8.png"},
+    {src : "/content/cards/cardhearts8.png"},
+    {src : "/content/cards/cardspades8.png"},
 
-    {src : "/cdn/cards/cardclubs9.png"},
-    {src : "/cdn/cards/carddiamonds9.png"},
-    {src : "/cdn/cards/cardhearts9.png"},
-    {src : "/cdn/cards/cardspades9.png"},
+    {src : "/content/cards/cardclubs9.png"},
+    {src : "/content/cards/carddiamonds9.png"},
+    {src : "/content/cards/cardhearts9.png"},
+    {src : "/content/cards/cardspades9.png"},
 
-    {src : "/cdn/cards/cardclubs10.png"},
-    {src : "/cdn/cards/carddiamonds10.png"},
-    {src : "/cdn/cards/cardhearts10.png"},
-    {src : "/cdn/cards/cardspades10.png"},
+    {src : "/content/cards/cardclubs10.png"},
+    {src : "/content/cards/carddiamonds10.png"},
+    {src : "/content/cards/cardhearts10.png"},
+    {src : "/content/cards/cardspades10.png"},
 
-    {src : "/cdn/cards/cardclubsj.png"},
-    {src : "/cdn/cards/carddiamondsj.png"},
-    {src : "/cdn/cards/cardheartsj.png"},
-    {src : "/cdn/cards/cardspadesj.png"},
+    {src : "/content/cards/cardclubsj.png"},
+    {src : "/content/cards/carddiamondsj.png"},
+    {src : "/content/cards/cardheartsj.png"},
+    {src : "/content/cards/cardspadesj.png"},
 
-    {src : "/cdn/cards/cardclubsq.png"},
-    {src : "/cdn/cards/carddiamondsq.png"},
-    {src : "/cdn/cards/cardheartsq.png"},
-    {src : "/cdn/cards/cardspadesq.png"},
+    {src : "/content/cards/cardclubsq.png"},
+    {src : "/content/cards/carddiamondsq.png"},
+    {src : "/content/cards/cardheartsq.png"},
+    {src : "/content/cards/cardspadesq.png"},
 
-    {src : "/cdn/cards/cardclubsk.png"},
-    {src : "/cdn/cards/carddiamondsk.png"},
-    {src : "/cdn/cards/cardheartsk.png"},
-    {src : "/cdn/cards/cardspadesk.png"},
+    {src : "/content/cards/cardclubsk.png"},
+    {src : "/content/cards/carddiamondsk.png"},
+    {src : "/content/cards/cardheartsk.png"},
+    {src : "/content/cards/cardspadesk.png"},
 
-    {src : "/cdn/cards/cardclubsa.png"},
-    {src : "/cdn/cards/carddiamondsa.png"},
-    {src : "/cdn/cards/cardheartsa.png"},
-    {src : "/cdn/cards/cardspadesa.png"},
+    {src : "/content/cards/cardclubsa.png"},
+    {src : "/content/cards/carddiamondsa.png"},
+    {src : "/content/cards/cardheartsa.png"},
+    {src : "/content/cards/cardspadesa.png"},
 
-    {src : "/cdn/cards/cardJokerB.png"},
-    {src : "/cdn/cards/cardJoker.png"},
+    {src : "/content/cards/cardJokerB.png"},
+    {src : "/content/cards/cardJoker.png"},
   ],
 };
 
 util.settings = {
   time : {
-    "Dawn" : "/cdn/weather/dawn.png",
-    "Sunrise" : "/cdn/weather/sunrise.png",
-    "Day" : "/cdn/weather/day.png",
-    "Sunset" : "/cdn/weather/sunset.png",
-    "Dusk"  : "/cdn/weather/dusk.png",
-    "Night" : "/cdn/weather/night.png",
-    "Full Moon" : "/cdn/weather/fullmoon.png",
+    "Dawn" : "/content/weather/dawn.png",
+    "Sunrise" : "/content/weather/sunrise.png",
+    "Day" : "/content/weather/day.png",
+    "Sunset" : "/content/weather/sunset.png",
+    "Dusk"  : "/content/weather/dusk.png",
+    "Night" : "/content/weather/night.png",
+    "Full Moon" : "/content/weather/fullmoon.png",
   },
   weather : {
-    "Cloudy" : "/cdn/weather/cloudy.png",
-    "Windy" : "/cdn/weather/windy.png",
-    "Snowy" : "/cdn/weather/snowy.png",
-    "Light Rain" : "/cdn/weather/lightrain.png",
-    "Rain"  : "/cdn/weather/rain.png",
-    "Heavy Rain" : "/cdn/weather/heavyrain.png",
-    "Hail" : "/cdn/weather/hail.png",
-    "Foggy" : "/cdn/weather/foggy.png",
-    "Stormy" : "/cdn/weather/stormy.png",
-    "Tornado" : "/cdn/weather/tornado.png",
-    "Strange" : "/cdn/weather/strange.png"
+    //"Cloudy" : "/content/weather/cloudy.png",
+    //"Windy" : "/content/weather/windy.png",
+    "Snowy" : "/content/weather/snowy.png",
+    "Light Rain" : "/content/weather/lightrain.png",
+    "Rain"  : "/content/weather/rain.png",
+    "Heavy Rain" : "/content/weather/heavyrain.png",
+    //"Hail" : "/content/weather/hail.png",
+    //"Foggy" : "/content/weather/foggy.png",
+    //"Stormy" : "/content/weather/stormy.png",
+    //"Tornado" : "/content/weather/tornado.png",
+    //"Strange" : "/content/weather/strange.png"
   },
   temp : {
-    "Hot" : "/cdn/weather/hot.png",
-    "Warm" : "/cdn/weather/warm.png",
-    "Cold" : "/cdn/weather/cold.png",
+    "Hot" : "/content/weather/hot.png",
+    "Warm" : "/content/weather/warm.png",
+    "Cold" : "/content/weather/cold.png",
   }
 }
 
@@ -1741,6 +1829,607 @@ util.parse = {
     maxify(str, characterData, game.templates);
     return characterData;
   }
+}
+
+
+util.resourceTypes = {
+  "Rich Text" : {},
+  "Deck of Cards" : {
+    edit : function(obj, app, scope, parent) {
+      var tableData = [];
+
+      if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "[") {
+        try {
+          tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+        }
+        catch (e) {
+          tableData = [];
+        }
+      }
+      parent.addClass("flexmiddle");
+
+      var cardList = $("<div>").appendTo(parent);
+      cardList.addClass("flexrow flexwrap");
+      cardList.sortable({
+        connectWith : ".dropContent",
+        update : function(){obj.update();}
+      });
+
+      var optionsBar = $("<div>").appendTo(parent);
+      optionsBar.addClass("flexcolumn fit-x subtitle");
+
+      var total = $("<b>").appendTo(optionsBar);
+      total.text(tableData.length + " Cards");
+
+      var newDeck = genIcon("plus", "Create Deck").appendTo(optionsBar);
+      newDeck.click(function(){
+        game.state.data.cards = game.state.data.cards || {}
+        game.state.data.cards.decks = game.state.data.cards.decks || [];
+
+        // shuffle
+        var deckData = {type : tableData, pool : [], players : {}};
+        var start = duplicate(deckData.type);
+        while (start.length) {
+          var index = Math.floor(Math.random() * start.length);
+          var val = start.splice(index, 1)[0];
+          deckData.pool.push(val);
+        }
+        game.state.data.cards.decks.push(deckData);
+
+        game.state.sync("updateState");
+      });
+
+      var newCard = genIcon("", "Add Unique Card").appendTo(optionsBar);
+      newCard.click(function(){
+        var content = sync.render("ui_filePicker")(obj, app, {change : function(ev, ui, val){
+          tableData.push({src : val});
+          sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+          obj.sync("updateAsset");
+          if (!down[17]) {
+            layout.coverlay("image-selection");
+          }
+        }});
+
+        var pop = ui_popOut({
+          target : app,
+          prompt : true,
+          id : "image-selection",
+          style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
+        }, content);
+        pop.resizable();
+      });
+
+      var unsorted = {};
+      for (var i in tableData) {
+        var cardData = duplicate(tableData[i]);
+        unsorted[cardData.src] = unsorted[cardData.src] || 0;
+        unsorted[cardData.src]++;
+      }
+
+      var uniqueTypes = {};
+      Object.keys(unsorted).sort().forEach(function(key) {
+        uniqueTypes[key] = unsorted[key];
+      });
+
+      for (var i in uniqueTypes) {
+        var cardData = {src : i, flipped : true};
+
+        var card = sync.render("ui_card")({data : cardData}, app, scope).appendTo(cardList);
+        card.addClass("hover2");
+        card.attr("key", i);
+        card.click(function(){
+          $(this).contextmenu();
+        });
+        card.contextmenu(function(){
+          var cardID = $(this).attr("key");
+          var src = $(this).attr("cardSrc");
+          var actionsList = [
+            {
+              name : "Announce Card",
+              click : function(){
+                runCommand("reaction", src);
+              }
+            },
+            {
+              name : "View Card",
+              click : function(ev, ui){
+                assetTypes["img"].preview(ev, ui, src);
+              }
+            },
+            {
+              name : "DELETE CARDS",
+              submenu : [
+                {
+                  name : "Confirm",
+                  click : function(ev, ui){
+                    for (var k=tableData.length-1; k>=0; k--) {
+                      if (tableData[k].src == src) {
+                        tableData.splice(k, 1);
+                      }
+                    }
+                    sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+                    obj.sync("updateAsset");
+                  }
+                }
+              ]
+            }
+          ];
+
+          ui_dropMenu($(this), actionsList, {id : "card-menu"});
+          return false;
+        });
+
+        var cardRow = genInput({
+          parent : card,
+          classes : "subtitle bold middle lrmargin",
+          value : uniqueTypes[i],
+          src : i,
+          min : 1,
+          style : {"width" : "40px", "color" : "#333"}
+        });
+        cardRow.click(function(ev){
+          ev.stopPropagation();
+        });
+        cardRow.change(function(){
+          for (var k=tableData.length-1; k>=0; k--) {
+            if (tableData[k].src == $(this).attr("src")) {
+              tableData.splice(k, 1);
+            }
+          }
+          for (var k=0; k<parseInt($(this).val()); k++) {
+            tableData.push({src : $(this).attr("src")});
+          }
+          sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+          obj.sync("updateAsset");
+        });
+      }
+    },
+    view : function(obj, app, scope, parent) {
+      var tableData = [];
+
+      if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "[") {
+        try {
+          tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+        }
+        catch (e) {
+          tableData = [];
+        }
+      }
+      parent.addClass("flexmiddle");
+
+      var cardList = $("<div>").appendTo(parent);
+      cardList.addClass("flexrow flexwrap");
+      cardList.sortable({
+        connectWith : ".dropContent",
+        update : function(){obj.update();}
+      });
+
+      var optionsBar = $("<div>").appendTo(parent);
+      optionsBar.addClass("flexcolumn fit-x subtitle");
+
+      var total = $("<b>").appendTo(optionsBar);
+      total.text(tableData.length + " Cards");
+
+      if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+        var newDeck = genIcon("plus", "Create Deck").appendTo(optionsBar);
+        newDeck.click(function(){
+          game.state.data.cards = game.state.data.cards || {}
+          game.state.data.cards.decks = game.state.data.cards.decks || [];
+
+          // shuffle
+          var deckData = {type : tableData, pool : [], players : {}};
+          var start = duplicate(deckData.type);
+          while (start.length) {
+            var index = Math.floor(Math.random() * start.length);
+            var val = start.splice(index, 1)[0];
+            deckData.pool.push(val);
+          }
+          game.state.data.cards.decks.push(deckData);
+
+          game.state.sync("updateState");
+        });
+      }
+      if (tableData.length) {
+        var newDeck = genIcon("", "Random Card").appendTo(optionsBar);
+        newDeck.click(function(){
+          game.state.data.cards.players = game.state.data.cards.players || {};
+          game.state.data.cards.players[getCookie("UserID")] = game.state.data.cards.players[getCookie("UserID")] || [];
+          game.state.data.cards.players[getCookie("UserID")].push(duplicate(tableData[Math.floor(tableData.length * Math.random())]));
+
+          game.state.sync("updateState");
+        });
+      }
+
+      var cardData = {src : "null"};
+
+      var card = sync.render("ui_card")({data : cardData}, app, scope).appendTo(cardList);
+      card.addClass("hover2");
+    }
+  },
+  "HTML" : {
+    // edit is hard coded for the HTML + Rich Text editor
+    view : function(obj, app, scope, parent) {
+      var wrap = $("<div>").appendTo(parent);
+      wrap.addClass("fit-xy flexcolumn scroll-xy").css("position", "relative");
+      sync.render("ui_processUI")(obj, app, {display : sync.rawVal(obj.data.info.notes) || ""}).css("position", "absolute").appendTo(wrap);
+      /*setTimeout(function(){
+        if (parent.is(":visible")) {
+          var newFrame = $("<iframe>").appendTo(parent);
+          newFrame.attr("width", parent.width());
+          newFrame.attr("height", parent.height());
+          var str = sync.rawVal(obj.data.info.notes) || "";
+          var reg = /{{{@(\w*)}}}/i;
+          if (sync.modifier(obj.data.info.mode, "macro")) {
+            var ctx = sync.defaultContext();
+            merge(ctx, {c : duplicate(obj.data)});
+
+            var context = sync.context(sync.modifier(obj.data.info.mode, "macro"), ctx).context;
+            merge(context, ctx);
+            var match = str.match(reg);
+            var max = 1000;
+            var count = 0;
+            while (match) {
+              str = replaceAll(str, match[0], (sync.rawVal(context[match[1]]) || ""));
+              match = str.match(reg);
+              count++;
+              if (count > max) {
+                break;
+              }
+            }
+          }
+          //str = replaceAll(str, "href=", "nolinks=");
+          str = replaceAll(str, "iframe", "div");
+          str = replaceAll(str, "alert(", "noalerts");
+          newFrame.attr("sandbox", "");
+          newFrame.css("border", "none");
+          newFrame.css("outline", "none");
+          var idocument = newFrame[0].contentDocument;
+          idocument.open();
+          idocument.write(str);
+          idocument.close();
+        }
+      }, 1);*/
+    }
+  },
+  "Image" : {
+    edit : function(obj, app, scope, parent) {
+      scope.lookup = "info.img";
+      parent.addClass("smooth outline white");
+      sync.render("ui_image")(obj, app, scope).appendTo(parent);
+    },
+    view : function(obj, app, scope, parent) {
+      scope.lookup = "info.img";
+      scope.viewOnly = true;
+      parent.css("position", "relative");
+
+      var imgContainer = $("<div>").appendTo(parent);
+      imgContainer.addClass("flexcolumn flexmiddle flex scroll-xy");
+
+      var media = $("<img>").appendTo(imgContainer);
+      media.attr("src", sync.rawVal(obj.data.info.img) || "/content/icons/Scroll1000p.png");
+      media.on("load", function(){
+        console.log("Here");
+        var aspect = this.naturalWidth/this.naturalHeight;
+
+        var imageWidth = this.naturalWidth;
+        var imageHeight = this.naturalHeight;
+        var areaHeight = imgContainer.outerWidth();
+        var areaWidth = imgContainer.outerHeight();
+
+        if (aspect >= 1) { // landscape
+          imageWidth = areaWidth;
+          imageHeight = imageWidth / aspect;
+          if (imageHeight > areaHeight) {
+            imageHeight = areaHeight;
+            imageWidth = areaHeight * aspect;
+          }
+        }
+        else { // portrait
+          imageHeight = areaHeight;
+          imageWidth = imageHeight * aspect;
+          if (imageWidth > areaWidth) {
+            imageWidth = areaWidth;
+            imageHeight = areaWidth / aspect;
+          }
+        }
+
+        media.attr("width", imageWidth);
+        media.attr("height", imageHeight);
+      });
+      media.contextmenu(function(ev){
+        assetTypes["img"].contextmenu(ev, $(this), $(this).attr("srcImg"));
+        ev.stopPropagation();
+        ev.preventDefault();
+        return false;
+      });
+
+      var zoom = 100;
+
+      var zoomContainer = $("<div>").appendTo(parent);
+      zoomContainer.addClass("flexcolumn flexmiddle");
+      zoomContainer.css("width", "auto");
+      zoomContainer.css("position", "absolute");
+      zoomContainer.css("left", "10%");
+      zoomContainer.css("bottom", "10%");
+
+      var maxZoom = 200;
+      var typeI = "range";
+      if (layout.mobile) {
+        maxZoom = 1000;
+        typeI = "number";
+      }
+      var zoomRange = genInput({
+        parent : zoomContainer,
+        type : typeI,
+        min : 25,
+        value : 100,
+        step : 5,
+        style : {"width": "100px", color : "black"},
+        max : maxZoom
+      }, 1);
+      zoomRange.val(zoom);
+      zoomRange.bind("input", function(){
+        zoom = $(this).val();
+        media.css("zoom", zoom + "%");
+        media.css("margin-top", "100px");
+        media.css("margin-bottom", "100px");
+      });
+    }
+  },
+  "Roll Table" : {
+    edit : function(obj, app, scope, parent) {
+      var tableData;
+
+      if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "{") {
+        try {
+          tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+        }
+        catch (e) {
+          tableData = {headers : [], contents : []};
+        }
+      }
+      else {
+        tableData = {headers : [], contents : []};
+      }
+
+      var tableOptions = $("<div>").appendTo(parent);
+      tableOptions.addClass("flexcolumn foreground alttext");
+
+      var tableConfig = $("<div>").appendTo(tableOptions);
+
+      var headers = $("<div>").appendTo(tableOptions);
+      headers.addClass("flexrow flexbetween");
+
+      if (tableData.headers.length < 2) {
+        tableData.headers = [{name : "d20"}, {name : "Rolled Value"}];
+      }
+
+      for (var i=0; i<tableData.headers.length; i++) {
+        var headerData = tableData.headers[i];
+
+        var headerWrap = $("<div>").appendTo(headers);
+        headerWrap.addClass("flexcolumn flexmiddle flex");
+        if (i == 0) {
+          headerWrap.removeClass("flex");
+          headerWrap.append("<b class='subtitle dull'>Dice to Roll</b>");
+        }
+        else {
+          headerWrap.append("<b class='subtitle dull'>Description</b>");
+        }
+
+        var headerInput = genInput({
+          parent : headerWrap,
+          classes : "line middle lrmargin",
+          value : headerData.name,
+          index : i
+        });
+        headerInput.change(function(){
+          tableData.headers[$(this).attr("index")].name = $(this).val();
+          sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+          obj.sync("updateAsset");
+        });
+      }
+
+      var tableContent = $("<div>").appendTo(parent);
+      tableContent.addClass("flex");
+      tableContent.css("overflow", "auto");
+
+      for (var i=0; i<tableData.contents.length; i++) {
+        var contentData = tableData.contents[i];
+
+        var headerWrap = $("<div>").appendTo(tableContent);
+        headerWrap.addClass("flexrow fit-x");
+
+        var headerInput = genInput({
+          parent : headerWrap,
+          classes : "line middle lrmargin",
+          value : contentData.name,
+          placeholder : "Dice Range (ex. 32-46)",
+          index : i
+        });
+        headerInput.change(function(){
+          tableData.contents[$(this).attr("index")].name = $(this).val();
+          sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+          obj.sync("updateAsset");
+        });
+
+        var valueInput = genInput({
+          parent : headerWrap,
+          classes : "line middle flex lrmargin",
+          value : contentData.value,
+          index : i
+        });
+        valueInput.change(function(){
+          tableData.contents[$(this).attr("index")].value = $(this).val();
+          sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+          obj.sync("updateAsset");
+        });
+
+        var remove = genIcon("remove").appendTo(headerWrap);
+        remove.addClass("destroy");
+        remove.attr("index", i);
+        remove.click(function(){
+          tableData.contents.splice($(this).attr("index"), 1);
+          sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+          obj.sync("updateAsset");
+        });
+      }
+
+      var newRow = genIcon("plus", "New Row("+tableData.contents.length+")");
+      newRow.appendTo(parent);
+      newRow.addClass("fit-x flexmiddle subtitle bold");
+      newRow.click(function(){
+        tableData.contents.push({});
+        sync.rawVal(obj.data.info.notes, JSON.stringify(tableData));
+        obj.update();
+      });
+    },
+    view : function(obj, app, scope, parent) {
+      var tableData;
+
+      if (sync.rawVal(obj.data.info.notes) && sync.rawVal(obj.data.info.notes)[0] == "{") {
+        try {
+          tableData = JSON.parse(sync.rawVal(obj.data.info.notes));
+        }
+        catch (e) {
+          tableData = {headers : [], contents : []};
+        }
+      }
+      else {
+        tableData = {headers : [], contents : []};
+      }
+
+      var tableContent = $("<div>").appendTo(parent);
+
+      for (var i=0; i<tableData.contents.length; i++) {
+        var contentData = tableData.contents[i];
+
+        var headerWrap = $("<div>").appendTo(tableContent);
+        headerWrap.addClass("flexrow fit-x outlinebottom");
+
+        var rollButton = $("<button>").appendTo(headerWrap);
+        rollButton.addClass("subtitle");
+        rollButton.attr("index", i);
+        rollButton.css("width", "100px");
+        rollButton.text(contentData.name);
+        rollButton.click(function(){
+          var msg = "Selected "+tableData.contents[$(this).attr("index")].name+" on " + sync.rawVal(obj.data.info.name);
+          sendAlert({text : msg});
+          util.chatEvent(msg, null, null, $("<input>"), null, true);
+          util.chatEvent(tableData.contents[$(this).attr("index")].value, null, null, $("<input>"), null, true);
+          $("#chat-button").click();
+        });
+
+        headerWrap.append("<p class='flex spadding'>"+(contentData.value || "")+"</p>");
+      }
+
+      var tableOptions = $("<div>").appendTo(parent);
+      tableOptions.addClass("flexrow subtitle fit-x flexmiddle");
+
+      var rollButton = $("<button>").appendTo(tableOptions);
+      rollButton.addClass("bold flexmiddle button spadding flex");
+      rollButton.text("Roll");
+      rollButton.click(function(){
+        var result = sync.eval(tableData.headers[0].name, {});
+        var rangeRegex = /(\d+)-(\d+)/i;
+        for (var i=0; i<tableData.contents.length; i++) {
+          var contentName = tableData.contents[i].name;
+          var rangeMatch = contentName.match(rangeRegex);
+          if (rangeMatch) {
+            if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+              var temp = Number(rangeMatch[1]);
+              rangeMatch[1] = Number(rangeMatch[2]);
+              rangeMatch[2] = temp;
+            }
+            if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+              var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+              sendAlert({text : msg});
+              util.chatEvent(msg, null, null, $("<input>"), null, true);
+              util.chatEvent(tableData.contents[i].value, null, null, $("<input>"), null, true);
+              $("#chat-button").click();
+              return;
+            }
+          }
+          else if (!isNaN(contentName) && contentName == result) {
+            var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+            sendAlert({text : msg});
+            util.chatEvent(msg, null, null, $("<input>"), null, true);
+            util.chatEvent(tableData.contents[i].value, null, null, $("<input>"), null, true);
+            $("#chat-button").click();
+            return;
+          }
+        }
+      });
+
+      var rollButton = $("<button>").appendTo(tableOptions);
+      rollButton.addClass("bold flexmiddle background alttext spadding flex");
+      rollButton.text("Roll Private");
+      rollButton.click(function(){
+        var result = sync.eval(tableData.headers[0].name, {});
+        var rangeRegex = /(\d+)-(\d+)/i;
+        for (var i=0; i<tableData.contents.length; i++) {
+          var contentName = tableData.contents[i].name;
+          var rangeMatch = contentName.match(rangeRegex);
+          if (rangeMatch) {
+            if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+              var temp = Number(rangeMatch[1]);
+              rangeMatch[1] = Number(rangeMatch[2]);
+              rangeMatch[2] = temp;
+            }
+            if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+              var whisper = {};
+              whisper[getCookie("UserID")] = 1;
+              var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+              sendAlert({text : msg});
+              util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+              util.chatEvent(tableData.contents[i].value, null, whisper, $("<input>"), null, true);
+              $("#chat-button").click();
+              return;
+            }
+          }
+          else if (!isNaN(contentName) && contentName == result) {
+            var whisper = {};
+            whisper[getCookie("UserID")] = 1;
+            var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+            sendAlert({text : msg});
+            util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+            util.chatEvent(tableData.contents[i].value, null, whisper, $("<input>"), null, true);
+            $("#chat-button").click();
+            return;
+          }
+        }
+      });
+    }
+  },
+  "Website" : {
+    edit : function(obj, app, scope, parent) {
+      parent.addClass("smooth outline white");
+
+      var urlInput = genInput({
+        parent : parent,
+        classes : "fit-x",
+        placeholder : "Website URL",
+        value : sync.rawVal(obj.data.info.notes),
+      });
+      urlInput.change(function(){
+        sync.rawVal(obj.data.info.notes, $(this).val());
+        obj.sync("updateAsset");
+      });
+    },
+    view : function(obj, app, scope, parent) {
+      setTimeout(function(){
+        if (parent.is(":visible")) {
+          var newFrame = $("<iframe>").appendTo(parent);
+          newFrame.attr("width", parent.width());
+          newFrame.attr("height", parent.height());
+          newFrame.attr("src", sync.rawVal(obj.data.info.notes));
+          newFrame.css("border", "none");
+          newFrame.css("outline", "none");
+          newFrame.css("border", "none");
+        }
+      }, 1);
+    }
+  },
 }
 
 util.processPage = function(pageData, obj, app, scope) {
@@ -1847,6 +2536,115 @@ util.processPage = function(pageData, obj, app, scope) {
     preview.find("h2").css("text-shadow", sync.modifier(obj.data.info.notes, "H2S"));
   }
 
+  preview.find("table").each(function(){
+    if (!$(this).attr("width")) {
+      $(this).addClass("fit-x");
+    }
+    $(this).addClass("smooth");
+    var alt = false;
+    $(this).find("tr").addClass("outlinebottom lrpadding subtitle").each(function(){
+      alt = !alt;
+      if (alt) {
+        $(this).addClass("inactive");
+      }
+    });
+    $(this).find("tr").children().addClass("lrpadding lightoutline");
+    $($(this).find("tr")[0]).addClass("bold").removeClass("subtitle lightoutline inactive");
+    $($(this).find("tr")[0]).children().addClass("lrpadding outlinebottom smooth").removeClass("lightoutline").css("border-color", "rgba(0,0,0,0.2)");
+
+    var tableContents = $(this).find("tr");
+    var header = $(tableContents[0]);
+    header.addClass("bold");
+    var head = $(header.children()[0]);
+    if (!scope.noInteractions) {
+      if (head.text().match(diceRegex) && header.children().length == 2) {
+        $(this).addClass("link");
+        $(this).click(function(){
+          $(this).contextmenu();
+        });
+        $(this).contextmenu(function(){
+          var actionsList = [
+            {
+              name : "Roll",
+              click : function(ev, ui){
+                var result = sync.eval(head.text(), {});
+                var rangeRegex = /(\d+)-(\d+)/i;
+                for (var i=1; i<tableContents.length; i++) {
+                  var contentName = $($(tableContents[i]).children()[0]).text();
+                  var rangeMatch = contentName.match(rangeRegex);
+                  if (rangeMatch) {
+                    if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+                      var temp = Number(rangeMatch[1]);
+                      rangeMatch[1] = Number(rangeMatch[2]);
+                      rangeMatch[2] = temp;
+                    }
+                    if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+                      var whisper = null
+                      var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+                      sendAlert({text : msg});
+                      util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+                      util.chatEvent($($(tableContents[i]).children()[1]).text(), null, whisper, $("<input>"), null, true);
+                      $("#chat-button").click();
+                      return;
+                    }
+                  }
+                  else if (!isNaN(contentName) && contentName == result) {
+                    var whisper = null
+                    var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+                    sendAlert({text : msg});
+                    util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+                    util.chatEvent($($(tableContents[i]).children()[1]).text(), null, whisper, $("<input>"), null, true);
+                    $("#chat-button").click();
+                    return;
+                  }
+                }
+              }
+            },
+            {
+              name : "Roll Private",
+              click : function(ev, ui){
+                var result = sync.eval(head.text(), {});
+                var rangeRegex = /(\d+)-(\d+)/i;
+                for (var i=1; i<tableContents.length; i++) {
+                  var contentName = $($(tableContents[i]).children()[0]).text();
+                  var rangeMatch = contentName.match(rangeRegex);
+                  if (rangeMatch) {
+                    if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
+                      var temp = Number(rangeMatch[1]);
+                      rangeMatch[1] = Number(rangeMatch[2]);
+                      rangeMatch[2] = temp;
+                    }
+                    if (Number(rangeMatch[1]) <= result && Number(rangeMatch[2]) >= result) {
+                      var whisper = {};
+                      whisper[getCookie("UserID")] = 1;
+                      var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+                      sendAlert({text : msg});
+                      util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+                      util.chatEvent($($(tableContents[i]).children()[1]).text(), null, whisper, $("<input>"), null, true);
+                      $("#chat-button").click();
+                      return;
+                    }
+                  }
+                  else if (!isNaN(contentName) && contentName == result) {
+                    var whisper = {};
+                    whisper[getCookie("UserID")] = 1;
+                    var msg = "Rolled "+result+" on " + sync.rawVal(obj.data.info.name);
+                    sendAlert({text : msg});
+                    util.chatEvent(msg, null, whisper, $("<input>"), null, true);
+                    util.chatEvent($($(tableContents[i]).children()[1]).text(), null, whisper, $("<input>"), null, true);
+                    $("#chat-button").click();
+                    return;
+                  }
+                }
+              }
+            }
+          ];
+          ui_dropMenu($(this), actionsList, {id : "roll-list"});
+          return false;
+        });
+      }
+    }
+  });
 
   preview.find(".conversation").each(function(){
     var convo = $(this);
@@ -1869,6 +2667,7 @@ util.processPage = function(pageData, obj, app, scope) {
                   convo.addClass("dull");
                   convo.find(".chatCmd").css("color", "#333");
                   var href;
+                  var entID;
                   convo.find(".chatName").find("a").each(function(){
                     var link = $(this);
                     var reg = /\|asset\|=([\w-\d]+)/;
@@ -1877,11 +2676,12 @@ util.processPage = function(pageData, obj, app, scope) {
                     if (match) {
                       var ent = getEnt(match[1]);
                       if (ent && ent.data) {
+                        entID = ent.id();
                         href = sync.rawVal(ent.data.info.img);
                       }
                     }
                   });
-                  util.chatEvent(chatText, "Stranger", _whisperTargets, convo, href, true);
+                  util.chatEvent(chatText, "Stranger", _whisperTargets, convo, href, true, entID);
                 }
               });
             }
@@ -1893,6 +2693,7 @@ util.processPage = function(pageData, obj, app, scope) {
               convo.addClass("dull");
               convo.find(".chatCmd").css("color", "#333");
               var href;
+              var entID;
               convo.find(".chatName").find("a").each(function(){
                 var link = $(this);
                 var reg = /\|asset\|=([\w-\d]+)/;
@@ -1901,11 +2702,12 @@ util.processPage = function(pageData, obj, app, scope) {
                 if (match) {
                   var ent = getEnt(match[1]);
                   if (ent && ent.data) {
+                    entID = ent.id();
                     href = sync.rawVal(ent.data.info.img);
                   }
                 }
               });
-              util.chatEvent(chatText, "Stranger", _whisperTargets, convo, href, true);
+              util.chatEvent(chatText, "Stranger", _whisperTargets, convo, href, true, entID);
             }
           },
           {
@@ -1983,7 +2785,7 @@ util.processPage = function(pageData, obj, app, scope) {
       if (match) {
         var ent = getEnt(match[1]);
         if (ent && ent.data) {
-          var href = sync.rawVal(ent.data.info.img) || "/cdn/icons/blankchar.png";
+          var href = sync.rawVal(ent.data.info.img) || "/content/icons/blankchar.png";
           if (convo.find(".chatName").find("img").length == 0) {
             var img = $("<img>");
             img.addClass("round outline white");
@@ -2010,14 +2812,16 @@ util.processPage = function(pageData, obj, app, scope) {
           var name = $(this).find(".chatName").text();
           var chatText = $(this).find(".chatCmd").text();
           var href;
+          var entID;
           $(this).find(".chatName").find("a").each(function(){
             var link = $(this);
             var reg = /\|asset\|=([\w-\d]+)/;
             var hreff = decodeURI(link.attr("href"));
             var match = hreff.match(reg);
             if (match) {
-              var ent = getEnt(match[1]);
+              ent = getEnt(match[1]);
               if (ent && ent.data) {
+                entID = ent.id();
                 href = sync.rawVal(ent.data.info.img);
                 if (convo.find(".chatName").find("img").length == 0) {
                   var img = $("<img>");
@@ -2036,7 +2840,7 @@ util.processPage = function(pageData, obj, app, scope) {
           $(this).find(".chatName").find("img").each(function(){
             href = $(this).attr("src");
           });
-          util.chatEvent(chatText, name, _whisperTargets, $(this), href, true);
+          util.chatEvent(chatText, name, _whisperTargets, $(this), href, true, entID);
         }
         ev.stopPropagation();
         ev.preventDefault();
@@ -2162,7 +2966,9 @@ util.processPage = function(pageData, obj, app, scope) {
           else {
             assetTypes["img"].preview(ev, $(this), $(this).attr("src"));
           }
-          ev.stopPropagation();
+          if (!$(this).parent().parent().hasClass("conversation")) {
+            ev.stopPropagation();
+          }
           ev.preventDefault();
         });
       }
@@ -2327,36 +3133,7 @@ util.processPage = function(pageData, obj, app, scope) {
             game.locals["turnOrder"] = game.locals["turnOrder"] || sync.obj();
             game.locals["turnOrder"].update(JSON.parse($(this).attr("data")));
 
-            if (($("#quick-combat").length == 0 || !$("#quick-combat").is(":visible"))) {
-              var charList = sync.newApp("ui_combatControls");
-              charList.attr("noControls", true);
-              charList.addClass("white");
-
-              game.state.addApp(charList);
-              if ($("#quick-combat").length == 0) {
-                var pop = ui_popOut({
-                  align : "bottom",
-                  target : $("#navControls"),
-                  id : "quick-combat",
-                  title : " ",
-                  minimize : true,
-                  maximize : true,
-                  close : function(){
-                    pop.remove();
-                    game.state.update();
-                  },
-                  style : {"width" : app.width(), "height" :  app.width()/2}
-                }, charList);
-                pop.resizable();
-              }
-              else {
-                $("#quick-combat").show();
-              }
-            }
-            else if ($(".application[ui-name='ui_combatControls']").length == 0 && !$(".application[ui-name='ui_combatControls']").is(":visible")) {
-              var content = sync.newApp("ui_combatControls");
-              game.state.addApp(content);
-            }
+            $("#combat-button").click();
 
             for (var index in game.players.data) {
               if (game.players.data[index].entity) {
@@ -2431,64 +3208,6 @@ util.processPage = function(pageData, obj, app, scope) {
           });
         }
         link.replaceWith(button);
-      }
-    });
-    preview.find("table").each(function() {
-      $(this).addClass("hover2 lightoutline");
-      if (!scope.noInteractions) {
-        $(this).click(function(){
-          var table = $($(this).children()[0]);
-          var firstRow = $(table.children()[0]);
-          var diceRoll = $(firstRow.children()[0]).text();
-          var rangeRegex = /(\d+)-(\d+)/i;
-          if (diceRoll.match(diceRegex)) {
-            var result = sync.executeQuery(diceRoll);
-            for (var i=1; i<table.children().length; i++) {
-              var row = $(table.children()[i]);
-              var cell = $(row.children()[0]);
-              if (cell.text()) {
-                var rangeMatch = cell.text().match(rangeRegex);
-                if (rangeMatch) {
-                  if (Number(rangeMatch[1]) > Number(rangeMatch[2])) {
-                    var temp = Number(rangeMatch[1]);
-                    rangeMatch[1] = Number(rangeMatch[2]);
-                    rangeMatch[2] = temp;
-                  }
-                  if (Number(rangeMatch[1]) <= sync.eval(result) && Number(rangeMatch[2]) >= sync.eval(result)) {
-                    var resultDiv = $("<div>");
-                    resultDiv.append("<i>"+result+"="+sync.eval(result)+"</i>");
-                    var rowDiv = $("<div>").append(row.html());
-                    rowDiv.children().addClass("outline");
-                    rowDiv.appendTo(resultDiv);
-                    ui_popOut({
-                      target : $(this),
-                      title : "Result",
-                    }, resultDiv);
-                    return;
-                  }
-                }
-                else if (!isNaN(cell.text()) && cell.text() == sync.eval(result)) {
-                  var resultDiv = $("<div>");
-                  resultDiv.append("<i>"+result+"="+sync.eval(result)+"</i>");
-                  var rowDiv = $("<div>").append(row.html());
-                  rowDiv.children().addClass("outline");
-                  rowDiv.appendTo(resultDiv);
-                  ui_popOut({
-                    target : $(this),
-                    title : "Result",
-                  }, resultDiv);
-                  return;
-                }
-              }
-            }
-            ui_popOut({
-              target : $(this),
-            }, $("<div class='flexmiddle'><b>No Result : "+result+"</b></div>"));
-          }
-          else {
-            sendAlert({text : "The first cell MUST contain a dice equation"});
-          }
-        });
       }
     });
   }
@@ -2614,6 +3333,8 @@ util.undo = function(cmd){
 util.fonts = [
   '"Arial Black", Gadget, sans-serif',
   '"Comic Sans MS", cursive, sans-serif',
+  'Columbus',
+  'Celestia',
   'Impact, Charcoal, sans-serif',
   '"Lucida Sans Unicode", "Lucida Grande", sans-serif',
   'Tahoma, Geneva, sans-serif',
@@ -2682,7 +3403,7 @@ util.pageSamples = [
       "display": "block"
     },
     bgStyle : {
-      "background-image": "url('/cdn/tablet.png')",
+      "background-image": "url('/content/tablet.png')",
       "background-size": "contain",
       "background-repeat": "no-repeat",
       "background-position": "center",
@@ -2691,3 +3412,1765 @@ util.pageSamples = [
   }
 
 ];
+
+util.interfaces = {
+  "Organization" : {
+    "Column" : {
+      content : {
+        classes : "flexcolumn flex flexbetween flexcontainer",
+        display : [],
+      },
+    },
+    "Row" : {
+      content : {
+        classes : "flexrow flex flexbetween flexcontainer",
+        display : [],
+      },
+    },
+  },
+  "Inputs" : {
+    "Field" : {
+      content : {
+        classes : "flexrow",
+        target : "%Target%",
+        edit : {classes : "line lrmargin"}
+      },
+      arguments : {
+        "%Target%" : {
+          datalist : "character",
+        }
+      }
+    },
+    "Min-Max Field" : {
+      content : {
+        classes : "flexrow flexaround bold flexcontainer", display : [
+          {classes : "bold", name : "R@c.%Target%.name"},
+          {classes : "flexrow flexaround flexcontainer", display : [
+            {name : "", target : "%Target%", edit : {classes : "line", style : {width : "24px", "text-align" : "center"}}},
+            {classes : "lrmargin bold", value : "/"},
+            {name : "", target : "%Target%", edit : {classes : "line", style : {width : "24px", "text-align" : "center"}, raw : "max"}},
+          ]}
+        ]
+      },
+      arguments : {
+        "%Target%" : {
+          datalist : "character",
+        }
+      }
+    },
+    "Bar" : {
+      content : {
+        classes : "flexrow",
+        target : "%Target%",
+        ui : "ui_progressBar"
+      },
+      arguments : {
+        "%Target%" : {
+          datalist : "character",
+        }
+      }
+    },
+    "Image" : {
+      content : {
+        classes : "flexcolumn flex flexcontainer smooth outline white margin",
+        style : {"position" : "relative"},
+        display : [
+          {
+            classes : "flexcolumn flex",
+            ui : "ui_image",
+            target : "info.img",
+            style : {"min-width" : "100px", "min-height" : "100px"},
+          },
+          {style : {"position" : "absolute", "right" : "0", "bottom" : "0"}, title : "Map Token", target : "info.img", ui : "ui_token", scope : {classes : "smooth outline white"}}
+        ]
+      },
+    },
+    "Label" : {
+      content : {
+        classes : "bold flexmiddle",
+        value : "%Value%",
+      },
+      arguments : {
+        "%Value%" : {
+          value : "Label",
+        }
+      }
+    },
+    "Notes" : {
+      content : {
+        classes : "flexcolumn flex padding white smooth outline",
+        ui : "ui_rawNotes",
+      }
+    },
+  },
+  "Lists" : {
+    "Stat List" : {
+      content : {
+        classes : "flexrow flexaround flexwrap flex",
+        target : "stats",
+        datalist : {
+          classes : "spadding flexcolumn flexmiddle lrmargin bold outline inactive flex",
+          display : [
+            {classes : "flexrow flexmiddle subtitle", display : [
+              {classes : "flexmiddle", ui : "ui_link", scope : {name : "@c.%dataTarget%.name", icon : "'list-alt'", click : "ui_modifiers", lookup : "@applyTarget", attr : {"modsOnly" : true}}},
+            ]},
+            {classes : "flexrow flexmiddle lrmargin bold", display : [
+              {
+                name : "", target : "%dataTarget%", edit : {classes : "bold white outline flexmiddle fit-x", style : {"width" : "70px", "height" : "40px"}, raw : "1"},
+              },
+            ]},
+          ]
+        }
+      },
+    },
+    "Inventory" : {
+      content : {
+        classes : "flexcolumn flex padding", display : [
+          {classes : "flexrow underline", style : {"font-size" : "1.4em"}, display : [
+            {classes : "bold lrmargin", name : "Inventory"},
+            {
+              classes : "bold flexmiddle create subtitle lrmargin",
+              style : {"cursor" : "pointer"},
+              icon : "plus",
+              click : {create : "inventory"}
+            }
+          ]},
+          {
+            classes : "flex spadding white outline smooth",
+            style : {"text-align" : "left", "overflow-y" : "auto"},
+            scrl : "inv",
+            ui : "ui_entryList",
+            scope : {
+              drop : "inventoryDrop",
+              connectWith : ".inventoryDrop",
+              reposition : true,
+              lookup : "inventory",
+              applyUI : {classes : "flexrow flex subtitle", display : [
+                {
+                  classes : "flexcolumn",
+                  ui : "ui_image",
+                  target : "@applyTarget.info.img",
+                  style : {"width" : "15px", "height" : "15px"},
+                  scope : {def : "/content/icons/Backpack1000p.png"},
+                },
+                {name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrmargin line middle", title : "Quantity", style : {"width" : "24px"}, raw : "1"}},
+                {classes : "flex lrpadding", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex", style : {"min-width" : "70px"}, raw : "1"}},
+                {classes : "bold hover2 spadding white outline smooth flexrow flexmiddle subtitle",
+                  value : "(@c.@applyTarget.tags.equipped==0)?('Equip'):('Un-equip')", style : {"white-space" : "nowrap"},
+                  click : {calc : [{target : "@applyTarget.tags.equipped", cond : "@c.@applyTarget.tags.equipped==0", eq : "1"},{target : "@applyTarget.tags.equipped", cond : "@c.@applyTarget.tags.equipped==1", eq : "0"}]}
+                },
+                {name : "", target : "@applyTarget.info.weight", edit : {classes : "lrmargin line middle",title : "Weight", style : {"width" : "24px"}, raw : "1"}},
+                {
+                  classes : "flexmiddle",
+                  name : "",
+                  link : "edit",
+                  target : "@applyTarget",
+                  click : {edit : "@applyTarget"}
+                },
+                {
+                  classes : "flexmiddle destroy lrmargin",
+                  name : "",
+                  link : "trash",
+                  click : {delete : true, target : "@applyTarget"}
+                },
+              ]}
+            }
+          },
+        ]
+      },
+    },
+    "Spellbook" : {
+      content : {
+        classes : "flexcolumn flex padding", display : [
+          {classes : "flexrow underline", style : {"font-size" : "1.4em"}, display : [
+            {classes : "bold lrmargin", name : "Spellbook"},
+            {
+              classes : "bold flexmiddle create subtitle lrmargin",
+              style : {"cursor" : "pointer"},
+              icon : "plus",
+              click : {create : "spellbook"}
+            }
+          ]},
+          {
+            classes : "flex spadding white outline smooth",
+            style : {"text-align" : "left", "overflow-y" : "auto"},
+            scrl : "spl",
+            ui : "ui_entryList",
+            scope : {
+              drop : "spellbookDrop",
+              connectWith : ".spellbookDrop",
+              reposition : true,
+              lookup : "spellbook",
+              applyUI : {classes : "flexrow flex subtitle", display : [
+                {
+                  classes : "flexcolumn",
+                  ui : "ui_image",
+                  target : "@applyTarget.info.img",
+                  style : {"width" : "15px", "height" : "15px"},
+                  scope : {def : "/content/icons/Backpack1000p.png"},
+                },
+                {name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrmargin line middle", title : "Quantity", style : {"width" : "24px"}, raw : "1"}},
+                {classes : "flex lrpadding", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex", style : {"min-width" : "70px"}, raw : "1"}},
+                {name : "", target : "@applyTarget.info.weight", edit : {classes : "lrmargin line middle",title : "Weight", style : {"width" : "24px"}, raw : "1"}},
+                {
+                  classes : "flexmiddle",
+                  name : "",
+                  link : "edit",
+                  target : "@applyTarget",
+                  click : {edit : "@applyTarget"}
+                },
+                {
+                  classes : "flexmiddle destroy lrmargin",
+                  name : "",
+                  link : "trash",
+                  click : {delete : true, target : "@applyTarget"}
+                },
+              ]}
+            }
+          },
+        ]
+      },
+    },
+    "Talents" : {
+      content : {
+        classes : "flexcolumn flex spadding",
+        display : [
+          {
+            "classes": "flexcolumn lrmargin",
+            "display": [
+              {
+                "classes": "flexrow outlinebottom lrpadding",
+                "display": [
+                  {
+                    "classes": "bold",
+                    "name": "New Talent"
+                  },
+                  {
+                    "classes": "bold flexmiddle create lrmargin",
+                    "style": {
+                      "cursor": "pointer"
+                    },
+                    "icon": "plus",
+                    "click": {
+                      "create": "talents"
+                    }
+                  }
+                ]
+              },
+              {
+                "target": "talents",
+                "classes" : "spadding scroll-y",
+                "scrl" : "tlnt",
+                "datalist": {
+                  "classes": "flexrow flexbetween",
+                  "display": [
+                    {
+                      "classes": "link flex",
+                      "title": "@%dataTarget%",
+                      "name": "",
+                      "target": "%dataTarget%",
+                      "value": "@c.%dataTarget%.name",
+                      "click": {
+                        "view": "talents"
+                      }
+                    },
+                    {
+                      "classes": "flexmiddle",
+                      "name": "",
+                      "target": "%dataTarget%",
+                      "link": "edit",
+                      "click": {
+                        "edit": "talents"
+                      }
+                    },
+                    {
+                      "classes": "flexmiddle destroy",
+                      "name": "",
+                      "link": "trash",
+                      "click": {
+                        "delete": true,
+                        "target": "%dataTarget%"
+                      }
+                    }
+                  ]
+                }
+              },
+            ]
+          }
+        ]
+      }
+    },
+    "Special Rules" : {
+      content : {
+        classes : "flexcolumn flex spadding",
+        display : [
+          {
+            "classes": "flexcolumn lrmargin",
+            "display": [
+              {
+                "classes": "flexrow outlinebottom lrpadding",
+                "display": [
+                  {
+                    "classes": "bold",
+                    "name": "Special rules"
+                  },
+                  {
+                    "classes": "bold flexmiddle create lrmargin",
+                    "style": {
+                      "cursor": "pointer"
+                    },
+                    "icon": "plus",
+                    "click": {
+                      "create": "specials"
+                    }
+                  }
+                ]
+              },
+              {
+                "target": "specials",
+                "classes" : "spadding scroll-y",
+                "scrl" : "spcl",
+                "datalist": {
+                  "classes": "flexrow flexbetween",
+                  "display": [
+                    {
+                      "classes": "link flex",
+                      "title": "@%dataTarget%",
+                      "name": "",
+                      "target": "%dataTarget%",
+                      "value": "@c.%dataTarget%.name",
+                      "click": {
+                        "view": "specials"
+                      }
+                    },
+                    {
+                      "classes": "flexmiddle",
+                      "name": "",
+                      "target": "%dataTarget%",
+                      "link": "edit",
+                      "click": {
+                        "edit": "specials"
+                      }
+                    },
+                    {
+                      "classes": "flexmiddle destroy",
+                      "name": "",
+                      "link": "trash",
+                      "click": {
+                        "delete": true,
+                        "target": "%dataTarget%"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Trained Skills" : {
+      content : {
+        "classes": "flexcolumn",
+        "display": [
+          {
+            "classes": "flexrow flexmiddle underline bold",
+            "style": {
+              "font-size": "1.4em"
+            },
+            "display": [
+              {
+                "name": "Skills"
+              },
+              {
+                "classes": "bold flexmiddle create subtitle lrmargin",
+                "style": {
+                  "cursor": "pointer"
+                },
+                "icon": "plus",
+                "click": {
+                  "create": "skills"
+                }
+              }
+            ]
+          },
+          {
+            "classes": "flexcolumn flex padding white outline smooth scroll-y",
+            "scrl" : "skls",
+            "ui": "ui_skillList",
+            "scope": {
+              "lookup": "skills",
+              "applyUI": {
+                "classes": "flexrow flexaround flex subtitle smooth",
+                "display": [
+                  {
+                    "classes": "flexrow flexmiddle",
+                    "display": [
+                      {
+                        "title": "Trained?",
+                        "target": "skills.@skillKey",
+                        "ui": "ui_checkbox",
+                        "scope": {
+                          "saveInto": "skills.@skillKey",
+                          "cond": "R@c.skills.@skillKey==1",
+                          "checked": "1",
+                          "unchecked": "0"
+                        }
+                      },
+                      {
+                        "style": {
+                          "width": "150px",
+                          "text-align": "left"
+                        },
+                        "title": "@skillKey",
+                        "classes": "lrpadding bold subtitle",
+                        "ui": "ui_link",
+                        "scope": {
+                          "name": "@c.skills.@skillKey.name",
+                          "click": "ui_modifiers",
+                          "lookup": "skills.@skillKey",
+                          "attr": {
+                            "modsOnly": true
+                          }
+                        }
+                      },
+                      {
+                        "cond": "R@c.skills.@skillKey<1",
+                        "name": "",
+                        "title": "Rank Modifier",
+                        "target": "skills.@skillKey",
+                        "edit": {
+                          "classes": "line middle lrmargin",
+                          "mod": "rank",
+                        }
+                      },
+                      {
+                        "cond": "R@c.skills.@skillKey>0",
+                        "name": "",
+                        "title": "Rank Modifier",
+                        "target": "skills.@skillKey",
+                        "edit": {
+                          "classes": "line middle lrmargin",
+                          "mod": "rank",
+                          "style": {
+                            "width": "50px"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+    }
+  },
+  "Interactive" : {
+    "Equation Button" : {
+      content : {
+        classes : "bold hover2 spadding white outline smooth flexmiddle",
+        value : "%Macro%",
+        click : {action : "%Action%"}
+      },
+      arguments : {
+        "%Action%" : {
+          value : "",
+        },
+        "%Macro%" : {
+          value : "",
+        }
+      }
+    },
+  }
+}
+
+util.premadeSheets = {};
+
+util.customSheets = function(obj, app, scope, sheet){
+  return [
+    {
+      name : "Blank Notes",
+      click : function(){
+        var style = sheet.style || {};
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexcolumn flex lpadding flexcontainer", display : [
+            {classes : "flexrow flexbetween", display : [
+              {classes : "flexcolumn flex padding",
+                display : [
+                  {
+                    classes : "flexcolumn smooth outline flex white",
+                    ui : "ui_image",
+                    target : "info.img",
+                    style : {"min-width" : "100px", "min-height" : "100px"},
+                  }
+                ]
+              },
+              {classes : "flexcolumn flex2", display : [
+                {classes : "flexrow lrmargin spadding", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                {
+                  classes : "flexcolumn flex2",
+                  ui : "ui_characterNotes",
+                  scope : {style : {"min-height" : "200px"}}
+                },
+              ]},
+            ]}
+          ]},
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Container",
+      click : function(){
+        var style = sheet.style || {};
+        merge(style, {padding : "1em"});
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexrow flexbetween flex flexcontainer", display : [
+              {classes : "flexcolumn flex padding",
+                display : [
+                  {
+                    classes : "flexcolumn smooth outline flex white",
+                    ui : "ui_image",
+                    target : "info.img",
+                    style : {"min-width" : "100px", "min-height" : "100px"},
+                  }
+                ]
+              },
+              {classes : "flexcolumn flex2 lrmargin", display : [
+                {classes : "flexrow fit-x spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                {
+                  classes : "flexcolumn flex",
+                  ui : "ui_characterNotes",
+                  scope : {style : {"min-height" : "200px"}}
+                },
+                {classes : "flexcolumn padding flex", display : [
+                  {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
+                    {classes : "bold subtitle", name : "Inventory"},
+                    {
+                      classes : "bold create subtitle lrmargin",
+                      style : {"cursor" : "pointer"},
+                      icon : "plus",
+                      click : {create : "inventory"}
+                    },
+                    {classes : "flex"},
+                    {classes : "flexrow lrmargin", style : {"font-size" : "0.6em"}, name : "Max Weight", target : "stats.weight", edit : {classes : "line fit-x middle lrmargin", raw : "1", type : "number", style : {"width" : "80px"}}},
+                  ]},
+                  {classes : "flexrow fit-x flexbetween", display : [
+                    {classes : "bold subtitle flex", name : "Name"},
+                    {classes : "lrpadding lrmargin bold subtitle middle", name : "Quantity", style : {"width" : "50px"}},
+                    {classes : "lrpadding lrmargin bold subtitle middle", name : "Weight", style : {"width" : "50px"}},
+                    {
+                      classes : "flexmiddle",
+                      name : "",
+                      icon : "edit",
+                      style : {"color" : "transparent"},
+                    },
+                    {
+                      classes : "flexmiddle",
+                      name : "",
+                      icon : "trash",
+                      style : {"color" : "transparent"},
+                    },
+                  ]},
+                  {
+                    classes : "flex spadding white outline smooth",
+                    style : {"text-align" : "left", "overflow-y" : "auto"},
+                    scrl : "inv",
+                    ui : "ui_entryList",
+                    scope : {
+                      drop : "inventoryDrop",
+                      connectWith : ".inventoryDrop",
+                      reposition : true,
+                      lookup : "inventory",
+                      applyUI : {classes : "flexrow flex subtitle", display : [
+                        {
+                          classes : "flexcolumn",
+                          ui : "ui_image",
+                          target : "@applyTarget.info.img",
+                          style : {"width" : "20px", "height" : "20px"},
+                          scope : {def : "/content/icons/Pouch1000p.png"},
+                        },
+                        {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
+                        {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle", style : {"width" : "50px"}}},
+                        {classes : "lrpadding", name : "", target : "@applyTarget.info.weight", edit : {classes : "lrpadding line middle", style : {"width" : "40px"}}},
+                        {
+                          classes : "flexmiddle",
+                          name : "",
+                          link : "edit",
+                          target : "@applyTarget",
+                          click : {edit : "@applyTarget"}
+                        },
+                        {
+                          classes : "flexmiddle destroy lrmargin",
+                          name : "",
+                          link : "trash",
+                          click : {delete : true, target : "@applyTarget"}
+                        },
+                      ]},
+                    }
+                  },
+                  {classes : "flexrow", cond : "R@c.stats.weight>0", display : [
+                    {classes : "bold subtitle lrmargin", name : "Weight (@:weight()lbs)"},
+                    {classes : "spadding lrmargin flex", ui : "ui_progressBar", scope : {percentage : "@:weight()", max : "R@c.stats.weight", col : "rgb(@:int(@percentage*200),@:int(200-(@percentage*200)),0)"}},
+                    {cond : "R@c.stats.weight>0", classes : "bold subtitle lrmargin", title : "Str*15", value : "@:int((@:weight()/(R@c.stats.weight))*100)+'%'"}
+                  ]},
+                ]}
+              ]},
+            ]
+          },
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Empty",
+      click : function(){
+        var style = sheet.style || {};
+        merge(style, {padding : "1em"});
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexcolumn flex flexcontainer", display : []},
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Notes Only",
+      click : function(){
+        var style = sheet.style || {};
+        merge(style, {padding : "1em"});
+        obj.data._d = {
+          style : style,
+          content : {classes : "flexrow flexbetween flex flexcontainer", display : [
+              {classes : "flexcolumn flex padding",
+                display : [
+                  {
+                    classes : "flexcolumn smooth outline flex white",
+                    ui : "ui_image",
+                    target : "info.img",
+                    style : {"min-width" : "100px", "min-height" : "100px"},
+                  }
+                ]
+              },
+              {classes : "flexcolumn flex2 lrmargin", display : [
+                {classes : "flexrow spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                {
+                  classes : "flexcolumn flex2",
+                  ui : "ui_characterNotes",
+                  scope : {style : {"min-height" : "200px"}}
+                },
+              ]},
+            ]
+          },
+        }
+        obj.sync("updateSheet");
+      }
+    },
+    {
+      name : "Shop",
+      submenu : [
+        {
+          name : "Inventory",
+          click : function(){
+            var style = sheet.style || {};
+            merge(style, {padding : "1em"});
+            obj.data._d = {
+              style : style,
+              content : {classes : "flexcolumn flex flexcontainer", display : [
+                  {classes : "flexrow flexbetween", display : [
+                    {classes : "flexcolumn flex padding",
+                      display : [
+                        {
+                          classes : "flexcolumn smooth outline flex white",
+                          ui : "ui_image",
+                          target : "info.img",
+                          style : {"min-width" : "100px", "min-height" : "100px"},
+                        }
+                      ]
+                    },
+                    {classes : "flexcolumn flex2 lrmargin", display : [
+                      {classes : "flexrow lrmargin spadding", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                      {
+                        classes : "flexcolumn flex2",
+                        ui : "ui_characterNotes",
+                        scope : {style : {"min-height" : "200px"}}
+                      },
+                    ]},
+                  ]},
+                  {classes : "flexcolumn padding", display : [
+                    {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
+                      {classes : "bold subtitle", name : "Shop"},
+                      {
+                        classes : "bold create subtitle lrmargin",
+                        style : {"cursor" : "pointer"},
+                        icon : "plus",
+                        click : {create : "inventory"}
+                      },
+                    ]},
+                    {classes : "flexrow fit-x flexbetween", display : [
+                      {classes : "bold flex", name : "Name"},
+                      {classes : "bold", name : "Quantity", style : {"width" : "80px"}},
+                      {classes : "bold", name : "Price", style : {"width" : "70px"}},
+                      {
+                        classes : "flexmiddle",
+                        name : "",
+                        icon : "edit",
+                        style : {"color" : "transparent"},
+                      },
+                      {
+                        classes : "flexmiddle lrmargin",
+                        name : "",
+                        icon : "trash",
+                        style : {"color" : "transparent"},
+                      },
+                    ]},
+                    {
+                      classes : "flex padding white outline smooth",
+                      style : {"text-align" : "left", "overflow-y" : "auto"},
+                      scrl : "inv",
+                      ui : "ui_entryList",
+                      scope : {
+                        drop : "inventoryDrop",
+                        connectWith : ".inventoryDrop",
+                        reposition : true,
+                        lookup : "inventory",
+                        applyUI : {classes : "flexrow flex", display : [
+                          {
+                            classes : "flexcolumn",
+                            ui : "ui_image",
+                            target : "@applyTarget.info.img",
+                            style : {"width" : "20px", "height" : "20px"},
+                            scope : {def : "/content/icons/Pouch1000p.png"},
+                          },
+                          {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
+                          {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle flex", style : {"width" : "60px"}}},
+                          {classes : "lrmargin lrpadding white smooth outline bold flexmiddle", name : "", target : "@applyTarget.info.price", edit : {classes : "line middle", style : {"width" : "65px"}}},
+                          {
+                            classes : "flexmiddle",
+                            name : "",
+                            link : "edit",
+                            target : "@applyTarget",
+                            click : {edit : "@applyTarget"}
+                          },
+                          {
+                            classes : "flexmiddle destroy lrmargin",
+                            name : "",
+                            link : "trash",
+                            click : {delete : true, target : "@applyTarget"}
+                          },
+                        ]},
+                      }
+                    }
+                  ]}
+                ]
+              },
+            }
+            obj.sync("updateSheet");
+          }
+        },
+        {
+          name : "Spells",
+          click : function(){
+            var style = sheet.style || {};
+            merge(style, {padding : "1em"});
+            obj.data._d = {
+              style : style,
+              content : {classes : "flexcolumn flex flexcontainer", display : [
+                  {classes : "flexrow flexbetween", display : [
+                    {classes : "flexcolumn flex padding",
+                      display : [
+                        {
+                          classes : "flexcolumn smooth outline flex white",
+                          ui : "ui_image",
+                          target : "info.img",
+                          style : {"min-width" : "100px", "min-height" : "100px"},
+                        }
+                      ]
+                    },
+                    {classes : "flexcolumn flex2 lrmargin", display : [
+                      {classes : "flexrow spadding lrmargin", target : "info.name", edit : {classes : "line fit-x lrmargin"}},
+                      {
+                        classes : "flexcolumn flex2",
+                        ui : "ui_characterNotes",
+                        scope : {style : {"min-height" : "200px"}}
+                      },
+                    ]},
+                  ]},
+                  {classes : "flexcolumn padding", display : [
+                    {style : {"font-size" : "1.6em"}, classes : "flexrow underline", display : [
+                      {classes : "bold subtitle", name : "Shop"},
+                      {
+                        classes : "bold create subtitle lrmargin",
+                        style : {"cursor" : "pointer"},
+                        icon : "plus",
+                        click : {create : "inventory"}
+                      },
+                    ]},
+                    {classes : "flexrow fit-x flexbetween", display : [
+                      {classes : "bold flex", name : "Name"},
+                      {classes : "bold", name : "Quantity", style : {"width" : "80px"}},
+                      {classes : "bold", name : "Price", style : {"width" : "70px"}},
+                      {
+                        classes : "flexmiddle",
+                        name : "",
+                        icon : "edit",
+                        style : {"color" : "transparent"},
+                      },
+                      {
+                        classes : "flexmiddle lrmargin",
+                        name : "",
+                        icon : "trash",
+                        style : {"color" : "transparent"},
+                      },
+                    ]},
+                    {
+                      classes : "flex padding white outline smooth",
+                      style : {"text-align" : "left", "overflow-y" : "auto"},
+                      scrl : "inv",
+                      ui : "ui_entryList",
+                      scope : {
+                        drop : "spellDrop",
+                        connectWith : ".spellDrop",
+                        reposition : true,
+                        lookup : "spellbook",
+                        applyUI : {classes : "flexrow flex", display : [
+                          {
+                            classes : "flexcolumn",
+                            ui : "ui_image",
+                            target : "@applyTarget.info.img",
+                            style : {"width" : "20px", "height" : "20px"},
+                            scope : {def : "/content/icons/Pouch1000p.png"},
+                          },
+                          {classes : "lrpadding flex", name : "", target : "@applyTarget.info.name", edit : {classes : "lrpadding line flex2", style : {"min-width" : "70px"}, raw : "1"}},
+                          {classes : "lrpadding", name : "", target : "@applyTarget.info.quantity", edit : {classes : "lrpadding line middle flex", style : {"width" : "60px"}}},
+                          {classes : "lrmargin lrpadding white smooth outline subtitle bold flexmiddle", name : "", target : "@applyTarget.info.price", edit : {classes : "line middle", style : {"width" : "65px"}}},
+                          {
+                            classes : "flexmiddle",
+                            name : "",
+                            link : "edit",
+                            target : "@applyTarget",
+                            click : {edit : "@applyTarget"}
+                          },
+                          {
+                            classes : "flexmiddle destroy lrmargin",
+                            name : "",
+                            link : "trash",
+                            click : {delete : true, target : "@applyTarget"}
+                          },
+                        ]},
+                      }
+                    }
+                  ]}
+                ]
+              },
+            }
+            obj.sync("updateSheet");
+          }
+        }
+      ]
+    }
+  ]
+}
+
+util.commands = {
+  "forceToPoint" : function(data, userID){
+    $(".application[ui-name='ui_board']").each(function(){
+      var app = $(this);
+      var board = getEnt(app.attr("index"));
+      if (data.id == board.id() && !data.userID || data.userID == getCookie("UserID")) {
+        boardApi.scrollTo(app, data.x, data.y, true);
+        $("#"+app.attr("id")+"-zoom-range-"+data.id).val(data.zoom);
+        $("#"+app.attr("id")+"-zoom-range-"+data.id).change();
+      }
+    });
+  }
+};
+
+util.events = {
+  "1" : {
+    name : "Hide Layer",
+    load : function(obj, app, scope, newValue) {
+      // make changes to the data on selection
+      obj.data = {target : "layers.0.h", eq : "1", e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex spadding");
+      targetDiv.append("<b class='subtitle'>Target Layer</b>");
+
+      var layers = $("<select>").appendTo(targetDiv);
+      layers.addClass("smooth");
+      for (var lid=0; lid<board.data.layers.length; lid++) {
+        layers.append("<option value='"+lid+"'>"+board.data.layers[lid].n+"</option>");
+      }
+
+      layers.children().each(function(){
+        obj.data.target = obj.data.target || "layers.0.h";
+        if ($(this).attr("value") == obj.data.target.split(".")[1]) {
+          $(this).attr("selected", true);
+        }
+      });
+      layers.change(function(){
+        obj.data = {target : "layers."+$(this).val()+".h", eq : "1", e : 1};
+        obj.update();
+      });
+
+      return targetDiv;
+    }
+  },
+  "2" : {
+    name : "Reveal Layer",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {target : "layers.0.h", eq : "0", e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex spadding");
+
+      var layers = $("<select>").appendTo(targetDiv);
+      layers.addClass("smooth");
+      for (var lid=0; lid<board.data.layers.length; lid++) {
+        layers.append("<option value='"+lid+"'>"+board.data.layers[lid].n+"</option>");
+      }
+      layers.children().each(function(){
+        obj.data.target = obj.data.target || "layers.0.h";
+        if ($(this).attr("value") == obj.data.target.split(".")[1]) {
+          $(this).attr("selected", true);
+        }
+      });
+      layers.change(function(){
+        obj.data = {target : "layers."+$(this).val()+".h", eq : "0", e : 2};
+        obj.update();
+      });
+
+      return targetDiv;
+    }
+  },
+  "3" : {
+    name : "Toggle Layer",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {target : "layers.0.h", eq : "(@b.layers.0.h == 1)?(0):(1)", e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex spadding");
+
+      var layers = $("<select>").appendTo(targetDiv);
+      layers.addClass("smooth");
+
+      for (var lid=0; lid<board.data.layers.length; lid++) {
+        layers.append("<option value='"+lid+"'>"+board.data.layers[lid].n+"</option>");
+      }
+      layers.children().each(function(){
+        obj.data.target = obj.data.target || "layers.0.h";
+        if ($(this).attr("value") == obj.data.target.split(".")[1]) {
+          $(this).attr("selected", true);
+        }
+      });
+      layers.change(function(){
+        obj.data = {target : "layers."+$(this).val()+".h", eq : "(@b.layers."+$(this).val()+".h == 1)?(0):(1)", e : 3};
+        obj.update();
+      });
+
+      return targetDiv;
+    }
+  },
+  "4" : {
+    name : "Roll Dice",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {e : newValue, msg : "Activated Trap!", data : game.templates.dice.defaults[0]};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex spadding");
+
+      var flavor = genInput({
+        parent : targetDiv,
+        classes : "line flex",
+        value : obj.data.msg,
+        placeholder : "Flavor Text (Optional)",
+      });
+      flavor.change(function(){
+        obj.data.msg = $(this).val();
+      });
+
+      targetDiv.append("<b class='subtitle smargin'>Equation to Roll</b>");
+
+      var equation = $("<textarea>").appendTo(targetDiv);
+      equation.addClass("smooth");
+      equation.attr("placeholder", "Enter a macro equation here");
+      equation.text(obj.data.data || "");
+      equation.change(function(){
+        obj.data.data = $(this).val();
+      });
+
+      targetDiv.append("<b class='subtitle smargin'>Extra Options</b>");
+
+      var optionsBar = $("<div>").appendTo(targetDiv);
+      optionsBar.addClass("flexrow flexaround flexwrap fit-x subtitle");
+
+      var gmOnly = $("<button>").appendTo(optionsBar);
+      gmOnly.addClass("flexmiddle alttext");
+      if (obj.data.p && obj.data.p.default) {
+        gmOnly.addClass("highlight");
+      }
+      else {
+        gmOnly.addClass("background");
+      }
+      gmOnly.text("GM Only?");
+      gmOnly.click(function(){
+        obj.data.p = obj.data.p || {};
+        if (obj.data.p.default) {
+          delete obj.data.p;
+        }
+        else {
+          obj.data.p.default = "@:gm()";
+        }
+        obj.update();
+      });
+
+      var dataList = Object.keys(game.templates.display.ui);
+
+      var ui = genInput({
+        parent : optionsBar,
+        classes : "line lrmargin",
+        type : "list",
+        list : dataList,
+        value : obj.data.ui,
+        placeholder : "Dice Display (Optional)",
+      });
+      ui.val(obj.data.ui);
+      ui.change(function(){
+        obj.data.ui = $(this).val();
+      });
+
+      var cond = genInput({
+        parent : optionsBar,
+        classes : "line flex lrmargin",
+        value : obj.data.cond,
+        placeholder : "Condition Macro",
+      });
+      cond.val(obj.data.cond);
+      cond.change(function(){
+        obj.data.cond = $(this).val();
+      });
+
+      return targetDiv;
+    },
+    fire : function(obj, app, calcData, pieceData, ctx) {
+      var evData = {
+        icon : calcData.data.href,
+        eID : obj.id(),
+        flavor : sync.eval(calcData.msg, ctx),
+        p : calcData.p,
+        eventData : sync.executeQuery(calcData.data, ctx),
+      }
+      evData.eventData.ui = calcData.ui;
+      runCommand("chatEvent", evData);
+    }
+  },
+  "5" : {
+    name : "Focus on Token",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex spadding");
+
+      return targetDiv;
+    },
+    fire : function(obj, app, calcData, pieceData, ctx) {
+      runCommand("command", {cmd : "forceToPoint", id : obj.id(), x : pieceData.x + pieceData.w/2, y : pieceData.y + pieceData.h/2, zoom : app.attr("zoom")});
+    }
+  },
+  "6" : {
+    name : "Sound Effect",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex flexmiddle spadding");
+
+      var soundPath = obj.data.s;
+
+      var pickButton = $("<button>").appendTo(targetDiv);
+      pickButton.addClass("background alttext subtitle");
+      if (soundPath) {
+        pickButton.text(soundPath);
+      }
+      else {
+        pickButton.text("Pick Sound File");
+      }
+      pickButton.click(function(){
+        var content = sync.render("ui_filePicker")(obj, app, {change : function(ev, ui, val){
+          obj.data.s = val;
+          layout.coverlay("sound-selection");
+          obj.update();
+        }});
+
+        var pop = ui_popOut({
+          target : app,
+          prompt : true,
+          id : "sound-selection",
+          style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
+        }, content);
+        pop.resizable();
+      });
+
+      return targetDiv;
+    },
+    fire : function(obj, app, calcData, pieceData, ctx) {
+      runCommand("music", {src : calcData.s});
+    },
+  },
+  "7" : {
+    name : "Ping Beacon",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex flexmiddle spadding");
+
+      return targetDiv;
+    },
+    fire : function(obj, app, calcData, pieceData, ctx) {
+      runCommand("updateBoardCursor", {id : obj.id(), data : {x : pieceData.x + pieceData.w/2, y : pieceData.y + pieceData.h/2, l : app.attr("layer"), b : true}});
+    }
+  },
+  "8" : {
+    name : "Enable Combat",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {combat : {engaged : {}, current : {}}, e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      return sync.render("ui_turnOrder")(obj, app, scope).css("height", "400px").addClass("scroll-y");
+    },
+    fire : function(obj, app, calcData, pieceData, ctx) {
+      var compare = function (obj1, obj2) {
+        return sync.eval(game.templates.initiative.compare, {i1 : obj1, i2 : obj2});
+      }
+
+      game.state.data.combat = duplicate(calcData.combat);
+      var randomInit = duplicate(calcData.combat);
+      // roll the randoms if it isn't a player
+      var pEnts = {};
+      for (var k in game.players.data) {
+        if (game.players.data[k].entity && !hasSecurity(k, "Game Master")) {
+           pEnts[game.players.data[k].entity] = k;
+        }
+      }
+      for (var i in randomInit.e) {
+        if (!pEnts[randomInit.e[i]] && compare(game.state.data.combat.engaged[randomInit.e[i]], {}) == 0) {
+          var sp;
+          var ok;
+          if (game.state.data.combat.engaged[randomInit.e[i]]) {
+            if (game.state.data.combat.engaged[randomInit.e[i]].sp) {
+              sp = game.state.data.combat.engaged[randomInit.e[i]].sp;
+            }
+            if (game.state.data.combat.engaged[randomInit.e[i]].ok) {
+              ok = game.state.data.combat.engaged[randomInit.e[i]].ok;
+            }
+          }
+          var context = sync.defaultContext();
+          context[game.entities.data[randomInit.e[i]].data._t] = duplicate(game.entities.data[randomInit.e[i]].data);
+          game.state.data.combat.engaged[randomInit.e[i]] = sync.executeQuery(game.templates.initiative.query, context).pool;
+          game.state.data.combat.engaged[randomInit.e[i]].sp = sp;
+          game.state.data.combat.engaged[randomInit.e[i]].ok = ok;
+        }
+      }
+      game.state.data.combat.current = {};
+
+      for (var id in game.state.data.combat.engaged) {
+        if (compare(game.state.data.combat.engaged[id], game.state.data.combat.current) > 0) {
+          game.state.data.combat.current = duplicate(game.state.data.combat.engaged[id]);
+        }
+      }
+      game.state.data.combat.round = sync.newValue("Round", 0);
+      game.state.sync("updateCombatState");
+      runCommand("enableCombat");
+    }
+  },
+  "9" : {
+    name : "View Media",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex flexmiddle spadding");
+
+      var filePath = obj.data.src;
+
+      var pickButton = $("<button>").appendTo(targetDiv);
+      pickButton.addClass("background alttext subtitle");
+      if (filePath) {
+        pickButton.text(filePath);
+      }
+      else {
+        pickButton.text("Pick File");
+      }
+      pickButton.click(function(){
+        var content = sync.render("ui_filePicker")(obj, app, {change : function(ev, ui, val){
+          obj.data.src = val;
+          layout.coverlay("sound-selection");
+          obj.update();
+        }});
+
+        var pop = ui_popOut({
+          target : app,
+          prompt : true,
+          id : "sound-selection",
+          style : {"width" : assetTypes["filePicker"].width, "height" : assetTypes["filePicker"].height}
+        }, content);
+        pop.resizable();
+      });
+
+      return targetDiv;
+    },
+    fire : function(obj, app, calcData, pieceData, ctx) {
+      assetTypes[util.mediaType(calcData.src)].preview({}, app, calcData.src);
+    },
+  },
+  "10" : {
+    name : "Move Token",
+    load : function(obj, app, scope, newValue) {
+      obj.data = {e : newValue};
+    },
+    interface : function(obj, app, scope, board, pieceData) {
+      var targetDiv = $("<div>");
+      targetDiv.addClass("flexcolumn flex flexmiddle spadding");
+
+      var selectWrap = $("<div>").appendTo(targetDiv);
+      selectWrap.addClass("flexrow fit-x flexbetween");
+      selectWrap.append("<b class='flex'>Movement Type</b>");
+
+      var select = genInput({
+        parent : selectWrap,
+        select : {
+          "None" : null,
+          "Relative" : "Relative",
+          "Specific Point" : "Specific Point"
+        },
+        value : obj.data.mv
+      });
+      select.change(function(){
+        obj.data.mv = $(this).val();
+        obj.update();
+      });
+
+      if (!obj.data.mv) {
+
+      }
+      else {
+        if (obj.data.mv == "Relative") {
+          var inputWrap = $("<div>").appendTo(targetDiv);
+          inputWrap.addClass("flexrow flexaround fit-x subtitle");
+          inputWrap.append("<b class='flex'>Move Horizonally (Negative = Left, Positive = Right)</b>");
+
+          var x = genInput({
+            parent : inputWrap,
+            value : boardApi.scale(obj.data.x, board),
+            style : {"width" : "50px"},
+          });
+          x.change(function(){
+            obj.data.x = boardApi.scale(Number($(this).val()), board, true);
+            obj.update();
+          });
+
+          var inputWrap = $("<div>").appendTo(targetDiv);
+          inputWrap.addClass("flexrow flexaround fit-x subtitle");
+          inputWrap.append("<b class='flex'>Move Vertically (Negative = Up, Positive = Down)</b>");
+
+          var y = genInput({
+            parent : inputWrap,
+            value : boardApi.scale(obj.data.y, board),
+            style : {"width" : "50px"},
+          });
+          y.change(function(){
+            obj.data.y = boardApi.scale(Number($(this).val()), board, true);
+            obj.update();
+          });
+        }
+        else {
+          var inputWrap = $("<div>").appendTo(targetDiv);
+          inputWrap.addClass("flexrow flexaround fit-x subtitle");
+          inputWrap.append("<b class='flex'>Move To X</b>");
+
+          var x = genInput({
+            parent : inputWrap,
+            value : boardApi.scale(obj.data.x, board),
+            style : {"width" : "50px"},
+          });
+          x.change(function(){
+            obj.data.x = boardApi.scale(Number($(this).val()), board, true);
+            obj.update();
+          });
+
+          var inputWrap = $("<div>").appendTo(targetDiv);
+          inputWrap.addClass("flexrow flexaround fit-x subtitle");
+          inputWrap.append("<b class='flex'>Move to Y</b>");
+
+          var y = genInput({
+            parent : inputWrap,
+            value : boardApi.scale(obj.data.y, board),
+            style : {"width" : "50px"},
+          });
+          y.change(function(){
+            obj.data.y = boardApi.scale(Number($(this).val()), board, true);
+            obj.update();
+          });
+        }
+
+        var clear = genIcon("trash", "Reset").appendTo(selectWrap);
+        clear.addClass("destroy subtitle lrmargin");
+        clear.click(function(){
+          delete obj.data.x;
+          delete obj.data.y;
+          delete obj.data.mv;
+          obj.update();
+        });
+        var button = $("<div>").appendTo(targetDiv);
+        button.addClass("background alttext flexmiddle spadding subtitle hover2 smooth outline");
+        button.text("Select Point");
+        button.click(function(){
+          var hasGrid = (board.data.gridW && board.data.gridH);
+          if (hasGrid) {
+            sendAlert({text : "Select Grid (Shift+Click for Exact)"});
+          }
+          else {
+            sendAlert({text : "Select Point"});
+          }
+
+          boardApi.newDragEvent({
+            move : function(ev){},
+            end : function(ev) {
+              var appid;
+              var stage;
+              for (var i in boardApi.apps) {
+                if (boardApi.apps[i].board == board.id()) {
+                  stage = boardApi.apps[i].stage;
+                  appid = i;
+                  break;
+                }
+              }
+              var focal = stage.toLocal({x : ev.pageX, y : ev.pageY});
+              var xPos = focal.x;
+              var yPos = focal.y;
+              if (!_down[16] && hasGrid) {
+                xPos = Math.floor((focal.x-(board.data.gridX || 0)) / board.data.gridW) * board.data.gridW + (board.data.gridX || 0);
+                yPos = Math.floor((focal.y-(board.data.gridY || 0)) / board.data.gridH) * board.data.gridH + (board.data.gridY || 0);
+              }
+              if (obj.data.mv == "Relative") {
+                obj.data.x = xPos-pieceData.x;
+                obj.data.y = yPos-pieceData.y;
+              }
+              else {
+                obj.data.x = xPos;
+                obj.data.y = yPos;
+              }
+              boardApi.scrollTo($("#"+appid), focal.x, focal.y);
+              obj.update();
+              delete boardApi.dragging;
+            }
+          });
+        });
+
+      }
+      return targetDiv;
+    },
+    fire : function(obj, app, calcData, pieceData, ctx) {
+      for (var key in boardApi.selections) {
+        var selectData = boardApi.selections[key];
+        if (selectData.app == app.attr("id") && selectData.type == "p") {
+          if (calcData.mv == "Relative") {
+            obj.data.layers[selectData.layer].p[selectData.index].x += calcData.x;
+            obj.data.layers[selectData.layer].p[selectData.index].y += calcData.y;
+          }
+          else {
+            obj.data.layers[selectData.layer].p[selectData.index].x = calcData.x;
+            obj.data.layers[selectData.layer].p[selectData.index].y = calcData.y;
+          }
+          boardApi.updateObject(selectData.layer, "p", selectData.index, obj);
+          runCommand("boardMove", {id : obj.id(), layer : selectData.layer, type : "p", index : selectData.index, data : obj.data.layers[selectData.layer].p[selectData.index]});
+        }
+      }
+      if (calcData.mv == "Relative") {
+        boardApi.scrollTo(app, pieceData.x + pieceData.w/2 + calcData.x, pieceData.y + pieceData.h/2 + calcData.y);
+      }
+      else {
+        boardApi.scrollTo(app, pieceData.w/2 + calcData.x, pieceData.h/2 + calcData.y);
+      }
+    },
+  },
+}
+
+util.calcAPI = {
+  sign : function(args, targets){
+    var val = (Number(sync.eval(args[0], targets))>=0)?("+"+Number(sync.eval(args[0], targets))):(Number(sync.eval(args[0], targets)));
+    return "'"+val+"'";
+  },
+  int : function(args, targets){
+    return parseInt(sync.eval(args[0], targets));
+  },
+  num : function(args, targets){
+    return parseFloat(sync.eval(args[0], targets));
+  },
+  str : function(args, targets) {
+    return String(args[0]);
+  },
+  raw : function(args, targets) {
+    return String(sync.reduce(args[0], targets, true, true));
+  },
+  eval : function(args, targets) {
+    return sync.eval(args[0], targets);
+  },
+  gm : function(args, targets){
+    if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+      return "1";
+    }
+    return "0";
+  },
+  armor : function(args, targets) {
+    if (!targets || !game.templates || !game.templates.display) {return "0"}
+    if (targets["c"] && !args[1]) {
+      var val;
+      if (game.templates.display.sheet && game.templates.display.sheet.rules && game.templates.display.sheet.rules.baseArmor) {
+        val = duplicate(sync.rawVal(game.templates.display.sheet.rules.baseArmor)) || 0;
+      }
+      else {
+        val = sync.eval(game.templates.constants.basearmor, targets) || 0;
+      }
+      if (val instanceof Object) {
+        for (var k in val) {
+          val[k] = sync.eval(val[k], targets);
+        }
+      }
+      else {
+        val = sync.eval(val, targets);
+      }
+      if (targets["c"].inventory) {
+        for (var index in targets["c"].inventory) {
+          var itemData = targets["c"].inventory[index];
+          itemData.tags = itemData.tags || {};
+          var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
+          if (itemData.tags["equipped"] && itemArmor) {
+            var armorBonus = 0;
+            for (var i in itemData.equip.armor.modifiers) {
+              armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
+            }
+            if (itemArmor instanceof Object) {
+              for (var k in val) {
+                if (itemArmor[k]) {
+                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
+                }
+                else {
+                  val[k] += armorBonus;
+                }
+              }
+            }
+            else {
+              val += sync.eval(itemArmor, targets) + armorBonus;
+            }
+          }
+        }
+      }
+      if (args[0]){
+        return val[args[0]];
+      }
+      else {
+        return val;
+      }
+    }
+    if (targets["i"]) {
+      var itemData = targets["i"];
+      var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
+      if (itemArmor) {
+        if (args[1]) {
+          itemArmor = 0;
+        }
+        var armorBonus = 0;
+        for (var i in itemData.equip.armor.modifiers) {
+          armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
+        }
+        if (itemArmor instanceof Object) {
+          for (var k in itemArmor) {
+            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
+          }
+        }
+        else {
+          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
+        }
+        return itemArmor;
+      }
+      return 0;
+    }
+    return 0;
+  },
+  weight : function(args, targets) {
+    if (!targets || !game.templates || !game.templates.display) {return "0"}
+    if (targets["c"]) {
+      var weight = 0;
+      for (var index in targets["c"].inventory) {
+        weight += (sync.rawVal(targets["c"].inventory[index].info.quantity) || 0) * (sync.rawVal(targets["c"].inventory[index].info.weight) || 0);
+      }
+      return weight;
+    }
+  },
+  equip : function(args, targets) {
+    if (!targets || !game.templates || !game.templates.display) {return "0"}
+    if (targets["c"]) {
+      if (game.templates.display.sheet && game.templates.display.sheet.rules && game.templates.display.sheet.rules[args[0]]) {
+        val = duplicate(sync.rawVal(game.templates.display.sheet.rules[args[0]])) || 0;
+      }
+      else {
+        val = sync.eval(game.templates.constants[args[0]], targets) || 0;
+      }
+      if (val instanceof Object) {
+        for (var k in val) {
+          val[k] = sync.eval(val[k], targets);
+        }
+      }
+      else {
+        val = sync.eval(val, targets);
+      }
+      if (targets["c"].inventory) {
+        for (var index in targets["c"].inventory) {
+          var itemData = targets["c"].inventory[index];
+          itemData.tags = itemData.tags || {};
+          var itemArmor = duplicate(sync.rawVal(itemData.equip[args[1]])) || 0;
+          if (itemData.tags["equipped"] && itemArmor) {
+            var armorBonus = 0;
+            for (var i in itemData.equip[args[1]].modifiers) {
+              armorBonus += sync.eval(itemData.equip[args[1]].modifiers[i], targets);
+            }
+            if (itemArmor instanceof Object) {
+              for (var k in val) {
+                if (itemArmor[k]) {
+                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
+                }
+                else {
+                  val[k] += armorBonus;
+                }
+              }
+            }
+            else {
+              val += sync.eval(itemArmor, targets) + armorBonus;
+            }
+          }
+        }
+      }
+      return val;
+    }
+    if (targets["i"]) {
+      var itemData = targets["i"];
+      var itemArmor = duplicate(sync.rawVal(itemData.equip[args[0]])) || 0;
+      if (itemArmor) {
+        var armorBonus = 0;
+        for (var i in itemData.equip[args[0]].modifiers) {
+          armorBonus += sync.eval(itemData.equip[args[0]].modifiers[i], targets);
+        }
+        if (itemArmor instanceof Object) {
+          for (var k in itemArmor) {
+            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
+          }
+        }
+        else {
+          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
+        }
+        return itemArmor;
+      }
+      return 0;
+    }
+    return 0;
+  },
+  t : function(args, targets) {
+    if (!targets) {return "0"}
+    if (targets["c"] && !args[1]) {
+      if (targets["c"].tags[args[0]]) {
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    }
+    if (targets[args[1]]) {
+      if (targets[args[1]].tags[args[0]]) {
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    }
+  },
+  "explode" : function(args, targets) {
+    var maxLoop = 1000;
+    var loop = 0;
+    var cachedTargets = duplicate(targets);
+    var expVal = sync.eval(args[0], cachedTargets);
+    cachedTargets.val = expVal;
+    var cond = sync.eval(args[1], cachedTargets);
+    while (cond) {
+      cachedTargets.val = sync.eval(args[0], cachedTargets);
+      expVal = expVal + cachedTargets.val;
+      cond = sync.eval(args[1], cachedTargets);
+      loop++;
+      if (loop > maxLoop) {
+        sendAlert({text : "Error Processing Equation"});
+        console.log(equation);
+        return "0";
+      }
+    }
+    return expVal;
+  },
+  total : function(args, targets) {
+    var maxLoop = 1000;
+    var loop = 0;
+    var expVal = sync.eval(args[0], targets);
+    var cond = sync.eval(args[1], targets);
+    while (loop < cond) {
+      expVal = expVal + sync.eval(args[0], targets);
+      cond = sync.eval(args[1], targets);
+      loop++;
+      if (loop > maxLoop) {
+        sendAlert({text : "Error Processing Equation"});
+        console.log(equation);
+        return "0";
+      }
+    }
+    return expVal;
+  },
+  /*roll : function(args, targets) {
+    setTimeout(function(){
+      util.processEvent(args[0]);
+    }, 100);
+  },
+  chat : function(args, targets) {
+    setTimeout(function(){
+      util.chatEvent(args[0], sync.eval(args[1] || "@me.name", targets));
+    }, 100);
+  },*/
+  rand : function(args, targets) {
+    if (Number(args[0]) >= Math.random()) {
+      return 1;
+    }
+    return 0;
+  },
+  table : function(args, targets) {
+    var maxLoop = 1000;
+    var loop = 0;
+    var expVal = sync.eval(args[0], targets);
+    var cond = sync.eval(args[1], targets);
+
+    if (game.templates.tables[expVal]) {
+      if (game.templates.tables[expVal][cond]) {
+        return sync.eval(game.templates.tables[expVal][cond], targets);
+      }
+      else {
+        var reg = /(\d*)-(\d*)/i;
+        var keys = Object.keys(game.templates.tables[expVal]);
+        for (var i in keys) {
+          var val = keys[i];
+          var match = val.match(reg);
+          if (match) {
+            if (match[1] <= cond && cond <= match[2]) {
+              return sync.eval(game.templates.tables[expVal][val], targets);
+            }
+            loop++;
+            if (loop > maxLoop) {
+              sendAlert({text : "Error Processing Equation"});
+              console.log(equation);
+              return "0";
+            }
+          }
+        }
+      }
+    }
+    return "0";
+  },
+  constant : function(args, targets) {
+    var key = sync.eval(args[0], targets);
+    if (game.templates.constants && (game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()])) {
+      return sync.eval(game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()], targets);
+    }
+    return "0";
+  },
+  valid : function(args, targets) {
+    var key = sync.reduce(args[0], targets, true).trim();
+    if (key != null) {
+      return 1;
+    }
+    return "0";
+  },
+};
+
+util.trimCanvas = function(ctx) { // removes transparent edges
+    var x, y, w, h, top, left, right, bottom, data, idx1, idx2, found, imgData;
+    w = ctx.canvas.width;
+    h = ctx.canvas.height;
+    if (!w && !h) { return false }
+    imgData = ctx.getImageData(0, 0, w, h);
+    data = new Uint32Array(imgData.data.buffer);
+    idx1 = 0;
+    idx2 = w * h - 1;
+    found = false;
+    // search from top and bottom to find first rows containing a non transparent pixel.
+    for (y = 0; y < h && !found; y += 1) {
+        for (x = 0; x < w; x += 1) {
+            if (data[idx1++] && !top) {
+                top = y + 1;
+                if (bottom) { // top and bottom found then stop the search
+                    found = true;
+                    break;
+                }
+            }
+            if (data[idx2--] && !bottom) {
+                bottom = h - y - 1;
+                if (top) { // top and bottom found then stop the search
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (y > h - y && !top && !bottom) { return false } // image is completely blank so do nothing
+    }
+    top -= 1; // correct top
+    found = false;
+    // search from left and right to find first column containing a non transparent pixel.
+    for (x = 0; x < w && !found; x += 1) {
+        idx1 = top * w + x;
+        idx2 = top * w + (w - x - 1);
+        for (y = top; y <= bottom; y += 1) {
+            if (data[idx1] && !left) {
+                left = x + 1;
+                if (right) { // if left and right found then stop the search
+                    found = true;
+                    break;
+                }
+            }
+            if (data[idx2] && !right) {
+                right = w - x - 1;
+                if (left) { // if left and right found then stop the search
+                    found = true;
+                    break;
+                }
+            }
+            idx1 += w;
+            idx2 += w;
+        }
+    }
+    left -= 1; // correct left
+    if(w === right - left + 1 && h === bottom - top + 1) { return true } // no need to crop if no change in size
+    w = right - left + 1;
+    h = bottom - top + 1;
+    ctx.canvas.width = w;
+    ctx.canvas.height = h;
+    ctx.putImageData(imgData, -left, -top);
+    return true;
+}

@@ -344,7 +344,7 @@ sync.render("ui_boardControls", function(obj, app, scope) {
     type : "number",
     placeholder : "height",
     value : data.h,
-    style : {"width" : "50px"},
+    style : {"width" : "50px", color : "#333"},
   });
 
   var offsets = $("<div>");
@@ -353,17 +353,17 @@ sync.render("ui_boardControls", function(obj, app, scope) {
   var gridX = genInput({
     parent : offsets,
     type : "number",
-    placeholder : "width",
+    placeholder : "pixels",
     value : data.gridX,
-    style : {"width" : "50px"},
+    style : {"width" : "50px", color : "#333"},
   });
 
   var gridY = genInput({
     parent : offsets,
     type : "number",
-    placeholder : "height",
+    placeholder : "pixels",
     value : data.gridY,
-    style : {"width" : "50px"},
+    style : {"width" : "50px", color : "#333"},
   });
 
   var sizes = $("<div>");
@@ -372,18 +372,21 @@ sync.render("ui_boardControls", function(obj, app, scope) {
   var wPos = genInput({
     parent : sizes,
     type : "number",
-    placeholder : "width",
+    placeholder : "pixels",
     value : data.gridW,
-    style : {"width" : "50px"},
+    style : {"width" : "50px", color : "#333"},
   });
+  var hPos;
 
-  var hPos = genInput({
-    parent : sizes,
-    type : "number",
-    placeholder : "height",
-    value : data.gridH,
-    style : {"width" : "50px"},
-  });
+  if (data.options && data.options.hex) {
+    hPos = genInput({
+      parent : sizes,
+      type : "number",
+      placeholder : "pixels",
+      value : data.gridH,
+      style : {"width" : "50px", color : "#333"},
+    });
+  }
 
   var gridTypeWrap = $("<div>");
   gridTypeWrap.addClass("flexrow");
@@ -570,8 +573,8 @@ sync.render("ui_boardControls", function(obj, app, scope) {
   data.options = data.options || {};
   var controls = ui_controlForm({
     inputs : {
-      "Grid X/Y Offset (pixels)" : offsets,
-      "Grid Width/Height (pixels)" : sizes,
+      "Grid X/Y Offset" : offsets,
+      "Grid Size" : sizes,
     },
     click : function(ev, inputs) {
       var lastGrid = data.gridW;
@@ -579,27 +582,20 @@ sync.render("ui_boardControls", function(obj, app, scope) {
       data.gridX = Math.min(Number(gridX.val()), 1600);
       data.gridY = Math.min(Number(gridY.val()), 1600);
       data.gridW = Math.min(Number(wPos.val()), 640);
-      data.gridH = Math.min(Number(hPos.val()), 640);
+      if (hPos) {
+        data.gridH = Math.min(Number(hPos.val()), 640);
+      }
+      else {
+        data.gridH = Math.min(Number(wPos.val()), 640);
+      }
       data.gc = gridButton.css("background-color");
 
       var gridScale = lastGrid/data.gridW;
-      if (lastGrid && data.gridW && data.options && data.options.unitScale) {
-        data.options.unitScale = data.options.unitScale * gridScale;
-      }
-
-      if (gridType.val() == "Hex") {
-        delete data.options.isometric;
-        data.gridW = 140;
-        data.gridH = 120;
-        data.options.hex = true;
-      }
-      else if (gridType.val() == "Iso") {
-        delete data.options.hex;
-        data.options.isometric = true;
-      }
-      else {
-        delete data.options.isometric;
-        delete data.options.hex;
+      if (lastGrid && data.gridW && data.options) {
+        if (data.options.unitScale == null && game.templates.grid) {
+          data.options.unitScale = game.templates.grid.unitScale;
+        }
+        data.options.unitScale = data.options.unitScale / gridScale;
       }
 
       if (!scope.local) {
@@ -611,7 +607,6 @@ sync.render("ui_boardControls", function(obj, app, scope) {
       layout.coverlay("board-controls");
     }
   }).appendTo(div);
-  controls.css("width", "300px");
   return div;
 });
 
@@ -763,9 +758,7 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
     layer : (app.attr("layer") || 0),
   };
 
-  var targetApp = $("#"+app.attr("targetApp"));
-  scope.layer = targetApp.attr("layer") || 0;
-  scope.layer = Math.max(scope.layer, 0);
+  var targetApp = app;
 
   var div = $("<div>");
   div.addClass("flexcolumn flex");
@@ -848,14 +841,15 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
   var tabWrapper = $("<div>").appendTo(div);
   tabWrapper.addClass("flexcolumn flex");
 
-  var tabBar = genNavBar("background alttext", "flexcolumn flex outlinebottom", "8px");
+  var tabBar = genNavBar("foreground alttext subtitle", "flexcolumn flex", "4px");
   tabBar.addClass("flex flexcolumn");
   tabBar.appendTo(tabWrapper);
 
-  tabBar.generateTab("Layers", "align-justify", function(parent){
+  tabBar.generateTab("Layer Order", "align-justify", function(parent){
     var layers = sync.render("ui_boardLayers")(obj, app, scope).appendTo(parent);
+    layers.addClass("inactive flex");
 
-    app.attr("tab", "Layers");
+    app.attr("tab", "Layer Order");
   });
 
   tabBar.generateTab("Tile Sheets", "picture", function(parent) {
@@ -869,9 +863,14 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
 
   function tabWrap(key, icon, target) {
     tabBar.generateTab(key, icon, function(parent){
-      var list = $("<div>").appendTo(parent);
-      list.addClass("flex");
-      list.css("overflow", "auto");
+      var content = $("<div>").appendTo(parent);
+      content.addClass("flex flexcolumn");
+      content.css("position", "relative");
+      content.css("overflow", "auto");
+
+      var list = $("<div>").appendTo(content);
+      list.addClass("fit-x");
+      list.css("position", "absolute");
       list.sortable({
         update : function(ev, ui) {
           var newIndex;
@@ -885,12 +884,12 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
           });
           var old = obj.data.layers[scope.layer][target].splice($(ui.item).attr("index"), 1);
           util.insert(obj.data.layers[scope.layer][target], newIndex, old[0]);
-          boardApi.pix.updateLayer(scope.layer, null, obj);
+          boardApi.updateLayer(scope.layer, null, obj);
         }
       });
       for (var i in obj.data.layers[scope.layer][target]) {
         var itemWrap = $("<div>").appendTo(list);
-        itemWrap.addClass("hover2 outlinebottom flexrow");
+        itemWrap.addClass("white hover2 flexrow");
         itemWrap.attr("index", i);
         itemWrap.click(function(){
           var index = $(this).attr("index");
@@ -908,15 +907,15 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
           });
           $(this).addClass("highlight2");
           if (itemData.x != null && itemData.y != null) {
-            boardApi.pix.scrollTo(targetApp, itemData.x + itemData.w/2, itemData.y + itemData.h/2);
+            boardApi.scrollTo(targetApp, itemData.x + itemData.w/2, itemData.y + itemData.h/2);
           }
           if (!_down[16]) {
-            boardApi.pix.clearSelection(targetApp);
+            boardApi.clearSelection(targetApp);
           }
-          boardApi.pix.lookup(scope.layer, target, $(this).attr("index"), targetApp).select();
+          boardApi.lookup(scope.layer, target, $(this).attr("index"), targetApp).select();
         });
         var wrap = $("<div>").appendTo(itemWrap);
-        wrap.addClass("alttext outline foreground spadding");
+        wrap.addClass("alttext foreground spadding");
 
         var number = $("<b class='alttext spadding'>#"+i+"</b>").appendTo(itemWrap);
         var remove = genIcon("trash").appendTo(wrap);
@@ -943,7 +942,7 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
 
         if (target == "t") {
           var canvasWrap = $("<div>").appendTo(itemWrap);
-          canvasWrap.addClass("fit-x");
+          canvasWrap.addClass("fit-x outlinebottom");
           canvasWrap.css("position", "relative");
           canvasWrap.css("overflow", "hidden");
           canvasWrap.css("height", (data.gridH || 64) * 2);
@@ -1057,10 +1056,15 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
             if (ent.data._t == "c") {
               var summary = sync.render("ui_characterCombatSummary")(ent, app, {viewOnly : true}).addClass("flex").appendTo(itemWrap);
               $(summary.children()[0]).removeClass("outline");
+              summary.addClass("outlinebottom");
             }
             else {
-              sync.render("ui_ent")(ent, app, {viewOnly : true}).addClass("flex").appendTo(itemWrap);
+              sync.render("ui_ent")(ent, app, {viewOnly : true}).addClass("flex outlinebottom").appendTo(itemWrap);
             }
+          }
+          else {
+            var filler = $("<div>").appendTo(itemWrap);
+            filler.addClass("outlinebottom flex");
           }
         }
         else if (target == "d") {
@@ -1071,7 +1075,7 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
 
             if (drawing.t) {
               if (drawing.t == "t") {
-                itemWrap.append("<text class='subtitle spadding'>"+drawing.text+"</text>");
+                itemWrap.append("<text class='subtitle spadding outlinebottom'>"+drawing.text+"</text>");
               }
             }
           }
@@ -1087,12 +1091,6 @@ sync.render("ui_boardEditor", function(obj, app, scope) {
   tabWrap("Pieces", "pushpin", "p");
   tabWrap("Drawings", "pencil", "d");
 
-  if (app.attr("tab") == "Pieces") {
-    app.removeAttr("tab");
-    if (data.sheets && data.sheets.length) {
-      app.attr("tileSheet", 0);
-    }
-  }
   tabBar.selectTab(app.attr("tab") || "Tile Sheets");
 
   return div;

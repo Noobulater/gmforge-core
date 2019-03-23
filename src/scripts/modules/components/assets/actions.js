@@ -20,9 +20,17 @@ var _actions = {
       pop.resizable();
     }
   },
-  "Set/Roll Initiative" : {
-    condition :function(obj) {return (game.state.data && game.state.data.combat != null && hasSecurity(getCookie("UserID"), "Assistant Master"))},
+  "Re-Roll Initiative" : {
+    condition : function(obj) {return (game.state.data && game.state.data.combat != null && !hasSecurity(getCookie("UserID"), "Assistant Master"))},
     click : function(ev, ui, obj, app, scope) {
+      var combatObj;
+      if (game.state.data && game.state.data.combat) {
+        combatObj = game.state;
+      }
+      else {
+        combatObj = game.locals["turnOrder"];
+      }
+
       var context = sync.defaultContext();
       context[obj.data._t] = duplicate(obj.data);
 
@@ -31,6 +39,7 @@ var _actions = {
 
       var query = genInput({
         parent : content,
+        classes : "size3",
         placeholder : sync.result(sync.reduce(game.templates.initiative.query, context, true), context, true)
       });
 
@@ -43,28 +52,35 @@ var _actions = {
         var data = sync.executeQuery(query.val() || game.templates.initiative.query, context);
 
         var evData = {
-          msg : "rolled Initiative",
-          data : data
+          flavor : "rolled Initiative",
+          eID : obj.id(),
+          person : sync.rawVal(obj.data.info.name),
+          eventData : data,
         }
 
-        runCommand("diceCheck", evData);
+        runCommand("chatEvent", evData);
 
         var sp;
         var ok;
         var id = obj.id();
-        if (game.state.data.combat) {
-          if (game.state.data.combat.engaged[id]) {
-            if (game.state.data.combat.engaged[id].sp) {
-              sp = game.state.data.combat.engaged[id].sp;
+        if (combatObj.data.combat) {
+          if (combatObj.data.combat.engaged[id]) {
+            if (combatObj.data.combat.engaged[id].sp) {
+              sp = combatObj.data.combat.engaged[id].sp;
             }
-            if (game.state.data.combat.engaged[id].ok) {
-              ok = game.state.data.combat.engaged[id].ok;
+            if (combatObj.data.combat.engaged[id].ok) {
+              ok = combatObj.data.combat.engaged[id].ok;
             }
           }
-          game.state.data.combat.engaged[id] = data.pool;
-          game.state.data.combat.engaged[id].sp = sp;
-          game.state.data.combat.engaged[id].ok = ok;
-          game.state.sync("updateCombatState");
+          combatObj.data.combat.engaged[id] = data.pool;
+          combatObj.data.combat.engaged[id].sp = sp;
+          combatObj.data.combat.engaged[id].ok = ok;
+          if (combatObj && combatObj.data.combat) {
+            game.state.sync("updateCombatState");
+          }
+          else {
+            combatObj.update();
+          }
           layout.coverlay("join-combat");
           layout.coverlay("olay-join-combat");
         }
@@ -81,22 +97,32 @@ var _actions = {
           id : "join-combat",
           noCss : true,
           hideclose : true,
-          style : {"width" : "300px"}
+          prompt : true,
+          style : {"width" : "230px"}
         }, content).addClass("lpadding").removeClass("boxshadow");
       }
       else {
         var pop = ui_popOut({
           target : ui,
           id : "join-combat",
-          title : "Roll Initiative",
-          style : {"width" : "300px"}
+          prompt : true,
+          title : "Initiative",
+          style : {"width" : "230px"}
         }, content);
       }
     }
   },
-  "Set/Roll Initiative (Hidden)" : {
-    condition :function(obj) {return (game.state.data && game.state.data.combat != null && hasSecurity(getCookie("UserID"), "Assistant Master"))},
+  "Set/Roll Initiative" : {
+    condition : function(obj) {return (hasSecurity(getCookie("UserID"), "Assistant Master"))},
     click : function(ev, ui, obj, app, scope) {
+      var combatObj;
+      if (game.state.data && game.state.data.combat) {
+        combatObj = game.state;
+      }
+      else {
+        combatObj = game.locals["turnOrder"];
+      }
+
       var context = sync.defaultContext();
       context[obj.data._t] = duplicate(obj.data);
 
@@ -105,6 +131,7 @@ var _actions = {
 
       var query = genInput({
         parent : content,
+        classes : "size3",
         placeholder : sync.result(sync.reduce(game.templates.initiative.query, context, true), context, true)
       });
 
@@ -112,7 +139,101 @@ var _actions = {
       confirm.addClass("foreground alttext flex");
       confirm.append("Roll Initiative!");
       confirm.click(function(){
-        obj.data.info.hide = true;
+        var context = sync.defaultContext();
+        context[obj.data._t] = duplicate(obj.data);
+        var data = sync.executeQuery(query.val() || game.templates.initiative.query, context);
+
+        var evData = {
+          flavor : "rolled Initiative",
+          eID : obj.id(),
+          person : sync.rawVal(obj.data.info.name),
+          eventData : data
+        }
+        if (combatObj == game.state) {
+          runCommand("chatEvent", evData);
+        }
+
+        var sp;
+        var ok;
+        var id = obj.id();
+        if (combatObj.data.combat) {
+          if (combatObj.data.combat.engaged[id]) {
+            if (combatObj.data.combat.engaged[id].sp) {
+              sp = combatObj.data.combat.engaged[id].sp;
+            }
+            if (combatObj.data.combat.engaged[id].ok) {
+              ok = combatObj.data.combat.engaged[id].ok;
+            }
+          }
+          combatObj.data.combat.engaged[id] = data.pool;
+          combatObj.data.combat.engaged[id].sp = sp;
+          combatObj.data.combat.engaged[id].ok = ok;
+          if (combatObj && combatObj.data.combat) {
+            game.state.sync("updateCombatState");
+          }
+          else {
+            combatObj.update();
+          }
+          layout.coverlay("join-combat");
+          layout.coverlay("olay-join-combat");
+        }
+      });
+      if (scope.pump) {
+        query.addClass("alttext line middle smargin smooth outline");
+        query.css("background-color", "rgba(0,0,0,0.8)");
+        query.css("font-size", "1.2em");
+        query.val(query.attr("placeholder"));
+        confirm.css("font-size", "1.6em");
+        confirm.addClass("padding hover2");
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          noCss : true,
+          hideclose : true,
+          prompt : true,
+          style : {"width" : "230px"}
+        }, content).addClass("lpadding").removeClass("boxshadow");
+      }
+      else {
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          prompt : true,
+          title : "Initiative",
+          style : {"width" : "230px"}
+        }, content);
+      }
+    }
+  },
+  "Set/Roll Initiative (Hidden)" : {
+    condition :function(obj) {return (hasSecurity(getCookie("UserID"), "Assistant Master"))},
+    click : function(ev, ui, obj, app, scope) {
+      var combatObj;
+      if (game.state.data && game.state.data.combat) {
+        combatObj = game.state;
+      }
+      else {
+        combatObj = game.locals["turnOrder"];
+      }
+
+      var context = sync.defaultContext();
+      context[obj.data._t] = duplicate(obj.data);
+
+      var content = $("<div>");
+      content.addClass("flexcolumn flex");
+
+      var query = genInput({
+        parent : content,
+        classes : "size3",
+        placeholder : sync.result(sync.reduce(game.templates.initiative.query, context, true), context, true)
+      });
+
+      var confirm = $("<button>").appendTo(content);
+      confirm.addClass("foreground alttext flex");
+      confirm.append("Roll Initiative!");
+      confirm.click(function(){
+        obj.data._flags = obj.data._flags || duplicate(obj.data._flags) || {};
+        obj.data._flags.hidden = true;
         obj.sync("updateAsset");
 
         var context = sync.defaultContext();
@@ -122,27 +243,53 @@ var _actions = {
         var sp;
         var ok;
         var id = obj.id();
-        if (game.state.data.combat.engaged[id]) {
-          if (game.state.data.combat.engaged[id].sp) {
-            sp = game.state.data.combat.engaged[id].sp;
+        if (combatObj.data.combat) {
+          if (combatObj.data.combat.engaged[id]) {
+            if (combatObj.data.combat.engaged[id].sp) {
+              sp = combatObj.data.combat.engaged[id].sp;
+            }
+            if (combatObj.data.combat.engaged[id].ok) {
+              ok = combatObj.data.combat.engaged[id].ok;
+            }
           }
-          if (game.state.data.combat.engaged[id].ok) {
-            ok = game.state.data.combat.engaged[id].ok;
+          combatObj.data.combat.engaged[id] = data.pool;
+          combatObj.data.combat.engaged[id].sp = sp;
+          combatObj.data.combat.engaged[id].ok = ok;
+          if (combatObj && combatObj.data.combat) {
+            game.state.sync("updateCombatState");
           }
+          else {
+            combatObj.update();
+          }
+          layout.coverlay("join-combat");
+          layout.coverlay("olay-join-combat");
         }
-        game.state.data.combat.engaged[id] = data.pool;
-        game.state.data.combat.engaged[id].sp = sp;
-        game.state.data.combat.engaged[id].ok = ok;
-        game.state.sync("updateCombatState");
-        layout.coverlay("join-combat");
-        layout.coverlay("olay-join-combat");
       });
-      var pop = ui_popOut({
-        target : ui,
-        id : "join-combat",
-        title : "Roll Initiative",
-        style : {"width" : "300px"}
-      }, content);
+      if (scope.pump) {
+        query.addClass("alttext line middle smargin smooth outline");
+        query.css("background-color", "rgba(0,0,0,0.8)");
+        query.css("font-size", "1.2em");
+        query.val(query.attr("placeholder"));
+        confirm.css("font-size", "1.6em");
+        confirm.addClass("padding hover2");
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          noCss : true,
+          hideclose : true,
+          prompt : true,
+          style : {"width" : "230px"}
+        }, content).addClass("lpadding").removeClass("boxshadow");
+      }
+      else {
+        var pop = ui_popOut({
+          target : ui,
+          id : "join-combat",
+          prompt : true,
+          title : "Initiative",
+          style : {"width" : "230px"}
+        }, content);
+      }
     }
   },
   "Leave Combat" : {
@@ -151,9 +298,11 @@ var _actions = {
     }
   },
   "Hide" : {
-    condition : function(obj){return (!obj.data.info.hide);},
+    condition : function(obj){return (!obj.data._flags || !obj.data._flags.hidden);},
     click : function(ev, ui, obj, app, scope) {
-      obj.data.info.hide = !obj.data.info.hide;
+      obj.data._flags = obj.data._flags || duplicate(obj.data._flags) || {};
+      obj.data._flags.hidden = !obj.data._flags.hidden;
+
       obj.sync("updateAsset");
       game.state.update();
       if (game.locals["turnOrder"]) {
@@ -162,9 +311,11 @@ var _actions = {
     }
   },
   "Un-Hide" : {
-    condition : function(obj){return (obj.data.info.hide == true);},
+    condition : function(obj){return (obj.data._flags && obj.data._flags.hidden);},
     click : function(ev, ui, obj, app, scope) {
-      obj.data.info.hide = !obj.data.info.hide;
+      obj.data._flags = obj.data._flags || duplicate(obj.data._flags) || {};
+      obj.data._flags.hidden = !obj.data._flags.hidden;
+
       obj.sync("updateAsset");
       game.state.update();
       if (game.locals["turnOrder"]) {
@@ -323,13 +474,6 @@ sync.render("ui_editAction", function(obj, app, scope){
     div.append("<b>Choices</b>");
     div.removeClass("flexcolumn");
 
-    var datalist = $("<datalist>").appendTo(div);
-    datalist.attr("id", "edit-action-context-"+app.attr("id"));
-
-    for (var i in context) {
-      datalist.append("<option>"+i+"</option>");
-    }
-
     for (var i in data.choices) {
       var choiceWrapper = $("<div>").appendTo(div);
       choiceWrapper.addClass("flexcolumn lrpadding");
@@ -377,15 +521,20 @@ sync.render("ui_editAction", function(obj, app, scope){
       addOption.addClass("subtitle create");
       addOption.attr("index", i);
       addOption.click(function(){
+        var context = sync.context(obj.data.eventData.data, {}).context;
+        var datalist = [];
+
+        for (var i in context) {
+          datalist.push(i);
+        }
         var index = $(this).attr("index");
         ui_prompt({
           target : $(this),
           inputs : {
-            "Input Name" : {type : "list", list : "edit-action-context-"+app.attr("id")}
+            "Input Name" : {list : datalist}
           },
           click : function(ev, inputs){
             var name = inputs["Input Name"].val();
-            console.log(inputs);
             inputs["Input Name"].attr("list");
             if (name) {
               name = replaceAll(name, " ", "_");
@@ -398,7 +547,6 @@ sync.render("ui_editAction", function(obj, app, scope){
               name = replaceAll(name, "#", "_");
               name = replaceAll(name, "$", "_");
               obj.data.choices[index] = obj.data.choices[index] || {};
-              console.log(name);
               obj.data.choices[index][name] = "0";
               obj.update();
             }
@@ -1414,7 +1562,7 @@ sync.render("ui_actions", function(obj, app, scope){
           target : optionName,
           id : "edit-action",
           title : optionName.attr("action"),
-          style : {height : "300px"}
+          style : {height : "230px"}
         }, content);
         pop.resizable();
         return false;
@@ -1480,7 +1628,7 @@ sync.render("ui_actions", function(obj, app, scope){
               target : optionName,
               id : "edit-action",
               title : optionName.attr("action"),
-              style : {height : "300px"}
+              style : {height : "230px"}
             }, content);
             pop.resizable();
           }
@@ -1551,13 +1699,37 @@ sync.render("ui_actions", function(obj, app, scope){
     var vMatch = variableRegex.exec(str);
     // save localVaribles
     var cmps = /([\/><\!\~\=])/;
-    var context = sync.context(actionData.eventData.data, ctx, true);
+    ctx.eval = ctx.eval || {};
 
-    for (var key in data.options) {
-      if (data.options[key] !== true) {
-        context.context[key] = sync.newValue(data.options[key], sync.eval(data.options[key], ctx));
+    var varTable = duplicate(actionData.eventData.var) || {};
+
+    for (var key in obj.data.options) {
+      if (obj.data.options[key] !== true) {
+        varTable[key] = sync.eval(obj.data.options[key], ctx);
+        ctx.eval[key] = varTable[key];
       }
     }
+
+    var pullTable = duplicate(actionData.pull);
+    var targets = util.getTargets();
+    for (var k in targets) {
+      var tg = getEnt(targets[k]);
+      if (tg && tg.data) {
+        for (var key in pullTable) {
+          var contxt = {c : duplicate(tg.data)};
+          varTable[key] = sync.eval(pullTable[key], contxt);
+          ctx.eval[key] = varTable[key];
+        }
+      }
+    }
+
+    var context = sync.context(actionData.eventData.data, ctx);
+    for (var key in context.context) {
+      if (varTable[key]) {
+        context.context[key] = duplicate(varTable[key]);
+      }
+    }
+
     while (vMatch) {
       if (vMatch[2] && vMatch[4] && vMatch[4][0] == "=") {
         var stack = [0];
@@ -1594,11 +1766,13 @@ sync.render("ui_actions", function(obj, app, scope){
       }
     }
     final += context.str;
-    var varTable = duplicate(actionData.eventData.var);
     for (var key in varTable) {
       varTable[key] = sync.eval(varTable[key], ctx);
     }
     var icon;
+    if (getEnt(obj.data.context.c) && getEnt(obj.data.context.c).data) {
+      icon = sync.rawVal(getEnt(obj.data.context.c).data.info.img);
+    }
     var msg;
     if (actionData.flavors) {
       var choices = [];
@@ -1608,49 +1782,72 @@ sync.render("ui_actions", function(obj, app, scope){
         }
       }
       var choice = Math.floor(Math.random() * choices.length);
-      icon = actionData.flavors[choice].icon;
+      icon = actionData.flavors[choice].icon || icon;
       msg = sync.eval(actionData.flavors[choice].msg, ctx);
     }
     else {
-      icon = actionData.eventData.icon;
+      icon = actionData.eventData.icon || icon;
       msg = sync.eval(actionData.eventData.msg, ctx);
     }
     if (rollButton.attr("flavor")) {
       msg = rollButton.attr("flavor");
       rollButton.removeAttr("flavor");
     }
+
     var eventData = {
-      f : sync.rawVal(ctx.c.info.name),
+      person : sync.rawVal(ctx.c.info.name),
       icon : icon,
-      msg : msg,
-      ui : actionData.eventData.ui,
-      data : sync.executeQuery(final, ctx),
-      var : varTable
+      flavor : msg,
+      eventData : sync.executeQuery(final, ctx),
     };
+
+    eventData.eventData.ui = actionData.eventData.ui;
+    eventData.eventData.var = varTable;
+
+    if (actionData.effects) {
+      var effectData = {};
+      ctx["pool"] = eventData.data.pool;
+      for (var k in targets) {
+        var tg = getEnt(targets[k]);
+        if (tg && tg.data) {
+          effectData[targets[k]] = [];
+          for (var i in actionData.effects) {
+            var calcData = duplicate(actionData.effects[i]);
+            if (calcData.cond == null || sync.eval(calcData.cond, ctx)) {
+              delete calcData.cond;
+              calcData.eq = sync.eval(calcData.eq, ctx);
+              effectData[targets[k]].push(calcData);
+            }
+          }
+        }
+      }
+      eventData.effects = effectData;
+    }
+
 
     if (rollButton.attr("private") == "true") {
       var priv = {};
       priv[getCookie("UserID")] = true;
       eventData.p = priv;
     }
-    runCommand("diceCheck", eventData);
+    runCommand("chatEvent", eventData);
     setTimeout(function(){
       for (var i in actionData.followup) {
         if (actionData.followup[i].cond == null || sync.eval(actionData.followup[i].cond, ctx)) {
           var eventData = {
-            f : sync.rawVal(ctx.c.info.name),
+            person : sync.rawVal(ctx.c.info.name),
             icon : actionData.followup[i].icon,
-            msg : sync.eval(actionData.followup[i].msg, ctx),
-            ui : actionData.followup[i].ui,
-            data : sync.executeQuery(actionData.followup[i].data, ctx),
-            var : varTable
+            flavor : sync.eval(actionData.followup[i].msg, ctx),
+            eventData : sync.executeQuery(actionData.followup[i].data, ctx),
           };
+          eventData.eventData.ui = actionData.followup[i].ui;
+          eventData.eventData.var = varTable;
           if (rollButton.attr("private") == "true") {
             var priv = {};
             priv[getCookie("UserID")] = true;
             eventData.p = priv;
           }
-          runCommand("diceCheck", eventData);
+          runCommand("chatEvent", eventData);
         }
       }
     }, 100);
@@ -1870,27 +2067,32 @@ sync.render("ui_actions", function(obj, app, scope){
 
 function _diceable(ev, ui, evData, ctx) {
   var eventData = duplicate(evData);
+  eventData.flavor = eventData.flavor || eventData.msg;
+  eventData.eventData = eventData.eventData  || eventData.data;
+  delete eventData.msg;
+  delete eventData.data;
+
   var context = duplicate(ctx);
   if (_down["17"]) {
     snd_diceRoll.play();
-    eventData.msg = sync.eval(eventData.msg, context);
-    eventData.data = sync.executeQuery(eventData.data, context);
-    runCommand("diceCheck", eventData);
+    eventData.flavor = sync.eval(eventData.flavor, context);
+    eventData.eventData = sync.executeQuery(eventData.eventData, context);
+    runCommand("chatEvent", eventData);
   }
   else {
     function modifiedRoll(ev, ui2) {
       var pool = game.templates.dice.pool;
       if (pool[game.templates.dice.defaults[0]].value) {
-        eventData.msg = sync.eval(eventData.msg, context);
-        eventData.data = sync.executeQuery(eventData.data, context, true);
+        eventData.flavor = sync.eval(eventData.flavor, context);
+        eventData.eventData = sync.executeQuery(eventData.eventData, context, true);
         var content = $("<div>");
 
         var dicePool = $("<div>").appendTo(content);
         dicePool.addClass("flexrow flexwrap outlinebottom");
         function buildPool() {
           dicePool.empty();
-          for (var key in eventData.data.equations) {
-            var value = eventData.data.equations[key];
+          for (var key in eventData.eventData.equations) {
+            var value = eventData.eventData.equations[key];
 
             var die = sync.render("ui_dice")(value, content, {
               key : sync.rawVal(value.ctx.die),
@@ -1901,7 +2103,7 @@ function _diceable(ev, ui, evData, ctx) {
             die.attr("index", key);
             die.css("cursor", "pointer");
             die.click(function(){
-              eventData.data.equations.splice($(this).attr("index"), 1);
+              eventData.eventData.splice($(this).attr("index"), 1);
               buildPool();
             });
           }
@@ -1929,7 +2131,7 @@ function _diceable(ev, ui, evData, ctx) {
             addDie.attr("name", key);
             addDie.attr("value", pool[key].value);
             addDie.click(function(){
-              eventData.data.equations.push(sync.process("$die="+$(this).attr("name")+";"+$(this).attr("value"), null, true));
+              eventData.eventData.push(sync.process("$die="+$(this).attr("name")+";"+$(this).attr("value"), null, true));
               buildPool();
             });
           }
@@ -1941,9 +2143,9 @@ function _diceable(ev, ui, evData, ctx) {
         confirm.click(function(ev){
           snd_diceRoll.play();
           var diceKeys = game.templates.dice.keys;
-          eventData.data.pool = {};
-          for (var key in eventData.data.equations) {
-            var eq = eventData.data.equations[key];
+          eventData.eventData.pool = {};
+          for (var key in eventData.eventData) {
+            var eq = eventData.eventData[key];
             eq.r = sync.reduce(eq.e);
             eq.v = sync.eval(eq.r);
             if (sync.rawVal(eq.ctx.die) && game.templates.dice.pool[sync.rawVal(eq.ctx.die)]) {
@@ -1951,17 +2153,17 @@ function _diceable(ev, ui, evData, ctx) {
               if (diceData && diceData.results) {
                 var valueData = diceData.results[eq.v];
                 for (var key in valueData) {
-                  if (eventData.data.pool[key]) {
-                    eventData.data.pool[key] += valueData[key];
+                  if (eventData.eventData.pool[key]) {
+                    eventData.eventData.pool[key] += valueData[key];
                   }
                   else {
-                    eventData.data.pool[key] = valueData[key];
+                    eventData.eventData.pool[key] = valueData[key];
                   }
                 }
               }
             }
           }
-          runCommand("diceCheck", eventData);
+          runCommand("chatEvent", eventData);
           layout.coverlay("diceable-modified");
         });
         ui_popOut({
@@ -1979,14 +2181,14 @@ function _diceable(ev, ui, evData, ctx) {
           click : function(ev, inputs) {
             snd_diceRoll.play();
             if (eventData.inverted) {
-              eventData.data = eventData.data + "-" + inputs["Modifier Amount"].val();
+              eventData.eventData = eventData.eventData + "-" + inputs["Modifier Amount"].val();
             }
             else {
-              eventData.data = eventData.data + "+" + inputs["Modifier Amount"].val();
+              eventData.eventData = eventData.eventData + "+" + inputs["Modifier Amount"].val();
             }
-            eventData.msg = sync.eval(eventData.msg, context);
-            eventData.data = sync.executeQuery(eventData.data, context);
-            runCommand("diceCheck", eventData);
+            eventData.flavor = sync.eval(eventData.flavor, context);
+            eventData.eventData = sync.executeQuery(eventData.eventData, context);
+            runCommand("chatEvent", eventData);
           }
         });
       }
@@ -2000,9 +2202,9 @@ function _diceable(ev, ui, evData, ctx) {
       name : "Roll",
       click : function(ev, ui) {
         snd_diceRoll.play();
-        eventData.msg = sync.eval(eventData.msg, context);
-        eventData.data = sync.executeQuery(eventData.data, context);
-        runCommand("diceCheck", eventData);
+        eventData.flavor = sync.eval(eventData.flavor, context);
+        eventData.eventData = sync.executeQuery(eventData.eventData, context);
+        runCommand("chatEvent", eventData);
       },
     },
     {
@@ -2021,14 +2223,14 @@ function _diceable(ev, ui, evData, ctx) {
           attr : {mod : game.templates.dice.modifiers[key]},
           click : function(ev, ui) {
             if (eventData.inverted) {
-              eventData.data = eventData.data + "-" + parseInt(ui.attr("mod"));
+              eventData.eventData = eventData.eventData + "-" + parseInt(ui.attr("mod"));
             }
             else {
-              eventData.data = eventData.data + "+" + parseInt(ui.attr("mod"));
+              eventData.eventData = eventData.eventData + "+" + parseInt(ui.attr("mod"));
             }
-            eventData.msg = sync.eval(eventData.msg, context);
-            eventData.data = sync.executeQuery(eventData.data, context);
-            runCommand("diceCheck", eventData);
+            eventData.flavor = sync.eval(eventData.flavor, context);
+            eventData.eventData = sync.executeQuery(eventData.eventData, context);
+            runCommand("chatEvent", eventData);
           }
         });
         penalty.submenu.push({
@@ -2036,14 +2238,14 @@ function _diceable(ev, ui, evData, ctx) {
           attr : {mod : game.templates.dice.modifiers[key]},
           click : function(ev, ui) {
             if (eventData.inverted) {
-              eventData.data = eventData.data + "+" + parseInt(ui.attr("mod"));
+              eventData.eventData = eventData.eventData + "+" + parseInt(ui.attr("mod"));
             }
             else {
-              eventData.data = eventData.data + "-" + parseInt(ui.attr("mod"));
+              eventData.eventData = eventData.eventData + "-" + parseInt(ui.attr("mod"));
             }
-            eventData.msg = sync.eval(eventData.msg, context);
-            eventData.data = sync.executeQuery(eventData.data, context);
-            runCommand("diceCheck", eventData);
+            eventData.flavor = sync.eval(eventData.flavor, context);
+            eventData.eventData = sync.executeQuery(eventData.eventData, context);
+            runCommand("chatEvent", eventData);
           }
         });
       }
@@ -2077,7 +2279,7 @@ function _diceable(ev, ui, evData, ctx) {
           var die = diceTemplates.pool[diceTemplates.defaults[0]].value;
           for (var key in _syncList) {
             if (util.contains(_syncList[key]._apps, thisApp.attr("id"))) {
-              _syncList[key].data.equations = eventData.data.equations;
+              _syncList[key].data.equations = eventData.eventData;
               _syncList[key].update();
               break;
             }
@@ -2105,8 +2307,8 @@ function _diceable(ev, ui, evData, ctx) {
             for (var key in _syncList) {
               if (util.contains(_syncList[key]._apps, thisApp.attr("id"))) {
                 _syncList[key].data.equations = _syncList[key].data.equations || [];
-                for (var ky in eventData.data.equations) {
-                  _syncList[key].data.equations.push(eventData.data.equations[ky]);
+                for (var ky in eventData.eventData) {
+                  _syncList[key].data.equations.push(eventData.eventData[ky]);
                 }
                 _syncList[key].update();
                 break;
@@ -2214,6 +2416,7 @@ sync.render("ui_renderAction", function(obj, app, scope){
       });
       saveNewRoll.contextmenu(function(){
         if (scope.minimized) {
+          obj.data.options = duplicate(actionData.choices[$(this).attr("key")]);
           rollButton.contextmenu();
           return false;
         }
@@ -2284,18 +2487,43 @@ sync.render("ui_renderAction", function(obj, app, scope){
     var ctx = buildContext();
 
     var addStr = "";
-    var str = actionData.eventData.data;
+    var str = actionData.eventData.eventData;
     var final = "";
     var vMatch = variableRegex.exec(str);
     // save localVaribles
     var cmps = /([\/><\!\~\=])/;
-    var context = sync.context(actionData.eventData.data, ctx, true);
+
+    ctx.eval = ctx.eval || {};
+
+    var varTable = duplicate(actionData.eventData.var) || {};
 
     for (var key in obj.data.options) {
       if (obj.data.options[key] !== true) {
-        context.context[key] = sync.newValue(obj.data.options[key], sync.eval(obj.data.options[key], ctx));
+        varTable[key] = sync.eval(obj.data.options[key], ctx);
+        ctx.eval[key] = varTable[key];
       }
     }
+
+    var pullTable = duplicate(actionData.pull);
+    var targets = util.getTargets();
+    for (var k in targets) {
+      var tg = getEnt(targets[k]);
+      if (tg && tg.data) {
+        for (var key in pullTable) {
+          var contxt = {c : duplicate(tg.data)};
+          varTable[key] = sync.eval(pullTable[key], contxt);
+          ctx.eval[key] = varTable[key];
+        }
+      }
+    }
+
+    var context = sync.context(actionData.eventData.data, ctx);
+    for (var key in context.context) {
+      if (varTable[key]) {
+        context.context[key] = duplicate(varTable[key]);
+      }
+    }
+
     while (vMatch) {
       if (vMatch[2] && vMatch[4] && vMatch[4][0] == "=") {
         var stack = [0];
@@ -2332,11 +2560,13 @@ sync.render("ui_renderAction", function(obj, app, scope){
       }
     }
     final += context.str;
-    var varTable = duplicate(actionData.eventData.var);
     for (var key in varTable) {
       varTable[key] = sync.eval(varTable[key], ctx);
     }
     var icon;
+    if (getEnt(obj.data.context.c) && getEnt(obj.data.context.c).data) {
+      icon = sync.rawVal(getEnt(obj.data.context.c).data.info.img);
+    }
     var msg;
     if (actionData.flavors) {
       var choices = [];
@@ -2346,49 +2576,71 @@ sync.render("ui_renderAction", function(obj, app, scope){
         }
       }
       var choice = Math.floor(Math.random() * choices.length);
-      icon = actionData.flavors[choice].icon;
+      icon = actionData.flavors[choice].icon || icon;
       msg = sync.eval(actionData.flavors[choice].msg, ctx);
     }
     else {
-      icon = actionData.eventData.icon;
-      msg = sync.eval(actionData.eventData.msg, ctx);
+      icon = actionData.eventData.icon || icon;
+      msg = sync.eval(actionData.eventData.flavor, ctx);
     }
     if (rollButton.attr("flavor")) {
       msg = rollButton.attr("flavor");
       rollButton.removeAttr("flavor");
     }
     var eventData = {
-      f : sync.rawVal(ctx.c.info.name),
+      person : sync.rawVal(ctx.c.info.name),
+      eID : obj.data.context.c,
       icon : icon,
-      msg : msg,
-      ui : actionData.eventData.ui,
-      data : sync.executeQuery(final, ctx),
-      var : varTable
+      flavor : msg,
+      eventData : sync.executeQuery(final, ctx),
     };
+    eventData.eventData.ui = actionData.eventData.ui;
+    eventData.eventData.var = varTable;
+
+    if (actionData.effects) {
+      var effectData = {};
+      ctx["pool"] = eventData.eventData.pool;
+      for (var k in targets) {
+        var tg = getEnt(targets[k]);
+        if (tg && tg.data) {
+          effectData[targets[k]] = [];
+          for (var i in actionData.effects) {
+            var calcData = duplicate(actionData.effects[i]);
+            if (calcData.cond == null || sync.eval(calcData.cond, ctx)) {
+              delete calcData.cond;
+              calcData.eq = sync.eval(calcData.eq, ctx);
+              effectData[targets[k]].push(calcData);
+            }
+          }
+        }
+      }
+      eventData.effects = effectData;
+    }
 
     if (rollButton.attr("private") == "true") {
       var priv = {};
       priv[getCookie("UserID")] = true;
       eventData.p = priv;
     }
-    runCommand("diceCheck", eventData);
+    runCommand("chatEvent", eventData);
     setTimeout(function(){
       for (var i in actionData.followup) {
         if (actionData.followup[i].cond == null || sync.eval(actionData.followup[i].cond, ctx)) {
           var eventData = {
-            f : sync.rawVal(ctx.c.info.name),
+            person : sync.rawVal(ctx.c.info.name),
+            eID : obj.data.context.c,
             icon : actionData.followup[i].icon,
-            msg : sync.eval(actionData.followup[i].msg, ctx),
-            ui : actionData.followup[i].ui,
-            data : sync.executeQuery(actionData.followup[i].data, ctx),
-            var : varTable
+            flavor : sync.eval(actionData.followup[i].msg, ctx),
+            eventData : sync.executeQuery(actionData.followup[i].data, ctx),
           };
+          eventData.eventData.ui = actionData.followup[i].ui;
+          eventData.eventData.var = varTable;
           if (rollButton.attr("private") == "true") {
             var priv = {};
             priv[getCookie("UserID")] = true;
             eventData.p = priv;
           }
-          runCommand("diceCheck", eventData);
+          runCommand("chatEvent", eventData);
         }
       }
     }, 100);
@@ -2555,7 +2807,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   for (var actionKey in game.templates.actions[obj.data._t]) {
     if (!obj.data._a || !obj.data._a[actionKey]) {
       var saveNewRollWrap = $("<div>").appendTo(div);
-      saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
+      saveNewRollWrap.addClass("white smooth outline padding flexcolumn flexmiddle");
 
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : scope.cref || obj.id()}, action : actionKey, actionData : duplicate(game.templates.actions[obj.data._t][actionKey])};
@@ -2576,7 +2828,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.data = duplicate(game.templates.actions[obj.data._t][actionKey]);
 
       var newApp = sync.newApp("ui_editAction").appendTo(saveNewRollWrap);
-      newApp.css("height", "300px");
+      newApp.css("height", "230px");
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
@@ -2593,7 +2845,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
     }
     else {
       var saveNewRollWrap = $("<div>").appendTo(div);
-      saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
+      saveNewRollWrap.addClass("white smooth outline padding flexcolumn flexmiddle");
 
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : obj.id()}, action : actionKey, actionData : duplicate(obj.data._a[actionKey])};
@@ -2630,7 +2882,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.data = duplicate(obj.data._a[actionKey]);
 
       var newApp = sync.newApp("ui_editAction").appendTo(saveNewRollWrap);
-      newApp.css("height", "300px");
+      newApp.css("height", "230px");
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
@@ -2650,7 +2902,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
   for (var actionKey in obj.data._a) {
     if (!game.templates.actions[obj.data._t] || !game.templates.actions[obj.data._t][actionKey]) {
       var saveNewRollWrap = $("<div>").appendTo(div);
-      saveNewRollWrap.addClass("white smooth outline padding flexrow flexmiddle");
+      saveNewRollWrap.addClass("white smooth outline padding flexcolumn flexmiddle");
 
       var actionObj = sync.dummyObj();
       actionObj.data = {context : {c : obj.id()}, action : actionKey, actionData : duplicate(obj.data._a[actionKey])};
@@ -2687,7 +2939,7 @@ sync.render("ui_manageActions", function(obj, app, scope){
       newObj.data = duplicate(obj.data._a[actionKey]);
 
       var newApp = sync.newApp("ui_editAction").appendTo(saveNewRollWrap);
-      newApp.css("height", "300px");
+      newApp.css("height", "230px");
       newObj.addApp(newApp);
       function attachListener(newObj, actionKey, actionObj) {
         newObj.listen["updateParent"] = function(orgObj){
@@ -2737,145 +2989,199 @@ sync.render("ui_manageActions", function(obj, app, scope){
 sync.render("ui_hotActions", function(char, app, scope){
   scope = scope || {};
 
-  var savedRollWrap = $("<div>");
-  savedRollWrap.addClass("flexrow flexwrap flex");
-  if (!scope.noAround) {
-    savedRollWrap.addClass("flexaround");
+  var savedRollWrap;
+
+  if (game.templates.build) {
+    var actionObj = sync.dummyObj();
+    actionObj.data = {c: char.id()};
+
+    game.locals["actionsList"] = game.locals["actionsList"] || {};
+    game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-actions"] = actionObj;
+
+    savedRollWrap = sync.newApp("ui_actionsv2");
+    savedRollWrap.addClass("flexmiddle");
+    savedRollWrap.css("text-shadow", "none");
+    savedRollWrap.css("color", "#333");
+
+    actionObj.addApp(savedRollWrap);
+
+    if (savedRollWrap.children()[0] && $(savedRollWrap.children()[0]).children().length) {
+      app.attr("actionsTrue", "true");
+    }
   }
   else {
-    savedRollWrap.css("overflow", "auto");
-  }
+    savedRollWrap = $("<div>");
+    savedRollWrap.addClass("flexrow flexwrap fit-xy");
+    savedRollWrap.css("text-shadow", "none");
+    savedRollWrap.css("color", "#333");
 
-  for (var actionKey in game.templates.actions.c) {
-    var actionData = duplicate(game.templates.actions.c[actionKey]);
-    if (char.data._a && char.data._a[actionKey]) {
-      actionData = duplicate(char.data._a[actionKey]);
+    if (!scope.noAround) {
+      savedRollWrap.addClass("flexaround");
     }
-    if (actionData.hot) {
-      var actionObj = sync.dummyObj();
-      actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-
-      game.locals["actionsList"] = game.locals["actionsList"] || {};
-      game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-"+actionKey] = actionObj;
-
-      var rollWrap = $("<div>").appendTo(savedRollWrap);
-
-      var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-      actionApp.attr("minimized", "true");
-      actionApp.css("outline", "none");
-      actionApp.css("border", "none");
-      actionObj.addApp(actionApp);
+    else {
+      savedRollWrap.css("overflow", "auto");
     }
-  }
 
-  for (var actionKey in char.data._a) {
-    if (char.data._a[actionKey].hot) {
-      var actionData = duplicate(char.data._a[actionKey]);
-      var actionObj = sync.dummyObj();
-      actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-
-      game.locals["actionsList"] = game.locals["actionsList"] || {};
-      game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-"+actionKey] = actionObj;
-
-      var rollWrap = $("<div>").appendTo(savedRollWrap);
-
-      var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-      actionApp.attr("minimized", "true");
-      actionApp.css("outline", "none");
-      actionApp.css("border", "none");
-      actionObj.addApp(actionApp);
-    }
-  }
-
-  for (var itemKey in char.data.inventory) {
-    for (var actionKey in game.templates.actions.i) {
-      var actionData = duplicate(game.templates.actions.i[actionKey]);
-      if (char.data.inventory[itemKey]._a && char.data.inventory[itemKey]._a[actionKey]) {
-        actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
+    for (var actionKey in game.templates.actions.c) {
+      var actionData = duplicate(game.templates.actions.c[actionKey]);
+      if (char.data._a && char.data._a[actionKey]) {
+        actionData = duplicate(char.data._a[actionKey]);
       }
+      var context = {c : char.id()}
+      var hot = sync.eval(actionData.hot, context);
+
       if (actionData.hot) {
         var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.inventory[itemKey];
+        actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
         game.locals["actionsList"] = game.locals["actionsList"] || {};
-        game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
+        game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-"+actionKey] = actionObj;
 
         var rollWrap = $("<div>").appendTo(savedRollWrap);
 
         var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
         actionApp.attr("minimized", "true");
-        actionApp.attr("title", char.data.inventory[itemKey].info.name.current);
         actionApp.css("outline", "none");
         actionApp.css("border", "none");
         actionObj.addApp(actionApp);
       }
     }
-    for (var actionKey in char.data.inventory[itemKey]._a) {
-      if (char.data.inventory[itemKey]._a[actionKey].hot) {
-        var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
-        var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.inventory[itemKey];
 
-        game.locals["actionsList"] = game.locals["actionsList"] || {};
-        game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
+    for (var actionKey in char.data._a) {
+      if (!game.templates.actions[char.data._t] || !game.templates.actions[char.data._t][actionKey]) {
+        var actionData = duplicate(char.data._a[actionKey]);
+        var context = {c : char.id()}
+        var hot = sync.eval(actionData.hot, context);
+        if (hot) {
+          var actionObj = sync.dummyObj();
+          actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+          game.locals["actionsList"] = game.locals["actionsList"] || {};
+          game.locals["actionsList"][app.attr("id")+"-"+char.data._t+"-"+actionKey] = actionObj;
 
-        var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-        actionApp.attr("minimized", "true");
-        actionApp.attr("title", char.data.inventory[itemKey].info.name.current);
-        actionApp.css("outline", "none");
-        actionApp.css("border", "none");
-        actionObj.addApp(actionApp);
+          var rollWrap = $("<div>").appendTo(savedRollWrap);
+
+          var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+          actionApp.attr("minimized", "true");
+          actionApp.css("outline", "none");
+          actionApp.css("border", "none");
+          actionObj.addApp(actionApp);
+        }
       }
     }
-  }
+    for (var itemKey in char.data.inventory) {
+      var itemWrap = $("<div>").appendTo(savedRollWrap);
+      itemWrap.addClass("flexrow flexmiddle flexwrap");
 
-  for (var itemKey in char.data.spellbook) {
-    for (var actionKey in game.templates.actions.i) {
-      var actionData = duplicate(game.templates.actions.i[actionKey]);
-      if (char.data.spellbook[itemKey]._a && char.data.spellbook[itemKey]._a[actionKey]) {
-        actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
+      for (var actionKey in game.templates.actions.i) {
+        var actionData = duplicate(game.templates.actions.i[actionKey]);
+        if (char.data.inventory[itemKey]._a && char.data.inventory[itemKey]._a[actionKey]) {
+          actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
+        }
+        var context = {c : char.id()};
+        context.i = char.data.inventory[itemKey];
+        var hot = sync.eval(actionData.hot, context);
+
+        if (hot) {
+          var actionObj = sync.dummyObj();
+          actionObj.data = {context : context, action : actionKey, actionData : actionData};
+
+          game.locals["actionsList"] = game.locals["actionsList"] || {};
+          game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
+
+          var rollWrap = $("<div>").appendTo(itemWrap);
+
+          var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+          actionApp.attr("minimized", "true");
+          actionApp.attr("title", char.data.inventory[itemKey].info.name.current);
+          actionApp.css("outline", "none");
+          actionApp.css("border", "none");
+          actionObj.addApp(actionApp);
+        }
       }
-      if (actionData.hot) {
-        var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.spellbook[itemKey];
+      for (var actionKey in char.data.inventory[itemKey]._a) {
+        if (!game.templates.actions.i || !game.templates.actions.i[actionKey]) {
+          var hot = sync.eval(actionData.range, context)
+          var actionData = duplicate(char.data.inventory[itemKey]._a[actionKey]);
+          var context = {c : char.id()}
+          context.i = char.data.inventory[itemKey];
+          var hot = sync.eval(actionData.hot, context);
+          if (hot) {
+            var actionObj = sync.dummyObj();
+            actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
-        game.locals["actionsList"] = game.locals["actionsList"] || {};
-        game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
+            game.locals["actionsList"] = game.locals["actionsList"] || {};
+            game.locals["actionsList"][app.attr("id")+"-i-"+actionKey] = actionObj;
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+            var rollWrap = $("<div>").appendTo(itemWrap);
 
-        var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-        actionApp.attr("minimized", "true");
-        actionApp.attr("title", char.data.spellbook[itemKey].info.name.current);
-        actionApp.css("outline", "none");
-        actionApp.css("border", "none");
-        actionObj.addApp(actionApp);
+            var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+            actionApp.attr("minimized", "true");
+            actionApp.attr("title", char.data.inventory[itemKey].info.name.current);
+            actionApp.css("outline", "none");
+            actionApp.css("border", "none");
+            actionObj.addApp(actionApp);
+          }
+        }
       }
     }
-    for (var actionKey in char.data.spellbook[itemKey]._a) {
-      if (char.data.spellbook[itemKey]._a[actionKey].hot) {
-        var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
-        var actionObj = sync.dummyObj();
-        actionObj.data = {context : {c : char.id()}, action : actionKey, actionData : actionData};
-        actionObj.data.context.i = char.data.spellbook[itemKey];
+    for (var itemKey in char.data.spellbook) {
+      var spellWrap = $("<div>").appendTo(savedRollWrap);
+      spellWrap.addClass("flexrow flexmiddle flexwrap");
 
-        game.locals["actionsList"] = game.locals["actionsList"] || {};
-        game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
+      for (var actionKey in game.templates.actions.i) {
+        var actionData = duplicate(game.templates.actions.i[actionKey]);
+        if (char.data.spellbook[itemKey]._a && char.data.spellbook[itemKey]._a[actionKey]) {
+          actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
+        }
+        var context = {c : char.id()}
+        context.i = char.data.spellbook[itemKey];
+        var hot = sync.eval(actionData.hot, context);
+        if (hot) {
+          var actionObj = sync.dummyObj();
+          actionObj.data = {context : context, action : actionKey, actionData : actionData};
 
-        var rollWrap = $("<div>").appendTo(savedRollWrap);
+          game.locals["actionsList"] = game.locals["actionsList"] || {};
+          game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
 
-        var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
-        actionApp.attr("minimized", "true");
-        actionApp.attr("title", char.data.spellbook[itemKey].info.name.current);
-        actionApp.css("outline", "none");
-        actionApp.css("border", "none");
-        actionObj.addApp(actionApp);
+          var rollWrap = $("<div>").appendTo(spellWrap);
+
+          var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+          actionApp.attr("minimized", "true");
+          actionApp.attr("title", char.data.spellbook[itemKey].info.name.current);
+          actionApp.css("outline", "none");
+          actionApp.css("border", "none");
+          actionObj.addApp(actionApp);
+        }
       }
+      for (var actionKey in char.data.spellbook[itemKey]._a) {
+        if (!game.templates.actions.i || !game.templates.actions.i[actionKey]) {
+          var context = {c : char.id()}
+          context.i = char.data.spellbook[itemKey];
+          var actionData = duplicate(char.data.spellbook[itemKey]._a[actionKey]);
+          var hot = sync.eval(actionData.hot, context);
+
+          if (hot) {
+            var actionObj = sync.dummyObj();
+            actionObj.data = {context : context, action : actionKey, actionData : actionData};
+
+            game.locals["actionsList"] = game.locals["actionsList"] || {};
+            game.locals["actionsList"][app.attr("id")+"-s-"+actionKey] = actionObj;
+
+            var rollWrap = $("<div>").appendTo(spellWrap);
+
+            var actionApp = sync.newApp("ui_renderAction").appendTo(rollWrap);
+            actionApp.attr("minimized", "true");
+            actionApp.attr("title", char.data.spellbook[itemKey].info.name.current);
+            actionApp.css("outline", "none");
+            actionApp.css("border", "none");
+            actionObj.addApp(actionApp);
+          }
+        }
+      }
+    }
+    if (savedRollWrap.children().length) {
+      app.attr("actionsTrue", "true");
     }
   }
 

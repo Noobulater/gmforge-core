@@ -84,7 +84,7 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
   displayApp.css("transition", "");
 
   var boardTabs = $("<div>");
-  boardTabs.addClass("flexrow flexwrap dropContent");
+  boardTabs.addClass("flexrow flexwrap fit-x dropContent");
   boardTabs.css("font-size", "1.2em");
   if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
     boardTabs.sortable({
@@ -126,7 +126,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
 
             game.state.data.tabs = game.state.data.tabs || [];
             var charObj = getEnt($(ui.item).attr("index"));
-
             var useTab = true;
             for (var i in game.state.data.tabs) {
               if (game.state.data.tabs[i].index == charObj.id()) {
@@ -145,20 +144,14 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                 }
                 else if ($(this).attr("default") && !found) {
                   found = true;
-                  if (charObj.data._t == "a") {
-                    finalOrder.push({index : charObj.id(), ui : "ui_planner"});
-                  }
-                  else if (charObj.data._t == "b") {
+                  if (charObj.data._t == "b") {
                     finalOrder.push({index : charObj.id(), ui : "ui_board"});
                   }
                   else if (charObj.data._t == "c") {
-                    finalOrder.push({index : charObj.id(), ui : "ui_characterSheet"});
+                    finalOrder.push({index : charObj.id(), ui : "ui_characterSheetv2"});
                   }
                   else if (charObj.data._t == "p") {
                     finalOrder.push({index : charObj.id(), ui : "ui_renderPage"});
-                  }
-                  else if (charObj.data._t == "v") {
-                    finalOrder.push({index : charObj.id(), ui : "ui_vehicle"});
                   }
                 }
               });
@@ -188,26 +181,31 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
     });
   }
 
-  boardTabs.css("margin-left", "1em");
   if (layout.mobile) {
     boardTabs.addClass("subtitle");
   }
 
   for (var key in data.tabs) {
     var tabData = data.tabs[key];
-    if (tabData && (!tabData._s || hasSecurity(getCookie("UserID"), "Visible", tabData) || app.attr("forced"))) {
+    if (tabData && (!tabData._s || hasSecurity(getCookie("UserID"), "Visible", tabData) || (app.attr("forced") && (app.attr("tab") == key)))) {
       var index = tabData.index;
       var tabWrapper = $("<div>").appendTo(boardTabs);
-      tabWrapper.addClass("outline flexmiddle tab");
+      tabWrapper.addClass("outline flexmiddle tab spadding subtitle");
       tabWrapper.attr("tabKey", key);
-      tabWrapper.css("padding", "2px");
       tabWrapper.css("min-width", "100px");
       tabWrapper.css("position", "relative");
+      tabWrapper.css("font-family", "Scaly Sans");
       if (!tabData._s || tabData._s.default == 1) {
-        tabWrapper.addClass("button");
+        if (app.attr("tab") != key) {
+          tabWrapper.addClass("button");
+          tabWrapper.css("color", "#333");
+          tabWrapper.css("text-shadow", "0 0 1em white");
+        }
       }
       else {
-        tabWrapper.addClass("inactive");
+        if (app.attr("tab") != key) {
+          tabWrapper.addClass("foreground dull");
+        }
       }
 
       if (app.attr("preview") != "true" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
@@ -226,7 +224,7 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
           });
 
           actionList.push({
-            name : "Override Name",
+            name : "Override Tab Name",
             click : function(ev, ui){
               ui_prompt({
                 target : ui,
@@ -451,8 +449,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
             tabWrapper.click(function(){$(this).contextmenu();});
           }
           else {
-            tabWrapper.css("color", "#333");
-            tabWrapper.css("text-shadow", "0 0 1em white");
             tab.attr("tab", key)
             tab.attr("entIndex", index);
             tab.click(function(){
@@ -466,7 +462,7 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                   var attributes = document.getElementById(app.attr("target")).attributes;
                   for (var j=0; j<attributes.length; j++) {
                     var attrib = attributes[j];
-                    if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly")) {
+                    if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly" || attrib.name == "layer")) {
                       game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attrib.name] = attrib.value;
                     }
                   }
@@ -631,8 +627,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
               }
             }
             else {
-              tabWrapper.css("color", "#333");
-              tabWrapper.css("text-shadow", "0 0 1em white");
               tab.attr("tab", key)
               tab.attr("entIndex", index);
               tab.click(function(){
@@ -646,7 +640,7 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                     var attributes = document.getElementById(app.attr("target")).attributes;
                     for (var j=0; j<attributes.length; j++) {
                       var attrib = attributes[j];
-                      if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly")) {
+                      if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly" || attrib.name == "layer")) {
                         game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attrib.name] = attrib.value;
                       }
                     }
@@ -801,8 +795,6 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
           tabWrapper.click(function(){$(this).contextmenu();});
         }
         else {
-          tabWrapper.css("color", "#333");
-          tabWrapper.css("text-shadow", "0 0 1em white");
           tab.attr("tab", key)
           tab.attr("entIndex", index);
           tab.click(function(){
@@ -816,7 +808,985 @@ sync.render("ui_displayTabs", function(obj, app, scope) {
                 var attributes = document.getElementById(app.attr("target")).attributes;
                 for (var j=0; j<attributes.length; j++) {
                   var attrib = attributes[j];
-                  if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly")) {
+                  if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly" || attrib.name == "layer")) {
+                    game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attrib.name] = attrib.value;
+                  }
+                }
+              }
+              displayApp.removeAttr("scrolLLeft");
+              displayApp.removeAttr("scrollTop");
+              displayApp.removeAttr("zoom");
+              app.attr("tab", newTab);
+              displayApp.attr("tabKey", newTab);
+              obj.update();
+              layout.coverlay($(".piece-quick-edit"));
+            }
+
+            var newTab = $(this).attr("tab");
+            var oldEnt = getEnt(displayApp.attr("entIndex"));
+            if (oldEnt) {
+              $("#board-layer-controls-"+oldEnt.id()).hide();
+            }
+            if (displayApp.attr("background") == "true") {
+              var content = $("<div>");
+              content.addClass("flexcolumn");
+
+              var optimizer = $("<button>").appendTo(content);
+              optimizer.addClass("highlight alttext hover2");
+              optimizer.attr("title", "Condenses the map size down to the smallest it can be, attempts to merge 'tiled' pieces for added performance and removes duplicate tiles.");
+              optimizer.append("With Optimizer");
+              optimizer.click(function(){
+                if (boardApi.saveChanges(oldEnt)) {
+                  displayApp.removeAttr("background");
+                  displayApp.removeAttr("ignore");
+                  displayApp.removeAttr("local");
+
+                  layout.coverlay("save-changes");
+                  changeTab(newTab);
+                }
+              });
+
+              var noOptimizer = $("<button>").appendTo(content);
+              noOptimizer.addClass("background alttext hover2");
+              noOptimizer.append("Without Optimizer");
+              noOptimizer.click(function(){
+                if (boardApi.saveChanges(oldEnt, true)) {
+                  displayApp.removeAttr("background");
+                  displayApp.removeAttr("ignore");
+                  displayApp.removeAttr("local");
+
+                  layout.coverlay("save-changes");
+                  changeTab(newTab);
+                }
+              });
+
+              var discard = $("<button>").appendTo(content);
+              discard.addClass("subtitle hover2");
+              discard.css("margin", "1em");
+              discard.append("Discard Changes");
+              discard.click(function(){
+                if (boardApi.saveChanges(oldEnt, "discard")) {
+                  displayApp.removeAttr("background");
+                  displayApp.removeAttr("ignore");
+                  displayApp.removeAttr("local");
+
+                  layout.coverlay("save-changes");
+                  changeTab(newTab);
+                }
+              });
+
+              var pop = ui_popOut({
+                target : displayApp,
+                id : "save-changes",
+                title : "Save Changes...",
+              }, content);
+            }
+            else {
+              changeTab(newTab);
+            }
+          });
+        }
+
+        if (noTab != null && noTab == key) {
+          tab.click();
+        }
+      }
+    }
+  }
+
+  if (app.attr("preview") != "true" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
+    var tabWrap = $("<div>").appendTo(boardTabs);
+    tabWrap.addClass("flexmiddle lrpadding alttext");
+
+    var newTab = genIcon("plus").appendTo(tabWrap);
+    newTab.attr("title", "Add a new tab");
+    newTab.click(function(){
+      var actionList = [];
+
+      actionList.push({
+        name : "Slideshow",
+        icon : "picture",
+        click : function(ev, ui) {
+          game.state.data.tabs.push({name : "Slideshow", data : {}});
+          game.state.sync("updateState");
+        }
+      });
+
+      actionList.push({
+        name : "Map",
+        icon : "globe",
+        click : function(ev, ui) {
+          var ignore = {};
+          for (var i in game.state.data.tabs) {
+            ignore[game.state.data.tabs[i].index] = true;
+          }
+          var content = sync.render("ui_assetPicker")(obj, app, {
+            ignore : ignore,
+            filter : "b",
+            select : function(ev, ui, ent, options, entities){
+              game.state.data.tabs = game.state.data.tabs || [];
+              game.state.data.tabs.push({ui : "ui_board", index : ent.id()});
+              game.state.sync("updateState");
+              options.data.ignore = options.data.ignore || {};
+              options.data.ignore[ent.id()] = true;
+              return true;
+            }
+          });
+          var pop = ui_popOut({
+            target : $("body"),
+            id : "add-asset",
+            title : "Add Asset",
+            style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
+          }, content);
+          pop.resizable();
+        }
+      });
+
+      actionList.push({
+        name : "Resource Page",
+        icon : "book",
+        click : function(ev, ui) {
+          game.state.data.tabs = game.state.data.tabs || [];
+          game.config.data.resources = game.config.data.resources || [];
+          game.config.sync("updateConfig");
+          game.state.data.tabs.push({name : "Resource Page", ui : "ui_resourcePage", index : "config"});
+          game.state.sync("updateState");
+        }
+      });
+
+      actionList.push({
+        name : "Asset",
+        icon : "user",
+        click : function(ev, ui) {
+          var ignore = {};
+          for (var i in game.state.data.tabs) {
+            ignore[game.state.data.tabs[i].index] = true;
+          }
+          var content = sync.render("ui_assetPicker")(obj, app, {
+            ignore : ignore,
+            select : function(ev, ui, ent, options, entities){
+              game.state.data.tabs = game.state.data.tabs || [];
+              game.state.data.tabs.push({ui : assetTypes[ent.data._t].handout, index : ent.id()});
+              game.state.sync("updateState");
+              layout.coverlay("add-asset");
+            }
+          });
+          var pop = ui_popOut({
+            target : $("body"),
+            prompt : true,
+            id : "add-asset",
+            title : "Add Asset",
+            style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
+          }, content);
+          pop.resizable();
+        }
+      });
+
+      ui_dropMenu($(this), actionList, {id : "new-tab", align : "bottom"});
+    });
+  }
+
+  app.removeAttr("forced");
+
+  return boardTabs;
+});
+
+sync.render("ui_displayTabs", function(obj, app, scope) {
+  if (!obj) {
+    game.state.addApp(app);
+    return $("<div>");
+  }
+
+  
+  game.locals["tabAttrs-"+app.attr("id")] = game.locals["tabAttrs-"+app.attr("id")] || sync.obj();
+  game.locals["tabAttrs-"+app.attr("id")].data = game.locals["tabAttrs-"+app.attr("id")].data || {};
+
+  var noTab;
+
+  if (app.attr("tab") == null && obj.data.tabs && obj.data.tabs.length) {
+    setTimeout(function(){
+      for (var key in obj.data.tabs) {
+        var tabData = obj.data.tabs[key];
+        if (tabData && (!tabData._s || hasSecurity(getCookie("UserID"), "Visible", tabData))) {
+          app.attr("tab", key);
+          noTab = key;
+          break;
+        }
+      }
+      obj.update();
+    }, 10);
+    return $("<div>");
+  }
+
+  var del = [];
+  for (var key in obj.data.tabs) {
+    var tabData = obj.data.tabs[key];
+    if (!tabData || (tabData.index && tabData.index != "config" && (!getEnt(tabData.index) || !(getEnt(tabData.index).data)))) {
+      del.push(key);
+    }
+  }
+  del = del.reverse();
+  for (var i in del) {
+    obj.data.tabs.splice(del[i],1);
+  }
+
+  var data = obj.data;
+  var resourcePath = app.attr("resourcePath");
+  app.removeAttr("resourcePath");
+
+  var displayApp = $("#"+app.attr("target"));
+  displayApp.addClass("white");
+  displayApp.attr("currentTab", app.attr("tab"));
+  displayApp.attr("displayApp", true);
+
+  var tabData = data.tabs[app.attr("tab")];
+  var filterStr = "";
+  if (tabData && tabData.data && tabData.data.options) {
+    for (var key in tabData.data.options.effects) {
+      if (key == "hue-rotate") {
+        filterStr = filterStr + " " + key + "("+tabData.data.options.effects[key]+"deg)";
+      }
+      else {
+        filterStr = filterStr + " " + key + "("+tabData.data.options.effects[key]+"%)";
+      }
+    }
+  }
+  displayApp.css("filter", filterStr);
+  displayApp.css("transition", "");
+
+  if (app.attr("tab") && data.tabs[app.attr("tab")] && data.tabs[app.attr("tab")].ui == "ui_homebrew") {
+    $("#player-menu").hide();
+  }
+  else {
+    $("#player-menu").show();
+  }
+
+  var boardTabs = $("<div>");
+  boardTabs.addClass("flexrow flexwrap fit-x dropContent");
+  boardTabs.css("font-size", "1.2em");
+  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+    boardTabs.sortable({
+      over : function(ev, ui){
+        if ($(ui.item).attr("index")) {
+          if (!$("#"+app.attr("id")+"-drag-overlay").length) {
+            var olay = layout.overlay({
+              target : app,
+              id : app.attr("id")+"-drag-overlay",
+              style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none"}
+            });
+            olay.addClass("flexcolumn flexmiddle alttext");
+            olay.css("font-size", "2em");
+            olay.css("pointer-events", "none");
+            olay.append("<b>Drop to Add Tab</b>");
+          }
+        }
+      },
+      out : function(ev, ui) {
+        layout.coverlay(app.attr("id")+"-drag-overlay");
+      },
+      update : function(ev, ui) {
+        if (!$(ui.item).attr("tabKey")) {
+          if ($(ui.item).attr("index")) {
+            if ($(ui.item).attr("src")) {
+              if ($(ui.item).attr("src") == "state") {
+                game.state.update(); // refresh the list
+              }
+              else if ($(ui.item).attr("src") == "players") {
+                game.players.update(); // refresh the list
+              }
+              else {
+                getEnt($(ui.item).attr("src")).update(); // refresh the list
+              }
+            }
+            else {
+              game.entities.update(); // refresh the list
+            }
+
+            game.state.data.tabs = game.state.data.tabs || [];
+            var charObj = getEnt($(ui.item).attr("index"));
+            var useTab = true;
+            for (var i in game.state.data.tabs) {
+              if (game.state.data.tabs[i].index == charObj.id()) {
+                useTab = false;
+                break;
+              }
+            }
+
+            if (useTab) {
+              $(ui.item).attr("default", true);
+              var found = false;
+              var finalOrder = [];
+              boardTabs.children().each(function(){
+                if (!$(this).attr("default") && $(this).attr("tabKey")){
+                  finalOrder.push(game.state.data.tabs[$(this).attr("tabKey")]);
+                }
+                else if ($(this).attr("default") && !found) {
+                  found = true;
+                  if (charObj.data._t == "b") {
+                    finalOrder.push({index : charObj.id(), ui : "ui_board"});
+                  }
+                  else if (charObj.data._t == "c") {
+                    finalOrder.push({index : charObj.id(), ui : "ui_characterSheetv2"});
+                  }
+                  else if (charObj.data._t == "p") {
+                    finalOrder.push({index : charObj.id(), ui : "ui_renderPage"});
+                  }
+                }
+              });
+              game.state.data.tabs = finalOrder;
+              obj.sync("updateState");
+            }
+            else {
+              sendAlert({text : "Entity already in use"});
+              $(ui.item).remove();
+            }
+          }
+        }
+        else {
+          var finalOrder = [];
+          boardTabs.children().each(function(){
+            if (!$(this).attr("default")){
+              finalOrder.push(game.state.data.tabs[$(this).attr("tabKey")]);
+            }
+          });
+          game.state.data.tabs = finalOrder;
+          obj.sync("updateState");
+        }
+      }
+    });
+    boardTabs.mouseout(function(){
+      layout.coverlay(app.attr("id")+"-drag-overlay");
+    });
+  }
+
+  if (layout.mobile) {
+    boardTabs.addClass("subtitle");
+  }
+
+  for (var key in data.tabs) {
+    var tabData = data.tabs[key];
+    if (tabData && (!tabData._s || hasSecurity(getCookie("UserID"), "Visible", tabData) || (app.attr("forced") && (app.attr("tab") == key)))) {
+      var index = tabData.index;
+      var tabWrapper = $("<div>").appendTo(boardTabs);
+      tabWrapper.addClass("outline flexmiddle tab spadding subtitle");
+      tabWrapper.attr("tabKey", key);
+      tabWrapper.css("min-width", "100px");
+      tabWrapper.css("position", "relative");
+      tabWrapper.css("font-family", "Scaly Sans");
+      if (!tabData._s || tabData._s.default == 1) {
+        if (app.attr("tab") != key) {
+          tabWrapper.addClass("button");
+          tabWrapper.css("color", "#333");
+          tabWrapper.css("text-shadow", "0 0 1em white");
+        }
+      }
+      else {
+        if (app.attr("tab") != key) {
+          tabWrapper.addClass("foreground dull");
+        }
+      }
+
+      if (app.attr("preview") != "true" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
+        tabWrapper.attr("title", "Right click for more options");
+
+        tabWrapper.contextmenu(function(){
+          var tabIndex = $(this).attr("tabKey");
+
+          var actionList = [];
+
+          actionList.push({
+            name : "Force Players to Tab",
+            click : function(){
+              runCommand("forceTab", {index : tabIndex});
+            }
+          });
+
+          actionList.push({
+            name : "Override Tab Name",
+            click : function(ev, ui){
+              ui_prompt({
+                target : ui,
+                inputs : {
+                  "Tab Name" : {placeholder : "Empty for default"}
+                },
+                click : function(ev, inputs) {
+                  if (inputs["Tab Name"].val()) {
+                    obj.data.tabs[tabIndex].name = inputs["Tab Name"].val();
+                  }
+                  else {
+                    delete obj.data.tabs[tabIndex].name;
+                  }
+                  obj.sync("updateState");
+                  layout.coverlay("tab-options");
+                }
+              });
+            }
+          });
+
+          actionList.push({
+            name : "Tab Access",
+            submenu : [
+              {
+                name : "GM Only",
+                click : function(){
+                  obj.data.tabs[tabIndex]._s = obj.data.tabs[tabIndex]._s || {};
+                  obj.data.tabs[tabIndex]._s["default"] = "@:gm()";
+                  obj.sync("updateState");
+                }
+              },
+              {
+                name : "Everybody",
+                click : function(){
+                  delete obj.data.tabs[tabIndex]._s;
+                  obj.sync("updateState");
+                }
+              },
+              {
+                name : "Advanced...",
+                click  : function(ev, ui){
+                  var content = $("<div>");
+                  content.addClass("flexcolumn");
+
+                  var tabData = data.tabs[tabIndex];
+
+                  var securityContent = $("<div>").appendTo(content);
+                  function buildSecurity() {
+                    var secTbl = {};
+                    secTbl[getCookie("UserID")] = 1;
+                    secTbl = obj.data.tabs[tabIndex]._s || secTbl;
+                    var sec = sync.render("ui_rights")(obj, app, {
+                      security : secTbl,
+                      change : function(ev, ui, userID, newSecurity){
+                        obj.data.tabs[tabIndex]._s = obj.data.tabs[tabIndex]._s || secTbl;
+                        if (userID == "default" && newSecurity === "") {
+                          obj.data.tabs[tabIndex]._s[userID] = "1";
+                        }
+                        else {
+                          obj.data.tabs[tabIndex]._s[userID] = newSecurity;
+                        }
+                        obj.sync("updateState");
+                        securityContent.empty();
+                        buildSecurity().appendTo(securityContent);
+                      }
+                    });
+                    return sec;
+                  }
+                  buildSecurity().appendTo(securityContent);
+
+                  ui_popOut({
+                    target : ui,
+                    prompt : true,
+                    title : "Set Access",
+                    id : "tab-options",
+                  }, content);
+                }
+              }
+            ]
+          });
+
+          actionList.push({
+            name : "Countdown",
+            submenu : [
+              {
+                name : "Clear Timer",
+                click : function(){
+                  delete obj.data.tabs[tabIndex].end;
+                  obj.sync("updateState");
+                }
+              },
+              {
+                name : "5 minutes",
+                click : function(){
+                  obj.data.tabs[tabIndex].end = Date.now() + 5 * 60 * 1000;
+                  obj.sync("updateState");
+                }
+              },
+              {
+                name : "1 minute",
+                click : function(){
+                  obj.data.tabs[tabIndex].end = Date.now() + 60 * 1000;
+                  obj.sync("updateState");
+                }
+              },
+              {
+                name : "30 seconds",
+                click : function(){
+                  obj.data.tabs[tabIndex].end = Date.now() + 30 * 1000;
+                  obj.sync("updateState");
+                }
+              },
+              {
+                name : "Custom",
+                click : function(ev, ui) {
+                  ui_prompt({
+                    target : ui,
+                    inputs : {
+                      "Duration" : {placeholder : "Seconds"}
+                    },
+                    click : function(ev, inputs) {
+                      if (!isNaN(inputs["Duration"].val())) {
+                        obj.data.tabs[tabIndex].end = Date.now() + Number(inputs["Duration"].val()) * 1000;
+                      }
+                      else {
+                        delete obj.data.tabs[tabIndex].end;
+                      }
+                      obj.sync("updateState");
+                    }
+                  });
+                }
+              }
+            ]
+          });
+          ui_dropMenu($(this), actionList, {id: "tab-actions", align : "bottom"});
+          return false;
+        });
+      }
+
+      if (index != null) {
+        if (index == "config") {
+          var tab = $("<b>").appendTo(tabWrapper);
+          tab.addClass("flex flexmiddle");
+
+          var name = sync.newApp("ui_tab");
+          name.attr("tabName", tabData.name);
+          name.attr("endTime", tabData.end);
+          name.css("outline", "none");
+
+          game.state.addApp(name);
+
+          tab.append(name);
+          if (app.attr("preview") != "true" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
+            var stop = genIcon("remove").appendTo(tabWrapper);
+            stop.addClass("lrpadding");
+            stop.attr("index", key);
+            stop.click(function(){
+              data.tabs = data.tabs || [];
+              if (app.attr("tab") == $(this).attr("key")) {
+                if (displayApp.attr("entIndex") && displayApp.attr("entIndex") != "config") {
+                  var oldEnt = getEnt(displayApp.attr("entIndex"));
+                  if (oldEnt) {
+                    $("#board-layer-controls-"+oldEnt.id()).hide();
+                    oldEnt.removeApp(displayApp);
+                  }
+                }
+                else if (displayApp.attr("entIndex") == "config") {
+                  displayApp.removeAttr("resourcePath");
+                  displayApp.removeAttr("tabKey");
+                  game.config.removeApp(displayApp);
+                }
+                else {
+                  displayApp.removeAttr("tabKey");
+                  game.state.removeApp(displayApp);
+                }
+                displayApp.removeAttr("entIndex");
+              }
+              data.tabs.splice($(this).attr("index"), 1);
+              obj.sync("updateState");
+            });
+          }
+          tab.hover(function(){
+            $(this).parent().addClass("hover2");
+          },
+          function(){
+            $(this).parent().removeClass("hover2");
+          });
+
+          if (app.attr("tab") == key) {
+            for (var attr in game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0]) {
+              displayApp.attr(attr, game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attr]);
+            }
+            game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0] = {};
+            tabWrapper.addClass("highlight alttext");
+            tabWrapper.removeClass("button");
+            if (displayApp.attr("entIndex") && displayApp.attr("entIndex") != "config") {
+              var oldEnt = getEnt(displayApp.attr("entIndex"));;
+              if (oldEnt) {
+                if (oldEnt.data && oldEnt.data._t == "b") {
+                  $("#board-layer-controls-"+oldEnt.id()).hide();
+                  runCommand("updateBoardCursor", {id : oldEnt.id(), data : {x : 0, y : 0, v : true}});
+                }
+                oldEnt.removeApp(displayApp);
+              }
+              displayApp.removeAttr("entIndex");
+            }
+            else if (displayApp.attr("entIndex") == "config") {
+              //displayApp.removeAttr("entIndex");
+              //displayApp.removeAttr("resourcePath");
+              //game.config.removeApp(displayApp);
+            }
+            else {
+              displayApp.removeAttr("tabKey");
+              game.state.removeApp(displayApp);
+            }
+            displayApp.attr("tabKey", key);
+            displayApp.attr("entIndex", tabData.index);
+            displayApp.attr("resourcePath", resourcePath);
+            displayApp.attr("ui-name", tabData.ui);
+            game.config.addApp(displayApp);
+
+            tabWrapper.click(function(){$(this).contextmenu();});
+          }
+          else {
+            tab.attr("tab", key)
+            tab.attr("entIndex", index);
+            tab.click(function(){
+              function changeTab(newTab) {
+                displayApp.removeAttr("background");
+                displayApp.removeAttr("ignore");
+                displayApp.removeAttr("printing");
+
+                game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0] = {};
+                if (document.getElementById(app.attr("target"))) {
+                  var attributes = document.getElementById(app.attr("target")).attributes;
+                  for (var j=0; j<attributes.length; j++) {
+                    var attrib = attributes[j];
+                    if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly" || attrib.name == "layer")) {
+                      game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attrib.name] = attrib.value;
+                    }
+                  }
+                }
+                displayApp.removeAttr("scrolLLeft");
+                displayApp.removeAttr("scrollTop");
+                displayApp.removeAttr("zoom");
+                app.attr("tab", newTab);
+                obj.update();
+                layout.coverlay($(".piece-quick-edit"));
+              }
+
+              var newTab = $(this).attr("tab");
+              var oldEnt = getEnt(displayApp.attr("entIndex"));
+              if (oldEnt) {
+                $("#board-layer-controls-"+oldEnt.id()).hide();
+              }
+              if (displayApp.attr("background") == "true") {
+                var content = $("<div>");
+                content.addClass("flexcolumn");
+
+                var optimizer = $("<button>").appendTo(content);
+                optimizer.addClass("highlight alttext hover2");
+                optimizer.attr("title", "Condenses the map size down to the smallest it can be, attempts to merge 'tiled' pieces for added performance and removes duplicate tiles.");
+                optimizer.append("With Optimizer");
+                optimizer.click(function(){
+                  if (boardApi.saveChanges(oldEnt)) {
+                    displayApp.removeAttr("background");
+                    displayApp.removeAttr("ignore");
+                    displayApp.removeAttr("local");
+
+                    layout.coverlay("save-changes");
+                    changeTab(newTab);
+                  }
+                });
+
+                var noOptimizer = $("<button>").appendTo(content);
+                noOptimizer.addClass("background alttext hover2");
+                noOptimizer.append("Without Optimizer");
+                noOptimizer.click(function(){
+                  if (boardApi.saveChanges(oldEnt, true)) {
+                    displayApp.removeAttr("background");
+                    displayApp.removeAttr("ignore");
+                    displayApp.removeAttr("local");
+
+                    layout.coverlay("save-changes");
+                    changeTab(newTab);
+                  }
+                });
+
+                var discard = $("<button>").appendTo(content);
+                discard.addClass("subtitle hover2");
+                discard.css("margin", "1em");
+                discard.append("Discard Changes");
+                discard.click(function(){
+                  if (boardApi.saveChanges(oldEnt, "discard")) {
+                    displayApp.removeAttr("background");
+                    displayApp.removeAttr("ignore");
+                    displayApp.removeAttr("local");
+
+                    layout.coverlay("save-changes");
+                    changeTab(newTab);
+                  }
+                });
+
+                var pop = ui_popOut({
+                  target : displayApp,
+                  id : "save-changes",
+                  title : "Save Changes...",
+                }, content);
+              }
+              else {
+                changeTab(newTab);
+              }
+            });
+          }
+          if (noTab != null && noTab == key) {
+            tab.click();
+          }
+        }
+        else {
+          var ent = getEnt(index);
+          if (ent) {
+            var tab = $("<b>").appendTo(tabWrapper);
+            tab.addClass("flex flexmiddle");
+
+            var name = sync.newApp("ui_tab");
+            name.attr("tabName", tabData.name);
+            name.attr("endTime", tabData.end);
+            name.css("outline", "none");
+
+            ent.addApp(name);
+
+            tab.append(name);
+            if (app.attr("preview") != "true" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
+              var stop = genIcon("remove").appendTo(tabWrapper);
+              stop.addClass("lrpadding");
+              stop.attr("index", key);
+              stop.click(function(){
+                data.tabs = data.tabs || [];
+                if (app.attr("tab") == $(this).attr("index")) {
+                  if (displayApp.attr("entIndex") && displayApp.attr("entIndex") != "config") {
+                    var oldEnt = getEnt(displayApp.attr("entIndex"));
+                    if (oldEnt) {
+                      $("#board-layer-controls-"+oldEnt.id()).hide();
+                      oldEnt.removeApp(displayApp);
+                    }
+                  }
+                  else if (displayApp.attr("entIndex") == "config") {
+                    displayApp.removeAttr("resourcePath");
+                    game.config.removeApp(displayApp);
+                  }
+                  else {
+                    displayApp.removeAttr("tabKey");
+                    game.state.removeApp(displayApp);
+                  }
+                  displayApp.removeAttr("entIndex");
+                }
+                data.tabs.splice($(this).attr("index"), 1);
+                obj.sync("updateState");
+              });
+            }
+            tab.hover(function(){
+              $(this).parent().addClass("hover2");
+            },
+            function(){
+              $(this).parent().removeClass("hover2");
+            });
+            if (app.attr("tab") == key) {
+              for (var attr in game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0]) {
+                displayApp.attr(attr, game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attr]);
+              }
+              game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0] = {};
+              tabWrapper.addClass("highlight alttext");
+              tabWrapper.removeClass("button");
+              tabWrapper.click(function(){$(this).contextmenu();});
+
+              if (displayApp.attr("entIndex") != index) {
+                if (displayApp.attr("entIndex") && displayApp.attr("entIndex") != "config") {
+                  var oldEnt = getEnt(displayApp.attr("entIndex"));
+                  if (oldEnt) {
+                    if (oldEnt.data && oldEnt.data._t == "b") {
+                      $("#board-layer-controls-"+oldEnt.id()).hide();
+                      runCommand("updateBoardCursor", {id : oldEnt.id(), data : {x : 0, y : 0, v : true}});
+                    }
+                    oldEnt.removeApp(displayApp);
+                  }
+                  displayApp.removeAttr("entIndex");
+                }
+                else if (displayApp.attr("entIndex") == "config") {
+                  game.config.removeApp(displayApp);
+                  displayApp.attr("entIndex", index);
+                }
+                else {
+                  game.state.removeApp(displayApp);
+                  displayApp.attr("entIndex", index);
+                }
+                var newEnt = getEnt(index);
+                displayApp.attr("entIndex", index);
+                displayApp.attr("ui-name", tabData.ui);
+                newEnt.addApp(displayApp);
+              }
+            }
+            else {
+              tab.attr("tab", key)
+              tab.attr("entIndex", index);
+              tab.click(function(){
+                function changeTab(newTab) {
+                  displayApp.removeAttr("background");
+                  displayApp.removeAttr("ignore");
+                  displayApp.removeAttr("printing");
+
+                  game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0] = {};
+                  if (document.getElementById(app.attr("target"))) {
+                    var attributes = document.getElementById(app.attr("target")).attributes;
+                    for (var j=0; j<attributes.length; j++) {
+                      var attrib = attributes[j];
+                      if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly" || attrib.name == "layer")) {
+                        game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attrib.name] = attrib.value;
+                      }
+                    }
+                  }
+                  displayApp.removeAttr("scrolLLeft");
+                  displayApp.removeAttr("scrollTop");
+                  displayApp.removeAttr("zoom");
+                  app.attr("tab", newTab);
+                  obj.update();
+                  layout.coverlay($(".piece-quick-edit"));
+                }
+
+                var newTab = $(this).attr("tab");
+                var oldEnt = getEnt(displayApp.attr("entIndex"));
+                if (oldEnt) {
+                  $("#board-layer-controls-"+oldEnt.id()).hide();
+                }
+                if (displayApp.attr("background") == "true") {
+                  var content = $("<div>");
+                  content.addClass("flexcolumn");
+
+                  var optimizer = $("<button>").appendTo(content);
+                  optimizer.addClass("highlight alttext hover2");
+                  optimizer.attr("title", "Condenses the map size down to the smallest it can be, attempts to merge 'tiled' pieces for added performance and removes duplicate tiles.");
+                  optimizer.append("With Optimizer");
+                  optimizer.click(function(){
+                    if (boardApi.saveChanges(oldEnt)) {
+                      displayApp.removeAttr("background");
+                      displayApp.removeAttr("ignore");
+                      displayApp.removeAttr("local");
+
+                      layout.coverlay("save-changes");
+                      changeTab(newTab);
+                    }
+                  });
+
+                  var noOptimizer = $("<button>").appendTo(content);
+                  noOptimizer.addClass("background alttext hover2");
+                  noOptimizer.append("Without Optimizer");
+                  noOptimizer.click(function(){
+                    if (boardApi.saveChanges(oldEnt, true)) {
+                      displayApp.removeAttr("background");
+                      displayApp.removeAttr("ignore");
+                      displayApp.removeAttr("local");
+
+                      layout.coverlay("save-changes");
+                      changeTab(newTab);
+                    }
+                  });
+
+                  var discard = $("<button>").appendTo(content);
+                  discard.addClass("subtitle hover2");
+                  discard.css("margin", "1em");
+                  discard.append("Discard Changes");
+                  discard.click(function(){
+                    if (boardApi.saveChanges(oldEnt, "discard")) {
+                      displayApp.removeAttr("background");
+                      displayApp.removeAttr("ignore");
+                      displayApp.removeAttr("local");
+
+                      layout.coverlay("save-changes");
+                      changeTab(newTab);
+                    }
+                  });
+
+                  var pop = ui_popOut({
+                    target : displayApp,
+                    id : "save-changes",
+                    title : "Save Changes...",
+                  }, content);
+                }
+                else {
+                  changeTab(newTab);
+                }
+              });
+            }
+          }
+          else {
+            tabWrapper.remove();
+          }
+        }
+      }
+      else {
+        var tab = $("<b>").appendTo(tabWrapper);
+        tab.addClass("flex flexmiddle");
+
+        var name = sync.newApp("ui_tab");
+        name.attr("tabName", tabData.name);
+        name.attr("endTime", tabData.end);
+        name.css("outline", "none");
+
+        game.state.addApp(name);
+
+        tab.append(name);
+        if (app.attr("preview") != "true" && hasSecurity(getCookie("UserID"), "Assistant Master")) {
+          var stop = genIcon("remove").appendTo(tabWrapper);
+          stop.addClass("lrpadding");
+          stop.attr("index", key);
+          stop.click(function(){
+            data.tabs = data.tabs || [];
+            if (app.attr("tab") == key) {
+              if (displayApp.attr("entIndex") && displayApp.attr("entIndex") != "config") {
+                var oldEnt = getEnt(displayApp.attr("entIndex"));
+                if (oldEnt) {
+                  $("#board-layer-controls-"+oldEnt.id()).hide();
+                  oldEnt.removeApp(displayApp);
+                }
+              }
+              else {
+                displayApp.removeAttr("tabKey");
+                game.state.removeApp(displayApp);
+              }
+              displayApp.removeAttr("entIndex");
+            }
+            data.tabs.splice($(this).attr("index"), 1);
+            obj.sync("updateState");
+          });
+        }
+        tab.hover(function(){
+          $(this).parent().addClass("hover2");
+        },
+        function(){
+          $(this).parent().removeClass("hover2");
+        });
+
+        if (app.attr("tab") == key) {
+          for (var attr in game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0]) {
+            displayApp.attr(attr, game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attr]);
+          }
+          game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0] = {};
+          tabWrapper.addClass("highlight alttext");
+          tabWrapper.removeClass("button");
+          if (displayApp.attr("entIndex") && displayApp.attr("entIndex") != "config") {
+            var oldEnt = getEnt(displayApp.attr("entIndex"));
+            if (oldEnt) {
+              if (oldEnt.data && oldEnt.data._t == "b") {
+                $("#board-layer-controls-"+oldEnt.id()).hide();
+                runCommand("updateBoardCursor", {id : oldEnt.id(), data : {x : 0, y : 0, v : true}});
+              }
+              oldEnt.removeApp(displayApp);
+            }
+            displayApp.removeAttr("entIndex");
+          }
+          else if (displayApp.attr("entIndex") == "config") {
+            game.config.removeApp(displayApp);
+          }
+          displayApp.removeAttr("entIndex");
+          displayApp.attr("ui-name", tabData.ui || "ui_display");
+          displayApp.attr("tabKey", app.attr("tab"));
+          game.state.addApp(displayApp);
+
+          tabWrapper.click(function(){$(this).contextmenu();});
+        }
+        else {
+          tab.attr("tab", key)
+          tab.attr("entIndex", index);
+          tab.click(function(){
+            function changeTab(newTab) {
+              displayApp.removeAttr("background");
+              displayApp.removeAttr("ignore");
+              displayApp.removeAttr("printing");
+
+              game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0] = {};
+              if (document.getElementById(app.attr("target"))) {
+                var attributes = document.getElementById(app.attr("target")).attributes;
+                for (var j=0; j<attributes.length; j++) {
+                  var attrib = attributes[j];
+                  if (attrib.specified == true && (attrib.name == "scrolltop" || attrib.name == "scrollleft" || attrib.name == "zoom" || attrib.name == "viewonly" || attrib.name == "layer")) {
                     game.locals["tabAttrs-"+app.attr("id")].data[app.attr("tab") || 0][attrib.name] = attrib.value;
                   }
                 }
@@ -1074,6 +2044,16 @@ sync.render("ui_display", function(obj, app, scope){
                 ui_processLink(txt, function(link, newLink) {
                   obj.data.tabs[scope.tabKey].data = obj.data.tabs[scope.tabKey].data || {};
                   obj.data.tabs[scope.tabKey].data.media = txt;
+
+                  game.locals["imgHistory"] = game.locals["imgHistory"] || sync.obj();
+                  game.locals["imgHistory"].data = game.locals["imgHistory"].data || []
+                  var imgHistory = game.locals["imgHistory"].data;
+
+                  if (!util.contains(imgHistory, newLink)) {
+                    imgHistory.push(txt);
+                    game.locals["imgHistory"].update();
+                  }
+
                   obj.sync("updateState");
                 });
               }
@@ -1467,7 +2447,7 @@ sync.render("ui_display", function(obj, app, scope){
 
     if (data && data.media) {
       if (isNaN(data.media)) {
-        var media = ui_processMedia(data.media, {parent : container, disabled : true});
+        var media = ui_processMedia(String(data.media || ""), {parent : container, disabled : true});
         if (!media.is("img")) {
           media.attr("loop", true);
 
@@ -1796,24 +2776,26 @@ sync.render("ui_imgHistory", function(obj, app, scope) {
   var count = app.attr("count") || imgHistory.length;
 
   for (var i=imgHistory.length-1; i>=Math.max((imgHistory.length)-count, 0); i--) {
-    var media = ui_processMedia(imgHistory[i]);
-    media.addClass("hover2");
-    media.appendTo(div);
-    media.attr("srcMedia", imgHistory[i]);
-    media.attr("height", "50px");
-    media.click(function(){
-      util.slideshow($(this).attr("srcMedia"));
-    });
-    media.bind("error", function(){
-      media.remove();
-    });
-    if (media.is("img")) {
-      media.contextmenu(function(ev){
-        assetTypes["img"].contextmenu(ev, $(this), $(this).attr("srcMedia"));
-        ev.stopPropagation();
-        ev.preventDefault();
-        return false;
+    if (isNaN(imgHistory[i])) {
+      var media = ui_processMedia(imgHistory[i]);
+      media.addClass("hover2");
+      media.appendTo(div);
+      media.attr("srcMedia", imgHistory[i]);
+      media.attr("height", "50px");
+      media.click(function(){
+        util.slideshow($(this).attr("srcMedia"));
       });
+      media.bind("error", function(){
+        media.remove();
+      });
+      if (media.is("img")) {
+        media.contextmenu(function(ev){
+          assetTypes["img"].contextmenu(ev, $(this), $(this).attr("srcMedia"));
+          ev.stopPropagation();
+          ev.preventDefault();
+          return false;
+        });
+      }
     }
   }
 

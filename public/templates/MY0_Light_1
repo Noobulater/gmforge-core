@@ -1,0 +1,1406 @@
+{
+  "info": {
+    "name": {
+      "current": "MY0_LIGHT1"
+    },
+    "img": {
+      "current": ""
+    }
+  },
+  "identifier": "MY0_Light_1",
+  "dice": {
+    "defaults": [
+      "MY0 Base Dice",
+      "MY0 Skill Dice",
+      "MY0 Gear Dice"
+    ],
+    "modifiers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "keys": {
+      "1": {
+        "name": "1",
+        "img": "/content/dice/MY0_1.png"
+      },
+      "2": {
+        "name": "2",
+        "img": "/content/dice/MY0_2.png"
+      },
+      "3": {
+        "name": "3",
+        "img": "/content/dice/MY0_3.png"
+      },
+      "4": {
+        "name": "4",
+        "img": "/content/dice/MY0_4.png"
+      },
+      "5": {
+        "name": "5",
+        "img": "/content/dice/MY0_5.png"
+      },
+      "s": {
+        "name": "Success",
+        "img": "/content/dice/MY0_nuke.png"
+      },
+      "sw": {
+        "name": "Success",
+        "img": "/content/dice/MY0_nuke_w.png"
+      },
+      "b": {
+        "name": "Biohazard",
+        "img": "/content/dice/MY0_biohazard.png"
+      },
+      "1w": {
+        "name": "1",
+        "img": "/content/dice/MY0_1_w.png"
+      },
+      "2w": {
+        "name": "2",
+        "img": "/content/dice/MY0_2_w.png"
+      },
+      "3w": {
+        "name": "3",
+        "img": "/content/dice/MY0_3_w.png"
+      },
+      "4w": {
+        "name": "4",
+        "img": "/content/dice/MY0_4_w.png"
+      },
+      "5w": {
+        "name": "5",
+        "img": "/content/dice/MY0_5_w.png"
+      },
+      "e": {
+        "name": "Explosion",
+        "img": "/content/dice/MY0_explosion_w.png"
+      }
+    },
+    "pool": {
+      "MY0 Base Dice": {
+        "static": true,
+        "value": "d6",
+        "display": {
+          "background-color": "rgb(245,234,66)",
+          "border": "1px solid black",
+          "color": "black"
+        },
+        "results": {
+          "1": {
+            "b": 1
+          },
+          "2": {
+            "2": 2
+          },
+          "3": {
+            "3": 3
+          },
+          "4": {
+            "4": 4
+          },
+          "5": {
+            "5": 5
+          },
+          "6": {
+            "s": 3
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/MY0_biohazard.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/MY0_2.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/MY0_3.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/MY0_4.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/MY0_5.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/MY0_nuke.png"
+            ]
+          }
+        }
+      },
+      "MY0 Skill Dice": {
+        "static": true,
+        "value": "d6",
+        "display": {
+          "background-color": "rgb(21,159,100)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "1": 1
+          },
+          "2": {
+            "2": 2
+          },
+          "3": {
+            "3": 3
+          },
+          "4": {
+            "4": 4
+          },
+          "5": {
+            "5": 5
+          },
+          "6": {
+            "s": 3
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/MY0_1_w.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/MY0_2_w.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/MY0_3_w.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/MY0_4_w.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/MY0_5_w.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/MY0_nuke_w.png"
+            ]
+          }
+        }
+      },
+      "MY0 Gear Dice": {
+        "static": true,
+        "value": "d6",
+        "display": {
+          "background-color": "rgb(0,0,0)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "e": 1
+          },
+          "2": {
+            "2": 2
+          },
+          "3": {
+            "3": 3
+          },
+          "4": {
+            "4": 4
+          },
+          "5": {
+            "5": 5
+          },
+          "6": {
+            "s": 3
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/MY0_explosion_w.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/MY0_2_w.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/MY0_3_w.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/MY0_4_w.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/MY0_5_w.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/MY0_nuke_w.png"
+            ]
+          }
+        }
+      },
+      "d2": {
+        "value": "d2"
+      },
+      "d4": {
+        "value": "d4"
+      },
+      "d5": {
+        "value": "d5"
+      },
+      "d6": {
+        "value": "d6"
+      },
+      "d8": {
+        "value": "d8"
+      },
+      "d10": {
+        "value": "d10"
+      },
+      "d12": {
+        "value": "d12"
+      },
+      "d20": {
+        "value": "d20"
+      },
+      "d100": {
+        "value": "d100"
+      }
+    }
+  },
+  "adventure": {
+    "_t": "a",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Adventure"
+      },
+      "img": {
+        "name": "Art"
+      },
+      "notes": {
+        "name": "Summary"
+      }
+    },
+    "entities": [],
+    "story": []
+  },
+  "initiative": {
+    "compare": "(@i1.i>@i2.i)?(1):(@i1.i==@i2.i?(0):(-1))"
+  },
+  "character": {
+    "_t": "c",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Character"
+      },
+      "img": {
+        "name": "Character Art"
+      },
+      "notes": {
+        "name": "Character Notes",
+        "current": "<p><br data-mce-bogus=\"1\"></p>"
+      }
+    },
+    "stats": {
+      "Str": {
+        "name": "Strength",
+        "current": "0",
+        "min": 0,
+        "max": "5"
+      },
+      "Agi": {
+        "name": "Agility",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Wit": {
+        "name": "Wits",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Emp": {
+        "name": "Empathy",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      }
+    },
+    "counters": {
+      "Damage": {
+        "name": "Damage",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Fatigue": {
+        "name": "Fatigue",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Confusion": {
+        "name": "Confusion",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Doubt": {
+        "name": "Doubt",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Rot ": {
+        "name": "Rot Points",
+        "current": "0",
+        "min": "0",
+        "max": "10"
+      },
+      "XP": {
+        "name": "Experience Points",
+        "current": "0",
+        "min": "0",
+        "max": "10"
+      },
+      "MutationPoints": {
+        "name": "Mutation Points",
+        "current": "0",
+        "min": "0",
+        "max": "10"
+      }
+    },
+    "tags": {},
+    "skills": {
+      "End": {
+        "name": "Endure",
+        "current": 0,
+        "min": "0",
+        "max": "5"
+      },
+      "Force": {
+        "name": "Force",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Fight": {
+        "name": "Fight",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Sneak": {
+        "name": "Sneak",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Move": {
+        "name": "Move",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Shoot": {
+        "name": "Shoot",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Scout": {
+        "name": "Scout",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Comprehend": {
+        "name": "Comprehend",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Know": {
+        "name": "Know the Zone",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Sense": {
+        "name": "Sense Emotion",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      },
+      "Manipulate": {
+        "name": "Manipulate",
+        "current": "0",
+        "min": "0",
+        "max": "5"
+      }
+    },
+    "talents": {},
+    "inventory": [],
+    "spellbook": [],
+    "specials": {}
+  },
+  "item": {
+    "_t": "i",
+    "tags": {},
+    "info": {
+      "name": {
+        "name": "Name"
+      },
+      "weight": {
+        "name": "Weight",
+        "min": 0
+      },
+      "quantity": {
+        "name": "Quantity",
+        "min": 0
+      },
+      "img": {
+        "name": "Image"
+      },
+      "special": {
+        "name": "Special Rules"
+      },
+      "notes": {
+        "name": "Notes"
+      },
+      "price": {
+        "name": "Price"
+      }
+    },
+    "equip": {
+      "armor": {
+        "name": "Armor"
+      }
+    },
+    "weapon": {
+      "damage": {
+        "name": "Damage"
+      }
+    },
+    "spell": {
+      "level": {
+        "name": "Level"
+      },
+      "required": {
+        "name": "Materials"
+      },
+      "duration": {
+        "name": "Duration"
+      },
+      "time": {
+        "name": "Casting Time"
+      }
+    }
+  },
+  "page": {
+    "_t": "p",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Page"
+      },
+      "img": {
+        "name": "Art"
+      },
+      "notes": {
+        "name": "Notes",
+        "modifiers": {
+          "HR": "rgba(5,200,5,1)",
+          "style": {
+            "font-family": "\"Lucida Sans Unicode\", \"Lucida Grande\", sans-serif",
+            "background": "linear-gradient(rgba(0,255,0,0.2),  rgba(0,0,0,0.0), rgba(0,255,0,0.2))",
+            "background-size": "100% 4px",
+            "font-size": "1.0em",
+            "color": "rgb(5, 200, 5)",
+            "text-shadow": "0 0 8px rgb(5, 200, 5)",
+            "font-weight": "bolder",
+            "padding": "3em"
+          },
+          "bgStyle": {
+            "background": "radial-gradient(rgb(35,65,35), rgb(0,30,0))"
+          }
+        }
+      },
+      "mode": {
+        "name": "Mode"
+      }
+    }
+  },
+  "security": {
+    "player": {
+      "Game Master": 1,
+      "Assistant Master": 2,
+      "Trusted Player": 3,
+      "Player": 4,
+      "Spectator": 5
+    },
+    "object": {
+      "Default Access": 0,
+      "Owner": 1,
+      "Rights": 2,
+      "Visible": 3,
+      "Deny": 4
+    }
+  },
+  "constants": {},
+  "tables": {},
+  "tags": {},
+  "actions": {
+    "c": {},
+    "i": {}
+  },
+  "effects": {},
+  "display": {
+    "ui": {
+      "ui_poolResults": {
+        "classes": "flexrow flexaround",
+        "dice": {
+          "width": "30px",
+          "height": "30px"
+        },
+        "results": {
+          "style": {
+            "width": "50%",
+            "background-color": "grey"
+          },
+          "display": {
+            "classes": "flexrow flexaround flex",
+            "display": [
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.s-@pool.f)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/success.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.s-@pool.f)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.f-@pool.s)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/failure.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.f-@pool.s)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.a-@pool.t)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/advantage.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.a-@pool.t)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.t-@pool.a)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/threat.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.t-@pool.a)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "@pool.tri>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/triumph.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+@pool.tri"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "@pool.des>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/despair.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+@pool.des"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.light-@pool.dark)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/lightside.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.light-@pool.dark)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.dark-@pool.light)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/darkside.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.dark-@pool.light)"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "display": {
+          "classes": "outline lrpadding flexrow flexmiddle flexwrap flex"
+        }
+      }
+    },
+    "item": {
+      "summary": {
+        "display": [
+          {
+            "classes": "fit-x flexbetween",
+            "display": [
+              {
+                "target": "info.img",
+                "ui": "ui_icon"
+              },
+              {
+                "target": "info.name",
+                "classes": "flex flexcolumn flexmiddle",
+                "name": ""
+              },
+              {
+                "target": "info.quantity",
+                "classes": "flexmiddle subtitle",
+                "name": "x",
+                "cond": "@i.info.quantity>1"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "sheet": {
+      "style": {
+        "background-image": "url(\"/custom//sheet.png\")",
+        "background-size": "700px 750px",
+        "box-shadow": "inset 0em 0em 0.5em 0.5em rgba(0,0,0,0.2)",
+        "background-repeat": "no-repeat",
+        "background-position": "center"
+      },
+      "content": {
+        "classes": "flexcolumn flex padding",
+        "display": [
+          {
+            "classes": "flexrow",
+            "style": {
+              "width": 25,
+              "height": 15,
+              "position": "absolute",
+              "left": 78,
+              "top": 143
+            },
+            "name": "",
+            "target": "stats.Str",
+            "edit": {
+              "classes": "line fit-x middle",
+              "disabled": false
+            }
+          },
+          {
+            "classes": "flexrow",
+            "style": {
+              "width": 25,
+              "height": 15,
+              "position": "absolute",
+              "left": 78,
+              "top": 164
+            },
+            "name": "",
+            "target": "stats.Agi",
+            "edit": {
+              "classes": "line fit-x middle",
+              "disabled": false
+            }
+          },
+          {
+            "classes": "flexrow",
+            "style": {
+              "width": 25,
+              "height": 15,
+              "position": "absolute",
+              "left": 78,
+              "top": 186
+            },
+            "name": "",
+            "target": "stats.Wit",
+            "edit": {
+              "classes": "line fit-x middle",
+              "disabled": false
+            }
+          },
+          {
+            "classes": "flexrow",
+            "style": {
+              "width": 25,
+              "height": 15,
+              "position": "absolute",
+              "left": 79,
+              "top": 206
+            },
+            "name": "",
+            "target": "stats.Emp",
+            "edit": {
+              "classes": "line fit-x middle",
+              "disabled": false
+            }
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 213,
+              "height": 342,
+              "position": "absolute",
+              "left": 27,
+              "top": 395
+            },
+            "display": [
+              {
+                "classes": "flexcolumn",
+                "display": [
+                  {
+                    "classes": "flexrow flexmiddle underline bold",
+                    "style": {
+                      "font-size": "1.4em"
+                    },
+                    "display": [
+                      {
+                        "name": "Skills"
+                      },
+                      {
+                        "classes": "bold flexmiddle create subtitle lrmargin",
+                        "style": {
+                          "cursor": "pointer"
+                        },
+                        "icon": "plus",
+                        "click": {
+                          "create": "skills"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexcolumn flex padding white outline smooth",
+                    "scrl": "skls",
+                    "ui": "ui_skillList",
+                    "scope": {
+                      "lookup": "skills",
+                      "applyUI": {
+                        "classes": "flexrow flexaround flex subtitle smooth",
+                        "display": [
+                          {
+                            "classes": "flexrow flexmiddle",
+                            "display": [
+                              {
+                                "style": {
+                                  "width": "145px",
+                                  "text-align": "left"
+                                },
+                                "title": "@skillKey",
+                                "classes": "lrpadding bold subtitle",
+                                "ui": "ui_link",
+                                "scope": {
+                                  "name": "@c.skills.@skillKey.name",
+                                  "click": "ui_modifiers",
+                                  "lookup": "skills.@skillKey",
+                                  "attr": {
+                                    "modsOnly": true
+                                  }
+                                }
+                              },
+                              {
+                                "cond": "R@c.skills.@skillKey<1",
+                                "name": "",
+                                "title": "Rank Modifier",
+                                "target": "skills.@skillKey",
+                                "edit": {
+                                  "classes": "line middle lrmargin",
+                                  "mod": "rank"
+                                }
+                              },
+                              {
+                                "cond": "R@c.skills.@skillKey>0",
+                                "name": "",
+                                "title": "Rank Modifier",
+                                "target": "skills.@skillKey",
+                                "edit": {
+                                  "classes": "line middle lrmargin",
+                                  "mod": "rank",
+                                  "style": {
+                                    "width": "50px"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 178,
+              "height": 18,
+              "position": "absolute",
+              "left": 284,
+              "top": 173
+            },
+            "display": [
+              {
+                "classes": "flexrow",
+                "target": "",
+                "edit": {
+                  "classes": "line lrmargin"
+                }
+              }
+            ]
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 199,
+              "height": 18,
+              "position": "absolute",
+              "left": 259,
+              "top": 194
+            },
+            "display": []
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 178,
+              "height": 18,
+              "position": "absolute",
+              "left": 284,
+              "top": 215
+            },
+            "display": []
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 208,
+              "height": 20,
+              "position": "absolute",
+              "left": 254,
+              "top": 236
+            },
+            "display": []
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 178,
+              "height": 18,
+              "position": "absolute",
+              "left": 284,
+              "top": 259
+            },
+            "display": []
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 208,
+              "height": 17,
+              "position": "absolute",
+              "left": 256,
+              "top": 281
+            },
+            "display": []
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 212,
+              "height": 211,
+              "position": "absolute",
+              "left": 252,
+              "top": 331
+            },
+            "display": [
+              {
+                "classes": "flexcolumn flex padding",
+                "display": [
+                  {
+                    "classes": "flexrow underline",
+                    "style": {
+                      "font-size": "1.4em"
+                    },
+                    "display": [
+                      {
+                        "classes": "bold lrmargin",
+                        "name": "Inventory"
+                      },
+                      {
+                        "classes": "bold flexmiddle create subtitle lrmargin",
+                        "style": {
+                          "cursor": "pointer"
+                        },
+                        "icon": "plus",
+                        "click": {
+                          "create": "inventory"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flex spadding white outline smooth",
+                    "style": {
+                      "text-align": "left",
+                      "overflow-y": "auto"
+                    },
+                    "scrl": "inv",
+                    "ui": "ui_entryList",
+                    "scope": {
+                      "drop": "inventoryDrop",
+                      "connectWith": ".inventoryDrop",
+                      "reposition": true,
+                      "lookup": "inventory",
+                      "applyUI": {
+                        "classes": "flexrow flex subtitle",
+                        "display": [
+                          {
+                            "classes": "flexcolumn",
+                            "ui": "ui_image",
+                            "target": "@applyTarget.info.img",
+                            "style": {
+                              "width": "15px",
+                              "height": "15px"
+                            },
+                            "scope": {
+                              "def": "/content/icons/Backpack1000p.png"
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.info.quantity",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "Quantity",
+                              "style": {
+                                "width": "24px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "classes": "flex lrpadding",
+                            "name": "",
+                            "target": "@applyTarget.info.name",
+                            "edit": {
+                              "classes": "lrpadding line flex",
+                              "style": {
+                                "min-width": "70px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "classes": "bold hover2 spadding white outline smooth flexrow flexmiddle subtitle",
+                            "value": "(@c.@applyTarget.tags.equipped==0)?('Equip'):('Un-equip')",
+                            "style": {
+                              "white-space": "nowrap"
+                            },
+                            "click": {
+                              "calc": [
+                                {
+                                  "target": "@applyTarget.tags.equipped",
+                                  "cond": "@c.@applyTarget.tags.equipped==0",
+                                  "eq": "1"
+                                },
+                                {
+                                  "target": "@applyTarget.tags.equipped",
+                                  "cond": "@c.@applyTarget.tags.equipped==1",
+                                  "eq": "0"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.info.weight",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "Weight",
+                              "style": {
+                                "width": "24px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "classes": "flexmiddle",
+                            "name": "",
+                            "link": "edit",
+                            "target": "@applyTarget",
+                            "click": {
+                              "edit": "@applyTarget"
+                            }
+                          },
+                          {
+                            "classes": "flexmiddle destroy lrmargin",
+                            "name": "",
+                            "link": "trash",
+                            "click": {
+                              "delete": true,
+                              "target": "@applyTarget"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "classes": "white outline smooth flexcolumn flexcontainer",
+            "style": {
+              "width": 215,
+              "height": 172,
+              "position": "absolute",
+              "left": 473,
+              "top": 170
+            },
+            "display": [
+              {
+                "classes": "flexcolumn flex spadding",
+                "display": [
+                  {
+                    "classes": "flexcolumn lrmargin",
+                    "display": [
+                      {
+                        "classes": "flexrow outlinebottom lrpadding",
+                        "display": [
+                          {
+                            "classes": "bold",
+                            "name": "New Talent"
+                          },
+                          {
+                            "classes": "bold flexmiddle create lrmargin",
+                            "style": {
+                              "cursor": "pointer"
+                            },
+                            "icon": "plus",
+                            "click": {
+                              "create": "talents"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "target": "talents",
+                        "classes": "spadding scroll-y",
+                        "scrl": "tlnt",
+                        "datalist": {
+                          "classes": "flexrow flexbetween",
+                          "display": [
+                            {
+                              "classes": "link flex",
+                              "title": "@%dataTarget%",
+                              "name": "",
+                              "target": "%dataTarget%",
+                              "value": "@c.%dataTarget%.name",
+                              "click": {
+                                "view": "talents"
+                              }
+                            },
+                            {
+                              "classes": "flexmiddle",
+                              "name": "",
+                              "target": "%dataTarget%",
+                              "link": "edit",
+                              "click": {
+                                "edit": "talents"
+                              }
+                            },
+                            {
+                              "classes": "flexmiddle destroy",
+                              "name": "",
+                              "link": "trash",
+                              "click": {
+                                "delete": true,
+                                "target": "%dataTarget%"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "classes": "flexrow",
+            "style": {
+              "width": 185,
+              "height": 17,
+              "position": "absolute",
+              "left": 282,
+              "top": 120
+            },
+            "name": "",
+            "target": "info.name",
+            "edit": {
+              "classes": "line fit-x middle",
+              "disabled": false
+            }
+          }
+        ],
+        "style": {
+          "position": "relative"
+        }
+      },
+      "skills": {},
+      "rules": {
+        "baseArmor": {
+          "name": "Armor",
+          "current": 0
+        },
+        "statBonus": {
+          "name": "statBonus",
+          "current": "M@stat"
+        }
+      },
+      "summary": [
+        {
+          "icon": "user",
+          "name": "Summary",
+          "display": {
+            "classes": "flexcolumn flex subtitle",
+            "style": {
+              "min-height": "200px"
+            },
+            "ui": "ui_renderPage",
+            "scope": {
+              "viewOnly": true
+            }
+          }
+        }
+      ],
+      "calc": []
+    },
+    "vehicle": {
+      "style": {},
+      "rules": {},
+      "calc": [],
+      "summary": [
+        {
+          "icon": "plane",
+          "name": "Summary",
+          "display": {
+            "classes": "flexcolumn",
+            "display": [
+              {
+                "classes": "flexaround outlinebottom",
+                "display": [
+                  {
+                    "target": "info.name",
+                    "edit": {
+                      "placeholder": "Vehicle Name",
+                      "cmd": "updateAsset"
+                    }
+                  },
+                  {
+                    "target": "info.img",
+                    "edit": {
+                      "placeholder": "Image URL",
+                      "cmd": "updateAsset"
+                    }
+                  },
+                  {
+                    "classes": "flexmiddle",
+                    "target": "info.img",
+                    "ui": "ui_token"
+                  }
+                ]
+              },
+              {
+                "classes": "flexaround outlinebottom",
+                "target": "stats",
+                "applyUI": "ui_fantasyStat"
+              },
+              {
+                "classes": "flexrow flexaround",
+                "display": [
+                  {
+                    "target": "counters.wounds",
+                    "ui": "ui_maxbox"
+                  },
+                  {
+                    "target": "counters.speed",
+                    "ui": "ui_maxbox"
+                  },
+                  {
+                    "apps": [
+                      "ui_characterArmor"
+                    ],
+                    "scope": {
+                      "width": "50px",
+                      "height": "50px",
+                      "armor": "ui_armorValue"
+                    }
+                  }
+                ]
+              },
+              {
+                "classes": "flexrow flexaround",
+                "display": [
+                  {
+                    "apps": [
+                      "ui_locations"
+                    ]
+                  },
+                  {
+                    "name": "Equipment",
+                    "apps": [
+                      "ui_characterGear"
+                    ]
+                  }
+                ]
+              },
+              {
+                "classes": "flexrow flexmiddle",
+                "apps": [
+                  "ui_crew"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "icon": "align-justify",
+          "name": "Inventory",
+          "display": {
+            "apps": [
+              "ui_inventory"
+            ],
+            "scope": {
+              "minimized": true
+            }
+          }
+        },
+        {
+          "icon": "gift",
+          "name": "Notes",
+          "display": {
+            "apps": [
+              "ui_characterSpecials",
+              "ui_characterNotes"
+            ],
+            "scope": {
+              "minimized": true
+            }
+          }
+        }
+      ]
+    }
+  },
+  "version": 20,
+  "grid": {},
+  "generation": "\n"
+}

@@ -3,8 +3,8 @@ sync.render("ui_newDiceResults", function(obj, app, scope) {
   var scope = scope || {};
 
   var div = $("<div>");
-  var evData = obj.data;
-  var data = evData.data;
+  var evData = obj;
+  var data = evData.eventData;
   var resContext = {
     diceKeys : duplicate(game.templates.dice.keys),
   };
@@ -54,12 +54,9 @@ sync.render("ui_newDiceResults", function(obj, app, scope) {
       breakDiv.attr("title", data.equations[0].e);
     }
 
-  /*  var breakDown = $("<b>"+data.equations[0].e+"</b>").appendTo(breakDiv);
-    breakDown.addClass("subtitle spadding");*/
     var breakDown = $("<text>"+data.equations[0].r+"</text>").appendTo(breakDiv);
     breakDown.addClass("subtitle spadding");
   }
-
   for (var index in data.equations) {
     var dieContainer = $("<div>").appendTo(rolls);
     dieContainer.addClass("flexmiddle");
@@ -69,7 +66,10 @@ sync.render("ui_newDiceResults", function(obj, app, scope) {
 
     var top = $("<text>");
     top.addClass("subtitle");
-    var diceBool = diceDisplay.dice && (!diceDisplay.dice.cond || sync.eval(diceDisplay.dice.cond, data.equations[index].ctx));
+
+    data.equations[index].ctx.var = data.var;
+
+    var diceBool = diceDisplay.dice && (diceDisplay.dice.cond == null || sync.eval(diceDisplay.dice.cond, data.equations[index].ctx));
     if (diceBool) {
       if (diceDisplay.dice.width) {
         scope.width = diceDisplay.dice.width;
@@ -94,6 +94,10 @@ sync.render("ui_newDiceResults", function(obj, app, scope) {
     bottom.addClass("subtitle");
     if (diceBool) {
       bottom.text(sync.eval(diceDisplay.dice.bottom, data.equations[index].ctx));
+    }
+    else if (sync.eval("@cond", resContext) || sync.eval("@threshold>=@total", resContext)) {
+      die.addClass("highlight outline smooth");
+      bottom.text(sync.eval("@Msg", resContext) || "Success");
     }
 
     var after = $("<div>");
@@ -121,6 +125,10 @@ sync.render("ui_newDiceResults", function(obj, app, scope) {
           if (resData.display) {
             after.append(sync.render("ui_processUI")(obj, app, {display : resData.display, context : data.equations[index].ctx}));
           }
+          else if (!resData.bottom) {
+
+          }
+
           if (resData.results) {
             var res = sync.render("ui_processUI")(obj, app, {display : resData.results, context : data.equations[index].ctx});
             if (res.children().length) {
@@ -157,7 +165,6 @@ sync.render("ui_dicePooler", function(obj, app, scope){
   if (app.attr("show") == "true") {
     pool = Object.keys(game.templates.dice.pool);
   }
-
   var diceList = $("<div>").appendTo(div);
   diceList.addClass("flexrow fit-x");
 
@@ -361,9 +368,8 @@ sync.render("ui_diceEffect", function(obj, app, scope) {
 });
 
 sync.render("ui_hotRolls", function(obj, app, scope) {
-  var div = $("<div>");
+var div = $("<div>");
   div.addClass("flexrow flex");
-
 
   var char = getPlayerCharacter(getCookie("UserID"));
   if (char && char.data) {
@@ -376,7 +382,10 @@ sync.render("ui_hotRolls", function(obj, app, scope) {
     }
   }
 
-  sync.render("ui_playerToken")(obj, app, {userID : getCookie("UserID"), centered : true, height : "50px"}).appendTo(div);
-
   return div;
+});
+
+
+sync.render("ui_selfToken", function(obj, app, scope){
+  return sync.render("ui_playerToken")(obj, app, {userID : getCookie("UserID"), centered : true, height : "50px"});
 });

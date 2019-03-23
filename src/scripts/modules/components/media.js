@@ -3,7 +3,7 @@ sync.render("ui_media", function(obj, app, scope){
     obj = game.media;
   }
   var div = $("<div>");
-  div.addClass("foreground alttext flex flexcolumn");
+  div.addClass("alttext flex flexcolumn");
   var data = {};
   if (obj && obj.data) {
     data = obj.data;
@@ -15,29 +15,29 @@ sync.render("ui_media", function(obj, app, scope){
   var time = /[^?]*t=([^&^?]*)$/;
   var list = /[^?]*list=([^&^?]*)$/;
   var index = /[^?]*index=([^&^?]*)$/;
-  function getData() {
+  function getData(val) {
     var returnData = {};
-    var res = reg.exec(video.val());
+    var res = reg.exec(val);
     if (res) {
       returnData.video = res[2];
     }
     else {
-      var res = reg1.exec(video.val());
+      var res = reg1.exec(val);
       if (res) {
         returnData.video = res[0].split("?")[0];
       }
     }
-    var timeReg = time.exec(video.val());
+    var timeReg = time.exec(val);
     if (timeReg) {
       returnData.time = timeReg[1];
     }
-    /*var listReg = list.exec(video.val());
+    /*var listReg = list.exec(val);
     console.log(listReg);
     if (listReg) {
       returnData.list = listReg[1];
     }
     returnData.list = "LFgquLnL59ak-4CpDgS6u0eXKtz_VgGfX";
-    var indexReg = index.exec(video.val());
+    var indexReg = index.exec(val);
     console.log(indexReg);
     if (indexReg) {
       returnData.index = indexReg[1];
@@ -47,13 +47,19 @@ sync.render("ui_media", function(obj, app, scope){
   }
 
   var searchDiv = $("<div>").appendTo(div);
-  searchDiv.addClass("flexrow lpadding outline");
-  searchDiv.css("font-size", "1.6em");
+  searchDiv.addClass("flexrow lpadding outline background");
+  searchDiv.css("font-size", "1.4em");
 
   var searchInput = genInput({
     classes : "line middle flex",
     parent : searchDiv,
     placeholder : "Search for Videos",
+  });
+  searchInput.bind("paste", function(e) {
+    if (hasSecurity(getCookie("UserID"), "Assistant Master") && util.matchYoutube(e.originalEvent.clipboardData.getData('text'))) {
+      runCommand("media", {cmd : "update", data : getData(e.originalEvent.clipboardData.getData('text'))});
+      setTimeout(function(){searchInput.val("")},1);
+    }
   });
   searchInput.bind("input", function(){
     function getRequest(searchTerm) {
@@ -78,6 +84,9 @@ sync.render("ui_media", function(obj, app, scope){
   });
 
 
+  var searchList = $("<div>").appendTo(div);
+  searchList.addClass("flexcolumn flex");
+
   /*var video = genInput({
     parent: searchDiv,
     classes : "line middle",
@@ -98,8 +107,7 @@ sync.render("ui_media", function(obj, app, scope){
     }
   });*/
 
-  var searchList = $("<div>").appendTo(div);
-  searchList.addClass("flexcolumn flex white");
+
   function showResults(results) {
     var html = "";
     var entries = results.items;

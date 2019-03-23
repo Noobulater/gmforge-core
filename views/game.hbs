@@ -1,5 +1,5 @@
 <div class="flexcolumn" style="position: absolute; left:0; top: 0; width: 100%; height:100%; overflow:hidden;">
-  <div class="flexcolumn flex" style="position: relative; overflow: hidden;" id="viewPort" offline={{offline}} userID={{offline}}>
+  <div class="flexcolumn flex" style="position: relative; overflow: hidden;" id="viewPort" local="{{local}}" offline={{offline}} userID={{offline}}>
   </div>
 </div>
 <div id='videoRemotes'></div>
@@ -7,5 +7,56 @@
   if (getCookie("UserID")) {
     $("#viewPort").append("<div class='flex flexmiddle'><div class='loader padding'></div></div>");
   }
-  setTimeout(function(){$("#viewPort").empty(); connection_init();}, 1000);
+
+  if (false && window.mobilecheck()) {
+    var frame = layout.page({title: "You are on a mobile device", prompt : "Would you like to use the mobile site?", width : "80%", blur: 0.5, id: "mobile-site-prompt"});
+
+    var buttonDiv = $("<div>").appendTo(frame);
+    buttonDiv.addClass("flexcolumn");
+    buttonDiv.css("font-size", "4em");
+
+    var yes = $("<button>").appendTo(buttonDiv);
+    yes.addClass('highlight outline smooth lpadding alttext');
+    yes.text("Yes, I'd like to use the mobile site");
+    yes.click(function(){
+      $("head").append(`<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>`);
+      $.getScript("/bin/mobile.js");
+      setTimeout(function(){$("#viewPort").empty(); connection_init();}, 1000);
+      layout.coverlay("mobile-site-prompt");
+    });
+
+    var no = $("<button>").appendTo(buttonDiv);
+    no.append("No, use the desktop version");
+    no.addClass("background alttext outline smooth padding");
+    no.click(function(){
+      connection_init();
+      layout.coverlay("mobile-site-prompt");
+    });
+  }
+  else {
+    setTimeout(function(){$("#viewPort").empty(); connection_init();}, 1000);
+  }
+  Object.defineProperty(navigator, 'mimeTypes', {
+    enumerable: true,
+    configurable: false,
+    writable: false,
+    value: new Proxy(navigator.mimeTypes, {
+      get: function(target, name) {
+        if (name in target) {
+          let val = target[name];
+          if (val instanceof MimeType) {
+            let isPdf = val.suffixes.split(',').includes('pdf');
+            if (isPdf) {
+              return {
+                type: '',
+                description: '',
+                suffixes: '',
+                enabledPlugin: false};
+            }
+          }
+          return val;
+        }
+      }
+    })
+  });
 </script>

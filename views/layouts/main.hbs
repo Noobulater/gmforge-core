@@ -25,15 +25,17 @@
 		<script src="/bin/pixi.min.js"></script>
 		<script src="/tinymce/js/tinymce/tinymce.min.js"></script>
 		<script src="bin/pixi.min.js"></script>
+		<script src="/bin/pixi-particles.min.js"></script>
 		<script src="/bin/core.js"></script>
 		<script src="/bin/standalone.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
+		<script src="/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 		<meta name="keywords" content={{tags}}/>
 		<link rel="icon" type="image/png" href="/content/icon.png"></link>
 		<title>{{{title}}}</title>
 		<script>if (window.module) module = window.module;</script>
 	</head>
-	<body>
+	<body style='overflow:hidden;'>
 		<div class="flexcolumn" style="width : 100%; min-height : 100vh;">
 			<div id="alertList" style="position: fixed; top: 10vh; width: 100%; height: auto; z-index : 1000000; pointer-events : none;" class='flexcolumn flexmiddle flexwrap'></div>
 			<div class="flexcolumn flex" style="position: relative">

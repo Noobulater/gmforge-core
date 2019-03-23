@@ -1,0 +1,39 @@
+{
+  "info": {
+    "name": {
+      "name": "Name",
+      "current": "Custom Library"
+    },
+    "img": {
+      "name": "Art",
+      "current": "/content/games/custom.png"
+    },
+    "notes": {
+      "name": "Notes",
+      "current" : ""
+    },
+    "mode": {
+      "name": "Mode",
+      "current" : ""
+    }
+  },
+  "custom": true,
+  "content": {
+    "Actors": {
+      "_t": "c",
+      "data": []
+    },
+    "Items": {
+      "_t": "i",
+      "data": []
+    },
+    "Maps": {
+      "_t": "b",
+      "data": []
+    },
+    "Resources": {
+      "_t": "p",
+      "data": []
+    }
+  }
+}

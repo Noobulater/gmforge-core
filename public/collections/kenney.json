@@ -1,0 +1,33 @@
+{
+  "name": "Hex Tiles",
+  "legal": {
+    "name": "Thanks to Kenney!",
+    "href": "https://www.patreon.com/kenney"
+  },
+  "sheets": {
+    "Terrain": {
+      "i": "/content/sheets/hex_terrain.png",
+      "p": 0,
+      "gW": 140,
+      "gH": 120,
+      "w": 700,
+      "h": 1440
+    },
+    "Structures": {
+      "i": "/content/sheets/hex_structures.png",
+      "p": 0,
+      "gW": 140,
+      "gH": 120,
+      "w": 840,
+      "h": 1440
+    },
+    "Decoration": {
+      "i": "/content/sheets/hex_decoration.png",
+      "p": 0,
+      "gW": 140,
+      "gH": 120,
+      "w": 840,
+      "h": 1560
+    }
+  }
+}

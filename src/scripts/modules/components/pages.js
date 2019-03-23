@@ -30,11 +30,12 @@ sync.render("ui_editPage", function(obj, app, scope){
 
   if (game.locals[app.attr("id")+"-edit-page"] != null) {
     data = game.locals[app.attr("id")+"-edit-page"].data;
-    info = data.info;
+    info = game.locals[app.attr("id")+"-edit-page"].data.info;
   }
-
-  game.locals[app.attr("id")+"-edit-page"] = game.locals[app.attr("id")+"-edit-page"] || sync.obj();
-  game.locals[app.attr("id")+"-edit-page"].data = duplicate(obj.data);
+  else {
+    game.locals[app.attr("id")+"-edit-page"] = game.locals[app.attr("id")+"-edit-page"] || sync.obj();
+    game.locals[app.attr("id")+"-edit-page"].data = duplicate(obj.data);
+  }
 
   var div = $("<div>");
   div.addClass("flexcolumn fit-y");
@@ -109,9 +110,10 @@ sync.render("ui_editPage", function(obj, app, scope){
       select.css("width", "100px");
       select.css("color", "#333");
       select.css("text-shadow", "none");
-      select.append("<option>Rich Text</option>");
-      select.append("<option>HTML</option>");
-      select.append("<option>Image</option>");
+
+      for (var key in util.resourceTypes) {
+        select.append("<option>"+key+"</option>");
+      }
       select.children().each(function(){
         if ($(this).text() == sync.rawVal(obj.data.info.mode)) {
           $(this).attr("selected", "selected");
@@ -202,19 +204,9 @@ sync.render("ui_editPage", function(obj, app, scope){
   var content = $("<div>").appendTo(div);
   content.addClass("flexcolumn flex");
   if (sync.rawVal(obj.data.info.mode) == "HTML") {
-    var editorContent;
-    content.append("<b>Macro Context</b>");
-
-    var macro = $("<textarea>").appendTo(content);
-    macro.addClass("fit-x subtitle");
-    macro.attr("placeholder", "Macro Context");
-    macro.val(sync.modifier(obj.data.info.mode, "macro"));
-
-    content.append("<b>HTML (No Javascript)</b>");
-    editorContent = $("<textarea>").appendTo(content);
-    editorContent.addClass("flex");
+    var editorContent = $("<textarea>").appendTo(content);
+    editorContent.addClass("flex subtitle");
     editorContent.attr("id", "adventure-editor-"+app.attr("id"));
-    editorContent.attr("placeholder", "Reference Macro Variables with {{{@variable}}}");
     editorContent.val(sync.rawVal(info.notes));
 
     var examples = $("<div>").appendTo(content);
@@ -223,9 +215,7 @@ sync.render("ui_editPage", function(obj, app, scope){
     var spaceWars = $("<a>").appendTo(examples);
     spaceWars.text("Checkout or example : Space Wars Intro!");
     spaceWars.click(function(){
-      macro.val("$col=#feda4a;$title=Episode Fourge;$subtitle=Fourge;$line1=In the distance, you see them approaching;$line2='';$line3='';");
       editorContent.val(spacewars);
-      macro.change();
       editorContent.change();
     });
     var saveWrap = $("<div>").appendTo(optionsBar);
@@ -237,7 +227,6 @@ sync.render("ui_editPage", function(obj, app, scope){
       save.click(function(){
         app.attr("from", "ui_editPage");
         app.attr("ui-name", "ui_renderPage");
-        sync.modifier(obj.data.info.mode, "macro", macro.val());
         sync.rawVal(obj.data.info.notes, editorContent.val());
         obj.sync("updateAsset");
         game.locals[app.attr("id")+"-edit-page"] = null;
@@ -253,24 +242,11 @@ sync.render("ui_editPage", function(obj, app, scope){
       }
 
       save.text("Save");
-      sync.modifier(obj.data.info.mode, "macro", macro.val());
       sync.rawVal(obj.data.info.notes, editorContent.val());
       obj.sync("updateAsset");
       game.locals[app.attr("id")+"-edit-page"] = null;
       if (app.attr("saveClose")) {
         layout.coverlay(app.attr("saveClose"));
-      }
-    });
-
-    macro.keyup(function(){
-      sync.modifier(game.locals[app.attr("id")+"-edit-page"].data.info.mode, "macro", $(this).val());
-      game.locals[app.attr("id")+"-edit-page"].update();
-
-      if (scope.autoSave) {
-        sync.modifier(obj.data.info.notes, "macro", $(this).val());
-      }
-      else {
-        save.get(0).innerHTML = save.get(0).innerHTML.replace("Save ", "Save*");
       }
     });
 
@@ -286,10 +262,8 @@ sync.render("ui_editPage", function(obj, app, scope){
       }
     });
   }
-  else if (sync.rawVal(obj.data.info.mode) == "Image") {
-    scope.lookup = "info.img";
-    content.addClass("smooth outline white");
-    sync.render("ui_image")(obj, app, scope).appendTo(content);
+  else if (util.resourceTypes[sync.rawVal(obj.data.info.mode)] && util.resourceTypes[sync.rawVal(obj.data.info.mode)].edit) {
+    util.resourceTypes[sync.rawVal(obj.data.info.mode)].edit(obj, app, scope, content)
   }
   else {
     var saveWrap = $("<div>").appendTo(optionsBar);
@@ -327,6 +301,7 @@ sync.render("ui_editPage", function(obj, app, scope){
         }
       }
       tinymce.init({
+        toolbar_items_size : 'small',
         selector : "#adventure-editor-"+app.attr("id"),
         menubar : false,
         themes : "custom",
@@ -336,6 +311,7 @@ sync.render("ui_editPage", function(obj, app, scope){
           'searchreplace visualblocks code fullscreen hr spellchecker',
           'insertdatetime media contextmenu paste code mention visualblocks placeholder'
         ],
+        content_style: ".mce-content-body {font-size:12px;}",
         browser_spellcheck : true,
         mentions : {
           delimiter : "@",
@@ -348,7 +324,7 @@ sync.render("ui_editPage", function(obj, app, scope){
         extended_valid_elements : "div[data]",
         //toolbar : 'undo redo | insert | styleselect visualblocks | bold italic | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media ',
         toolbar : "title subtitle bold italic line | alignleft aligncenter alignright | outdent indent | forecolor backcolor | bullist numlist",
-        contextmenu : "underline strikethrough | link image inserttable fileLink audioLink | assetLink settingLink effectLink combatLink condLink macroLink | visualblocks",
+        contextmenu : "underline strikethrough | link image inserttable fileLink audioLink | assetLink settingLink effectLink combatLink rollTable macroLink | visualblocks",
         resize : false,
         height : 50,
         pagebreak_split_block: true,
@@ -435,14 +411,57 @@ sync.render("ui_editPage", function(obj, app, scope){
           editor.addMenuItem('assetLink', {
             text: "Asset",
             onclick: function () {
+              var ignore = {};
+              ignore[obj.id()] = true;
               var content = sync.render("ui_assetPicker")(obj, app, {
                 rights : "Visible",
-                hideCreate : true,
+                ignore : ignore,
                 select : function(ev, ui, ent, options, entities){
                   var name = sync.rawVal(ent.data.info.name);
                   var img = (sync.rawVal(ent.data.info.img) || "/content/icons/blankchar.png");
                   var id = ent.id();
-                  tinyMCE.get("adventure-editor-"+app.attr("id")).execCommand('mceInsertContent', false, "<a href='|asset|="+id+"'>"+(name || id)+"</a>");
+                  if (ent.data._t == "p" && sync.rawVal(ent.data.info.mode) == "Roll Table") {
+                    var tableStr = "<table style='width : 100%;'>";
+
+                    var tableData;
+
+                    if (sync.rawVal(ent.data.info.notes) && sync.rawVal(ent.data.info.notes)[0] == "{") {
+                      try {
+                        tableData = JSON.parse(sync.rawVal(ent.data.info.notes));
+                      }
+                      catch (e) {
+                        tableData = {headers : [], contents : []};
+                      }
+                    }
+                    else {
+                      tableData = {headers : [], contents : []};
+                    }
+
+                    tableStr += "<tr>";
+                    for (var i=0; i<tableData.headers.length; i++) {
+                      var contentData = tableData.headers[i];
+
+                      tableStr += "<td>"+(contentData.name || "")+"</td>";
+                    }
+                    tableStr += "</tr>";
+                    for (var i=0; i<tableData.contents.length; i++) {
+                      var contentData = tableData.contents[i];
+
+                      tableStr += "<tr><td>"+(contentData.name || "")+"</td><td>"+(contentData.value || "")+"</td></tr>";
+                    }
+                    tableStr += "</table>";
+
+                    var str = "";
+                    if (sync.rawVal(ent.data.info.name) && sync.rawVal(ent.data.info.name).trim()) {
+                      str += "<h2 style='margin:0; font-size:1.4em; font-weight:bold;'>"+sync.rawVal(ent.data.info.name)+"</h2><hr class='h2' style='display : block; outline : none; border : none; width : 100%; height : 1px; background : grey; margin-top:0px;'></hr>";
+                    }
+                    str += tableStr;
+
+                    tinyMCE.get("adventure-editor-"+app.attr("id")).execCommand('mceInsertContent', false, str);
+                  }
+                  else {
+                    tinyMCE.get("adventure-editor-"+app.attr("id")).execCommand('mceInsertContent', false, "<a href='|asset|="+id+"'>"+(name || id)+"</a>");
+                  }
 
                   layout.coverlay("add-asset");
                 }
@@ -524,6 +543,7 @@ sync.render("ui_editPage", function(obj, app, scope){
 
               var content = $("<div>");
               content.addClass("flexcolumn flex");
+
               var newApp = sync.newApp("ui_turnOrder").appendTo(content);
               combatObj.addApp(newApp);
 
@@ -536,6 +556,74 @@ sync.render("ui_editPage", function(obj, app, scope){
               });
 
               var pop = ui_popOut({
+                target : $("body"),
+                id : "combat-selection",
+                style : {"width" : "400px", "height" : "400px"}
+              }, content);
+              pop.resizable();
+            }
+          });
+
+          editor.addMenuItem('rollTable', {
+            text: "Roll Table",
+            onclick: function () {
+              var ent = sync.obj();
+              ent.data = duplicate(game.templates.page);
+              sync.rawVal(ent.data.info.name, " ");
+              sync.rawVal(ent.data.info.mode, "Roll Table");
+
+              var content = $("<div>");
+              content.addClass("flexcolumn flex");
+
+              var newApp = sync.newApp("ui_editPage").appendTo(content);
+              newApp.attr("entry", "true");
+              newApp.attr("hideOptions", "true");
+              ent.addApp(newApp);
+
+              var button = $("<button>").appendTo(content);
+              button.addClass("fit-x flexmiddle");
+              button.append("Confirm");
+              button.click(function(){
+                var tableStr = "<table style='width : 100%;'>";
+
+                var tableData;
+
+                if (sync.rawVal(ent.data.info.notes) && sync.rawVal(ent.data.info.notes)[0] == "{") {
+                  try {
+                    tableData = JSON.parse(sync.rawVal(ent.data.info.notes));
+                  }
+                  catch (e) {
+                    tableData = {headers : [], contents : []};
+                  }
+                }
+                else {
+                  tableData = {headers : [], contents : []};
+                }
+
+                tableStr += "<tr>";
+                for (var i=0; i<tableData.headers.length; i++) {
+                  var contentData = tableData.headers[i];
+
+                  tableStr += "<td>"+(contentData.name || "")+"</td>";
+                }
+                tableStr += "</tr>";
+                for (var i=0; i<tableData.contents.length; i++) {
+                  var contentData = tableData.contents[i];
+
+                  tableStr += "<tr><td>"+(contentData.name || "")+"</td><td>"+(contentData.value || "")+"</td></tr>";
+                }
+                tableStr += "</table>";
+                var str = "";
+                if (sync.rawVal(ent.data.info.name) && sync.rawVal(ent.data.info.name).trim()) {
+                  str += "<h2 style='margin:0; font-size:1.4em; font-weight:bold;'>"+sync.rawVal(ent.data.info.name)+"</h2><hr class='h2' style='display : block; outline : none; border : none; width : 100%; height : 1px; background : grey; margin-top:0px;'></hr>";
+                }
+                str += tableStr;
+
+                tinyMCE.get("adventure-editor-"+app.attr("id")).execCommand('mceInsertContent', false, str);
+                layout.coverlay("combat-selection");
+              });
+
+              var pop = ui_popOut({
                 target : editorWrap,
                 id : "combat-selection",
                 style : {"width" : "50vw", "height" : "40vh"}
@@ -544,7 +632,7 @@ sync.render("ui_editPage", function(obj, app, scope){
             }
           });
 
-          editor.addMenuItem('condLink', {
+          /*editor.addMenuItem('condLink', {
             text: "Conditional Section",
             onclick: function () {
               var content = $("<div>");
@@ -577,7 +665,7 @@ sync.render("ui_editPage", function(obj, app, scope){
                 id : "cond-selection",
               }, content);
             }
-          });
+          });*/
 
           editor.addMenuItem('macroLink', {
             text: "Roll Equation",
@@ -1201,6 +1289,23 @@ sync.render("ui_stylePage", function(obj, app, scope){
 */
 
 
+sync.render("ui_rollText", function(obj, app, scope){
+  var div = $("<div>");
+  div.addClass("flexcolumn outline smooth");
+
+  if (scope.context.var) {
+    var titlePlate = $("<div>").appendTo(div);
+    titlePlate.addClass("outlinebottom spadding flexmiddle");
+    titlePlate.text(scope.context.var.rollTitle);
+
+    var displayPlate = $("<div>").appendTo(div);
+    displayPlate.addClass("spadding");
+    displayPlate.append(scope.context.var.rollText);
+  }
+
+  return div;
+});
+
 sync.render("ui_renderPage", function(obj, app, scope){
   if (!obj) {
     return $("<div>");
@@ -1220,8 +1325,6 @@ sync.render("ui_renderPage", function(obj, app, scope){
   if (!scope.viewOnly) {
     var optionsBar = $("<div>").appendTo(div);
     optionsBar.addClass("background alttext flexrow flexbetween lrpadding");
-
-    optionsBar.append("<b class='flexmiddle'>"+sync.rawVal(info.name)+"</b>");
 
     var stylePage = genIcon("tint", "Style Page").appendTo(optionsBar);
     stylePage.attr("title", "Change the style of how this page renders");
@@ -1272,49 +1375,8 @@ sync.render("ui_renderPage", function(obj, app, scope){
     contentWrap.css("filter", filterStr);
   }
 
-  if (sync.rawVal(obj.data.info.mode) == "HTML") {
-    setTimeout(function(){
-      if (contentWrap.is(":visible")) {
-        var newFrame = $("<iframe>").appendTo(contentWrap);
-        newFrame.attr("width", contentWrap.width());
-        newFrame.attr("height", contentWrap.height());
-        var str = sync.rawVal(obj.data.info.notes) || "";
-        var reg = /{{{@(\w*)}}}/i;
-        if (sync.modifier(obj.data.info.mode, "macro")) {
-          var ctx = sync.defaultContext();
-          merge(ctx, {c : duplicate(obj.data)});
-
-          var context = sync.context(sync.modifier(obj.data.info.mode, "macro"), ctx).context;
-          merge(context, ctx);
-          var match = str.match(reg);
-          var max = 1000;
-          var count = 0;
-          while (match) {
-            str = replaceAll(str, match[0], (sync.rawVal(context[match[1]]) || ""));
-            match = str.match(reg);
-            count++;
-            if (count > max) {
-              break;
-            }
-          }
-        }
-        //str = replaceAll(str, "href=", "nolinks=");
-        str = replaceAll(str, "iframe", "div");
-        str = replaceAll(str, "alert(", "noalerts");
-        newFrame.attr("sandbox", "");
-        newFrame.css("border", "none");
-        newFrame.css("outline", "none");
-        var idocument = newFrame[0].contentDocument;
-        idocument.open();
-        idocument.write(str);
-        idocument.close();
-      }
-    }, 1);
-  }
-  else if (sync.rawVal(obj.data.info.mode) == "Image") {
-    scope.lookup = "info.img";
-    scope.viewOnly = true;
-    sync.render("ui_image")(obj, app, scope).appendTo(contentWrap);
+  if (util.resourceTypes[sync.rawVal(obj.data.info.mode)] && util.resourceTypes[sync.rawVal(obj.data.info.mode)].view) {
+    util.resourceTypes[sync.rawVal(obj.data.info.mode)].view(obj, app, scope, contentWrap);
   }
   else {
     var content = $("<div>").appendTo(contentWrap);
@@ -1894,22 +1956,6 @@ var spacewars = `<style>
 ---------Credit goes to : https://css-tricks.com/snippets/css/star-wars-crawl-text/
 ------------------------------
 */
-html {
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-  background-size : 45%;
-  overflow: hidden;
-}
-
-.fade {
-  position: relative;
-  width: 100%;
-  min-height: 60vh;
-  top: -25px;
-  background-image: linear-gradient(0deg, transparent, black 75%);
-  z-index: 1;
-}
 
 .scrolling {
   display: flex;
@@ -1945,7 +1991,7 @@ html {
 
 @keyframes crawl {
   0% {
-    top: 0;
+    top: 600px;
     transform: rotateX(20deg)  translateZ(0);
   }
   100% {
@@ -1954,23 +2000,25 @@ html {
   }
 }
 </style>
+<div class='fit-xy' style=' background : #000; overflow : hidden; position:relative;'>
+  <div style='height : 40%'></div>
 
-<div class="fade"></div>
+  <section class="scrolling">
 
-<section class="scrolling">
+    <div class="crawl">
 
-  <div class="crawl">
+      <div class="title">
+        <p>Are you a GM?</p>
+        <h1>eval{@:gm()?"Yes":"No"}</h1>
+      </div>
 
-    <div class="title">
-      <p>{{{@title}}}</p>
-      <h1>{{{@subtitle}}}</h1>
+      <p>eval{@time}</p>
+      <p>eval{@weather}</p>
+      <p>eval{@temp}</p>
+
     </div>
 
-    <p>{{{@line1}}}</p>
-    <p>{{{@line2}}}</p>
-    <p>{{{@line3}}}</p>
-
-  </div>
-
-</section>
+  </section>
+  <div style='width : 100%; height : 40%; position : absolute; left : 0; top : 0; background : linear-gradient(to top, transparent, black 75%);'></div>
+</div>
 `;

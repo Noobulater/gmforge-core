@@ -29,18 +29,25 @@ sync.render("ui_tags", function(obj, app, scope) {
     if (data.tags[tag]) {
       markedTags = true;
       var tagBubble = $("<div>").appendTo(tagList);
-      tagBubble.addClass("flexrow flexbetween outline smooth");
+      tagBubble.addClass("flexrow flexbetween smooth lrpadding");
       tagBubble.attr("index", tag);
-      tagBubble.css("background", "rgba(235,235,228,1)");
-      tagBubble.css("margin-right", "0.5em");
 
+      var remove = genIcon((!scope.viewOnly)?("remove"):(""), tag)
+      remove.addClass("inactive");
+
+      var triangle = $("<div>");
+      triangle.css("border-top", "10px solid transparent");
+      triangle.css("border-bottom", "10px solid transparent");
+      triangle.css("border-left", "10px solid rgba(235, 235, 228, 1)");
+      
       if (game.templates.tags && game.templates.tags[tag]) {
         var tagData = game.templates.tags[tag];
         if (tagData.hint) {
           tagBubble.attr("hint", tagData.hint);
         }
         if (tagData.bCol) {
-          tagBubble.css("background", tagData.bCol);
+          remove.css("background", tagData.bCol);
+          triangle.css("border-left", "10px solid " + tagData.bCol);
         }
         if (tagData.color) {
           tagBubble.css("color", tagData.color);
@@ -124,9 +131,13 @@ sync.render("ui_tags", function(obj, app, scope) {
         });*/
       }
 
-      var remove = genIcon((!scope.viewOnly)?("remove"):(""), tag).appendTo(tagBubble);
+      remove.appendTo(tagBubble);
       remove.attr("index", tag);
       remove.addClass("bold spadding flexmiddle");
+
+
+      triangle.appendTo(tagBubble);
+
       if (!scope.viewOnly) {
         remove.click(function(){
           delete obj.data.tags[$(this).attr("index")];
@@ -203,7 +214,7 @@ sync.render("ui_manageTags", function(obj, app, scope){
   obj.data.templates.tags = obj.data.templates.tags || {};
 
   var div = $("<div>");
-  div.addClass("flexcolumn flex");
+  div.addClass("flexcolumn flexmiddle flex");
 
   var newTag = genInput({
     parent : div,
@@ -230,30 +241,38 @@ sync.render("ui_manageTags", function(obj, app, scope){
 
     var tagData = obj.data.templates.tags[tag];
 
-    var tagBubbleWrap = $("<div>").appendTo(div);
-    tagBubbleWrap.addClass("flexrow fit-x lrpadding");
-    tagBubbleWrap.append("<div class='flex'></div>");
+    var tagBubbleWrapWrap = $("<div>").appendTo(div);
+    tagBubbleWrapWrap.addClass("flexrow flexaround");
+
+    var tagBubbleWrap = $("<div>").appendTo(tagBubbleWrapWrap);
+    tagBubbleWrap.addClass("flexrow lrpadding");
 
     var tagBubble = $("<div>").appendTo(tagBubbleWrap);
-    tagBubble.addClass("flexrow flexbetween flexmiddle outline smooth subtitle bold spadding");
+    tagBubble.addClass("flexrow flexbetween smooth lrpadding");
     tagBubble.attr("index", tag);
-    tagBubble.css("background", "rgba(235,235,228,1)");
-    tagBubble.text(tag);
+
+    var tagName = $("<div>").appendTo(tagBubble);
+    tagName.addClass("inactive flexmiddle bold");
+    tagName.append(tag);
+
+    var triangle = $("<div>").appendTo(tagBubble);
+    triangle.css("border-top", "10px solid transparent");
+    triangle.css("border-bottom", "10px solid transparent");
+    triangle.css("border-left", "10px solid rgba(235, 235, 228, 1)");
+
     if (obj.data.templates.tags && obj.data.templates.tags[tag]) {
       var tagData = obj.data.templates.tags[tag];
       if (tagData.bCol) {
-        tagBubble.css("background", tagData.bCol);
+        tagName.css("background", tagData.bCol);
+        triangle.css("border-left", "10px solid " + tagData.bCol);
       }
       if (tagData.color) {
         tagBubble.css("color", tagData.color);
       }
     }
 
-    tagBubbleWrap.append("<div class='flex'></div>");
-
-    var tagBubbleColor = $("<div>").appendTo(tagBubbleWrap);
+    var tagBubbleColor = $("<div>").appendTo(tagBubbleWrapWrap);
     tagBubbleColor.addClass("flexrow flex lrpadding");
-    tagBubbleColor.append("<div class='flex'></div>");
 
     var bckCol = $("<div>").appendTo(tagBubbleColor);
     bckCol.addClass("lpadding hover2 outline smooth");

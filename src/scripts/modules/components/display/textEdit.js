@@ -1,4 +1,3 @@
-
 sync.render("ui_textEdit", function(obj, app, scope){
   scope = scope || {}
 
@@ -29,29 +28,36 @@ sync.render("ui_textEdit", function(obj, app, scope){
 
   var text = genInput({
     parent : textWrap,
-    classes : "line flex lrmargin middle",
+    classes : "flex middle size3",
     placeholder : "Enter Text Here",
-    value : obj.data.label.text
-  }).css("font-size", "1.2em");
+    value : obj.data.label.text,
+    style : {"color" : "#333"}
+  });
   text.change(function(){
     game.locals["drawing"].data.label.text = $(this).val();
   });
 
+
+  var weightWrap = $("<div>").appendTo(content);
+  weightWrap.addClass("flexrow flexaround flexwrap size2");
+
+  var textWrap = $("<div>").appendTo(weightWrap);
+  textWrap.addClass("flexrow flexmiddle");
+
+  var col = genIcon("", "Font Size").appendTo(textWrap);
+  col.addClass("lrpadding lrmargin");
+
   var size = genInput({
     parent : textWrap,
     type : "number",
-    classes : "line lrmragin middle",
+    classes : "lrmargin middle",
     min : 8,
     value : style.fontSize || 26,
-    style : {"width" : "50px"}
+    style : {"width" : "70px", color : "#333"}
   });
   size.change(function(){
     game.locals["drawing"].data.label.style.fontSize = Number($(this).val());
   });
-
-  var weightWrap = $("<div>").appendTo(content);
-  weightWrap.addClass("flexrow flexaround flexwrap");
-
 
   var textWrap = $("<div>").appendTo(weightWrap);
   textWrap.addClass("flexrow");
@@ -61,6 +67,7 @@ sync.render("ui_textEdit", function(obj, app, scope){
 
   var select = $("<select>").appendTo(textWrap);
   select.css("color", "#333");
+  select.css("width", "130px");
   for (var i in util.fonts) {
     var option = $("<option>").appendTo(select);
     option.attr("value", util.fonts[i]);
@@ -73,7 +80,7 @@ sync.render("ui_textEdit", function(obj, app, scope){
     obj.data.label.style.fontFamily = $(this).val();
   });
 
-  var alignWrap = $("<div>").appendTo(weightWrap);
+  var alignWrap = $("<div>")//.appendTo(weightWrap);
   alignWrap.addClass("lrpadding lrmargin")
   var left = genIcon("align-left").appendTo(alignWrap);
   var center = genIcon("align-center").appendTo(alignWrap);
@@ -385,7 +392,6 @@ sync.render("ui_textEdit", function(obj, app, scope){
   var colorPicker = $("<div>").appendTo(colorWrap);
   colorPicker.addClass("lrpadding lrmargin");
   colorPicker.css("font-size", "0.6em");
-  colorPicker.css("max-width", "300px");
 
   /*function colorWrap(fn) {
     var optionList = [];

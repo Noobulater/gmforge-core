@@ -103,7 +103,7 @@ function ogg_import(xml, override) {
         if (!output.stats[stat]) {
           for (var statIndex in output.stats) {
             if (output.stats[statIndex].name == statData["Name"]["#text"]) {
-            stat = statIndex;
+              stat = statIndex;
               break;
             }
           }
@@ -118,6 +118,7 @@ function ogg_import(xml, override) {
             }
           }
         }
+        console.log(mods);
         output.stats[stat].current = current;
         output.stats[stat].modifiers = mods;
       }

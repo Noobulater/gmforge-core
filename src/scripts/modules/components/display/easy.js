@@ -1,6 +1,6 @@
 sync.render("ui_easySheets", function(obj1, app, scope) {
   var div = $("<div>");
-  div.addClass("flexrow flex");
+  div.addClass("flexcolumn flex padding");
 
   var obj = getEnt(app.attr("target"));
 
@@ -19,34 +19,20 @@ sync.render("ui_easySheets", function(obj1, app, scope) {
     sheetData = obj.data.sheets[Number(targetApp.attr("tileSheet") || 0)];
   }
 
-  var currentCollection = $("<div>").appendTo(div);
-  currentCollection.addClass("flexcolumn hover2 lightoutline smooth lrmargin padding");
-  currentCollection.css("min-width", "100px");
-  currentCollection.css("width", "100px");
-  currentCollection.css("max-width", "100px");
-  currentCollection.css("min-height", "100px");
-  currentCollection.css("background-repeat", "no-repeat");
-  currentCollection.css("background-position", "center");
-  currentCollection.css("background-size", "contain");
-  currentCollection.click(function(){
-    var newSheet = Number(targetApp.attr("tileSheet") || 0) + 1;
-    if (obj.data.sheets && newSheet >= obj.data.sheets.length) {
-      newSheet = 0;
-    }
-    targetApp.attr("tileSheet", newSheet);
-    obj1.update();
-  });
-  if (sheetData) {
-    currentCollection.css("background-image", "url('"+ sheetData.i +"')");
-  }
 
-  var select = $("<select>").appendTo(currentCollection);
+  var currentCollection = $("<div>").appendTo(div);
+  currentCollection.addClass("flexrow flexbetween");
+
+  var createWrap = $("<div>").appendTo(currentCollection);
+  createWrap.addClass("alttext flexmiddle");
+
+  var select = $("<select>").appendTo(createWrap);
   select.addClass("subtitle bold");
   select.css("color", "#333");
   select.css("text-shadow", "none");
   select.append("<option value='"+(targetApp.attr("tileSheet") || 0)+"'>Sheet "+(targetApp.attr("tileSheet") || 0)+"</option>");
   for (var key in obj.data.sheets) {
-    if (key != (targetApp.attr("tileSheet") || 0)) {
+    if (key != (targetApp.attr("tileSheet") || 0) && obj.data.sheets[key].objs && obj.data.sheets[key].objs.length) {
       select.append("<option value='"+key+"'>Sheet "+key+"</option>");
     }
   }
@@ -58,12 +44,218 @@ sync.render("ui_easySheets", function(obj1, app, scope) {
     ev.stopPropagation();
   });
 
+
+  var createWrap = $("<div>").appendTo(currentCollection);
+  createWrap.addClass("alttext flexmiddle");
+
+  var next = genIcon("", "Next").appendTo(createWrap);
+  next.addClass("subtitle");
+  next.click(function(){
+    var newSheet = Number(targetApp.attr("tileSheet") || 0) + 1;
+    if (obj.data.sheets && newSheet >= obj.data.sheets.length) {
+      newSheet = 0;
+    }
+    targetApp.attr("tileSheet", newSheet);
+    obj1.update();
+  });
+
+
+  var createWrap = $("<div>").appendTo(currentCollection);
+  createWrap.addClass("alttext flexmiddle");
+
+  var create = genIcon("cloud-download", "Load").appendTo(createWrap);
+  create.addClass("subtitle")
+  create.attr("title", "Load Tile Sheet");
+  create.click(function(ev){
+    var newApp = sync.newApp("ui_boardStamps", null, {tile : true, board : obj.id()});
+
+    var pop = ui_popOut({
+      target : $("body"),
+      id : "load-tiles",
+      style : {"width" : "400px", height : "600px"}
+    }, newApp);
+    pop.resizable();
+    ev.stopPropagation();
+    ev.preventDefault();
+  });
+
   if (sheetData) {
+    if (sheetData.legal) {
+      var legalWrap = $("<a>").appendTo(currentCollection);
+      legalWrap.addClass("flexrow flexmiddle subtitle");
+      legalWrap.addClass("alttext");
+      legalWrap.attr("href", sheetData.legal.href);
+      legalWrap.attr("target", "_");
+
+      if (sheetData.legal.img) {
+        var icon = $("<div>").appendTo(legalWrap);
+        icon.addClass("smooth");
+        icon.attr("title", sheetData.legal.name);
+        icon.css("background-repeat", "no-repeat");
+        icon.css("background-position", "center");
+        icon.css("width", "32px");
+        icon.css("height", "32px");
+        icon.css("background-size", "cover");
+        icon.css("background-image", "url('"+sheetData.legal.img+"')");
+        icon.tooltip({
+          container: 'body',
+          placement: 'right'
+        });
+      }
+    }
+
     var columns = $("<div>").appendTo(div);
     columns.addClass("flexcolumn flex");
 
+    var tileListWrap = $("<div>").appendTo(columns);
+    tileListWrap.addClass("flexcolumn flex");
+    tileListWrap.css("position", "relative");
+    tileListWrap.css("overflow", "auto");
+    tileListWrap.attr("_lastScrollTop", targetApp.attr("_lastTileScrollTop"));
+    tileListWrap.scroll(function(){
+      targetApp.attr("_lastTileScrollTop", $(this).scrollTop());
+    });
+
+    if (sheetData.objs) {
+      var load = new Image();
+      load.src = sheetData.i;
+      load.onload = function(){
+        var tileList = $("<div>").appendTo(tileListWrap);
+        tileList.addClass("flexrow flexbetween flexwrap fit-x");
+        tileList.css("min-width", "100%");
+        tileList.css("position", "absolute");
+
+        for (var i=0; i<sheetData.objs.length; i++) {
+          var tileData = sheetData.objs[i];
+          tileData.s = Number(targetApp.attr("tileSheet") || 0);
+          var canvasWrap = $("<div>").appendTo(tileList);
+          canvasWrap.addClass("hover2 smooth");
+          canvasWrap.attr("index", i);
+          canvasWrap.css("position", "relative");
+          canvasWrap.css("overflow", "hidden");
+          canvasWrap.css("width", 50);
+          canvasWrap.css("height", 50);
+          canvasWrap.css("margin", "0.25em");
+          canvasWrap.click(function(){
+            if (checkbox.prop("checked")) {
+              randomRot = true;
+            }
+            tileList.children().removeClass("highlight");
+            floatingTile = duplicate(sheetData.objs[$(this).attr("index")]);
+            floatingTile.sheet = $(this).attr("index");
+            $(this).addClass("highlight");
+          });
+          canvasWrap.contextmenu(function(){
+            var index = $(this).attr("index");
+            var actionsList = [
+              {
+                name : "Remove",
+                click : function(){
+                  sheetData.objs.splice(index, 1);
+                  if (!scope.local) {
+                    obj.sync("updateAsset");
+                  }
+                  else {
+                    obj.update();
+                  }
+                }
+              },
+            ];
+
+            ui_dropMenu($(this), actionsList, {id : "tile-option"});
+            return false;
+          });
+
+          var img = $("<canvas>").appendTo(canvasWrap);
+          img.attr("width", 50);
+          img.attr("height", 50);
+          img.css("position", "absolute");
+          img.css("pointer-events", "none");
+
+          var tileW = sheetData.gW + sheetData.p;
+          var tileH = sheetData.gH + sheetData.p;
+          var xGrid = Math.ceil(sheetData.w/(tileW));
+          var yGrid = Math.ceil(sheetData.h/(tileH));
+
+          var aspectW = 1;
+          var aspectH = 1;
+          if (sheetData.nW && sheetData.nH) {
+            aspectW = sheetData.w/sheetData.nW;
+            aspectH = sheetData.h/sheetData.nH;
+          }
+
+          var sX = (tileData.i % xGrid) * tileW;
+          var sY = Math.floor(tileData.i / xGrid) * tileH;
+
+          var w = (tileData.gW * (data.gridW || 64));
+          var h = (tileData.gH * (data.gridH || 64));
+          var sW = (tileData.gW || 1) * sheetData.gW + ((tileData.gW || 1)-1) * sheetData.p;
+          var sH = (tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p;
+
+          var isHex = obj.data.options && obj.data.options.hex;
+
+          var dummyCanvas = $("<canvas>");
+          dummyCanvas.attr("width", Math.max(w,h));
+          dummyCanvas.attr("height", Math.max(w,h));
+
+          if (tileData.t && (w >= (data.gridW || w) && h >= (data.gridH || h))) {
+            var tileX = (tileData.gW || 1) * sheetData.gW + ((tileData.gW || 1)-1) * sheetData.p;
+            var tileY = (tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p;
+            var gridX = Math.floor((w || obj.data.gridW)/tileX);
+            var gridY = Math.floor((h || obj.data.gridH)/tileY);
+            var width = (tileX || w || obj.data.gridW);
+            var height = (tileY || h || obj.data.gridH);
+            for (var x=0; x<gridX; x++) {
+              for (var y=0; y<gridY; y++) {
+                dummyCanvas.drawImage({
+                  source : sheetData.i,
+                  x : (x * width),
+                  y : (y * height),
+                  width : width,
+                  height : height,
+                  sWidth: tileX,
+                  sHeight: tileY,
+                  sx: sX, sy: sY,
+                  fromCenter : false,
+                  rotate : tileData.r || 0,
+                });
+              }
+            }
+          }
+          else {
+            dummyCanvas.drawRect({
+              fillStyle : (w==h)?("transparent"):("rgba(235,235,228,0.4)"),
+              x : Math.max(h-w, 0)/2, y : Math.max(w-h, 0)/2,
+              width : w,
+              height : h,
+              fromCenter : false,
+            });
+            dummyCanvas.drawImage({
+              source : sheetData.i,
+              x : Math.max(h-w, 0)/2, y : Math.max(w-h, 0)/2,
+              width : w,
+              height : h,
+              sWidth: sW / aspectW,
+              sHeight: sH / aspectH,
+              sx: sX / aspectW, sy: sY / aspectH,
+              fromCenter: false,
+              rotate : tileData.r || 0,
+            });
+          }
+          img.drawImage({
+            source : dummyCanvas[0],
+            layer : true,
+            width : 50, height : 50,
+            strokeStyle: "rgba(0,0,0,0)",
+            strokeWidth: 4,
+            fromCenter : false,
+          });
+        }
+      }
+    }
+
     var searchDiv = $("<div>").appendTo(columns);
-    searchDiv.addClass("flexrow fit-x flexbetween lrmargin padding");
+    searchDiv.addClass("flexrow fit-x flexbetween");
 
     var tilemode = $("<button>");//.appendTo(searchDiv);
     tilemode.addClass("subtitle");
@@ -106,7 +298,7 @@ sync.render("ui_easySheets", function(obj1, app, scope) {
     });
 
     var checkWrap = $("<button>").appendTo(searchDiv);
-    checkWrap.addClass("flexmiddle alttext lrmargin background lrpadding");
+    checkWrap.addClass("flexmiddle alttext background subtitle");
     checkWrap.click(function(){
       checkbox.click();
     });
@@ -124,18 +316,18 @@ sync.render("ui_easySheets", function(obj1, app, scope) {
     checkbox.change(function(){
       if ($(this).prop("checked") == true) {
         randomRot = true;
-        if (boardApi.pix.apps[targetApp.attr("id")].floatingImage && boardApi.pix.apps[targetApp.attr("id")].floatingImage.tileData) {
+        if (boardApi.apps[targetApp.attr("id")].floatingImage && boardApi.apps[targetApp.attr("id")].floatingImage.tileData) {
           floatingTile.r = Math.floor(Math.random() * 4) * 90;
-          boardApi.pix.apps[app.attr("id")].floatingImage.children[0].rotation = (floatingTile.r || 0)/180 * (Math.PI);
+          boardApi.apps[app.attr("id")].floatingImage.children[0].rotation = (floatingTile.r || 0)/180 * (Math.PI);
         }
         $(this).parent().addClass("highlight");
         $(this).parent().removeClass("background");
       }
       else {
         randomRot = false;
-        if (boardApi.pix.apps[targetApp.attr("id")].floatingImage && boardApi.pix.apps[targetApp.attr("id")].floatingImage.tileData) {
+        if (boardApi.apps[targetApp.attr("id")].floatingImage && boardApi.apps[targetApp.attr("id")].floatingImage.tileData) {
           floatingTile.r = 0;
-          boardApi.pix.apps[app.attr("id")].floatingImage.children[0].rotation = 0;
+          boardApi.apps[app.attr("id")].floatingImage.children[0].rotation = 0;
         }
         $(this).parent().removeClass("highlight");
         $(this).parent().addClass("background");
@@ -144,12 +336,12 @@ sync.render("ui_easySheets", function(obj1, app, scope) {
     checkbox.click(function(ev){
       ev.stopPropagation();
     });
-    $("<b class'lrmargin lrpadding'>Random Rotation</b>").appendTo(checkWrap);
 
+    $("<b class'lrpadding subtitle'>Random Rotation</b>").appendTo(checkWrap);
 
     var showAtlas = $("<button>").appendTo(searchDiv);
     showAtlas.addClass("subtitle background alttext");
-    showAtlas.text("Show Tile Sheet");
+    showAtlas.text("Tile Sheet");
     showAtlas.click(function(){
       var newApp = sync.newApp("ui_sheet");
       newApp.attr("index", targetApp.attr("tileSheet") || 0);
@@ -170,178 +362,6 @@ sync.render("ui_easySheets", function(obj1, app, scope) {
       popout.addClass("board-"+app.attr("board")+"-sheet-controls");
       popout.resizable();
     });
-
-    var tileListWrap = $("<div>").appendTo(columns);
-    tileListWrap.addClass("flexcolumn lrmargin flex");
-    tileListWrap.css("position", "relative");
-    tileListWrap.css("min-width", "400px");
-    tileListWrap.css("overflow", "auto");
-    tileListWrap.attr("_lastScrollTop", targetApp.attr("_lastTileScrollTop"));
-    tileListWrap.scroll(function(){
-      targetApp.attr("_lastTileScrollTop", $(this).scrollTop());
-    });
-
-    if (sheetData.objs) {
-      var load = new Image();
-      load.src = sheetData.i;
-      load.onload = function(){
-        var tileList = $("<div>").appendTo(tileListWrap);
-        tileList.addClass("flexrow flexwrap");
-        tileList.css("position", "absolute");
-
-        for (var i=0; i<sheetData.objs.length; i++) {
-          var tileData = sheetData.objs[i];
-          tileData.s = Number(targetApp.attr("tileSheet") || 0);
-          var canvasWrap = $("<div>").appendTo(tileList);
-          canvasWrap.addClass("hover2 smooth");
-          canvasWrap.attr("index", i);
-          canvasWrap.css("position", "relative");
-          canvasWrap.css("overflow", "hidden");
-          canvasWrap.css("width", 64);
-          canvasWrap.css("height", 64);
-          canvasWrap.css("margin", "0.25em");
-          canvasWrap.click(function(){
-            if (checkbox.prop("checked")) {
-              randomRot = true;
-            }
-            tileList.children().removeClass("highlight");
-            floatingTile = duplicate(sheetData.objs[$(this).attr("index")]);
-            floatingTile.sheet = $(this).attr("index");
-            $(this).addClass("highlight");
-          });
-          canvasWrap.contextmenu(function(){
-            var index = $(this).attr("index");
-            var actionsList = [
-              {
-                name : "Remove",
-                click : function(){
-                  sheetData.objs.splice(index, 1);
-                  if (!scope.local) {
-                    obj.sync("updateAsset");
-                  }
-                  else {
-                    obj.update();
-                  }
-                }
-              },
-            ];
-
-            ui_dropMenu($(this), actionsList, {id : "tile-option"});
-            return false;
-          });
-
-          var img = $("<canvas>").appendTo(canvasWrap);
-          img.attr("width", 64);
-          img.attr("height", 64);
-          img.css("position", "absolute");
-          img.css("pointer-events", "none");
-
-          var tileW = sheetData.gW + sheetData.p;
-          var tileH = sheetData.gH + sheetData.p;
-          var xGrid = Math.ceil(sheetData.w/(tileW));
-          var yGrid = Math.ceil(sheetData.h/(tileH));
-
-          var aspectW = 1;
-          var aspectH = 1;
-          if (sheetData.nW && sheetData.nH) {
-            aspectW = sheetData.w/sheetData.nW;
-            aspectH = sheetData.h/sheetData.nH;
-          }
-
-          var sX = (tileData.i % xGrid) * tileW;
-          var sY = Math.floor(tileData.i / xGrid) * tileH;
-
-          var w = (tileData.gW * (data.gridW || 64));
-          var h = (tileData.gH * (data.gridH || 64));
-          var sW = (tileData.gW || 1) * sheetData.gW + ((tileData.gW || 1)-1) * sheetData.p;
-          var sH = (tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p;
-
-          var isHex = obj.data.options && obj.data.options.hex;
-
-          var dummyCanvas = $("<canvas>");
-          dummyCanvas.attr("width", Math.max(w,h));
-          dummyCanvas.attr("height", Math.max(w,h));
-
-          if (tileData.t && (w >= (data.gridW || w) && h >= (data.gridH || h)) && !(isHex)) {
-            var tileX = (tileData.gW || 1) * sheetData.gW + ((tileData.gW || 1)-1) * sheetData.p;
-            var tileY = (tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p;
-            var gridX = Math.floor((w || obj.data.gridW)/tileX);
-            var gridY = Math.floor((h || obj.data.gridH)/tileY);
-            var width = (tileX || w || obj.data.gridW);
-            var height = (tileY || h || obj.data.gridH);
-            for (var x=0; x<gridX; x++) {
-              for (var y=0; y<gridY; y++) {
-                dummyCanvas.drawImage({
-                  source : sheetData.i,
-                  x : (x * width),
-                  y : (y * height),
-                  width : width,
-                  height : height,
-                  sWidth: tileX,
-                  sHeight: tileY,
-                  sx: sX, sy: sY,
-                  fromCenter : false,
-                  rotate : tileData.r || 0,
-                });
-              }
-            }
-          }
-          else {
-            if (isHex) {
-              dummyCanvas.drawLine({
-                mask : true,
-                strokeStyle: 'rgba(0,0,0,0)',
-                strokeWidth: 1,
-                x1: (tileData.x)-1, y1: (tileData.y + (h || obj.data.gridH)/2),
-                x2: (tileData.x + (w || obj.data.gridW) * 4/16), y2: (tileData.y)-1,
-                x3: (tileData.x + (w || obj.data.gridW) * 12/16), y3: (tileData.y)-1,
-                x4: (tileData.x + (w || obj.data.gridW))+1, y4: (tileData.y + (h || obj.data.gridH)/2),
-                x5: (tileData.x + (w || obj.data.gridW) * 12/16), y5: (tileData.y + (h || obj.data.gridH))+1,
-                x6: (tileData.x + (w || obj.data.gridW) * 4/16), y6: (tileData.y + (h || obj.data.gridH))+1,
-                x7: (tileData.x)-1, y7: (tileData.y + (h || obj.data.gridH)/2),
-              }).drawImage({
-                source : sheetData.i,
-                width : (w || obj.data.gridW),
-                height : (h || obj.data.gridH),
-                sWidth: (tileData.gW || 1) * sheetData.gW + ((tileData.gW || 1)-1) * sheetData.p,
-                sHeight: (tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p,
-                sx: sX, sy: sY,
-                fromCenter: false,
-                rotate : tileData.r || 0,
-              }).restoreCanvas();
-            }
-            else {
-              dummyCanvas.drawRect({
-                fillStyle : (w==h)?("transparent"):("rgba(235,235,228,0.4)"),
-                x : Math.max(h-w, 0)/2, y : Math.max(w-h, 0)/2,
-                width : w,
-                height : h,
-                fromCenter : false,
-              });
-              dummyCanvas.drawImage({
-                source : sheetData.i,
-                x : Math.max(h-w, 0)/2, y : Math.max(w-h, 0)/2,
-                width : w,
-                height : h,
-                sWidth: sW / aspectW,
-                sHeight: sH / aspectH,
-                sx: sX / aspectW, sy: sY / aspectH,
-                fromCenter: false,
-                rotate : tileData.r || 0,
-              });
-            }
-          }
-          img.drawImage({
-            source : dummyCanvas[0],
-            layer : true,
-            width : 64, height : 64,
-            strokeStyle: "rgba(0,0,0,0)",
-            strokeWidth: 4,
-            fromCenter : false,
-          });
-        }
-      }
-    }
   }
 
   return div;

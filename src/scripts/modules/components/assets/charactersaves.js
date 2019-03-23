@@ -1,3 +1,5 @@
+// legacy support
+
 sync.render("ui_characterSaves", function(obj, app, scope){
   var diceTemplates = game.templates.dice;
   var die = diceTemplates.pool[diceTemplates.defaults[0]].value;

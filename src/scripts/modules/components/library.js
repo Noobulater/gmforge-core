@@ -5,7 +5,7 @@ sync.render("ui_library", function(obj, app, scope) {
   obj = game.locals["gameLibrary"];
 
   var div = $("<div>");
-  div.addClass("flexrow flex");
+  div.addClass("flexcolumn flex");
 
   /*$("<b class='flexmiddle fit-x subtitle alttext'>Content Type</b>").appendTo(optionsBar);
 
@@ -95,12 +95,8 @@ sync.render("ui_library", function(obj, app, scope) {
     spellbook : [],
     custom : true,
   };
-  for (var i in game.config.data.library) {
-    obj.data[i] = duplicate(game.config.data.library[i]);
-  }
   if (localList) {
     // loads the content package so we can merge it's contents
-    //sync.render("ui_contentEditor")(pck, app, scope);
     if (localList.a && localList.a.length) {
       obj.data.a = obj.data.a.concat(duplicate(localList.a));
     }
@@ -157,20 +153,21 @@ sync.render("ui_library", function(obj, app, scope) {
   obj.update();
   });*/
 
+
   var newApp = sync.newApp("ui_libraryBuild").appendTo(div);
   obj.addApp(newApp);
 
   var optionsBar = $("<div>").appendTo(div);
-  optionsBar.addClass("flexcolumn foreground spadding subtitle");
+  optionsBar.addClass("flexrow flexbetween foreground spadding subtitle");
 
   var custom = $("<div>").appendTo(optionsBar);
-  custom.addClass("flexcolumn smooth hover2 white flex alttext");
+  custom.addClass("flexcolumn hover2 white flex alttext lpadding flexmiddle");
   custom.css("background-image", "url('/content/games/custom.png')");
-  custom.css("background-size", "contain");
+  custom.css("background-size", "cover");
   custom.css("background-repeat", "no-repeat");
   custom.css("background-position", "center");
 
-  custom.append("<b class='padding flexmiddle' style='background-color : rgba(0,0,0,0.4);'>Current Game</b>");
+  custom.append("<b class='flexmiddle smooth fit-x' style='background-color : rgba(0,0,0,0.8);'>Current Game</b>");
 
   custom.click(function(){
     obj.data = {
@@ -190,24 +187,14 @@ sync.render("ui_library", function(obj, app, scope) {
     obj.update();
   });
 
-  $("<b class='flexmiddle fit-x subtitle alttext lrpadding'>Suggested Content</b>").appendTo(optionsBar);
-
   var dnd5e = $("<div>").appendTo(optionsBar);
-  dnd5e.addClass("flexcolumn smooth hover2 white flex2 alttext");
+  dnd5e.addClass("flexcolumn hover2 white flex2 alttext lpadding flexmiddle");
   dnd5e.css("background-image", "url('"+("http://www.enworld.org/forum/attachment.php?attachmentid=62061&d=1402069890&stc=1")+"')");
-  dnd5e.css("background-size", "contain");
+  dnd5e.css("background-size", "cover");
   dnd5e.css("background-repeat", "no-repeat");
   dnd5e.css("background-position", "center");
 
-  dnd5e.append("<b class='padding flexmiddle' style='background-color : rgba(0,0,0,0.4);'>Dungeons and Dragons <br> 5th Edition SRD</b>");
-
-  dnd5e.append("<div class='flex'></div>");
-
-  var beta = $("<b>").appendTo(dnd5e);
-  beta.addClass("lrpadding outline smooth highlight");
-  beta.css("color", "white");
-  beta.css("font-size", "0.8em");
-  beta.append("Community Run");
+  dnd5e.append("<b class='flexmiddle smooth fit-x' style='background-color : rgba(0,0,0,0.8);'>Dungeons and Dragons 5th Edition SRD</b>");
 
   dnd5e.click(function(){
     newApp.append("<div class='flexmiddle fit-x'><div class='loader'></div></div>");
@@ -261,22 +248,13 @@ sync.render("ui_library", function(obj, app, scope) {
   });
 
   var pathfinder = $("<div>").appendTo(optionsBar);
-  pathfinder.addClass("flexcolumn smooth hover2 white flex2 alttext");
+  pathfinder.addClass("flexcolumn hover2 white flex2 alttext lpadding flexmiddle");
   pathfinder.css("background-image", "url('"+("https://paizo.com/image/content/Logos/PathfinderRPGLogo_500.jpeg")+"')");
-  pathfinder.css("background-size", "contain");
+  pathfinder.css("background-size", "cover");
   pathfinder.css("background-repeat", "no-repeat");
   pathfinder.css("background-position", "center");
 
-  pathfinder.append("<b class='padding flexmiddle' style='background-color : rgba(0,0,0,0.4);'>Pathfinder SRD</b>");
-
-  pathfinder.append("<div class='flex'></div>");
-
-  var beta = $("<b>").appendTo(pathfinder);
-  beta.addClass("lrpadding outline smooth highlight");
-  beta.css("color", "white");
-  beta.css("font-size", "0.8em");
-  beta.append("Community Run");
-
+  pathfinder.append("<b class='flexmiddle smooth fit-x' style='background-color : rgba(0,0,0,0.8);'>Pathfinder SRD</b>");
   pathfinder.click(function(){
     delete obj.data.custom;
     newApp.append("<div class='flexmiddle fit-x'><div class='loader'></div></div>");
@@ -366,7 +344,7 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
     searchInput.css("color", "#333");
 
     if (data.custom) {
-      var insert = genIcon("share-alt", "Add").appendTo(search);
+      var insert = genIcon("share-alt", "Import").appendTo(search);
       insert.addClass("flex flexmiddle subtitle");
       insert.click(function(ev){
         var content = sync.render("ui_assetPicker")(obj, app, {
@@ -422,12 +400,12 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
             olay.append("<b>Drop to Insert</b>");
           }
       	});
-        listedChars.on('drop', function(ev){
+        listedChars.on('drop', function(ev, ui ){
           ev.preventDefault();
           ev.stopPropagation();
           if (!_dragTransfer) {
-            var dt = ev.originalEvent.dataTransfer;
-            if (dt.getData("OBJ")) {
+            var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
+            if (dt && dt.getData("OBJ")) {
               var entData = JSON.parse(dt.getData("OBJ"));
               if (entData._t == "i") {
                 entData._s = {}; // clear security
@@ -603,7 +581,15 @@ sync.render("ui_libraryBuild", function(obj, app, scope) {
       charList.attr("index", i);
       charList.on("dragstart", function(ev){
         var dt = ev.originalEvent.dataTransfer;
-        dt.setData("OBJ", JSON.stringify(obj.data[target][$(this).attr("index")]));
+        var tempObj = duplicate(obj.data[target][$(this).attr("index")]);
+        tempObj.tags = tempObj.tags || {};
+        if (_down["17"]) {
+          delete tempObj._flags["temp"];
+        }
+        else {
+          tempObj._flags["temp"] = true;
+        }
+        dt.setData("OBJ", JSON.stringify(tempObj));
         if (target == "spellbook") {
           dt.setData("spell", true);
         }

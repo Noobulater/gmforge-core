@@ -52,10 +52,16 @@ sync.render("ui_token", function(obj, app, scope){
 });
 
 sync.render("ui_image", function(obj, app, scope){
-  scope = scope || {viewOnly : app.attr("viewOnly") == "true", image : app.attr("img"), lookup : app.attr("lookup") || "info.img", classes : app.attr("classes"), mode : app.attr("mode")};
-
+  scope = scope || {
+    viewOnly : app.attr("viewOnly") == "true",
+    image : app.attr("img"),
+    lookup : app.attr("lookup") || "info.img",
+    classes : app.attr("classes"),
+    mode : app.attr("mode")
+  };
+  scope.lookup = scope.lookup || app.attr("lookup") || "info.img";
   var data = obj.data;
-  var value = sync.traverse(data, scope.lookup);
+  var value = sync.traverse(obj.data, scope.lookup);
 
   var def = "/content/icons/blankchar.png";
   if (data._t && data._t == "p") {
@@ -69,7 +75,7 @@ sync.render("ui_image", function(obj, app, scope){
   var imgContainer = $("<div>");
   imgContainer.addClass("flex");
   imgContainer.css("background-image", "url('"+ (sync.rawVal(scope.image || value) || def) +"')");
-  imgContainer.css("background-size", "contain");
+  imgContainer.css("background-size", scope.fit || "contain");
   imgContainer.css("background-repeat", "no-repeat");
   imgContainer.css("background-position", "center");
   imgContainer.contextmenu(function(ev){
@@ -83,6 +89,11 @@ sync.render("ui_image", function(obj, app, scope){
     imgContainer.css("background-size", "cover");
     imgContainer.css("background-repeat", "no-repeat");
     imgContainer.css("background-position", "center 25%");
+  }
+
+  if (app.attr("showTemp") && obj.data._flags && obj.data._flags["temp"]) {
+    imgContainer.addClass("flexmiddle");
+    imgContainer.append("<b class='inactive smooth smargin spadding' style='font-size : 8px; color:#333; text-shadow:none;' title='Assets tagged with `temp` are deleted when their tokens are removed from a map'>Temp.</b>");
   }
 
   if (scope.classes) {

@@ -84,7 +84,7 @@ sync.render("ui_template", function(obj, app, scope){
   scope = scope || {viewOnly: app.attr("viewOnly") == "true", local : app.attr("local") == "true"};
   var data = obj.data;
   var div = $("<div>");
-  div.addClass("flexcolumn flexaround flex");
+  div.addClass("flex flexcolumn");
 
   var template = obj.data.template;
   if (!template) {
@@ -92,20 +92,12 @@ sync.render("ui_template", function(obj, app, scope){
       template = duplicate(_cachegen);
     }
     else {
-      _cachegen = buildDecisionTree(game.templates.generation);
+      _cachegen = buildDecisionTree(obj.data.templateText || "\n No Template={<>}");
       template = duplicate(_cachegen);
     }
   }
 
-  var columns = $("<div>").appendTo(div);
-  columns.addClass("flexrow flexaround fit-xy");
-
-  var optionContainer = $("<div>").appendTo(columns);
-  optionContainer.addClass("flexcolumn flex");
-
-  if (game.config.data.game == "dnd_5e") {
-    optionContainer.append("<i>Protected under OGL1.0a contains content in <b><a href='http://media.wizards.com/2016/downloads/DND/SRD-OGL_V5.1.pdf'>SRD5.1</a></b> <a href='/dnd_5e.txt'>src file</a></i>")
-  }
+  var optionContainer = $("<div>").appendTo(div);
 
   var title = $("<b>").appendTo(optionContainer);
   title.addClass("flexmiddle");
@@ -182,12 +174,22 @@ sync.render("ui_template", function(obj, app, scope){
               var index = Math.floor(choice.choices.length * Math.random());
               recurseChoose(choice.choices[index], state + "." + index);
               choice.choices.splice(index, 1);
-
             }
           }
           else {
+            // build viable choices
+            var choiceSelection = [];
+            for (var i=0;i<choice.choices.length; i++) {
+              if (choice.choices[i].data) {
+                choiceSelection.push(choiceSelection);
+              }
+              else {
+                recurseChoose(choice.choices[i], state + "." + i);
+              }
+            }
+
             for (var i=0; i<number; i++) {
-              var index = Math.floor(choice.choices.length * Math.random());
+              var index = choiceSelection[Math.floor(choiceSelection.length * Math.random())];
               recurseChoose(choice.choices[index], state + "." + index);
             }
           }
@@ -208,18 +210,16 @@ sync.render("ui_template", function(obj, app, scope){
     obj.update();
   });
 
-
-  var choiceColumnWrap = $("<div>").appendTo(optionContainer);
+  var choiceColumnWrap = $("<div>").appendTo(div);
   choiceColumnWrap.addClass("flex");
   choiceColumnWrap.css("overflow", "auto");
   choiceColumnWrap.css("position", "relative");
-  choiceColumnWrap.css("min-height", "55vh");
   choiceColumnWrap.scroll(function() {
     app.attr("_lastScrollTop_opt", $(this).scrollTop());
   });
 
   var choiceColumn = $("<div>").appendTo(choiceColumnWrap);
-  choiceColumn.addClass("flexrow flexaround fit-x");
+  choiceColumn.addClass("fit-x");
   choiceColumn.css("position", "absolute");
 
   var keys = Object.keys(data.text);
@@ -248,7 +248,7 @@ sync.render("ui_template", function(obj, app, scope){
     container.css("width", "auto");
 
     var namePlate = $("<b>").appendTo(container);
-    namePlate.addClass("lrpadding");
+    namePlate.addClass("spadding subtitle");
     namePlate.text(choice.name);
 
     if (choice.tip) {
@@ -277,10 +277,9 @@ sync.render("ui_template", function(obj, app, scope){
       containerT.attr("title", "Right Click for details");
       containerT.contextmenu(function(ev){
         var content = $("<div>");
-        content.addClass("flexcolumn subtitle");
+        content.addClass("flexcolumn subtitle spadding");
         content.css("text-align", "left");
         content.css("padding-top", "1em");
-        content.append("<i>This choice gives you<i>");
         var reg = /(traits|counters|talents|feats|inventory|gear|equipment|skills|stats|info|spells|spellbook|spellslots|psychic|aptitudes|apts|proficiency|other|description|notes|specials|proficiencies|proficient|tags)\s*[-|:|=|;]\s*/ig
         var cleanup = replaceAll(replaceAll(choice.data.trim(), "\t", ""), "\n", "<br>");
         var arr = cleanup.match(reg);
@@ -294,6 +293,7 @@ sync.render("ui_template", function(obj, app, scope){
         ui_popOut({
           target : $(this),
           align : "right",
+          title : "Choice Bonuses",
           id : "option-preview",
           style : {"width": "400px"}
         }, content);
@@ -312,12 +312,13 @@ sync.render("ui_template", function(obj, app, scope){
         type : "checkbox",
         state : state,
         data : choice.data,
-        style : {"margin" : "0", "width" : "12px", "height" : "12px"},
-      }).addClass("lrpadding");
+        style : {"margin" : "0", "width" : "12px", "height" : "12px", "margin-left" : "8px"},
+      });
       if (data.text[state]) {
         check.prop("checked", true);
       }
       namePlate.before(check);
+
       if (parent && !parent.cData.exclusive && parent.cData.number) {
         check.change(function(ev) {
           if ($(this).prop("checked") == true) {
@@ -404,16 +405,14 @@ sync.render("ui_template", function(obj, app, scope){
     }
     else {
       if (depth < 2) {
-        nonmargin.addClass("highlight2");
+        nonmargin.addClass("foreground");
+        nonmargin.css("text-shadow", "0 0 0.25em black")
+        nonmargin.css("color", "white");
       }
       else {
-        nonmargin.addClass("highlight");
+        nonmargin.addClass("inactive outlinebottom subtitle");
       }
-      nonmargin.css("text-shadow", "0 0 0.25em black")
-      nonmargin.css("border", "1px solid #333")
-      nonmargin.css("color", "white");
       nonmargin.addClass("spadding");
-
       if (choice.exclusive && choice.number) {
         namePlate.text(namePlate.text() + " ("+choice.number+")")
       }
@@ -509,18 +508,12 @@ sync.render("ui_template", function(obj, app, scope){
   }*/
   for (var i in template.choices) {
     var category = template.choices[i]; // each one gets a column
-    var choiceList = $("<div>").css("display", "inline-block").appendTo(choiceColumn);
-    buildUI(category, i, 0).addClass("outline smooth").appendTo(choiceList);
+    var choiceList = $("<div>").appendTo(choiceColumn);
+    buildUI(category, i, 0).addClass("smooth margin outline").css("margin-bottom", "2em").appendTo(choiceList);
   }
 
-  var tempObj = sync.obj("tempObj");
-  tempObj.data = data.override;
-
-  optionContainer.css("width", "100%");
-  choiceColumn.removeClass("flexrow");
-  choiceColumn.addClass("flexwrap flexaround");
   // preserver scroll
-  choiceColumn.attr("_lastScrollTop", app.attr("_lastScrollTop_opt"));
+  choiceColumnWrap.attr("_lastScrollTop", app.attr("_lastScrollTop_opt"));
 
   return div;
 });

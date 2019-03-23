@@ -74,3 +74,15 @@ HOMEBREWERY STUFF
   font-family: "Zatanna Misdirection";
   src: url('/content/fonts/Zatanna Misdirection.otf');
 }
+
+
+
+@font-face {
+  font-family: "Columbus";
+  src: url('/content/fonts/ColumbusMTStd-Regular.otf');
+}
+
+@font-face {
+  font-family: "Celestia";
+  src: url('/content/fonts/Celestia Antiqua Std Regular.otf');
+}

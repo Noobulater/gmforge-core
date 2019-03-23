@@ -1,9 +1,9 @@
-boardApi.pix.rebuildFogData = function(obj, app) {
-  var application = boardApi.pix.apps[app.attr("id")];
+boardApi.rebuildFogData = function(obj, app) {
+  var application = boardApi.apps[app.attr("id")];
   var data = obj.data;
   var userID = app.attr("UserID") || getCookie("UserID");
   var hasRights = hasSecurity(userID, "Rights", data) || hasSecurity(userID, "Game Master");
-  boardApi.pix.fog[obj.id()] = [];
+  boardApi.fog[obj.id()] = [];
   var startingFog = [
     {x1 : 0, y1 : data.h, x2 : 0, y2 : 0},
     {x1 : 0, y1 : 0, x2 : data.w, y2 : 0},
@@ -32,7 +32,7 @@ boardApi.pix.rebuildFogData = function(obj, app) {
   }
 
   // rebuild all application caches
-  boardApi.pix.fog[obj.id()] = finalFog;
+  boardApi.fog[obj.id()] = finalFog;
   for (var key in application.views) {
     if (key != "self") {
       var split = key.split("-");
@@ -46,9 +46,9 @@ boardApi.pix.rebuildFogData = function(obj, app) {
             context[ent.data._t] = duplicate(ent.data);
           }
           var auraData = pieceData.o.Sight;
-          range = boardApi.pix.scale(sync.eval(auraData.d, context), obj, true);
+          range = boardApi.scale(sync.eval(auraData.d, context), obj, true);
         }
-        application.views[key] = boardApi.pix.buildDynamicFog(obj, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
+        application.views[key] = boardApi.buildDynamicFog(obj, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
       }
       else if (application.views[key]) {
         application.views[key].destroy(true);
@@ -58,18 +58,22 @@ boardApi.pix.rebuildFogData = function(obj, app) {
   }
 }
 
-boardApi.pix.rebuildDynamicFog = function(obj, app, x, y) {
+boardApi.rebuildDynamicFog = function(obj, app, x, y) {
   var returnFill;
-  var application = boardApi.pix.apps[app.attr("id")];
+  var application = boardApi.apps[app.attr("id")];
   if (application && application.board == obj.id()) {
     var stage = application.stage;
     var fogCont = stage.children[4];
-    application.renderer.render(boardApi.pix.apps[app.attr("id")].fogCache.background, application.opaqueRender, false, null, false);
-    application.renderer.render(boardApi.pix.apps[app.attr("id")].fogCache.map, application.opaqueRender, false, null, false);
-    application.renderer.render(boardApi.pix.apps[app.attr("id")].fogCache.fog, application.fogRender, false, null, false);
-    if (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length) {
+    application.renderer.render(boardApi.apps[app.attr("id")].fogCache.background, application.opaqueRender, false, null, false);
+    application.renderer.render(boardApi.apps[app.attr("id")].fogCache.map, application.opaqueRender, false, null, false);
+    application.renderer.render(boardApi.apps[app.attr("id")].fogCache.fog, application.fogRender, false, null, false);
+    var explored = new PIXI.Sprite(boardApi.apps[app.attr("id")].expRender);
+    explored.alpha = 0.5;
+    application.renderer.render(explored, application.opaqueRender, false, null, false);
+
+    if (boardApi.fog[obj.id()] && boardApi.fog[obj.id()].length) {
       if (x != null || y != null) {
-        var fogFill = boardApi.pix.buildDynamicFog(obj, app, x, y);
+        var fogFill = boardApi.buildDynamicFog(obj, app, x, y);
         application.renderer.render(fogFill, application.fogRender, false, null, false);
         returnFill = fogFill;
       }
@@ -78,7 +82,7 @@ boardApi.pix.rebuildDynamicFog = function(obj, app, x, y) {
           var selfX = application.views["self"].x;
           var selfY = application.views["self"].y;
           if (selfX != null && selfY != null) {
-            var fogFill = boardApi.pix.buildDynamicFog(obj, app, selfX, selfY);
+            var fogFill = boardApi.buildDynamicFog(obj, app, selfX, selfY);
             application.renderer.render(fogFill, application.fogRender, false, null, false);
           }
         }
@@ -107,7 +111,7 @@ boardApi.pix.rebuildDynamicFog = function(obj, app, x, y) {
   }
 }
 
-boardApi.pix.buildDynamicFog = function(obj, app, x, y, range) {
+boardApi.buildDynamicFog = function(obj, app, x, y, range) {
   var x = x + 0.0001;
   var y = y + 0.0001;
 
@@ -117,8 +121,20 @@ boardApi.pix.buildDynamicFog = function(obj, app, x, y, range) {
   var hasRights = hasSecurity(userID, "Rights", data) || hasSecurity(userID, "Game Master");
   var zoom = Number(app.attr("zoom"))/100;
 
-  var fogFillCont = new PIXI.Container();
+  var dupeFillCont = new PIXI.Container();
 
+  var dupeFill = new PIXI.Graphics();
+  dupeFillCont.addChild(dupeFill);
+
+  /*var spriteFillCont = new PIXI.Container();
+
+  var spriteFill = new PIXI.Graphics();
+  spriteFillCont.addChild(spriteFill);*/
+
+  var fogFillCont = new PIXI.Container();
+  if (range == null) {
+    return fogFillCont;
+  }
   var fogFill = new PIXI.Graphics();
   fogFillCont.addChild(fogFill);
   /*if (data.options && data.options.fog) {
@@ -132,7 +148,7 @@ boardApi.pix.buildDynamicFog = function(obj, app, x, y, range) {
     fogFill.endFill();
   }*/
 
-  var fog = duplicate(boardApi.pix.fog[obj.id()]);
+  var fog = duplicate(boardApi.fog[obj.id()]);
   var points = [];
 
   function fireRay(x1, y1, x2, y2, r1x, r1y) {
@@ -195,18 +211,40 @@ boardApi.pix.buildDynamicFog = function(obj, app, x, y, range) {
     return b.ang-a.ang;
   });
 
+  dupeFill.lineStyle(1, 0x000000, 1);
+  dupeFill.beginFill(0x000000, 1);
+
   fogFill.lineStyle(1, 0x000000, 1);
   fogFill.beginFill(0x000000, 1);
+
+  /*spriteFill.lineStyle(1, 0x000000, 1);
+  spriteFill.beginFill(0x000000, 1);*/
 
   for (var i=0; i<points.length; i++) {
     if (i == 0) {
       fogFill.moveTo(points[i].x, points[i].y);
+      dupeFill.moveTo(points[i].x, points[i].y);
+      //spriteFill.moveTo(points[i].x, points[i].y);
     }
     else {
       fogFill.lineTo(points[i].x, points[i].y);
+      dupeFill.lineTo(points[i].x, points[i].y);
+      //spriteFill.lineTo(points[i].x, points[i].y);
     }
   }
   fogFill.closePath();
+  dupeFill.closePath();
+  //spriteFill.closePath();
+
+  /*var sprite = new PIXI.Sprite.fromImage("/content/circle-gradient.png");
+  sprite.x = x;
+  sprite.y = y;
+  sprite.anchor.x = 0.5;
+  sprite.anchor.y = 0.5;
+  sprite.width = range*2.1+2;
+  sprite.height = range*2.1+2;
+  sprite.mask = spriteFill;*/
+
   if (range != null) {
     var mask = new PIXI.Graphics();
     mask.x = x;
@@ -220,19 +258,40 @@ boardApi.pix.buildDynamicFog = function(obj, app, x, y, range) {
 
     fogFillCont.mask = mask;
     fogFillCont.addChild(mask);
+
+    var dupeMask = new PIXI.Graphics();
+    dupeMask.x = x;
+    dupeMask.y = y;
+    dupeMask.lineStyle(3, 0x000000, 0.6);
+    dupeMask.drawCircle(0, 0, range);
+    dupeMask.lineStyle(0, 0x000000, 0);
+    dupeMask.beginFill(1, 0x000000, 1);
+    dupeMask.drawCircle(0, 0, range);
+    dupeMask.endFill();
+
+    dupeFillCont.mask = dupeMask;
+    dupeFillCont.addChild(dupeMask);
+    if (app.attr("UserID") || !hasSecurity(getCookie("UserID"), "Visible", obj.data)) {
+      boardApi.apps[app.attr("id")].renderer.render(dupeFillCont, boardApi.apps[app.attr("id")].expRender, false, null, false);
+    }
+
+    /*spriteFillCont.addChild(sprite);
+    spriteFillCont.addChild(spriteFill);
+
+    fogFillCont.addChild(spriteFillCont);*/
   }
 
   return fogFillCont;
 }
 
-boardApi.pix.rebuildFog = function(obj, app) {
+boardApi.rebuildFog = function(obj, app) {
   var data = obj.data;
   var hasGrid = data.gridW && data.gridW;
-  var application = boardApi.pix.apps[app.attr("id")];
+  var application = boardApi.apps[app.attr("id")];
   var userID = app.attr("UserID") || getCookie("UserID");
   var hasRights = hasSecurity(userID, "Rights", data) || hasSecurity(userID, "Game Master");
   if (application && application.board == obj.id()) {
-    var fogFill = boardApi.pix.apps[app.attr("id")].fogCache.fog;
+    var fogFill = boardApi.apps[app.attr("id")].fogCache.fog;
     fogFill.clear();
     if (data.options && data.options.fog) {
       fogFill.beginFill(0xFFFFFF, 1);
@@ -253,8 +312,9 @@ boardApi.pix.rebuildFog = function(obj, app) {
 
       for (var index in layerData.p) {
         var pieceData = layerData.p[index];
-        if (boardApi.pix.apps[app.attr("id")].views[lid+"-p-"+index]) {
-          boardApi.pix.apps[app.attr("id")].views[lid+"-p-"+index].destroy(true);
+        if (boardApi.apps[app.attr("id")].views[lid+"-p-"+index]) {
+          boardApi.apps[app.attr("id")].views[lid+"-p-"+index].destroy(true);
+          delete boardApi.apps[app.attr("id")].views[lid+"-p-"+index];
         }
         if (pieceData.eID) {
           var ent = getEnt(pieceData.eID);
@@ -266,9 +326,9 @@ boardApi.pix.rebuildFog = function(obj, app) {
                 context[ent.data._t] = duplicate(ent.data);
               }
               var auraData = pieceData.o.Sight;
-              range = boardApi.pix.scale(sync.eval(auraData.d, context), obj, true);
+              range = boardApi.scale(sync.eval(auraData.d, context), obj, true);
             }
-            boardApi.pix.apps[app.attr("id")].views[lid+"-p-"+index] = boardApi.pix.buildDynamicFog(obj, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
+            boardApi.apps[app.attr("id")].views[lid+"-p-"+index] = boardApi.buildDynamicFog(obj, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
           }
         }
       }
@@ -289,15 +349,15 @@ boardApi.pix.rebuildFog = function(obj, app) {
     }
 
     if (!app.attr("UserID") && hasRights) {
-      boardApi.pix.apps[app.attr("id")].fogCache.fogCont.alpha = Math.min(0.8, util.RGB_ALPHA(data.c));
-      boardApi.pix.apps[app.attr("id")].opaqueRender.alpha = 0;
+      boardApi.apps[app.attr("id")].fogCache.fogCont.alpha = Math.min(0.8, util.RGB_ALPHA(data.c));
+      boardApi.apps[app.attr("id")].opaqueRender.alpha = 0;
     }
     else {
-      boardApi.pix.apps[app.attr("id")].fogCache.fogCont.alpha = Math.min(1, util.RGB_ALPHA(data.c));
-      boardApi.pix.apps[app.attr("id")].opaqueRender.alpha = 1;
+      boardApi.apps[app.attr("id")].fogCache.fogCont.alpha = Math.min(1, util.RGB_ALPHA(data.c));
+      boardApi.apps[app.attr("id")].opaqueRender.alpha = 1;
     }
-    boardApi.pix.rebuildFogData(obj, app);
+    boardApi.rebuildFogData(obj, app);
     // redraw fog from w.e position you are at
-    boardApi.pix.rebuildDynamicFog(obj, app);
+    boardApi.rebuildDynamicFog(obj, app);
   }
 }

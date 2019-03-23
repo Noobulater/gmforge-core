@@ -19,6 +19,82 @@ sync.render('customApp', function(obj, app, scope) {
 sync.render("ui_hotApps", function(obj, app, scope) {
   scope = scope || {vertical : (app.attr("vertical") == "true")};
   var div = $("<div>");
+  var icons = util.hotIcons;
+  var dat = game.components;
+  for (var ind in dat) {
+    var category = $("<div>").appendTo(div);
+    category.addClass("flexcolumn hover2 flex lrpadding fit-x");
+    category.css("position", "relative");
+    category.attr("ui", dat[ind].ui);
+    category.attr("title", "Creates app as a popup");
+    category.attr("icon", icons[dat[ind].ui]);
+    category.attr("name", dat[ind].name);
+    category.attr("width", dat[ind].w);
+    category.attr("height", dat[ind].h);
+    category.attr("asTab", dat[ind].asTab);
+    category.click(function(ev){
+      if ($(this).attr("asTab")) {
+        var newTab;
+        for (var i in game.state.data.tabs) {
+          if (game.state.data.tabs[i].ui == $(this).attr("ui")) {
+            newTab = i;
+            break;
+          }
+        }
+        if (!newTab) {
+          game.state.data.tabs.push({ui : $(this).attr("ui"), name : $(this).attr("name")});
+        }
+        $(".application[ui-name='ui_displayTabs']").attr("tab", newTab || game.state.data.tabs.length-1);
+        game.state.sync("updateState");
+      }
+      else {
+        var content = sync.newApp($(this).attr("ui"), null, {});
+
+        var popOut = ui_popOut({
+          target : $(this),
+          title : $(this).attr("name"),
+          minimize : true,
+          maximize : true,
+          dragThickness : "0.5em",
+          style : {"width" : ($(this).attr("width") || 30)+"vw", "height" : ($(this).attr("height") || 50)+"vh"}
+        }, content);
+        popOut.resizable();
+        popOut.addClass("floating-app");
+      }
+    });
+    category.contextmenu(function(){
+      var content = sync.newApp($(this).attr("ui"), null, {});
+
+      var popOut = ui_popOut({
+        target : $(this),
+        title : $(this).attr("name"),
+        minimize : true,
+        maximize : true,
+        dragThickness : "0.5em",
+        style : {"width" : ($(this).attr("width") || 30)+"vw", "height" : ($(this).attr("height") || 50)+"vh"}
+      }, content);
+      popOut.resizable();
+      popOut.addClass("floating-app");
+      return false;
+    });
+    var catWrap = $("<div>").appendTo(category);
+    catWrap.addClass("flexrow flexbetween fit-x outlinebottom");
+
+    var link = genIcon(icons[dat[ind].ui], dat[ind].name + "").appendTo(catWrap);
+    link.css("font-size", "1.2em");
+
+    var author = $("<i>").appendTo(catWrap);
+    author.addClass("subtitle flexmiddle");
+    author.append("Author : <b>" + (dat[ind].author || "GM Forge") + "</b>");
+
+    var desc = $("<p>").appendTo(category);
+    desc.addClass("spadding subtitle");
+    desc.css("min-height", "30px");
+    desc.text(dat[ind].basic);
+  }
+
+
+  /*
   if (!obj) {
     app.attr("vertical", scope.vertical);
     game.locals["hotApps"] = game.locals["hotApps"] || sync.obj();
@@ -258,7 +334,7 @@ sync.render("ui_hotApps", function(obj, app, scope) {
 
       content.addClass("flexcolumn flex");
 
-      var modDiv = $("<div>").appendTo(content);
+      var modDiv = $("<div>")//.appendTo(content);
       modDiv.addClass("flexrow fit-x background");
 
       var installMods = $("<button>").appendTo(modDiv);
@@ -271,87 +347,85 @@ sync.render("ui_hotApps", function(obj, app, scope) {
         modContent.empty();
         app.removeAttr("tab");
 
-        for (var cat in game.components) {
-          for (var index in game.components[cat]) {
-            var dat = game.components[cat][index];
-            for (var ind in dat) {
-              if (dat[ind].basic) {
-                var category = $("<div>").appendTo(modContent);
-                category.addClass("flexcolumn lightoutline hover2 flex");
-                category.css("padding-left", "1em");
-                category.css("padding-right", "1em");
-                category.css("position", "relative");
-                category.attr("ui", dat[ind].ui);
-                category.attr("title", "Creates app as a popup");
-                category.attr("icon", icons[dat[ind].ui]);
-                category.attr("name", dat[ind].name);
-                category.attr("width", dat[ind].w);
-                category.attr("height", dat[ind].h);
-                category.click(function(ev){
-                  var content = sync.newApp($(this).attr("ui"), null, {});
 
-                  var popOut = ui_popOut({
-                    target : $(this),
-                    title : $(this).attr("name"),
-                    minimize : true,
-                    maximize : true,
-                    dragThickness : "0.5em",
-                    style : {"width" : ($(this).attr("width") || 30)+"vw", "height" : ($(this).attr("height") || 50)+"vh"}
-                  }, content);
-                  popOut.resizable();
-                  popOut.addClass("floating-app");
-                });
+        var dat = game.components;
+        for (var ind in dat) {
+          if (dat[ind].basic) {
+            var category = $("<div>").appendTo(modContent);
+            category.addClass("flexcolumn lightoutline hover2 flex");
+            category.css("padding-left", "1em");
+            category.css("padding-right", "1em");
+            category.css("position", "relative");
+            category.attr("ui", dat[ind].ui);
+            category.attr("title", "Creates app as a popup");
+            category.attr("icon", icons[dat[ind].ui]);
+            category.attr("name", dat[ind].name);
+            category.attr("width", dat[ind].w);
+            category.attr("height", dat[ind].h);
+            category.click(function(ev){
+              var content = sync.newApp($(this).attr("ui"), null, {});
 
-                var link = genIcon(icons[dat[ind].ui], dat[ind].name + "").appendTo(category);
-                link.addClass("outlinebottom");
-                link.css("font-size", "2.0em");
+              var popOut = ui_popOut({
+                target : $(this),
+                title : $(this).attr("name"),
+                minimize : true,
+                maximize : true,
+                dragThickness : "0.5em",
+                style : {"width" : ($(this).attr("width") || 30)+"vw", "height" : ($(this).attr("height") || 50)+"vh"}
+              }, content);
+              popOut.resizable();
+              popOut.addClass("floating-app");
+            });
 
-                var desc = $("<p>").appendTo(category);
-                desc.addClass("padding");
-                desc.css("min-height", "50px");
-                desc.text(dat[ind].basic);
+            var link = genIcon(icons[dat[ind].ui], dat[ind].name + "").appendTo(category);
+            link.addClass("outlinebottom");
+            link.css("font-size", "2.0em");
 
-                var hotApp = genIcon("heart").appendTo(category);
-                hotApp.addClass("lrmargin bold");
-                hotApp.css("font-size", "2.0em");
-                hotApp.css("position", "absolute");
-                hotApp.css("top", "0");
-                hotApp.css("right", "0");
-                hotApp.attr("ui", dat[ind].ui);
-                hotApp.attr("title", "Add app to hotbar");
-                hotApp.attr("icon", icons[dat[ind].ui]);
-                hotApp.attr("name", dat[ind].name);
-                hotApp.attr("width", dat[ind].w);
-                hotApp.attr("height", dat[ind].h);
-                hotApp.click(function(ev){
-                  var appData = {icon : $(this).attr("icon"), ui : $(this).attr("ui")};
-                  appData.name = $(this).attr("name");
-                  appData.w = $(this).attr("width") || 30;
-                  appData.h = $(this).attr("height") || 50;
-                  obj.data.apps.push(appData);
-                  obj.update();
-                  var copy = duplicate(obj.data.apps);
-                  for (var k in copy) {
-                    if (copy[k].id) {
-                      copy[k].id = null;
-                    }
-                  }
-                  setCookie("hot-apps", JSON.stringify(copy), 10000000);
+            var desc = $("<p>").appendTo(category);
+            desc.addClass("padding");
+            desc.css("min-height", "50px");
+            desc.text(dat[ind].basic);
 
-                  layout.coverlay("add-hot-app");
-                  ev.stopPropagation();
-                });
-
-                var author = $("<i>").appendTo(category);
-                author.addClass("subtitle lrpadding");
-                author.css("position", "absolute");
-                author.css("bottom", "0");
-                author.css("right", "0");
-                author.append("Author : <b>" + (dat[ind].author || "GM Forge") + "</b>");
+            var hotApp = genIcon("heart").appendTo(category);
+            hotApp.addClass("lrmargin bold");
+            hotApp.css("font-size", "2.0em");
+            hotApp.css("position", "absolute");
+            hotApp.css("top", "0");
+            hotApp.css("right", "0");
+            hotApp.attr("ui", dat[ind].ui);
+            hotApp.attr("title", "Add app to hotbar");
+            hotApp.attr("icon", icons[dat[ind].ui]);
+            hotApp.attr("name", dat[ind].name);
+            hotApp.attr("width", dat[ind].w);
+            hotApp.attr("height", dat[ind].h);
+            hotApp.click(function(ev){
+              var appData = {icon : $(this).attr("icon"), ui : $(this).attr("ui")};
+              appData.name = $(this).attr("name");
+              appData.w = $(this).attr("width") || 30;
+              appData.h = $(this).attr("height") || 50;
+              obj.data.apps.push(appData);
+              obj.update();
+              var copy = duplicate(obj.data.apps);
+              for (var k in copy) {
+                if (copy[k].id) {
+                  copy[k].id = null;
+                }
               }
-            }
+              setCookie("hot-apps", JSON.stringify(copy), 10000000);
+
+              layout.coverlay("add-hot-app");
+              ev.stopPropagation();
+            });
+
+            var author = $("<i>").appendTo(category);
+            author.addClass("subtitle lrpadding");
+            author.css("position", "absolute");
+            author.css("bottom", "0");
+            author.css("right", "0");
+            author.append("Author : <b>" + (dat[ind].author || "GM Forge") + "</b>");
           }
         }
+
       });
 
       var customMods = $("<button>").appendTo(modDiv);
@@ -535,6 +609,6 @@ sync.render("ui_hotApps", function(obj, app, scope) {
     add.click();
     app.removeAttr("shouldOpen");
   }
-
+*/
   return div;
 });

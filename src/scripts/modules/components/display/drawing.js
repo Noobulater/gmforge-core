@@ -556,12 +556,34 @@ sync.render("ui_drawingControls", function(obj, app, scope){
 
   var board = getEnt($("#"+app.attr("targetApp")).attr("index"));
   var row = $("<div>");
-  row.addClass("flexrow flexbetween fit-xy");
+  row.addClass("flexrow flexbetween fit-xy padding");
   if (!data.fog) {
     var drawingWrap = $("<div>").appendTo(row);
     drawingWrap.addClass("flexcolumn middle");
 
     drawingWrap.append("<b class='underline' style='font-size:1.2em'>Tools</b>");
+
+    var drawingMode = genIcon("pencil", "Free Hand");
+    drawingMode.appendTo(drawingWrap);
+    drawingMode.addClass("subtitle spadding");
+    drawingMode.attr("title", "Free Hand");
+    drawingMode.css("padding-left", "2px");
+    drawingMode.css("padding-right", "2px");
+    if (data.drawing == "free") {
+      drawingMode.addClass("highlight alttext smooth");
+    }
+    drawingMode.click(function(){
+      if (data.drawing != "free") {
+        data.drawing = "free";
+      }
+      else {
+        delete data.drawing;
+      }
+      obj.update();
+      layout.coverlay("draw-shape");
+      layout.coverlay("draw-color");
+      obj.target = app.attr("targetApp");
+    });
 
     var drawingMode = genIcon("unchecked", "Box");
     drawingMode.appendTo(drawingWrap);
@@ -607,7 +629,7 @@ sync.render("ui_drawingControls", function(obj, app, scope){
       obj.target = app.attr("targetApp");
     });
 
-    var drawingMode = genIcon("pencil", "Line");
+    var drawingMode = genIcon("minus", "Line");
     drawingMode.appendTo(drawingWrap);
     drawingMode.addClass("subtitle spadding");
     drawingMode.attr("title", "Line");
@@ -770,10 +792,261 @@ sync.render("ui_drawingControls", function(obj, app, scope){
 
       sync.render("ui_textEdit")(obj, app, scope).appendTo(drawingWrap);
     }
-    else {
+    else if (obj.data.drawing == "free") {
       var drawingWrap = $("<div>").appendTo(row);
       drawingWrap.addClass("flexcolumn");
-      drawingWrap.css("width", "400px");
+      drawingWrap.css("font-size", "0.6em");
+
+      var colorPicker = $("<div>").appendTo(drawingWrap);
+      colorPicker.addClass("lpadding");
+
+
+      colorPicker.append("<b class='alttext lrmargin'>Line Thickness</b>");
+      var lineSize = genInput({
+        parent : colorPicker,
+        classes : "fit-x",
+        style : {"color" : "#333"},
+        select : {
+          "Mini" : 6,
+          "Small" : 8,
+          "Medium" : 10,
+          "Large" : 12,
+          "Huge" : 14
+        },
+        value : obj.data.lineSize || 6,
+      });
+      lineSize.change(function(){
+        obj.data.lineSize = $(this).val();
+      });
+      var primaryCol = sync.render("ui_colorPicker")(obj, app, {
+        hideColor : true,
+        custom : false,
+        colors : [
+          "rgb(180, 0, 0)",
+          "rgb(180, 7, 0)",
+          "rgb(180, 65, 0)",
+          "rgb(180, 88, 0)",
+          "rgb(180, 122, 0)",
+          "rgb(180, 130, 0)",
+          "rgb(172, 130, 0)",
+          "rgb(115, 130, 0)",
+          "rgb(57, 130, 0)",
+          "rgb(0, 130, 0)",
+          "rgb(0, 13, 7)",
+          "rgb(0, 13, 65)",
+          "rgb(0, 13, 122)",
+          "rgb(0, 13, 130)",
+          "rgb(0, 172, 130)",
+          "rgb(0, 115, 130)",
+          "rgb(0, 57, 130)",
+          "rgb(0, 0, 130)",
+          "rgb(7, 0, 130)",
+          "rgb(65, 0, 130)",
+          "rgb(122, 0, 130)",
+          "rgb(180, 0, 130)",
+          "rgb(180, 0, 122)",
+          "rgb(180, 0, 65)",
+          "rgb(180, 0, 7)",
+          "rgb(230, 0, 0)",
+          "rgb(230, 57, 0)",
+          "rgb(230, 115, 0)",
+          "rgb(230, 138, 0)",
+          "rgb(230, 172, 0)",
+          "rgb(230, 230, 0)",
+          "rgb(172, 230, 0)",
+          "rgb(115, 230, 0)",
+          "rgb(57, 230, 0)",
+          "rgb(0, 230, 0)",
+          "rgb(0, 230, 57)",
+          "rgb(0, 230, 115)",
+          "rgb(0, 230, 172)",
+          "rgb(0, 230, 230)",
+          "rgb(0, 172, 230)",
+          "rgb(0, 115, 230)",
+          "rgb(0, 57, 230)",
+          "rgb(0, 0, 230)",
+          "rgb(57, 0, 230)",
+          "rgb(115, 0, 230)",
+          "rgb(172, 0, 230)",
+          "rgb(230, 0, 230)",
+          "rgb(230, 0, 172)",
+          "rgb(230, 0, 115)",
+          "rgb(230, 0, 57)",
+          "rgba(230, 0, 0, 0.5)",
+          "rgba(230, 57, 0, 0.5)",
+          "rgba(230, 115, 0, 0.5)",
+          "rgba(230, 138, 0, 0.5)",
+          "rgba(230, 172, 0, 0.5)",
+          "rgba(230, 230, 0, 0.5)",
+          "rgba(172, 230, 0, 0.5)",
+          "rgba(115, 230, 0, 0.5)",
+          "rgba(57, 230, 0, 0.5)",
+          "rgba(0, 230, 0, 0.5)",
+          "rgba(0, 230, 57, 0.5)",
+          "rgba(0, 230, 115, 0.5)",
+          "rgba(0, 230, 172, 0.5)",
+          "rgba(0, 230, 230, 0.5)",
+          "rgba(0, 172, 230, 0.5)",
+          "rgba(0, 115, 230, 0.5)",
+          "rgba(0, 57, 230, 0.5)",
+          "rgba(0, 0, 230, 0.5)",
+          "rgba(57, 0, 230, 0.5)",
+          "rgba(115, 0, 230, 0.5)",
+          "rgba(172, 0, 230, 0.5)",
+          "rgba(230, 0, 230, 0.5)",
+          "rgba(230, 0, 172, 0.5)",
+          "rgba(230, 0, 115, 0.5)",
+          "rgba(230, 0, 57, 0.5)",
+        ],
+        colorChange : function(ev, ui, value){
+          var col = value;
+          obj.data.primary = col;
+          obj.target = app.attr("targetApp");
+        }
+      }).addClass("subtitle").appendTo(colorPicker);
+
+      var primaryCol = sync.render("ui_colorPicker")(obj, app, {
+        hideColor : true,
+        custom : false,
+        colors : [
+          "rgba(0,0,0,0)",
+          "rgba(34,34,34,0.5)",
+          "rgba(155,155,155,0.5)",
+          "rgba(255,255,255,0.5)",
+          "rgba(255,255,255,1)",
+          "rgba(155,155,155,1)",
+          "rgba(34,34,34,1)",
+        ],
+        colorChange : function(ev, ui, value){
+          var col = value;
+          obj.data.primary = col;
+          obj.target = app.attr("targetApp");
+        }
+      }).addClass("subtitle").appendTo(colorPicker);
+    }
+    else if (obj.data.drawing == "line") {
+      var drawingWrap = $("<div>").appendTo(row);
+      drawingWrap.addClass("flexcolumn");
+      drawingWrap.css("font-size", "0.6em");
+
+      var colorPicker = $("<div>").appendTo(drawingWrap);
+      colorPicker.addClass("lpadding");
+
+      var primaryCol = sync.render("ui_colorPicker")(obj, app, {
+        hideColor : true,
+        custom : false,
+        colors : [
+          "rgb(180, 0, 0)",
+          "rgb(180, 7, 0)",
+          "rgb(180, 65, 0)",
+          "rgb(180, 88, 0)",
+          "rgb(180, 122, 0)",
+          "rgb(180, 130, 0)",
+          "rgb(172, 130, 0)",
+          "rgb(115, 130, 0)",
+          "rgb(57, 130, 0)",
+          "rgb(0, 130, 0)",
+          "rgb(0, 13, 7)",
+          "rgb(0, 13, 65)",
+          "rgb(0, 13, 122)",
+          "rgb(0, 13, 130)",
+          "rgb(0, 172, 130)",
+          "rgb(0, 115, 130)",
+          "rgb(0, 57, 130)",
+          "rgb(0, 0, 130)",
+          "rgb(7, 0, 130)",
+          "rgb(65, 0, 130)",
+          "rgb(122, 0, 130)",
+          "rgb(180, 0, 130)",
+          "rgb(180, 0, 122)",
+          "rgb(180, 0, 65)",
+          "rgb(180, 0, 7)",
+          "rgb(230, 0, 0)",
+          "rgb(230, 57, 0)",
+          "rgb(230, 115, 0)",
+          "rgb(230, 138, 0)",
+          "rgb(230, 172, 0)",
+          "rgb(230, 230, 0)",
+          "rgb(172, 230, 0)",
+          "rgb(115, 230, 0)",
+          "rgb(57, 230, 0)",
+          "rgb(0, 230, 0)",
+          "rgb(0, 230, 57)",
+          "rgb(0, 230, 115)",
+          "rgb(0, 230, 172)",
+          "rgb(0, 230, 230)",
+          "rgb(0, 172, 230)",
+          "rgb(0, 115, 230)",
+          "rgb(0, 57, 230)",
+          "rgb(0, 0, 230)",
+          "rgb(57, 0, 230)",
+          "rgb(115, 0, 230)",
+          "rgb(172, 0, 230)",
+          "rgb(230, 0, 230)",
+          "rgb(230, 0, 172)",
+          "rgb(230, 0, 115)",
+          "rgb(230, 0, 57)",
+          "rgba(230, 0, 0, 0.5)",
+          "rgba(230, 57, 0, 0.5)",
+          "rgba(230, 115, 0, 0.5)",
+          "rgba(230, 138, 0, 0.5)",
+          "rgba(230, 172, 0, 0.5)",
+          "rgba(230, 230, 0, 0.5)",
+          "rgba(172, 230, 0, 0.5)",
+          "rgba(115, 230, 0, 0.5)",
+          "rgba(57, 230, 0, 0.5)",
+          "rgba(0, 230, 0, 0.5)",
+          "rgba(0, 230, 57, 0.5)",
+          "rgba(0, 230, 115, 0.5)",
+          "rgba(0, 230, 172, 0.5)",
+          "rgba(0, 230, 230, 0.5)",
+          "rgba(0, 172, 230, 0.5)",
+          "rgba(0, 115, 230, 0.5)",
+          "rgba(0, 57, 230, 0.5)",
+          "rgba(0, 0, 230, 0.5)",
+          "rgba(57, 0, 230, 0.5)",
+          "rgba(115, 0, 230, 0.5)",
+          "rgba(172, 0, 230, 0.5)",
+          "rgba(230, 0, 230, 0.5)",
+          "rgba(230, 0, 172, 0.5)",
+          "rgba(230, 0, 115, 0.5)",
+          "rgba(230, 0, 57, 0.5)",
+        ],
+        colorChange : function(ev, ui, value){
+          var col = value;
+          obj.data.primary = col;
+          obj.target = app.attr("targetApp");
+          if (data.drawing == "line") {
+            layout.coverlay("draw-color");
+          }
+        }
+      }).addClass("subtitle").appendTo(colorPicker);
+
+      var primaryCol = sync.render("ui_colorPicker")(obj, app, {
+        hideColor : true,
+        custom : false,
+        colors : [
+          "rgba(0,0,0,0)",
+          "rgba(34,34,34,0.5)",
+          "rgba(155,155,155,0.5)",
+          "rgba(255,255,255,0.5)",
+          "rgba(255,255,255,1)",
+          "rgba(155,155,155,1)",
+          "rgba(34,34,34,1)",
+        ],
+        colorChange : function(ev, ui, value){
+          var col = value;
+          obj.data.primary = col;
+          obj.target = app.attr("targetApp");
+          if (data.drawing == "line") {
+            layout.coverlay("draw-color");
+          }
+        }
+      }).addClass("subtitle").appendTo(colorPicker);
+    }
+    else {
+      var drawingWrap = $("<div>").appendTo(row);
+      drawingWrap.addClass("flexcolumn spadding");
 
       var colorRow = $("<div>").appendTo(drawingWrap);
       colorRow.addClass("flexrow");
@@ -1028,6 +1301,8 @@ sync.render("ui_drawingControls", function(obj, app, scope){
       });
     }
     else {
+      row.addClass("flexmiddle flex");
+
       var drawingWrap = $("<div>").appendTo(row);
       drawingWrap.addClass("flexcolumn middle");
 
@@ -1070,6 +1345,7 @@ sync.render("ui_drawingControls", function(obj, app, scope){
         drawingMode.click(function(){
           if (data.drawing != "line") {
             data.drawing = "line";
+            sendAlert({text : "Chain Walls by holding ctrl"});
           }
           else {
             delete data.drawing;
@@ -1168,7 +1444,85 @@ sync.render("ui_drawingControls", function(obj, app, scope){
           menu.removeClass("outline");
         });
 
-        drawingWrap.append("<div class='flex'></div>");
+
+        if (board && board.data.gridW && board.data.gridH) {
+          drawingWrap.append("<div class='subtitle bold flexmiddle spadding'>Snap Increment</div>");
+          var gridInc = $("<div>").appendTo(drawingWrap);
+          gridInc.addClass("flexrow");
+
+          var button = $("<div>").appendTo(gridInc);
+          button.addClass("outline smooth alttext subtitle spadding flex hover2");
+          button.text("1/4");
+          button.click(function(){
+            if (obj.data.gridInc == board.data.gridW/4) {
+              delete obj.data.gridInc;
+            }
+            else {
+              obj.data.gridInc = board.data.gridW/4;
+            }
+            obj.update();
+          });
+          if (obj.data.gridInc == board.data.gridW/4) {
+            button.addClass("highlight");
+          }
+          else {
+            button.addClass("background");
+          }
+
+          var button = $("<div>").appendTo(gridInc);
+          button.addClass("outline smooth alttext subtitle spadding flex hover2");
+          button.text("1/3");
+          button.click(function(){
+            if (obj.data.gridInc == board.data.gridW/3) {
+              delete obj.data.gridInc;
+            }
+            else {
+              obj.data.gridInc = board.data.gridW/3;
+            }
+            obj.update();
+          });
+          if (obj.data.gridInc == board.data.gridW/3) {
+            button.addClass("highlight");
+          }
+          else {
+            button.addClass("background");
+          }
+
+          var button = $("<div>").appendTo(gridInc);
+          button.addClass("outline smooth alttext subtitle spadding flex hover2");
+          button.text("1/2");
+          button.click(function(){
+            if (obj.data.gridInc == board.data.gridW/2) {
+              delete obj.data.gridInc;
+            }
+            else {
+              obj.data.gridInc = board.data.gridW/2;
+            }
+            obj.update();
+          });
+          if (obj.data.gridInc == board.data.gridW/2) {
+            button.addClass("highlight");
+          }
+          else {
+            button.addClass("background hover2");
+          }
+
+          var button = $("<div>").appendTo(drawingWrap);
+          button.addClass("outline smooth alttext subtitle spadding");
+          button.text("Normal Grid");
+          button.click(function(){
+            delete obj.data.gridInc;
+            obj.update();
+          });
+          if (!obj.data.gridInc) {
+            button.addClass("highlight");
+          }
+          else {
+            button.addClass("background hover2");
+          }
+        }
+
+        drawingWrap.append("<div class='spadding'></div>");
         var drawingMode = genIcon("trash", "Reset Layer");
         drawingMode.appendTo(drawingWrap);
         drawingMode.addClass("subtitle destroy");
@@ -1186,7 +1540,7 @@ sync.render("ui_drawingControls", function(obj, app, scope){
               board.data.layers[layer].r = [];
               board.data.layers[layer].w = [];
             };
-            boardApi.pix.updateLayer(layer, {r : true, w : 0}, board, "destroy");
+            boardApi.updateLayer(layer, {r : true, w : 0}, board, "destroy");
             obj.sync("updateAsset");
             layout.coverlay("clear-strokes");
           });

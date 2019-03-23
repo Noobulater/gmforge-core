@@ -14,7 +14,7 @@ sync.render("ui_resourcePage", function(obj, app, scope){
 
   var optionsBar = $("<div>").appendTo(div);
   optionsBar.addClass("foreground flexcolumn");
-  optionsBar.css("padding-top", $($(".main-dock")[1]).height());
+  optionsBar.css("padding-top", $("#main-nav").height());
 
   var frameWrap = $("<div>").appendTo(div);
   frameWrap.css("position", "relative");
@@ -56,7 +56,9 @@ sync.render("ui_resourcePage", function(obj, app, scope){
         newApp.css("outline", "none");
         newApp.attr("tabName", tabData.name);
         if (tabData.type == "asset") {
-          getEnt(tabData.url).addApp(newApp);
+          if (getEnt(tabData.url) && getEnt(tabData.url).data) {
+            getEnt(tabData.url).addApp(newApp);
+          }
         }
         else {
           sync.render("ui_tab")(null, newApp, null).appendTo(newApp);
@@ -72,7 +74,7 @@ sync.render("ui_resourcePage", function(obj, app, scope){
       }
       else {
         if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-          resourceWrap.append("<b class='hover2 lrpadding'>"+tabData.name+"</b>");
+          resourceWrap.append("<b class='link lrpadding'>"+tabData.name+"</b>");
           resourceWrap.click(function(ev){
             var actionList = [
               {
@@ -617,11 +619,32 @@ sync.render("ui_resourcePage", function(obj, app, scope){
       ent.addApp(newFrame);
     }
     else if (type == "pdf") {
-      var newFrame = $("<object>").appendTo(frameWrap);
-      newFrame.attr("type", "application/pdf");
-      newFrame.attr("data", url);
-      newFrame.attr("width", "100%");
-      newFrame.attr("height", "100%");
+      function isElectron() {
+        if (typeof require !== 'function') return false;
+        if (typeof window !== 'object') return false;
+        try {
+          const electron = require('electron');
+          if (typeof electron !== 'object') return false;
+        } catch(e) {
+          return false;
+        }
+        return true;
+      }
+
+      if (isElectron()) {
+        var newFrame = $("<iframe>").appendTo(frameWrap);
+        newFrame.attr("type", "application/pdf");
+        newFrame.attr("src", url);
+        newFrame.attr("width", "100%");
+        newFrame.attr("height", "100%");
+      }
+      else {
+        var newFrame = $("<object>").appendTo(frameWrap);
+        newFrame.attr("type", "application/pdf");
+        newFrame.attr("data", url);
+        newFrame.attr("width", "100%");
+        newFrame.attr("height", "100%");
+      }
     }
     else if (type == "img") {
       var split = String(resourcePath).split(".");
@@ -713,9 +736,9 @@ sync.render("ui_resourcePage", function(obj, app, scope){
       var checkbox = genInput({
         parent : checkboxWrap,
         type : "checkbox",
-        value : app.attr("scrollNext"),
         style : {"margin-top" : "0px"}
       });
+      checkbox.prop("checked", app.attr("scrollNext"));
       //checkboxWrap.append("Scroll to Next");
 
       var maxZoom = 200;
@@ -742,7 +765,6 @@ sync.render("ui_resourcePage", function(obj, app, scope){
         img.css("margin-top", "100px");
         img.css("margin-bottom", "100px");
       });
-
     }
     else if (type == "website") {
       var newFrame = $("<iframe>").appendTo(frameWrap);

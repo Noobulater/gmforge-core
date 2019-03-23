@@ -8,7 +8,7 @@ sync.render("ui_card", function(obj, app, scope) {
   if (obj.data.flipped || (obj.data._s && hasSecurity(getCookie("UserID"), "Visible", obj.data)) || getCookie("UserID") == app.attr("UserID")) {
     img = obj.data.src;
   }
-  div.attr("src", img);
+  div.attr("cardSrc", img);
   div.css("width", "64px");
   div.css("height", "96px");
   div.css("background-image", "url('"+(img)+"')");
@@ -40,13 +40,19 @@ sync.render("ui_hand", function(obj, app, scope) {
   var playerData = scope.cardData || obj.data.cards.players[scope.player];
 
   var div = $("<div>");
-  div.addClass("flexrow");
+  div.addClass("flexrow dropContent");
   if (getCookie("UserID") == scope.player) {
     div.sortable({
+      connectWith : ".dropContent",
       update : function(ev, ui) {
         var finalOrder = [];
         div.children().each(function(){
-          finalOrder.push(obj.data.cards.players[scope.player][$(this).attr("cardID")]);
+          if ($(this).attr("cardID")) {
+            finalOrder.push(obj.data.cards.players[scope.player][$(this).attr("cardID")]);
+          }
+          else if ($(this).attr("cardSrc")) {
+            finalOrder.push({src : $(this).attr("cardSrc")});
+          }
         });
         obj.data.cards.players[scope.player] = finalOrder;
         if (obj == game.state) {
@@ -62,6 +68,7 @@ sync.render("ui_hand", function(obj, app, scope) {
   for (var i in playerData) {
     var card = sync.render("ui_card")({data : playerData[i]}, app, scope).appendTo(div);
     card.attr("cardID", i);
+    card.attr("src", "state");
     if (i != 0) {
       card.css("margin-left", "-48px");
     }
@@ -82,7 +89,7 @@ sync.render("ui_hand", function(obj, app, scope) {
       });
       card.contextmenu(function(){
         var cardID = $(this).attr("cardID");
-        var src = $(this).attr("src");
+        var src = $(this).attr("cardSrc");
         var actionsList = [
           {
             name : "Announce Card",
@@ -128,175 +135,6 @@ sync.render("ui_deck", function(obj, app, scope) {
   div.addClass("flexrow flexmiddle");
 
   if (obj.data.cards) {
-    for (var i in obj.data.cards.decks) {
-      var cards = $("<div>").appendTo(div);
-      cards.addClass("flexmiddle alttext lrpadding");
-      cards.attr("index", i);
-      cards.css("margin-right", "4px");
-      cards.css("width", 75 * 3/5);
-      cards.css("height", 75 * 4/5);
-      cards.css("background-image", "url('/content/cards/backface.png')");
-      cards.css("background-size", "100% 100%");
-      cards.css("background-repeat", "no-repeat");
-      cards.css("background-position", "center");
-      cards.append("<b>"+obj.data.cards.decks[i].pool.length+"</b>");
-      if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-        cards.addClass("hover2");
-        cards.click(function(){
-          var cardActions = [];
-          var deck = $(this).attr("index");
-
-          var deal = [];
-          function draw(deck, number, player) {
-            var deckData = game.state.data.cards.decks[deck];
-            game.state.data.cards.players = game.state.data.cards.players || {};
-            game.state.data.cards.players[player] = game.state.data.cards.players[player] || [];
-
-            var cards = deckData.pool.splice(0, number);
-            for (var i in cards) {
-              game.state.data.cards.players[player].push(cards[i]);
-            }
-
-            game.state.sync("updateState");
-          }
-
-          for (var key in game.players.data) {
-            var dealCards = [
-              {
-                name : "1 Card",
-                attr : {user : key, num : 1},
-                click : function(ev, ui){
-                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
-                }
-              },
-              {
-                name : "2 Cards",
-                attr : {user : key, num : 2},
-                click : function(ev, ui){
-                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
-                }
-              },
-              {
-                name : "3 Cards",
-                attr : {user : key, num : 3},
-                click : function(ev, ui){
-                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
-                }
-              },
-              {
-                name : "4 Cards",
-                attr : {user : key, num : 4},
-                click : function(ev, ui){
-                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
-                }
-              },
-              {
-                name : "5 Cards",
-                attr : {user : key, num : 5},
-                click : function(ev, ui){
-                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
-                }
-              },
-              {
-                name : "6 Cards",
-                attr : {user : key, num : 6},
-                click : function(ev, ui){
-                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
-                }
-              },
-              {
-                name : "7 Cards",
-                attr : {user : key, num : 7},
-                click : function(ev, ui){
-                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
-                }
-              }
-            ];
-
-            cardActions.push({
-              name : "Deal to " + game.players.data[key].displayName,
-              submenu : dealCards
-            });
-          }
-
-          cardActions.push({
-            name : "Discard Deck",
-            submenu : [
-              {
-                name : "CONFIRM",
-                attr : {title : "Deletes this Deck", deck : $(this).attr("index")},
-                click : function(ev, ui){
-                   game.state.data.cards.decks.splice(ui.attr("deck"), 1);
-                   game.state.sync("updateState");
-                }
-              }
-            ]
-          });
-
-          cardActions.push({
-            name : "Restore Deck",
-            attr : {title : "Reshuffles all the cards", deck : $(this).attr("index")},
-            click : function(ev, ui){
-              var deckData = game.state.data.cards.decks[ui.attr("deck")];
-              deckData.pool = [];
-              var start = duplicate(util.decks[deckData.type]);
-              while (start.length) {
-                deckData.pool.push(start.splice(Math.floor(Math.random() * start.length), 1)[0]);
-              }
-              game.state.sync("updateState");
-            }
-          });
-
-          cardActions.push({
-            name : "Shuffle",
-            attr : {title : "Reshuffles the remaining cards", deck : $(this).attr("index")},
-            click : function(ev, ui){
-              var deckData = game.state.data.cards.decks[ui.attr("deck")];
-              var start = duplicate(deckData.pool);
-              while (start.length) {
-                deckData.pool.push(start.splice(Math.floor(Math.random() * start.length), 1)[0]);
-              }
-              game.state.sync("updateState");
-            }
-          });
-
-          cardActions.push({
-            name : "Peek",
-            attr : {title : "Peek at the next cards", deck : $(this).attr("index")},
-            click : function(ev, ui){
-              var content = $("<div>");
-              content.addClass("flexrow");
-              var deckData = game.state.data.cards.decks[ui.attr("deck")];
-              for (var i=deckData.pool.length-1; i>=0; i--) {
-                var dat = {data : duplicate(deckData.pool[i])};
-                dat.data.flipped = true;
-                dat.data.text = (i==0)?("Top Card"):(null);
-
-                var card = sync.render("ui_card")(dat, app, {}).appendTo(content);
-                card.attr("cardID", i);
-                if (i != 0) {
-                  card.css("margin-right", "-48px");
-                }
-                if (!deckData.pool[i].flipped) {
-                  card.css("margin-top", "8px");
-                }
-              }
-
-              ui_popOut({
-                target : ui,
-                noCss : true,
-                id : "peek-deck",
-              }, content).addClass("highlight");
-            }
-          });
-          ui_dropMenu($(this), cardActions, {id : "cards", align : "top"});
-        });
-        cards.contextmenu(function(){
-          $(this).click();
-          return false;
-        });
-      }
-    }
     if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
       var cards = $("<div>").appendTo(div);
       cards.addClass("hover2 flexmiddle");
@@ -382,6 +220,32 @@ sync.render("ui_deck", function(obj, app, scope) {
           });
         }
 
+        for (var key in game.entities.data) {
+          var ent = game.entities.data[key];
+          if (ent && ent.data && ent.data._t == "p" && sync.rawVal(ent.data.info.mode) == "Deck of Cards") {
+            createDecks.push({
+              name : sync.rawVal(ent.data.info.name),
+              attr : {deck : ent.id()},
+              click : function(ev, ui){
+                game.state.data.cards = game.state.data.cards || {}
+                game.state.data.cards.decks = game.state.data.cards.decks || [];
+
+                // shuffle
+                var deckData = {type : JSON.parse(sync.rawVal(getEnt(ui.attr("deck")).data.info.notes)), pool : [], players : {}};
+                var start = duplicate(deckData.type);
+                while (start.length) {
+                  var index = Math.floor(Math.random() * start.length);
+                  var val = start.splice(index, 1)[0];
+                  deckData.pool.push(val);
+                }
+                game.state.data.cards.decks.push(deckData);
+
+                game.state.sync("updateState");
+              }
+            });
+          }
+        }
+
         cards.push({
           name : "Deal Unique Card",
           click : function(ev, ui) {
@@ -444,6 +308,198 @@ sync.render("ui_deck", function(obj, app, scope) {
         $(this).click();
         return false;
       });
+    }
+    for (var i in obj.data.cards.decks) {
+      var cards = $("<div>").appendTo(div);
+      cards.addClass("flexmiddle alttext lrpadding");
+      cards.attr("index", i);
+      cards.css("margin-right", "4px");
+      cards.css("width", 75 * 3/5);
+      cards.css("height", 75 * 4/5);
+      cards.css("background-image", "url('/content/cards/backface.png')");
+      cards.css("background-size", "100% 100%");
+      cards.css("background-repeat", "no-repeat");
+      cards.css("background-position", "center");
+      cards.append("<b>"+obj.data.cards.decks[i].pool.length+"</b>");
+      if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+        cards.addClass("hover2");
+        cards.click(function(){
+          var cardActions = [];
+          var deck = $(this).attr("index");
+
+          var deal = [];
+          function draw(deck, number, player) {
+            var deckData = game.state.data.cards.decks[deck];
+            game.state.data.cards.players = game.state.data.cards.players || {};
+            game.state.data.cards.players[player] = game.state.data.cards.players[player] || [];
+
+            var cards = deckData.pool.splice(0, number);
+            for (var i in cards) {
+              game.state.data.cards.players[player].push(cards[i]);
+            }
+
+            game.state.sync("updateState");
+          }
+
+          for (var key in game.players.data) {
+            var dealCards = [
+              {
+                name : "1 Card",
+                attr : {user : key, num : 1},
+                click : function(ev, ui){
+                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
+                }
+              },
+              {
+                name : "2 Cards",
+                attr : {user : key, num : 2},
+                click : function(ev, ui){
+                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
+                }
+              },
+              {
+                name : "3 Cards",
+                attr : {user : key, num : 3},
+                click : function(ev, ui){
+                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
+                }
+              },
+              {
+                name : "4 Cards",
+                attr : {user : key, num : 4},
+                click : function(ev, ui){
+                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
+                }
+              },
+              {
+                name : "5 Cards",
+                attr : {user : key, num : 5},
+                click : function(ev, ui){
+                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
+                }
+              },
+              {
+                name : "6 Cards",
+                attr : {user : key, num : 6},
+                click : function(ev, ui){
+                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
+                }
+              },
+              {
+                name : "7 Cards",
+                attr : {user : key, num : 7},
+                click : function(ev, ui){
+                  draw(deck, parseInt(ui.attr("num")), ui.attr("user"));
+                }
+              },
+              {
+                name : "# Cards",
+                attr : {user : key},
+                click : function(ev, ui){
+                  var user = ui.attr("user");
+                  ui_prompt({
+                    target : ui,
+                    inputs : {
+                      "Number of Cards" : {type : "number", value : 7, min : 1}
+                    },
+                    click : function(ev, inputs) {
+                      draw(deck, parseInt(inputs["Number of Cards"].val()), user);
+                    }
+                  });
+                }
+              }
+            ];
+
+            cardActions.push({
+              name : "Deal to " + game.players.data[key].displayName,
+              submenu : dealCards
+            });
+          }
+
+          cardActions.push({
+            name : "Discard Deck",
+            submenu : [
+              {
+                name : "CONFIRM",
+                attr : {title : "Deletes this Deck", deck : $(this).attr("index")},
+                click : function(ev, ui){
+                   game.state.data.cards.decks.splice(ui.attr("deck"), 1);
+                   game.state.sync("updateState");
+                }
+              }
+            ]
+          });
+
+          cardActions.push({
+            name : "Restore Deck",
+            attr : {title : "Reshuffles all the cards", deck : $(this).attr("index")},
+            click : function(ev, ui){
+              var deckData = game.state.data.cards.decks[ui.attr("deck")];
+              deckData.pool = [];
+              var start;
+              if (deckData.type instanceof Object) {
+                start = duplicate(deckData.type);
+              }
+              else {
+                start = duplicate(util.decks[deckData.type]);
+              }
+              while (start.length) {
+                deckData.pool.push(start.splice(Math.floor(Math.random() * start.length), 1)[0]);
+              }
+              game.state.sync("updateState");
+            }
+          });
+
+          cardActions.push({
+            name : "Shuffle",
+            attr : {title : "Reshuffles the remaining cards", deck : $(this).attr("index")},
+            click : function(ev, ui){
+              var deckData = game.state.data.cards.decks[ui.attr("deck")];
+              var start = duplicate(deckData.pool);
+              deckData.pool = [];
+              while (start.length) {
+                deckData.pool.push(start.splice(Math.floor(Math.random() * start.length), 1)[0]);
+              }
+              game.state.sync("updateState");
+            }
+          });
+
+          cardActions.push({
+            name : "Peek",
+            attr : {title : "Peek at the next cards", deck : $(this).attr("index")},
+            click : function(ev, ui){
+              var content = $("<div>");
+              content.addClass("flexrow");
+              var deckData = game.state.data.cards.decks[ui.attr("deck")];
+              for (var i=deckData.pool.length-1; i>=0; i--) {
+                var dat = {data : duplicate(deckData.pool[i])};
+                dat.data.flipped = true;
+                dat.data.text = (i==0)?("Top Card"):(null);
+
+                var card = sync.render("ui_card")(dat, app, {}).appendTo(content);
+                card.attr("cardID", i);
+                if (i != 0) {
+                  card.css("margin-right", "-48px");
+                }
+                if (!deckData.pool[i].flipped) {
+                  card.css("margin-top", "8px");
+                }
+              }
+
+              ui_popOut({
+                target : ui,
+                noCss : true,
+                id : "peek-deck",
+              }, content).addClass("highlight");
+            }
+          });
+          ui_dropMenu($(this), cardActions, {id : "cards", align : "top"});
+        });
+        cards.contextmenu(function(){
+          $(this).click();
+          return false;
+        });
+      }
     }
   }
 

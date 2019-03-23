@@ -3,7 +3,7 @@ sync.render("ui_body", function(obj, app, scope){
 
   scope = scope || {viewOnly: false}; // defaults
   scope.url = scope.url || "/content/outline.png";
-  scope.target = scope.target || sync.traverse(obj.data, game.templates.display.sheet.health || "counters.wounds");
+  scope.target = scope.target || sync.traverse(obj.data, "counters.wounds");
   scope.displayText = scope.displayText || function(button, key) {
     if (sync.modifier(scope.target, key) < 0) {
       button.text(sync.modifier(scope.target, key));

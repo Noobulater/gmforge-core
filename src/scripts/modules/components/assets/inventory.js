@@ -1,9 +1,511 @@
+sync.render("ui_renderItemv2", function(obj, app, scope){
+  if (!obj) {return $("<div>");}
+  if (!game.templates.build) {
+    return sync.render("ui_renderItem")(obj, app, scope);
+  }
+
+  scope = scope || {viewOnly: (app.attr("viewOnly") == "true")};
+  scope.cref = scope.cref || app.attr("char-ref") || null;
+  scope.mode = app.attr("mode") || "notes";
+  scope.local = scope.local || (app.attr("local") == "true");
+  scope.homebrew = scope.homebrew || (app.attr("homebrew") == "true");
+  scope.path = app.attr("path");
+  scope.index = app.attr("index");
+  var templates = scope.templates || game.templates;
+
+  var char;
+  var ctx = sync.defaultContext();
+  ctx[obj.data._t] = obj.data;
+  if (scope.cref) {
+    char = getEnt(scope.cref);
+    ctx[char.data._t] = duplicate(char.data);
+  }
+
+  var itemData = scope.itemData || obj.data;
+
+  var div = $("<div>");
+  div.addClass("fit-xy flexcolumn");
+
+  var optionsBar = $("<div>").appendTo(div);
+  optionsBar.addClass("flexrow fit-x background outline");
+
+  if (app.attr("homebrew")) {
+    var targetIcon = $("<button>").appendTo(optionsBar);
+    targetIcon.addClass("background subtitle alttext");
+    targetIcon.text("Default Data Model");
+    targetIcon.click(function(){
+      var select = sync.newApp("ui_JSON");
+      select.attr("lookup", "templates.elements."+obj.data._type);
+      select.attr("closeTarget", "json-editor");
+      game.locals["homebrew"].addApp(select);
+
+      var popout = ui_popOut({
+        target : $("body"),
+        id : "json-editor",
+        title : "Default Data Model(JSON)"
+      }, select);
+      popout.resizable();
+    });
+  }
+  else {
+    var selectData = {};
+    for (var k in game.templates.elements) {
+      selectData[k] = k;
+    }
+    if (Object.keys(selectData)) {
+      var select = genInput({
+        select : selectData,
+        parent : optionsBar,
+        classes : "subtitle",
+        value : obj.data._type,
+        disabled : scope.viewOnly,
+      });
+      select.change(function(){
+        var elementData = game.templates.elements[$(this).val()];
+        obj.data._drop = elementData._drop;
+        obj.data._t = elementData._t;
+        obj.data._type = elementData._type;
+
+        if (!scope.local) {
+          obj.sync("updateAsset");
+        }
+        else {
+          obj.update();
+        }
+      });
+    }
+  }
+
+  var actions = $("<button>").appendTo(optionsBar);
+  actions.addClass("background subtitle alttext");
+  if (app.attr("mode") == "attributes") {
+    actions.removeClass("background");
+    actions.addClass("highlight");
+  }
+  actions.text("Attributes");
+  actions.click(function(){
+    if (app.attr("mode") == "attributes") {
+      app.removeAttr("mode");
+    }
+    else {
+      app.attr("mode", "attributes");
+    }
+    if (!scope.local) {
+      obj.sync("updateAsset");
+    }
+    else {
+      obj.update();
+    }
+  });
+
+  var actions = $("<button>").appendTo(optionsBar);
+  actions.addClass("background subtitle alttext");
+  if (app.attr("mode") == "html") {
+    actions.removeClass("background");
+    actions.addClass("highlight");
+  }
+  actions.text("Sheet");
+  actions.click(function(){
+    var content = $("<div>");
+    content.addClass("flexcolumn fit-xy");
+
+    var select = genInput({
+      parent : content,
+      type : "textarea",
+      classes : "flex subtitle",
+      disabled : scope.viewOnly,
+    });
+    if (obj.data._d && obj.data._d.content) {
+      select.text(obj.data._d.content);
+    }
+    else if (game.templates.display.elements[obj.data._type || Object.keys(game.templates.display.elements)[0]] && game.templates.display.elements[obj.data._type || Object.keys(game.templates.display.elements)[0]].content) {
+      select.text(game.templates.display.elements[obj.data._type || Object.keys(game.templates.display.elements)[0]].content);
+    }
+    select.change(function(){
+      if ($(this).val()) {
+        obj.data._d = obj.data._d || {};
+        obj.data._d.content = $(this).val();
+      }
+      else {
+        delete obj.data._d;
+      }
+      if (!scope.local) {
+        obj.sync("updateAsset");
+      }
+      else {
+        obj.update();
+      }
+    });
+
+    content.append("<button class='fit-x spadding'>Confirm</button>");
+
+    var popout = ui_popOut({
+      target : $("body"),
+      id : "json-editor",
+      style : {"width" : "600px", "height" : "600px"}
+    }, content);
+    popout.resizable();
+  });
+
+  var actions = $("<button>").appendTo(optionsBar);
+  actions.addClass("background subtitle alttext");
+  if (app.attr("mode") == "calc") {
+    actions.removeClass("background");
+    actions.addClass("highlight");
+  }
+  actions.text("Math");
+  actions.click(function(){
+    if (app.attr("mode") == "calc") {
+      app.removeAttr("mode");
+    }
+    else {
+      app.attr("mode", "calc");
+    }
+    obj.update();
+  });
+
+  var actions = $("<button>").appendTo(optionsBar);
+  actions.addClass("background subtitle alttext");
+  if (app.attr("mode") == "actions") {
+    actions.removeClass("background");
+    actions.addClass("highlight");
+  }
+  actions.text("Hotbar");
+  actions.click(function(){
+    if (app.attr("mode") == "actions") {
+      app.removeAttr("mode");
+    }
+    else {
+      app.attr("mode", "actions");
+    }
+    obj.update();
+  });
+
+//game.templates.display.item
+
+  if (app.attr("mode") == "attributes") {
+    optionsBar.empty();
+    optionsBar.addClass("flexbetween");
+
+    var reset = $("<button>").appendTo(optionsBar);
+    reset.addClass("highlight lrpadding alttext flexmiddle subtitle");
+    reset.text("Back to Sheet");
+    reset.click(function(){
+      app.removeAttr("mode");
+      obj.update();
+    });
+
+    var template = {info : "", equip : "", weapon : "", spell : ""};
+    var sheet = scope.sheet;
+    if (app.attr("homebrew")) {
+      sheet = sheet || game.locals["homebrew"].data.templates.display.elements[obj.data._type];
+    }
+    else {
+      sheet = sheet || game.templates.display.elements[obj.data._type] || game.templates.display.elements[Object.keys(game.templates.display.elements)[0]];
+    }
+    if (sheet.categories) {
+      template = {};
+      for (var k in sheet.categories) {
+        template[k] = sheet.categories[k];
+      }
+    }
+
+    var reset = $("<button>").appendTo(optionsBar);
+    reset.addClass("background lrpadding alttext flexmiddle subtitle");
+    reset.text("Load Attributes");
+    reset.click(function(){
+      var content = sync.render("ui_assetPicker")(obj, app, {
+        category : "i",
+        filter : "i",
+        select : function(ev, ui, ent, options, entities){
+          if (ent.data) {
+            var newData = duplicate(ent.data);
+            for (var i in newData) {
+              if (i && String(i)[0] == "_") {
+                delete newData;
+              }
+            }
+            merge(obj.data, newData, true);
+            if (app.attr("homebrew") && game.templates.build) {
+              game.locals["homebrew"].data.previewItem[obj.data._type] = duplicate(obj.data);
+              game.locals["homebrew"].data.templates.elements[obj.data._type] = duplicate(obj.data);
+            }
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+          layout.coverlay("add-asset");
+        }
+      });
+      var pop = ui_popOut({
+        target : $("body"),
+        prompt : true,
+        id : "add-asset",
+        title : "Pick Sheet",
+        style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
+      }, content);
+      pop.resizable();
+    });
+
+    var scrollDiv = $("<div>").appendTo(div);
+    scrollDiv.addClass("flex foreground scroll-xy");
+    scrollDiv.css("position", "relative");
+    scrollDiv.scroll(function(){
+      app.attr("_lastScrollTop", scrollDiv.scrollTop());
+      app.attr("_lastScrollLeft", scrollDiv.scrollLeft());
+    });
+
+    var list = $("<div>").appendTo(scrollDiv);
+    list.addClass("lrpadding fit-x");
+    list.css("position", "absolute");
+
+    var keys = {};
+    for (var key in template) {
+      var path = key;
+      var attrPlate = $("<div>").appendTo(list);
+      attrPlate.addClass("lrpadding");
+      attrPlate.css("font-size", "1.2em");
+      attrPlate.append("<u class='bold lrpadding lrmargin alttext'>"+key+"</b>");
+
+      var attrWrap = $("<div>").appendTo(attrPlate);
+      attrWrap.addClass("flexcolumn subtitle white outline smooth lpadding");
+      attrWrap.css("margin-bottom", "1em");
+      if (template[key] == "") {
+        var headerRow = $("<div>").appendTo(attrWrap);
+        headerRow.addClass("flexrow padding");
+        headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:100px'>Macro Key</u>");
+        headerRow.append("<u class='flex subtitle flexmiddle lrmargin' style='width:100px'>Name</u>");
+        headerRow.append("<u class='flex2 subtitle flexmiddle lrmargin' style='width:100px'>Value</u>");
+        headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:40px'>Min</u>");
+        headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:40px'>Max</u>");
+        headerRow.append("<u class='subtitle flexmiddle lrmargin' style='width:70px'>Modifiers</u>");
+        if (!scope.viewOnly) {
+          headerRow.append(genIcon("remove").addClass("lrpadding lrmargin").css("color", "transparent"));
+        }
+        for (var subKey in obj.data[key]) {
+          path = key + "." + subKey;
+          if (path != "info.notes" && path != "info.img" && path != "info.name") {
+            var attrOption = $("<div>").appendTo(attrWrap);
+            attrOption.addClass("flexrow padding");
+            if (!keys[subKey]) {
+              attrOption.append("<text class='subtitle flexmiddle' style='width:100px'>@"+subKey+"</text>");
+              keys[subKey] = true;
+            }
+            else {
+              attrOption.append("<text class='subtitle flexmiddle' style='width:100px'>@c."+path+"</text>");
+            }
+
+            var name = genInput({
+              parent : attrOption,
+              classes : "line subtitle lrmargin middle",
+              value : obj.data[key][subKey],
+              cmd : "updateAsset",
+              obj : obj,
+              name : true,
+              disabled : scope.viewOnly,
+              style : {"width" : "150px"}
+            });
+
+            var value = genInput({
+              parent : attrOption,
+              classes : "line subtitle flex2 lrmargin middle",
+              value : obj.data[key][subKey],
+              cmd : "updateAsset",
+              obj : obj,
+              disabled : scope.viewOnly,
+            });
+
+            var min = genInput({
+              parent : attrOption,
+              classes : "line subtitle lrmargin middle",
+              value : obj.data[key][subKey],
+              style : {"width" : "40px"},
+              cmd : "updateAsset",
+              obj : obj,
+              raw : "min",
+              disabled : scope.viewOnly,
+            });
+
+            var max = genInput({
+              parent : attrOption,
+              classes : "line subtitle lrmargin middle",
+              value : obj.data[key][subKey],
+              style : {"width" : "40px"},
+              cmd : "updateAsset",
+              obj : obj,
+              disabled : scope.viewOnly,
+              raw : "max"
+            });
+
+            var remove = genIcon("list-alt", "Mods").appendTo(attrOption);
+            remove.addClass("flexmiddle lrmargin lrpadding");
+            remove.attr("path", path);
+            remove.css("width", "70px");
+            remove.click(function(){
+              var path = $(this).attr("path");
+
+              var content = sync.newApp("ui_modifiers");
+              content.attr("viewOnly", scope.viewOnly);
+              content.attr("lookup", path);
+              content.attr("modsOnly", "true");
+              obj.addApp(content);
+
+              ui_popOut({
+                target : $(this),
+                align : "top",
+                title : "Modifiers",
+                id : "modify-exp",
+                style : {"min-width" : "100px"},
+              }, content);
+            });
+            if (!scope.viewOnly) {
+              var remove = genIcon("remove").appendTo(attrOption);
+              remove.addClass("destroy flexmiddle lrmargin lrpadding");
+              remove.attr("path", path);
+              remove.click(function(){
+                var path = $(this).attr("path");
+
+                ui_prompt({
+                  target : $(this),
+                  confirm : "Delete Attribute",
+                  click : function(){
+                    sync.traverse(obj.data, path, "");
+                    if (!scope.local) {
+                      obj.sync("updateAsset");
+                    }
+                    else {
+                      obj.update();
+                    }
+                  }
+                });
+              });
+            }
+          }
+        }
+        if (!scope.viewOnly) {
+          var headerRow = genIcon("plus", "New Attribute").appendTo(attrWrap);
+          headerRow.addClass("flexmiddle fit-x create");
+          headerRow.attr("category", key);
+          headerRow.click(function(){
+            var category = $(this).attr("category");
+
+            var invalidKeys = {
+              "length" : "system",
+            }; // invalid keys
+
+            for (var key in obj.data) {
+              invalidKeys[key] = key;
+            }
+            for (var key in obj.data.info) {
+              invalidKeys[key] = "info."+key;
+            }
+            for (var key in obj.data.counters) {
+              invalidKeys[key] = "counters."+key;
+            }
+            for (var key in obj.data.stats) {
+              invalidKeys[key] = "stats."+key;
+            }
+
+            if (game.templates.item) {
+              for (var key in game.templates.item.info) {
+                invalidKeys[key] = "item.info."+key;
+              }
+              for (var key in game.templates.item.equip) {
+                invalidKeys[key] = "item.equip."+key;
+              }
+              for (var key in game.templates.item.weapon) {
+                invalidKeys[key] = "item.weapon."+key;
+              }
+              for (var key in game.templates.item.spell) {
+                invalidKeys[key] = "item.spell."+key;
+              }
+            }
+
+            ui_prompt({
+              target : $(this),
+              inputs : {
+                "Macro Key" : "",
+              },
+              click : function(ev, inputs){
+                var path = inputs["Macro Key"].val();
+                if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
+                  path = replaceAll(path, " ", "_");
+                  path = replaceAll(path, "@", "");
+                  path = replaceAll(path, "(", "_");
+                  path = replaceAll(path, ")", "_");
+                  path = replaceAll(path, "[", "_");
+                  path = replaceAll(path, "]", "_");
+                  path = replaceAll(path, "!", "_");
+                  path = replaceAll(path, "#", "_");
+                  path = replaceAll(path, "$", "_");
+                  if (invalidKeys[path]) {
+                    sendAlert({text : "This key is used somewhere else"});
+                  }
+                  else {
+                    obj.data[category][path] = {};
+                    obj.sync("updateAsset");
+                  }
+                }
+              }
+            });
+          });
+        }
+      }
+      else {
+        sync.render("ui_processUI")(obj, app, {display : template[key], viewOnly : scope.viewOnly}).appendTo(attrWrap);
+      }
+    }
+  }
+  else if (app.attr("mode") == "calc") {
+    obj.data._calc = obj.data._calc || [];
+    var calcs = obj.data._calc;
+
+    var warning = $("<i>").appendTo(div);
+    warning.addClass("flexmiddle subtitle bold padding");
+    warning.text("Calculations performed here are written to the parent character sheet, and change the values directly. Use with caution");
+
+    var calcWrapper = $("<div>").appendTo(div);
+    calcWrapper.addClass("flexcolumn flex smooth scroll-y");
+    calcWrapper.css("position", "relative");
+
+    var calcList = $("<div>").appendTo(calcWrapper);
+    calcList.addClass("fit-x");
+    calcList.css("position", "absolute");
+    calcList.css("top", "0");
+    calcList.css("left", "0");
+
+    sync.render("ui_math")(obj, app, {calc : calcs, cref : scope.cref, viewOnly : scope.viewOnly}).appendTo(calcList);
+  }
+  else if (app.attr("mode") == "actions") {
+    sync.render("ui_manageActionsv2")(obj, app, scope).appendTo(div);
+  }
+  else {
+    var sheet = obj.data._d;
+    if (app.attr("homebrew")) {
+      sheet = sheet || game.locals["homebrew"].data.templates.display.elements[obj.data._type];
+    }
+    else {
+      sheet = sheet || game.templates.display.elements[obj.data._type || Object.keys(game.templates.display.elements)[0]];
+    }
+    var displayPort = sync.render("ui_processUI")(obj, app, {display : sheet.content, viewOnly : scope.viewOnly}).appendTo(div);
+    for (var i in sheet.style) {
+      displayPort.css(i, sheet.style[i]);
+    }
+  }
+  return div;
+});
+
+
 sync.render("ui_renderItem", function(obj, app, scope){
   if (!obj) {return $("<div>");}
   scope = scope || {viewOnly: (app.attr("viewOnly") == "true")};
   scope.cref = scope.cref || app.attr("char-ref") || null;
   scope.mode = app.attr("mode") || "notes";
   scope.local = scope.local || (app.attr("local") == "true");
+  scope.homebrew = scope.homebrew || (app.attr("homebrew") == "true");
 
   var templates = scope.templates || game.templates;
   var params = templates.display.item.params;
@@ -18,47 +520,93 @@ sync.render("ui_renderItem", function(obj, app, scope){
 
   var itemData = scope.itemData || obj.data;
 
+  if (!scope.itemData) {
+    obj.data._flags = obj.data._flags || duplicate(obj.data.tags || {});
+  }
+
   var div = $("<div>");
   div.addClass("fit-xy flexrow");
+  if (!scope.viewOnly) {
+    div.on("dragover", function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (!$("#"+app.attr("id")+"-drag-overlay").length) {
+        var olay = layout.overlay({
+          target : app,
+          id : app.attr("id")+"-drag-overlay",
+          style : {"background-color" : "rgba(0,0,0,0.5)", "pointer-events" : "none"}
+        });
+        olay.addClass("flexcolumn flexmiddle alttext");
+        olay.css("font-size", "2em");
+        olay.css("z-index", util.getMaxZ(".ui-popout")+1);
+        olay.append("<b>Drop to Load</b>");
+      }
+    });
+    div.droppable();
+    div.on('drop', function(ev, ui){
+      ev.preventDefault();
+      ev.stopPropagation();
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
+      if (hook.call("OnDropItem", obj, app, scope, dt)) {
+        if (dt && dt.getData("OBJ")) {
+          var ent = JSON.parse(dt.getData("OBJ"));
+          if (ent._t == "i") {
+            obj.data = ent;
+          }
+          if (!scope.local) {
+            obj.sync("updateAsset");
+          }
+          else {
+            obj.update();
+          }
+        }
+        else if (dt && dt.getData("Text")) {
+          sync.rawVal(obj.data.info.img, dt.getData("Text"));
+          if (!scope.local) {
+            obj.sync("updateAsset");
+          }
+          else {
+            obj.update();
+          }
+        }
+      }
+
+      layout.coverlay(app.attr("id")+"-drag-overlay");
+    });
+    div.on("dragleave", function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      layout.coverlay(app.attr("id")+"-drag-overlay");
+    });
+  }
+
 
   var overview = $("<div>").appendTo(div);
-  overview.addClass("flexcolumn flex foreground alttext padding");
+  overview.addClass("flexcolumn outline sheet1 padding");
 
   var info = itemData.info;
 
-  var name = genInput({
-    classes : "line fit-x middle",
-    parent: overview,
-    placeholder: info.name.name,
-    title : info.name.name,
-    value: info.name,
-    disabled: scope.viewOnly,
-  });
-  name.change(function() {
-    sync.rawVal(info.name, $(this).val());
-    if (!scope.local) {
-      obj.sync("updateAsset");
-    }
-    else {
-      obj.update();
-    }
-  });
-
   var itemImage = $("<div>").appendTo(overview);
-  itemImage.addClass("outline smooth flex2 flexmiddle white");
+  itemImage.addClass("outline smooth flexmiddle white");
   itemImage.css("background-image", "url('"+ sync.rawVal(itemData.info.img) +"')");
   itemImage.css("background-size", "contain");
   itemImage.css("background-repeat", "no-repeat");
   itemImage.css("background-position", "center");
+  itemImage.css("width", "150px");
+  itemImage.css("height", "150px");
   if (!scope.viewOnly) {
     itemImage.addClass("hover2");
-    itemImage.append("<i class='subtitle alttext'>Click to change</i>");
     itemImage.click(function(){
       var imgList = sync.render("ui_filePicker")(obj, app, {
         filter : "img",
         change : function(ev, ui, value){
           sync.rawVal(itemData.info.img, value);
-          obj.update();
+          if (!scope.local) {
+            obj.sync("updateAsset");
+          }
+          else {
+            obj.update();
+          }
           layout.coverlay("icons-picker");
         }
       });
@@ -82,16 +630,22 @@ sync.render("ui_renderItem", function(obj, app, scope){
   });
 
   var infoPane = $("<div>").appendTo(overview);
-  infoPane.addClass("flexrow flexbetween fit-x padding");
+  infoPane.addClass("flexcolumn flexbetween fit-x padding");
+
+
+  var wrap = $("<div>").appendTo(infoPane);
+  wrap.addClass("flexrow flexbetween");
+
+  wrap.append("<b>"+(info.weight.name || "Weight")+"</b>");
+
 
   var weight = genInput({
     classes : "subtitle line middle",
-    parent: infoPane,
-    placeholder: info.weight.name,
-    title : info.weight.name,
+    parent: wrap,
+    placeholder: info.weight.name || "Weight",
     value: sync.val(info.weight),
     disabled: scope.viewOnly,
-    style : {width : "75px"},
+    style : {width : "80px"},
     type: "number",
   })
 
@@ -109,15 +663,20 @@ sync.render("ui_renderItem", function(obj, app, scope){
     }
   });
 
+
+  var wrap = $("<div>").appendTo(infoPane);
+  wrap.addClass("flexrow flexbetween");
+
+  wrap.append("<b>"+(info.quantity.name || "Quantity")+"</b>");
+
   var quantity = genInput({
     classes : "subtitle line middle",
-    parent : infoPane,
-    placeholder : info.quantity.name,
-    title : info.quantity.name,
+    parent : wrap,
+    placeholder : info.quantity.name || "Quantity",
     value : info.quantity,
     disabled: scope.viewOnly,
-    style : {"margin-left" : "0.25em", width : "75px"},
     type : "number",
+    style : {width : "80px"},
   });
   quantity.change(function() {
     sync.val(info.quantity, $(this).val());
@@ -130,14 +689,20 @@ sync.render("ui_renderItem", function(obj, app, scope){
   }).addClass("subtitle");
 
   if (info.price) {
+    var wrap = $("<div>").appendTo(infoPane);
+    wrap.addClass("flexrow flexbetween");
+
+    wrap.append("<b>"+(info.price.name || "Price")+"</b>");
+
     var price = genInput({
-      classes : "subtitle line middle fit-x lrmargin",
-      parent : overview,
+      classes : "subtitle line middle",
+      parent : wrap,
       placeholder : info.price.name,
       title : info.price.name,
       value : info.price,
       disabled: scope.viewOnly,
-    }).addClass("subtitle");
+      style : {width : "80px"},
+    });
     price.change(function() {
       sync.val(info.price, $(this).val());
       if (!scope.local) {
@@ -167,8 +732,28 @@ sync.render("ui_renderItem", function(obj, app, scope){
   content.addClass("fit-xy flexcolumn");
   content.css("position", "absolute");
 
+  var wrap = $("<div>").appendTo(content);
+  wrap.addClass("padding sheet1 outline");
+
+  var name = genInput({
+    classes : "line size4 bold fit-x",
+    parent: wrap,
+    placeholder: info.name.name,
+    value: info.name,
+    disabled: scope.viewOnly,
+  });
+  name.change(function() {
+    sync.rawVal(info.name, $(this).val());
+    if (!scope.local) {
+      obj.sync("updateAsset");
+    }
+    else {
+      obj.update();
+    }
+  });
+
   var optionsBar = $("<div>").appendTo(content);
-  optionsBar.addClass("flexrow fit-x flexbetween background alttext outline");
+  optionsBar.addClass("flexrow fit-x flexbetween background");
 
   var category = $("<div>").appendTo(optionsBar);
   category.addClass("flexrow subtitle");
@@ -203,7 +788,10 @@ sync.render("ui_renderItem", function(obj, app, scope){
   });
 
   var options = $("<div>").appendTo(optionsBar);
-  options.addClass("flexrow alttext flexmiddle");
+  options.addClass("flex");
+
+  var options = $("<div>").appendTo(optionsBar);
+  options.addClass("flexrow flexmiddle alttext");
   if (!scope.viewOnly) {
     var clear = genIcon("trash", "Clear").appendTo(options);
     clear.addClass("lrpadding subtitle");
@@ -217,9 +805,9 @@ sync.render("ui_renderItem", function(obj, app, scope){
       }
     });
 
-    var load = genIcon("cloud-download").appendTo(options);
+    var load = genIcon("briefcase").appendTo(options);
     load.addClass("lrpadding subtitle");
-    load.attr("Load an Existing Item");
+    load.attr("title", "Load an Existing Item");
     load.click(function(){
       var content = sync.render("ui_existing")(obj, app, {lookup : (scope.mode=="spell")?("spellbook"):("inventory")});
       content.addClass("flex");
@@ -228,41 +816,33 @@ sync.render("ui_renderItem", function(obj, app, scope){
         ui_popOut({
           target : $("body"),
           id : "item-picker",
-          title : "This menu will be rebuilt soon...",
+          title : "Load Existing Item",
           style : {"width" : "80vw", "height" : "80vh"}
         }, content).resizable();
       }
     });
   }
 
-  var security = genIcon("list-alt").appendTo(options);
-  security.addClass("subtitle");
-  security.attr("index", index);
-  security.attr("title", "Item Calculations");
-  security.css("margin-right", "4px");
-  security.click(function(ev){
-    app.attr("mode", "calc");
-    obj.update();
-  });
+  if (hasSecurity(getCookie("UserID"), "Rights")) {
+    var security = genIcon("lock").appendTo(options);
+    security.addClass("subtitle");
+    security.attr("index", index);
+    security.attr("title", "Configure who has access to this object");
+    security.css("margin-right", "4px");
+    security.click(function(ev){
+      obj.data._s = obj.data._s || {default : 1};
 
-  var security = genIcon("lock").appendTo(options);
-  security.addClass("subtitle");
-  security.attr("index", index);
-  security.attr("title", "Configure who has access to this object");
-  security.css("margin-right", "4px");
-  security.click(function(ev){
-    obj.data._s = obj.data._s || {default : 1};
+      var content = sync.newApp("ui_rights");
+      content.attr("viewOnly", scope.viewOnly);
+      obj.addApp(content);
 
-    var content = sync.newApp("ui_rights");
-    content.attr("viewOnly", scope.viewOnly);
-    obj.addApp(content);
-
-    var frame = ui_popOut({
-      target : $(this),
-      prompt : true,
-      id : "ui-rights-dialog",
-    }, content);
-  });
+      var frame = ui_popOut({
+        target : $(this),
+        prompt : true,
+        id : "ui-rights-dialog",
+      }, content);
+    });
+  }
 
   if (!scope.viewOnly) {
     var stylePage = genIcon("tint").appendTo(options);
@@ -279,6 +859,21 @@ sync.render("ui_renderItem", function(obj, app, scope){
         title : "Page Style",
         style : {width : assetTypes["p"].width, height : assetTypes["p"].height},
       }, newApp);
+    });
+
+    var actions = $("<div>").appendTo(optionsBar);
+    actions.addClass("flex");
+
+    var actions = $("<button>").appendTo(optionsBar);
+    actions.addClass("background subtitle alttext");
+    if (app.attr("mode") == "calc") {
+      actions.removeClass("background");
+      actions.addClass("highlight");
+    }
+    actions.text("Math");
+    actions.click(function(){
+      app.attr("mode", "calc");
+      obj.update();
     });
 
     var actions = $("<button>").appendTo(optionsBar);
@@ -382,26 +977,86 @@ sync.render("ui_renderItem", function(obj, app, scope){
     weapon.addClass("highlight alttext");
 
     for (var i in obj.data.weapon) {
-      if (i != "prof") {
-        var modRow = $("<div>").appendTo(content);
-        modRow.addClass("flexrow fit-x subtitle");
+      var modRow = $("<div>").appendTo(content);
+      modRow.addClass("flexrow fit-x subtitle");
 
-        var label = $("<b>").appendTo(modRow);
-        label.addClass("lrpadding flexmiddle");
-        label.text(obj.data.weapon[i].name || i);
-        label.css("min-width", "60px");
+      var label = genInput({
+        classes : "line lrmargin bold middle",
+        parent : modRow,
+        value : obj.data.weapon[i].name,
+        index : i,
+        title : "@i.weapon."+i,
+        disabled : scope.viewOnly,
+        style : {"width" : "100px"},
+      });
+      label.change(function(){
+        obj.data.weapon[$(this).attr("index")].name = $(this).val();
+        obj.update();
+      });
 
-        var val = genInput({
-          parent : modRow,
-          value : sync.val(obj.data.weapon[i]),
-          index : i,
-          disabled : scope.viewOnly,
-        }).addClass("flex line");
-        val.change(function(){
-          sync.val(obj.data.weapon[$(this).attr("index")], $(this).val());
-          obj.update();
-        });
-        if (!game.templates.item.weapon[i]) {
+      var val = genInput({
+        classes : "line flex middle",
+        parent : modRow,
+        value : sync.rawVal(obj.data.weapon[i]),
+        index : i,
+        disabled : scope.viewOnly,
+      });
+      val.change(function(){
+        sync.rawVal(obj.data.weapon[$(this).attr("index")], $(this).val());
+        obj.update();
+      });
+
+      var min = genInput({
+        parent : modRow,
+        classes : "line lrmargin middle subtitle",
+        value : obj.data.weapon[i].min,
+        index : i,
+        placeholder : "Min",
+        disabled : scope.viewOnly,
+        style : {"width" : "24px"},
+      });
+      min.change(function(){
+        obj.data.weapon[$(this).attr("index")].min = $(this).val();
+        obj.update();
+      });
+
+      var max = genInput({
+        parent : modRow,
+        classes : "line middle subtitle",
+        value : obj.data.weapon[i].max,
+        index : i,
+        placeholder : "Max",
+        disabled : scope.viewOnly,
+        style : {"width" : "24px"},
+      });
+      max.change(function(){
+        obj.data.weapon[$(this).attr("index")].max = $(this).val();
+        obj.update();
+      });
+
+      var mods = genIcon("list-alt").appendTo(modRow);
+      mods.addClass("flexmiddle lrmargin subtitle");
+      mods.attr("path", "weapon."+i);
+      mods.click(function(){
+        var path = $(this).attr("path");
+
+        var content = sync.newApp("ui_modifiers");
+        content.attr("viewOnly", scope.viewOnly);
+        content.attr("lookup", path);
+        content.attr("modsOnly", "true");
+        obj.addApp(content);
+
+        ui_popOut({
+          target : $(this),
+          align : "top",
+          title : "Modifiers",
+          id : "modify-exp",
+          style : {"min-width" : "100px"},
+        }, content);
+      });
+
+      if (!game.templates.item.weapon[i] || scope.homebrew ) {
+        if (!scope.viewOnly) {
           var remove = genIcon("remove").appendTo(modRow);
           remove.addClass("destroy");
           remove.attr("index", i);
@@ -420,8 +1075,7 @@ sync.render("ui_renderItem", function(obj, app, scope){
       if ($("#item-skill-list").length) {
         $("#item-skill-list").remove();
       }
-      var dataList = $("<datalist>").appendTo(skillPlate);
-      dataList.attr("id", "item-skill-list");
+      var dataList = [];
 
       var skillRegex = /\(([^(]+[^)]+)\)/;
 
@@ -429,21 +1083,18 @@ sync.render("ui_renderItem", function(obj, app, scope){
         for (var index in char.data.skills) {
           var skill = char.data.skills[index];
           if (skillRegex.exec(skill.name)) {
-            var option = $("<option>").appendTo(dataList);
-            option.attr("value", skill.name);
+            dataList.push(skill.name);
           }
         }
       }
 
       var skill = genInput({
         parent : skillPlate,
-        type : "list",
-        list : "item-skill-list",
+        list : dataList,
         placeholder : "Enter Related Skill",
         disabled: scope.viewOnly,
-        style : {"width" : "50%"}
       });
-      if (scope.viewOnly) {
+      if (!scope.viewOnly) {
         skill.css("background-color", "rgb(235,235,228)");
       }
       skill.val(sync.val(obj.data.info.skill));
@@ -476,73 +1127,73 @@ sync.render("ui_renderItem", function(obj, app, scope){
         var dice = sync.render("ui_skillDice")(char, app, {skill : skillRef}).appendTo(diceWrap);
       }
     }
-    if (obj.data.weapon.prof) {
-      var skillPlate = $("<div>").appendTo(content);
-      skillPlate.addClass("flexrow subtitle");
-      skillPlate.append("<b class='flexmiddle lrpadding' style='min-width : 60px;'>"+obj.data.weapon.prof.name+"</b>");
-
-      if ($("#item-prof-list").length) {
-        $("#item-prof-list").remove();
-      }
-      var dataList = $("<datalist>").appendTo(skillPlate);
-      dataList.attr("id", "item-prof-list");
-
-      var skillRegex = /\(([^(]+[^)]+)\)/;
-      if (char) {
-        for (var index in char.data.tags) {
-          if (index.match("prof_")) {
-            var option = $("<option>").appendTo(dataList);
-            option.attr("value", index.split("prof_")[1]);
-          }
-        }
-      }
-
-      var prof = genInput({
-        parent : skillPlate,
-        type : "list",
-        list : "item-prof-list",
-        disabled: scope.viewOnly,
-      }).addClass("flex line");
-      if (scope.viewOnly) {
-        prof.css("background-color", "rgb(235,235,228)");
-      }
-      prof.val(sync.val(obj.data.weapon.prof));
-      prof.change(function(){
-        sync.val(obj.data.weapon.prof, $(this).val());
-        if (!scope.local) {
-          obj.sync("updateAsset");
-        }
-        else {
-          obj.update();
-        }
-      });
-    }
     if (!scope.viewOnly) {
-      var newField = genIcon("plus", "New Field").appendTo(content);
+      var newField = genIcon("plus", "New Attribute").appendTo(content);
       newField.addClass("fit-x flexmiddle subtitle");
       newField.click(function(){
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in game.templates.character) {
+          invalidKeys[key] = key;
+        }
+        for (var key in game.templates.character.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in game.templates.character.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in game.templates.character.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in obj.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in obj.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in obj.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in obj.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
+
+
         ui_prompt({
           target : $(this),
           id : "add-field",
           inputs : {
-            "Field Key" : {},
-            "Field Name" : {placeholder : "(Optional)"},
+            "Macro Key" : {},
           },
           click : function(ev, inputs) {
-            if (inputs["Field Key"].val()) {
-              if (!obj.data.weapon[inputs["Field Key"].val()]) {
-                obj.data.weapon[inputs["Field Key"].val()] = sync.newValue(inputs["Field Name"].val(), null);
-                obj.update();
+            var path = inputs["Macro Key"].val();
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
+              path = replaceAll(path, " ", "_");
+              path = replaceAll(path, "@", "");
+              path = replaceAll(path, "(", "_");
+              path = replaceAll(path, ")", "_");
+              path = replaceAll(path, "[", "_");
+              path = replaceAll(path, "]", "_");
+              path = replaceAll(path, "!", "_");
+              path = replaceAll(path, "#", "_");
+              path = replaceAll(path, "$", "_");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
               }
               else {
-                sendAlert({text : "Field is already in use"});
+                obj.data.weapon[path] = sync.newValue(path, null);
+                obj.update();
               }
             }
             else {
-              sendAlert({text : "No Field Specified"});
+              sendAlert({text : "Invalid Macro Key"});
             }
           }
-        })
+        });
       });
     }
   }
@@ -553,57 +1204,160 @@ sync.render("ui_renderItem", function(obj, app, scope){
       var modRow = $("<div>").appendTo(content);
       modRow.addClass("flexrow fit-x subtitle");
 
-      var label = $("<b>").appendTo(modRow);
-      label.addClass("lrpadding flexmiddle");
-      label.text(obj.data.spell[i].name || i);
-      label.css("min-width", "60px");
-
-      var val = genInput({
+      var label = genInput({
+        classes : "line lrmargin bold middle",
         parent : modRow,
-        value : sync.val(obj.data.spell[i]),
+        value : obj.data.spell[i].name,
         index : i,
-        disabled : scope.viewOnly
-      }).addClass("flex line");
-      val.change(function(){
-        sync.val(obj.data.spell[$(this).attr("index")], $(this).val());
+        title : "@i.spell."+i,
+        disabled : scope.viewOnly,
+        style : {"width" : "100px"},
+      });
+      label.change(function(){
+        obj.data.spell[$(this).attr("index")].name = $(this).val();
         obj.update();
       });
-      if (!game.templates.item.spell[i]) {
-        var remove = genIcon("remove").appendTo(modRow);
-        remove.addClass("destroy");
-        remove.attr("index", i);
-        remove.click(function(){
-          delete obj.data.spell[$(this).attr("index")];
-          obj.update();
-        });
+
+      var val = genInput({
+        classes : "line flex middle",
+        parent : modRow,
+        value : sync.rawVal(obj.data.spell[i]),
+        index : i,
+        disabled : scope.viewOnly,
+      });
+      val.change(function(){
+        sync.rawVal(obj.data.spell[$(this).attr("index")], $(this).val());
+        obj.update();
+      });
+
+      var min = genInput({
+        parent : modRow,
+        classes : "line lrmargin middle subtitle",
+        value : obj.data.spell[i].min,
+        index : i,
+        placeholder : "Min",
+        disabled : scope.viewOnly,
+        style : {"width" : "24px"},
+      });
+      min.change(function(){
+        obj.data.spell[$(this).attr("index")].min = $(this).val();
+        obj.update();
+      });
+
+      var max = genInput({
+        parent : modRow,
+        classes : "line middle subtitle",
+        value : obj.data.spell[i].max,
+        index : i,
+        placeholder : "Max",
+        disabled : scope.viewOnly,
+        style : {"width" : "24px"},
+      });
+      max.change(function(){
+        obj.data.spell[$(this).attr("index")].max = $(this).val();
+        obj.update();
+      });
+
+      var mods = genIcon("list-alt").appendTo(modRow);
+      mods.addClass("flexmiddle lrmargin subtitle");
+      mods.attr("path", "spell."+i);
+      mods.click(function(){
+        var path = $(this).attr("path");
+
+        var content = sync.newApp("ui_modifiers");
+        content.attr("viewOnly", scope.viewOnly);
+        content.attr("lookup", path);
+        content.attr("modsOnly", "true");
+        obj.addApp(content);
+
+        ui_popOut({
+          target : $(this),
+          align : "top",
+          title : "Modifiers",
+          id : "modify-exp",
+          style : {"min-width" : "100px"},
+        }, content);
+      });
+
+      if (!game.templates.item.spell[i] || scope.homebrew) {
+        if (!scope.viewOnly) {
+          var remove = genIcon("remove").appendTo(modRow);
+          remove.addClass("destroy");
+          remove.attr("index", i);
+          remove.click(function(){
+            delete obj.data.spell[$(this).attr("index")];
+            obj.update();
+          });
+        }
       }
     }
     if (!scope.viewOnly) {
-      var newField = genIcon("plus", "New Field").appendTo(content);
+      var newField = genIcon("plus", "New Attribute").appendTo(content);
       newField.addClass("fit-x flexmiddle subtitle");
       newField.click(function(){
+        var invalidKeys = {
+          "length" : "system",
+        }; // invalid keys
+
+        for (var key in game.templates.character) {
+          invalidKeys[key] = key;
+        }
+        for (var key in game.templates.character.info) {
+          invalidKeys[key] = "info."+key;
+        }
+        for (var key in game.templates.character.counters) {
+          invalidKeys[key] = "counters."+key;
+        }
+        for (var key in game.templates.character.stats) {
+          invalidKeys[key] = "stats."+key;
+        }
+
+
+        for (var key in obj.info) {
+          invalidKeys[key] = "item.info."+key;
+        }
+        for (var key in obj.equip) {
+          invalidKeys[key] = "item.equip."+key;
+        }
+        for (var key in obj.weapon) {
+          invalidKeys[key] = "item.weapon."+key;
+        }
+        for (var key in obj.spell) {
+          invalidKeys[key] = "item.spell."+key;
+        }
+
+
         ui_prompt({
           target : $(this),
           id : "add-field",
           inputs : {
-            "Field Key" : {},
-            "Field Name" : {placeholder : "(Optional)"},
+            "Macro Key" : {},
           },
           click : function(ev, inputs) {
-            if (inputs["Field Key"].val()) {
-              if (!obj.data.spell[inputs["Field Key"].val()]) {
-                obj.data.spell[inputs["Field Key"].val()] = sync.newValue(inputs["Field Name"].val(), null);
-                obj.update();
+            var path = inputs["Macro Key"].val();
+            if (path && path != "notes" && path != "img" && path != "name" && isNaN(path)) {
+              path = replaceAll(path, " ", "_");
+              path = replaceAll(path, "@", "");
+              path = replaceAll(path, "(", "_");
+              path = replaceAll(path, ")", "_");
+              path = replaceAll(path, "[", "_");
+              path = replaceAll(path, "]", "_");
+              path = replaceAll(path, "!", "_");
+              path = replaceAll(path, "#", "_");
+              path = replaceAll(path, "$", "_");
+              if (invalidKeys[path]) {
+                sendAlert({text : "This key is used somewhere else"});
               }
               else {
-                sendAlert({text : "Field is already in use"});
+                obj.data.spell[path] = sync.newValue(path, null);
+                obj.update();
               }
             }
             else {
-              sendAlert({text : "No Field Specified"});
+              sendAlert({text : "Invalid Macro Key"});
             }
           }
-        })
+        });
       });
     }
   }
@@ -623,9 +1377,9 @@ sync.render("ui_renderItem", function(obj, app, scope){
     var calcs = obj.data._calc;
     content.addClass("subtitle");
     content.removeClass("padding");
-    
+
     var warning = $("<i>").appendTo(content);
-    warning.addClass("flexmiddle subtitle bold")
+    warning.addClass("flexmiddle subtitle bold padding")
     warning.text("Calculations performed here are written to the parent character sheet, and change the values directly. Use with caution");
 
     var calcWrapper = $("<div>").appendTo(content);
@@ -638,144 +1392,8 @@ sync.render("ui_renderItem", function(obj, app, scope){
     calcList.css("position", "absolute");
     calcList.css("top", "0");
     calcList.css("left", "0");
-    if ((!obj.data._s || hasSecurity(getCookie("UserID"), "Rights", obj.data)) && (!char || hasSecurity(getCookie("UserID"), "Rights", char.data))) {
-      calcList.sortable({
-        filter : ".inventoryContent",
-        update : function(ev, ui) {
-          var newIndex;
-          var count = 0;
-          $(ui.item).attr("ignore", true);
-          calcList.children().each(function(){
-            if ($(this).attr("ignore")){
-              newIndex = count;
-            }
-            count += 1;
-          });
-          var old = calcs.splice($(ui.item).attr("index"), 1);
-          util.insert(calcs, newIndex, old[0]);
-          buildCalc();
-          ev.stopPropagation();
-          ev.preventDefault();
-        }
-      });
-    }
 
-    var dataList = $("<datalist>").appendTo(calcWrapper);
-    dataList.attr("id", "calc-list-item-edit");
-
-    var template = {stats : "", info : "", counters : ""};
-    for (var key in template) {
-      var path = key;
-      for (var subKey in game.templates.character[key]) {
-        path = key + "." + subKey;
-        if (path != "info.notes" && path != "info.img") {
-          var option = $("<option>").appendTo(dataList);
-          option.attr("value", path);
-        }
-      }
-    }
-    function buildCalc() {
-      var lastScroll = calcList.scrollTop();
-      calcList.empty();
-
-      for (var i=0; i<calcs.length; i++) {
-        var calcData = calcs[i];
-
-        var calcWrap = $("<div>").appendTo(calcList);
-        calcWrap.addClass("flexrow flexmiddle spadding lightoutline smooth inactive link");
-        calcWrap.attr("index", i);
-
-        var target = genInput({
-          parent : calcWrap,
-          list : "calc-list-item-edit",
-          type : "list",
-        });
-        target.attr("index", i);
-        target.val(calcData.target);
-        target.change(function(){
-          calcs[$(this).attr("index")].target = String($(this).val());
-          buildCalc();
-        });
-
-        var equalsRaw = $("<div>").appendTo(calcWrap);
-        equalsRaw.addClass("subtitle bold flexmiddle lrmargin");
-        equalsRaw.append("=");
-
-        var valueInput = $("<textarea>").appendTo(calcWrap);
-        valueInput.addClass("flex");
-        valueInput.attr("index", i);
-        valueInput.text(calcData.eq);
-        valueInput.change(function(){
-          calcs[$(this).attr("index")].eq = String($(this).val());
-          buildCalc();
-        });
-
-        var equals = $("<div>").appendTo(calcWrap);
-        equals.addClass("subtitle bold flexmiddle lrmargin");
-        equals.append("=");
-
-        var val = sync.eval(calcData.eq, ctx);
-        var equalsVal = $("<div>").appendTo(calcWrap);
-        equalsVal.addClass("flexmiddle");
-        equalsVal.append(val);
-
-        $("<div>").addClass("spadding").appendTo(calcWrap);
-
-        var condition = genIcon("question-sign").appendTo(calcWrap);
-        condition.addClass("lrmargin");
-        condition.attr("index", i);
-        condition.click(function(){
-          var calcData = calcs[$(this).attr("index")];
-
-          ui_prompt({
-            target : $(this),
-            id : "change-condition",
-            inputs : {
-              "Condition" : $("<textarea>").css("height", "100px").addClass("fit-x subtitle").text(calcData.cond),
-            },
-            click : function(ev, inputs) {
-              calcData.cond = String(inputs["Condition"].val() || "");
-              buildCalc();
-            }
-          });
-        });
-
-        var remove = genIcon("remove").appendTo(calcWrap);
-        remove.addClass("lrmargin destroy");
-        remove.attr("index", i);
-        remove.click(function(){
-          var index = $(this).attr("index");
-          ui_prompt({
-            target : $(this),
-            id : "change-condition",
-            confirm : "REMOVE CALCULATION",
-            click : function(ev, inputs) {
-              calcs.splice(index, 1);
-              buildCalc();
-            }
-          });
-        });
-
-        if (!calcData.cond || sync.eval(calcData.cond, ctx)) {
-          equalsVal.addClass("bold");
-          condition.addClass("create");
-        }
-        else {
-          equalsVal.addClass("dull subtitle");
-          condition.addClass("destroy");
-        }
-      }
-      calcList.scrollTop(lastScroll);
-      if ((!obj.data._s || hasSecurity(getCookie("UserID"), "Rights", obj.data)) && (!char || hasSecurity(getCookie("UserID"), "Rights", char.data))) {
-        var addCalc = genIcon("plus", "Add Calculation").appendTo(calcList);
-        addCalc.addClass("fit-x flexmiddle create");
-        addCalc.click(function(){
-          calcs.push({});
-          buildCalc();
-        });
-      }
-    }
-    buildCalc();
+    sync.render("ui_math")(obj, app, {calc : calcs, cref : scope.cref}).appendTo(calcList);
   }
 
   return div;

@@ -14,10 +14,13 @@ sync.render("ui_players", function(obj, app, scope) {
 
   var data = obj.data;
   var div = $("<div>");
-  div.addClass("flexrow flexmiddle fit-y");
+  div.addClass("flexrow flexmiddle fit-xy");
+
+  $("#player-list").css("left", "");
+  $("#player-list").css("right", "0");
 
   var playerList = $("<div>").appendTo(div);
-  playerList.addClass("flexrow flex flexmiddle fit-y");
+  playerList.addClass("flexrow flex flexmiddle fit-xy");
   playerList.sortable({
     handle : ".playerPlate",
     connectWith : ".dropContent",
@@ -25,6 +28,8 @@ sync.render("ui_players", function(obj, app, scope) {
       $(ui.item).css("height", scope.height || "50px");
     }
   });
+
+  playerList.append("<div class='flex'></div>");
 
   for (var id in data) {
     if (id != getCookie("UserID")) {
@@ -57,38 +62,130 @@ sync.render("ui_players", function(obj, app, scope) {
       pop.css("border", "1px solid rgba(0,0,0,0.2)");
     });
   }
-  else if (Object.keys(game.players.data).length <= 1) {
-    playerList.removeClass("flex flexmiddle");
-
-    var label = genIcon("log-in", "Click to invite your party");
+  else {
+    var label;
+    if (Object.keys(game.players.data).length <= 1) {
+      playerList.removeClass("flex flexmiddle");
+      label = genIcon("log-in", "Click to invite your party");
+      label.addClass("flex");
+    }
+    else {
+      label = genIcon("log-in");
+    }
     label.appendTo(div);
-    label.addClass("lrpadding alttext flexmiddle flex");
+    label.addClass("lrpadding alttext flexmiddle");
     label.css("color", "white");
     label.css("pointer-events", "auto");
+    label.css("white-space", "nowrap");
     label.attr("title", "Copies an invite to clipboard");
     label.click(function(){
-      var input = genInput({
-        parent : $(this),
-        id : "copy-url",
-        value : window.location.href.split("?password")[0],
+      var content = $("<div>");
+      content.addClass("flexcolumn");
+
+      var button = $("<button>").appendTo(content);
+      button.addClass("background alttext padding");
+      button.text("From Local Network");
+      button.click(function(){
+        var input = genInput({
+          parent : $(this),
+          id : "copy-url",
+          value : window.location.href.split("?password")[0],
+        });
+
+        if (getCookie("InternalIP")) {
+          input.val(getCookie("InternalIP")+":"+getCookie("PrivatePort")+"/join");
+        }
+        input.focus();
+        input.get(0).setSelectionRange(0, input.val().length);
+
+        document.execCommand("copy");
+        input.remove();
+        sendAlert({text : "Invitation Copied!"});
+        layout.coverlay("invite");
       });
 
-      if (game.config.data.password) {
-        input.val(encodeURI(input.val()+"?password="+game.config.data.password));
-      }
-      if (getCookie("ExternalIP")) {
-        input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
-      }
-      input.focus();
-      input.get(0).setSelectionRange(0, input.val().length);
+      var buttonWrap = $("<div>").appendTo(content);
+      buttonWrap.addClass("flexmiddle flexcolumn background alttext padding");
+      buttonWrap.append("From the Internet");
 
-      document.execCommand("copy");
-      input.remove();
-      sendAlert({text : "Invitation Copied!"});
+      var button = $("<button>").appendTo(buttonWrap);
+      button.addClass("spadding highlight alttext subtitle");
+      button.css("width", "150px");
+      button.text("(No Setup)");
+      button.click(function(){
+        var input = genInput({
+          parent : $(this),
+          id : "copy-url",
+          value : window.location.href.split("?password")[0],
+        });
+
+        if (getCookie("PublicLink")) {
+          input.val(decodeURIComponent(getCookie("PublicLink"))+"/join?select=true");
+        }
+
+        input.focus();
+        input.get(0).setSelectionRange(0, input.val().length);
+
+        document.execCommand("copy");
+        input.remove();
+        sendAlert({text : "Invitation link copied to clip board! <br> Players join by navigating to <a class='underline' target='_' href='"+(decodeURIComponent(getCookie("PublicLink"))+"/join?select=true")+"'>this link</a> into a web browser!", duration : 6000});
+        layout.coverlay("invite");
+      });
+
+      var button = $("<button>").appendTo(buttonWrap);
+      button.addClass("spadding highlight alttext subtitle");
+      button.css("width", "150px");
+      button.text("UPnP");
+      button.click(function(){
+        var input = genInput({
+          parent : $(this),
+          id : "copy-url",
+          value : window.location.href.split("?password")[0],
+        });
+
+        if (getCookie("ExternalIP")) {
+          input.val(getCookie("ExternalIP")+":"+getCookie("PublicPort")+"/join");
+        }
+        input.focus();
+        input.get(0).setSelectionRange(0, input.val().length);
+
+        document.execCommand("copy");
+        input.remove();
+        sendAlert({text : "Invitation link copied to clip board! <br> Players join by navigating to <a class='underline' target='_' href='"+(input.val())+"'>this link</a> into a web browser!", duration : 6000});
+        layout.coverlay("invite");
+      });
+
+      var button = $("<button>").appendTo(buttonWrap);
+      button.addClass("spadding highlight alttext subtitle");
+      button.css("width", "150px");
+      button.text("Port Forwarding");
+      button.click(function(){
+        var input = genInput({
+          parent : $(this),
+          id : "copy-url",
+          value : window.location.href.split("?password")[0],
+        });
+
+        if (getCookie("ExternalIP")) {
+          input.val(getCookie("ExternalIP")+":"+getCookie("PrivatePort")+"/join");
+        }
+        input.focus();
+        input.get(0).setSelectionRange(0, input.val().length);
+
+        document.execCommand("copy");
+        input.remove();
+        sendAlert({text : "Invitation link copied to clip board! <br> Players join by navigating to <a class='underline' target='_' href='"+(input.val())+"'>this link</a> into a web browser!", duration : 6000});
+        layout.coverlay("invite");
+      });
+
+      var pop = ui_popOut({
+        target : $(this),
+        noCss : true,
+        prompt : true,
+        id : "invite",
+        style : {"width" : "200px"}
+      }, content);
     });
-  }
-  else {
-    playerList.addClass("");
   }
 
   return div;
@@ -113,14 +210,14 @@ sync.render("ui_playerToken", function(obj, app, scope) {
   playerPlate.css("position", "relative");
   playerPlate.css("pointer-events", "auto");
   playerPlate.css("height", "100%");
-  playerPlate.css("min-width", scope.height || "50px");
+  playerPlate.css("min-width", "50px");
   playerPlate.css("margin-right", "0.25em");
   playerPlate.css("margin-left", "0.25em");
 
   playerPlate.click(function() {
     var playerID = $(this).attr("UserID");
     var playerPlate = $(this);
-    if (getCookie("UserID") == playerID && hasSecurity(playerID, "Assistant Master")) {
+    if (getCookie("UserID") == playerID || hasSecurity(playerID, "Assistant Master")) {
       var uID = playerID;
       var content = sync.render("ui_assetPicker")(obj, app, {
         rights : "Rights",
@@ -211,12 +308,7 @@ sync.render("ui_playerToken", function(obj, app, scope) {
       ];
       if (hasSecurity(getCookie("UserID"), "Game Master")) {
         if (game.config.data && (game.config.data.players && game.config.data.players[playerPlate.attr("UserID")])) {
-          admin.push({name : "Set Rank", click : function(ev, ui){
-            var newApp = sync.newApp("ui_gameCtrl", game.config);
-            ui_popOut({
-              target : $("body"),
-            }, newApp);
-          }});
+
         }
         else {
           admin.push({name : "Make Permanent Member", click : function(ev, ui){
@@ -248,20 +340,21 @@ sync.render("ui_playerToken", function(obj, app, scope) {
       var character = [
         {name : "Actions", click : function(){
           var actionObj = sync.dummyObj();
-          actionObj.data = {context : {c : getPlayerCharacter(playerPlate.attr("UserID")).id()}};
+          actionObj.data = {context : {c : obj.id()}};
 
           game.locals["actions"] = game.locals["actions"] || [];
           game.locals["actions"].push(actionObj);
 
-          var newApp = sync.newApp("ui_actions");
+          var newApp = sync.newApp("ui_hotActions");
+          newApp.addClass("padding");
           actionObj.addApp(newApp);
 
           var pop = ui_popOut({
             target : playerPlate,
             minimize : true,
             dragThickness : "0.5em",
-            title : "Actions",
-            align : "top"
+            title : getPlayerCharacterName(playerPlate.attr("UserID")),
+            align : "left"
           }, newApp);
           pop.resizable();
         }},
@@ -502,7 +595,7 @@ sync.render("ui_playerToken", function(obj, app, scope) {
             var p = {};
             p[getCookie("UserID")] = true;
             p[playerPlate.attr("UserID")] = true;
-            runCommand("chatEvent", {text : "/w "+ inputs["Message"].val(), f : getPlayerCharacterName(getCookie("UserID")), p : p});
+            runCommand("chatEvent", {text : "/w "+ inputs["Message"].val(), person : getPlayerCharacterName(getCookie("UserID")), p : p});
             sendAlert({text : "Sent"});
             layout.coverlay(prompt);
           }
@@ -559,7 +652,7 @@ sync.render("ui_playerToken", function(obj, app, scope) {
       }
     }
 
-    var dropMenu = ui_dropMenu($(this), optionList, {id: "dice-app-selection-menu"});
+    var dropMenu = ui_dropMenu($(this), optionList, {id: "dice-app-selection-menu", align : "top"});
     ev.stopPropagation();
     ev.preventDefault();
     return false;
@@ -599,14 +692,13 @@ sync.render("ui_playerToken", function(obj, app, scope) {
 
     playerPlate.append("<div class='flex'></div>");
     name = $("<div>").appendTo(playerPlate);
-    name.addClass("smooth alttext flexmiddle lrpadding bold");
+    name.addClass("smooth alttext foreground outline flexmiddle lrpadding bold");
     if (scope.centered) {
       name.addClass("subtitle");
       name.css("max-width", "120px");
     }
     name.attr("displayName", player.displayName);
     name.attr("UserID", id);
-    name.css("background-color", "rgba(0,0,0,0.6)");
     name.css("z-index", "1");
     //if (hasSecurity(id, "Assistant Master")) {
     name.text(getPlayerCharacterName(id) || player.displayName);
@@ -618,14 +710,13 @@ sync.render("ui_playerToken", function(obj, app, scope) {
 
     playerPlate.append("<div class='flex'></div>");
     name = $("<div>").appendTo(playerPlate);
-    name.addClass("smooth alttext flexmiddle lrpadding bold");
+    name.addClass("smooth alttext foreground outline flexmiddle lrpadding bold");
     if (scope.centered) {
       name.addClass("subtitle");
       name.css("max-width", "120px");
     }
     name.attr("displayName", player.displayName);
     name.attr("UserID", id);
-    name.css("background-color", "rgba(0,0,0,0.6)");
     name.css("z-index", "1");
     if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
       name.text(getPlayerCharacterName(id) || player.displayName);
@@ -644,17 +735,15 @@ sync.render("ui_playerToken", function(obj, app, scope) {
   name.click(function(ev){
     var ent = getPlayerCharacter($(this).attr("UserID"));
     if (ent && ent.data) {
-      $(this).attr("index", ent.id());
-      if ($(this).hasClass("card-selected")) {
-        $(this).removeClass("card-selected");
+      if (hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
+        assetTypes["c"].preview(ent, $(this));
       }
       else {
-        $(this).addClass("card-selected");
+        sendAlert({text : "Insufficient permissions"});
       }
     }
     else {
-      $(this).removeClass("card-selected");
-      sendAlert({text : "No character to target"});
+      sendAlert({text : "No character"});
     }
     ev.stopPropagation();
     ev.preventDefault();
@@ -669,9 +758,7 @@ sync.render("ui_playerToken", function(obj, app, scope) {
   if (!hasSecurity(id, "Game Master") || id == getCookie("UserID")) { // reveal Players
     if (player.entity && game.entities.data[player.entity]) {
       var ent = game.entities.data[player.entity];
-      if (sync.rawVal(ent.data.info.img)) {
-        icon.css("background-image", "url('"+sync.rawVal(ent.data.info.img)+"')");
-      }
+      icon.css("background-image", "url('"+(sync.rawVal(ent.data.info.img) || "/content/icons/blankchar.png")+"')");
     }
   }
 

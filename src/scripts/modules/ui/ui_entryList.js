@@ -122,8 +122,9 @@ sync.render("ui_entryList", function(obj, app, scope){
       display = display.replace(applyTargetReg, scope.lookup+"."+index);
 
       display = JSON.parse(display);
-
-      var ui = sync.render("ui_processUI")(obj, app, {display : display, context : context, viewOnly : scope.viewOnly}).appendTo(entryWrap);
+      if (display.cond == null || sync.eval(display.cond, context)) {
+        var ui = sync.render("ui_processUI")(obj, app, {display : display, context : context, viewOnly : scope.viewOnly}).appendTo(entryWrap);
+      }
     }
   }
 
@@ -166,54 +167,58 @@ sync.render("ui_skillList", function(obj, app, scope){
   var skillRegex = /\((.+)\)/;
   var displayStr = JSON.stringify(scope.applyUI);
   for (var index in (keys || value)) {
-    var entryData = value[index];
-    var ignoring = false;
+    if (data.skills[index]) {
+      var entryData = value[index];
+      var ignoring = false;
 
-    context["skill"] = data.skills[index];
-    context["skillKey"] = index;
+      context["skill"] = data.skills[index];
+      context["skillKey"] = index;
 
-    if (ignore) {
-      if (ignore instanceof String) {
-        ignoring = sync.eval(ignore, context);
-      }
-      else if (ignore instanceof Object) {
-        ignoring = util.contains(ignore, index);
-      }
-    }
-    if (!ignoring) {
-      var entryWrap = $("<div>").appendTo(div);
-      if (!scope.entryClasses) {
-        entryWrap.addClass("flexcolumn flex");
-      }
-      else {
-        entryWrap.addClass(scope.entryClasses);
-      }
-
-      var statRes;
-      if (!_skillCache[data.skills[index].name]) {
-        statRes = skillRegex.exec(data.skills[index].name);
-        if (statRes) {
-          _skillCache[data.skills[index]] = statRes[1];
+      if (ignore) {
+        if (ignore instanceof String) {
+          ignoring = sync.eval(ignore, context);
+        }
+        else if (ignore instanceof Object) {
+          ignoring = util.contains(ignore, index);
         }
       }
-      else {
-        statRes = _skillCache[data.skills[index]];
-      }
+      if (!ignoring) {
+        var entryWrap = $("<div>").appendTo(div);
+        if (!scope.entryClasses) {
+          entryWrap.addClass("flexcolumn flex");
+        }
+        else {
+          entryWrap.addClass(scope.entryClasses);
+        }
 
-      if (statRes && data.stats[statRes[1]]) {
-        context["stat"] = data.stats[statRes[1]];
-        context["statKey"] = statRes[1];
+        var statRes;
+        if (!_skillCache[data.skills[index].name]) {
+          statRes = skillRegex.exec(data.skills[index].name);
+          if (statRes) {
+            _skillCache[data.skills[index]] = statRes[1];
+          }
+        }
+        else {
+          statRes = _skillCache[data.skills[index]];
+        }
+
+        if (statRes && data.stats[statRes[1]]) {
+          context["stat"] = data.stats[statRes[1]];
+          context["statKey"] = statRes[1];
+        }
+        var display = displayStr.replace(skillKeyReg, index);
+        display = display.replace(skillTargetReg, scope.lookup + "." + index);
+        if (statRes && statRes[1]) {
+          display = display.replace(statKeyReg, statRes[1]);
+        }
+        else {
+          display = display.replace(statKeyReg, "");
+        }
+        display = JSON.parse(display);
+        if (display.cond == null || sync.eval(display.cond, context)) {
+          var ui = sync.render("ui_processUI")(obj, app, {display : display, context : context, viewOnly : scope.viewOnly, time : true}).appendTo(entryWrap);
+        }
       }
-      var display = displayStr.replace(skillKeyReg, index);
-      display = display.replace(skillTargetReg, scope.lookup + "." + index);
-      if (statRes && statRes[1]) {
-        display = display.replace(statKeyReg, statRes[1]);
-      }
-      else {
-        display = display.replace(statKeyReg, "");
-      }
-      display = JSON.parse(display);
-      var ui = sync.render("ui_processUI")(obj, app, {display : display, context : context, viewOnly : scope.viewOnly, time : true}).appendTo(entryWrap);
     }
   }
 

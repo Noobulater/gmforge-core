@@ -3,7 +3,7 @@ sync.render("ui_mapOptions", function(obj, app, scope) {
   var data = obj.data;
 
   var div = $("<div>");
-  div.addClass("flexrow fit-x lrpadding");
+  div.addClass("flexcolumn fit-x padding");
 
   if (app.attr("configuring") && app.attr("configuring") != "advanced") {
     var background = $("<div>").appendTo(div);
@@ -414,11 +414,7 @@ sync.render("ui_mapOptions", function(obj, app, scope) {
         content.css("font-size", "1.2em");
         obj.addApp(content);
 
-        ui_popOut({
-          target : $(this),
-          id : "board-controls",
-          title : "Grid Options"
-        }, content);
+        $(this).replaceWith(content);
       });
     }
 
@@ -699,8 +695,8 @@ sync.render("ui_mapOptions", function(obj, app, scope) {
     showViewPort.click(function(){
       var zoom = parseInt(app.attr("zoom"))/100 || 1;
 
-      obj.data.vX = boardApi.pix.apps[app.attr("id")].stage.x - $("#"+app.attr("id")).width()/2/zoom;
-      obj.data.vY = boardApi.pix.apps[app.attr("id")].stage.y - $("#"+app.attr("id")).height()/2/zoom;
+      obj.data.vX = boardApi.apps[app.attr("id")].stage.x - $("#"+app.attr("id")).width()/2/zoom;
+      obj.data.vY = boardApi.apps[app.attr("id")].stage.y - $("#"+app.attr("id")).height()/2/zoom;
       obj.data.vZ = zoom * 100;
       if (!scope.local) {
         obj.sync("updateAsset");
@@ -718,400 +714,92 @@ sync.render("ui_mapOptions", function(obj, app, scope) {
     draw.click(function(){
       app.attr("configuring", "advanced");
       var parent = $("#"+app.attr("id")+"-menu-"+obj.id());
-      parent.replaceWith(boardApi.pix.buildMenu(obj, app, scope, true));
+      parent.replaceWith(boardApi.buildMenu(obj, app, scope, true));
     });
   }
   else {
     var background = $("<div>").appendTo(div);
-    background.addClass("flexcolumn subtitle");
+    background.addClass("flexcolumn flex");
 
-    background.append("<b class='underline' style='font-size : 1.2em;'>Tools</b>");
+    var checkWrap = $("<div>").appendTo(background);
+    checkWrap.addClass("flexrow");
 
-    var healthbars = genIcon("flash", "Map Optimizer")//.appendTo(background);
-    healthbars.addClass("subtitle");
-    healthbars.click(function(){
-      boardApi.saveChanges(obj);
-      sendAlert({text : "Optimized"});
+    var checkCursors = genInput({
+      classes : "lrmargin",
+      parent : checkWrap,
+      type : "checkbox",
+      style : {"margin-top" : "0"},
     });
-
-    var scale = genIcon("globe", "Map Scale").appendTo(background);
-    scale.addClass("subtitle");
-    scale.click(function(){
-      if (!game.locals["drawing"]) {
-        game.locals["drawing"] = sync.obj();
-        game.locals["drawing"].data = {};
-      }
-      game.locals["drawing"].data.target = app.attr("id");
-
-      var mapScaleWrapper = $("<div>");
-      mapScaleWrapper.addClass("flexcolumn");
-
-      var mapScale = $("<div>").appendTo(mapScaleWrapper);
-      mapScale.addClass("flexrow");
-
-      var mapScaleWrap = $("<div>").appendTo(mapScale);
-      mapScaleWrap.addClass("flexcolumn");
-      mapScaleWrap.append("<b class='subtitle'>Current Divisor</b>");
-
-      var mapScaleInput = genInput({
-        parent : mapScaleWrap,
-        classes : "line",
-        type : "number",
-        placeholder : "Unit Distance",
-        value : obj.data.options.unitScale,
-        style : {"width" : "150px", "text-align" : "center"},
-      });
-      mapScaleInput.change(function(){
-        game.locals["drawing"].data.scaleSize = $(this).val();
-        obj.data.options.unitScale = $(this).val();
-      });
-
-      var mapScaleWrap = $("<div>").appendTo(mapScale);
-      mapScaleWrap.addClass("flexcolumn");
-      mapScaleWrap.append("<b class='subtitle'>Unit</b>");
-      var scaleType = genInput({
-        parent : mapScaleWrap,
-        classes : "line",
-        placeholder : "(m,ft,..)",
-        value : obj.data.options.unit,
-        style : {"width" : "50px"},
-      });
-      scaleType.change(function(){
-        game.locals["drawing"].data.scaleUnit = $(this).val();
-        obj.data.options.unit = $(this).val();
-      });
-      game.locals["drawing"].data.scaleUnit = game.locals["drawing"].data.scaleUnit || obj.data.options.unit;
-
-      var confirm = $("<button>").appendTo(mapScaleWrapper);
-      confirm.addClass("highlight alttext");
-      confirm.append("Draw Scale to Divisor");
-      confirm.click(function(){
-        game.locals["drawing"].data.drawing = "scale";
-        game.locals["drawing"].update();
-        sendAlert({text : "Draw a line to specify the scale of the map"});
-        layout.coverlay("grid-scale");
-      });
-
-      var pop = ui_popOut({
-        target : app,
-        id : "grid-scale",
-        title : "Draw Map Scale"
-      }, mapScaleWrapper);
-    });
-
-
-    var rights = genIcon("lock", "Rights").appendTo(background);
-    rights.addClass("subtitle");
-    rights.click(function(){
-      var contentWrap = $("<div>");
-      contentWrap.addClass("flexcolumn flex");
-
-      var content = sync.newApp("ui_rights").appendTo(contentWrap);
-      obj.addApp(content);
-
-      contentWrap.append("<b class='subtitle lrpadding lrmargin flexmiddle'>Board Rights behave differently, and in most cases<br> shouldn't be changed. Proceed with caution</b>");
-
-      var frame = ui_popOut({
-        target : app,
-        id : "ui-rights-dialog",
-      }, contentWrap);
-    });
-
-    var rights = genIcon("globe", "Set Parent Map").appendTo(background);
-    rights.addClass("subtitle");
-    rights.click(function(){
-      var content = sync.render("ui_assetPicker")(obj, app, {
-        filter : "b",
-        select : function(ev, ui, ent, options, entities){
-          obj.data.options.zoomAsset = ent.id();
-          obj.sync("updateAsset");
-          layout.coverlay("add-asset");
-        }
-      });
-      var pop = ui_popOut({
-        target : $("body"),
-        prompt : true,
-        id : "add-asset",
-        title : "Parent Map",
-        style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
-      }, content);
-      pop.resizable();
-    });
-    if (obj.data.options.zoomAsset) {
-      var rights = genIcon("remove", "Clear Parent Map").appendTo(background);
-      rights.addClass("subtitle");
-      rights.click(function(){
-        delete obj.data.options.zoomAsset;
-        obj.sync("updateAsset");
-        layout.coverlay("add-asset");
-      });
+    if (data.options.cursorToggle) {
+      checkCursors.prop("checked", true);
     }
-
-    var showViewPort = genIcon("unchecked", "Piece Defaults")//.appendTo(background);
-    showViewPort.addClass("subtitle");
-    showViewPort.attr("title", "Change the default pieces");
-    showViewPort.click(function(){
-      var content = sync.newApp("ui_backgroundControls");
-      content.attr("target", targetApp.attr("id"));
-      obj.addApp(content);
-
-      ui_popOut({
-        target : app,
-        title : "Default Piece Options",
-        id : "board-background-editing-"+targetApp.attr("id"),
-      }, content);
-    });
-
-    var showViewPort = genIcon("facetime-video", "Save View").appendTo(background);
-    showViewPort.addClass("subtitle");
-    showViewPort.attr("title", "Assign the default ViewPort");
-    showViewPort.click(function(){
-      var zoom = parseInt(app.attr("zoom"))/100 || 1;
-
-      obj.data.vX = boardApi.pix.apps[app.attr("id")].stage.x - $("#"+app.attr("id")).width()/2/zoom;
-      obj.data.vY = boardApi.pix.apps[app.attr("id")].stage.y - $("#"+app.attr("id")).height()/2/zoom;
-      obj.data.vZ = zoom * 100;
+    var cursors = genIcon("hands-up", "Hide Cursors").appendTo(checkWrap);
+    cursors.addClass("subtitle lrmargin");
+    checkWrap.click(function(){
+      data.options = data.options || {};
+      data.options.cursorToggle = !data.options.cursorToggle;
       if (!scope.local) {
         obj.sync("updateAsset");
       }
       else {
         obj.update();
       }
-      sendAlert({text : "Default View Updated"});
     });
 
-    background.append("<div class='flex'></div>");
+    var checkWrap = $("<div>").appendTo(background);
+    checkWrap.addClass("flexrow");
 
-    background.append("<b class='underline' style='font-size: 0.8em'>Visual Effects</b>");
+    var checkDraw = genInput({
+      classes : "lrmargin",
+      parent : checkWrap,
+      type : "checkbox",
+      style : {"margin-top" : "0"},
+    });
+    if (data.options.freeDraw) {
+      checkDraw.prop("checked", true);
+    }
 
-    var time = genIcon("time", "Time of Day").appendTo(background);
-    time.css("font-size", "0.8em");
-    time.click(function(){
-      var actionsList = [
-        {
-          name : "Day",
-          click : function(){
-            data.options.filter = obj.data.options.filter || {};
-            delete obj.data.options.filter.brightness;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Night",
-          click : function(){
-            data.options.filter = obj.data.options.filter || {
-              brightness : 45,
-            };
-            obj.data.options.filter.brightness = 45;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Dawn",
-          click : function(){
-            data.options.filter = obj.data.options.filter || {
-              brightness : 85,
-            };
-            obj.data.options.filter.brightness = 85;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Dusk",
-          click : function(){
-            data.options.filter = obj.data.options.filter || {
-              brightness : 75,
-            };
-            obj.data.options.filter.brightness = 75;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        }
-      ];
-      ui_dropMenu($(this), actionsList, {id : "time"});
+    var draw = genIcon("", "Player Drawing").appendTo(checkWrap);
+    draw.addClass("subtitle lrmargin");
+
+    checkWrap.click(function(){
+      data.options = data.options || {};
+      data.options.freeDraw = !data.options.freeDraw;
+      if (!scope.local) {
+        obj.sync("updateAsset");
+      }
+      else {
+        obj.update();
+      }
     });
 
-    var weather = genIcon("cloud", "Weather").appendTo(background);
-    weather.css("font-size", "0.8em");
-    weather.click(function(){
-      var actionsList = [
-        {
-          name : "None",
-          click : function(){
-            data.options.weather = null;
-            data.options.weatherStyle = null;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Light Rain",
-          click : function(){
-            data.options.weather = "rain";
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Normal Rain",
-          click : function(){
-            data.options.weather = "rain mix";
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Heavy Rain",
-          click : function(){
-            data.options.weather = "downpour";
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Snow",
-          click : function(){
-            data.options.weather = "snow";
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-      ];
-      ui_dropMenu($(this), actionsList, {id : "time"});
+    var checkWrap = $("<div>").appendTo(background);
+    checkWrap.addClass("flexrow");
+
+    var checkDraw = genInput({
+      classes : "lrmargin",
+      parent : checkWrap,
+      type : "checkbox",
+      style : {"margin-top" : "0"},
+    });
+    if (!data.options.noCollide) {
+      checkDraw.prop("checked", true);
+    }
+
+    var draw = genIcon("", "Wall Collision").appendTo(checkWrap);
+    draw.addClass("subtitle lrmargin");
+
+    checkWrap.click(function(){
+      data.options = data.options || {};
+      data.options.noCollide = !data.options.noCollide;
+      if (!scope.local) {
+        obj.sync("updateAsset");
+      }
+      else {
+        obj.update();
+      }
     });
 
-    var bgImg = genIcon("tint", "Filter").appendTo(background);
-    bgImg.css("font-size", "0.8em");
-    bgImg.click(function(){
-      var actionsList = [
-        {
-          name : "Reset",
-          click : function(){
-            data.options.filter = data.options.filter || {}
-            for (var i in data.options.filter) {
-              if (i != "brightness") {
-                delete data.options.filter[i];
-              }
-            }
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Old-timey",
-          click : function(){
-            data.options.filter = data.options.filter || {}
-            for (var i in data.options.filter) {
-              if (i != "brightness") {
-                delete data.options.filter[i];
-              }
-            }
-            data.options.filter["grayscale"] = 70;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Memory",
-          click : function(){
-            data.options.filter = data.options.filter || {}
-            for (var i in data.options.filter) {
-              if (i != "brightness") {
-                delete data.options.filter[i];
-              }
-            }
-            data.options.filter["sepia"] = 40;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-        {
-          name : "Bent Reality",
-          click : function(){
-            data.options.filter = data.options.filter || {}
-            for (var i in data.options.filter) {
-              if (i != "brightness") {
-                delete data.options.filter[i];
-              }
-            }
-            data.options.filter["invert"] = 100;
-            if (!scope.local) {
-              obj.sync("updateAsset");
-            }
-            else {
-              obj.update();
-            }
-          }
-        },
-      ];
-      ui_dropMenu($(this), actionsList, {id : "time"});
-    });
-
-
-    var draw = genIcon("cog", "Normal Options")//.appendTo(background);
-    draw.addClass("subtitle");
-    draw.click(function(){
-      app.attr("configuring", "true");
-      var parent = $("#"+app.attr("id")+"-menu-"+obj.id());
-      parent.replaceWith(boardApi.pix.buildMenu(obj, app, scope, true));
-    });
-
-    var background = $("<div>").appendTo(div);
-    background.addClass("flexcolumn flex subtitle");
-    background.css("margin-left", "1em");
-    background.css("margin-right", "1em");
-    background.append("<b class='underline middle' style='font-size : 1.2em;'>Selects</b>");
 
     var checkWrap = $("<div>").appendTo(background);
     checkWrap.addClass("flexrow");
@@ -1211,7 +899,6 @@ sync.render("ui_mapOptions", function(obj, app, scope) {
     hpType.change(function(){
       data.options = data.options || {};
       data.options.hpMode = $(this).val();
-      console.log($(this).val());
       if (data.options.hpMode == 0) {
         delete data.options.hpMode;
       }
@@ -1223,71 +910,393 @@ sync.render("ui_mapOptions", function(obj, app, scope) {
       }
     });
 
-    background.append("<div class='lpadding'></div>");
-
-    var background = $("<div>").appendTo(background);
-    background.addClass("flexcolumn flex middle");
-    background.append("<b class='underline middle' style='font-size : 1.2em;'>Toggles</b>");
-
-    var checkWrap = $("<div>").appendTo(background);
-    checkWrap.addClass("flexrow");
-
-    var checkCursors = genInput({
-      classes : "lrmargin",
-      parent : checkWrap,
-      type : "checkbox",
-      value : data.options.cursorToggle
-    });
-
-    var cursors = genIcon("hands-up", "Show Cursors").appendTo(checkWrap);
-    cursors.addClass("subtitle lrmargin");
-    checkWrap.click(function(){
-      data.options = data.options || {};
-      data.options.cursorToggle = !data.options.cursorToggle;
-      if (!scope.local) {
-        obj.sync("updateAsset");
-      }
-      else {
-        obj.update();
-      }
-    });
-
-    var checkWrap = $("<div>").appendTo(background);
-    checkWrap.addClass("flexrow");
-
-    var checkDraw = genInput({
-      classes : "lrmargin",
-      parent : checkWrap,
-      type : "checkbox",
-      value : data.options.freeDraw
-    });
-
-    var draw = genIcon("pencil", "Player Drawing").appendTo(checkWrap);
-    draw.addClass("subtitle lrmargin");
-
-    checkWrap.click(function(){
-      data.options = data.options || {};
-      data.options.freeDraw = !data.options.freeDraw;
-      if (!scope.local) {
-        obj.sync("updateAsset");
-      }
-      else {
-        obj.update();
-      }
-    });
-
 
     var background = $("<div>").appendTo(div);
-    background.addClass("flexcolumn flex subtitle");
+    background.addClass("flexcolumn flex");
+    background.append("<b class='underline middle size2'>Tools</b>");
 
-    background.append("<b class='underline middle' style='font-size : 1.2em;'>Filters</b>");
+    var healthbars = genIcon("flash", "Map Optimizer")//.appendTo(background);
+    healthbars.addClass("subtitle");
+    healthbars.click(function(){
+      boardApi.saveChanges(obj);
+      sendAlert({text : "Optimized"});
+    });
+
+    var rights = genIcon("", "Access Controls").appendTo(background);
+    rights.addClass("subtitle");
+    rights.click(function(){
+      var contentWrap = $("<div>");
+      contentWrap.addClass("flexcolumn flex");
+
+      var content = sync.newApp("ui_rights").appendTo(contentWrap);
+      obj.addApp(content);
+
+      contentWrap.append("<b class='subtitle lrpadding lrmargin flexmiddle'>Board Rights behave differently, and in most cases<br> shouldn't be changed. Proceed with caution</b>");
+
+      var frame = ui_popOut({
+        target : app,
+        id : "ui-rights-dialog",
+      }, contentWrap);
+    });
+
+    var scale = genIcon("", "Map Scale").appendTo(background);
+    scale.addClass("subtitle");
+    scale.click(function(){
+      if (!game.locals["drawing"]) {
+        game.locals["drawing"] = sync.obj();
+        game.locals["drawing"].data = {};
+      }
+      game.locals["drawing"].data.target = app.attr("id");
+
+      var mapScaleWrapper = $("<div>");
+      mapScaleWrapper.addClass("flexcolumn");
+
+      var mapScale = $("<div>").appendTo(mapScaleWrapper);
+      mapScale.addClass("flexrow");
+
+      var mapScaleWrap = $("<div>").appendTo(mapScale);
+      mapScaleWrap.addClass("flexcolumn");
+      mapScaleWrap.append("<b class='subtitle lrpadding'>Scale to this Distance</b>");
+
+      var mapScaleInput = genInput({
+        parent : mapScaleWrap,
+        classes : "line",
+        type : "number",
+        placeholder : "New Distance",
+        value : "",
+        style : {"width" : "150px", "text-align" : "center"},
+      });
+      mapScaleInput.change(function(){
+        game.locals["drawing"].data.scaleSize = $(this).val();
+      });
+
+      var mapScaleWrap = $("<div>").appendTo(mapScale);
+      mapScaleWrap.addClass("flexcolumn");
+      mapScaleWrap.append("<b class='subtitle'>Unit</b>");
+      var scaleType = genInput({
+        parent : mapScaleWrap,
+        classes : "line",
+        placeholder : "(m,ft,..)",
+        value : obj.data.options.unit,
+        style : {"width" : "50px"},
+      });
+      scaleType.change(function(){
+        game.locals["drawing"].data.scaleUnit = $(this).val();
+      });
+      game.locals["drawing"].data.scaleUnit = game.locals["drawing"].data.scaleUnit || obj.data.options.unit;
+
+      var confirm = $("<button>").appendTo(mapScaleWrapper);
+      confirm.addClass("highlight alttext");
+      confirm.append("Draw Scale to Divisor");
+      confirm.click(function(){
+        game.locals["drawing"].data.drawing = "scale";
+        game.locals["drawing"].update();
+        sendAlert({text : "Draw a line to specify the scale of the map"});
+        layout.coverlay("grid-scale");
+      });
+
+      var pop = ui_popOut({
+        target : app,
+        id : "grid-scale",
+        title : "Draw Map Scale"
+      }, mapScaleWrapper);
+    });
+
+    var rights = genIcon("", "Set Parent Map").appendTo(background);
+    rights.addClass("subtitle");
+    rights.click(function(){
+      var content = sync.render("ui_assetPicker")(obj, app, {
+        filter : "b",
+        select : function(ev, ui, ent, options, entities){
+          obj.data.options.zoomAsset = ent.id();
+          obj.sync("updateAsset");
+          layout.coverlay("add-asset");
+        }
+      });
+      var pop = ui_popOut({
+        target : $("body"),
+        prompt : true,
+        id : "add-asset",
+        title : "Parent Map",
+        style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
+      }, content);
+      pop.resizable();
+    });
+    if (obj.data.options.zoomAsset) {
+      var rights = genIcon("remove", "Clear Parent Map").appendTo(background);
+      rights.addClass("subtitle");
+      rights.click(function(){
+        delete obj.data.options.zoomAsset;
+        obj.sync("updateAsset");
+        layout.coverlay("add-asset");
+      });
+    }
+
+    var showViewPort = genIcon("unchecked", "Piece Defaults")//.appendTo(background);
+    showViewPort.addClass("subtitle");
+    showViewPort.attr("title", "Change the default pieces");
+    showViewPort.click(function(){
+      var content = sync.newApp("ui_backgroundControls");
+      content.attr("target", targetApp.attr("id"));
+      obj.addApp(content);
+
+      ui_popOut({
+        target : app,
+        title : "Default Piece Options",
+        id : "board-background-editing-"+targetApp.attr("id"),
+      }, content);
+    });
+
+    var showViewPort = genIcon("facetime-video", "Save View").appendTo(background);
+    showViewPort.addClass("subtitle");
+    showViewPort.attr("title", "Assign the default ViewPort");
+    showViewPort.click(function(){
+      var zoom = parseInt(app.attr("zoom"))/100 || 1;
+
+      obj.data.vX = boardApi.apps[app.attr("id")].stage.x - $("#"+app.attr("id")).width()/2/zoom;
+      obj.data.vY = boardApi.apps[app.attr("id")].stage.y - $("#"+app.attr("id")).height()/2/zoom;
+      obj.data.vZ = zoom * 100;
+      if (!scope.local) {
+        obj.sync("updateAsset");
+      }
+      else {
+        obj.update();
+      }
+      sendAlert({text : "Default View Updated"});
+    });
+
+    var background = $("<div>").appendTo(div);
+    background.addClass("flexcolumn flex");
+    background.append("<b class='underline middle size2'>Visual Effects</b>");
+
+    var time = genIcon("", "Time of Day").appendTo(background);
+    time.css("font-size", "0.8em");
+    time.click(function(){
+      var actionsList = [
+        {
+          name : "Day",
+          click : function(){
+            data.options.filter = obj.data.options.filter || {};
+            delete obj.data.options.filter.brightness;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Night",
+          click : function(){
+            data.options.filter = obj.data.options.filter || {
+              brightness : 45,
+            };
+            obj.data.options.filter.brightness = 45;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Dawn",
+          click : function(){
+            data.options.filter = obj.data.options.filter || {
+              brightness : 85,
+            };
+            obj.data.options.filter.brightness = 85;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Dusk",
+          click : function(){
+            data.options.filter = obj.data.options.filter || {
+              brightness : 75,
+            };
+            obj.data.options.filter.brightness = 75;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        }
+      ];
+      ui_dropMenu($(this), actionsList, {id : "time"});
+    });
+
+    var weather = genIcon("", "Weather").appendTo(background);
+    weather.css("font-size", "0.8em");
+    weather.click(function(){
+      var actionsList = [
+        {
+          name : "None",
+          click : function(){
+            data.options.weather = null;
+            data.options.weatherStyle = null;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Light Rain",
+          click : function(){
+            data.options.weather = "rain";
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Normal Rain",
+          click : function(){
+            data.options.weather = "rain mix";
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Heavy Rain",
+          click : function(){
+            data.options.weather = "downpour";
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Snow",
+          click : function(){
+            data.options.weather = "snow";
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+      ];
+      ui_dropMenu($(this), actionsList, {id : "time"});
+    });
+
+    var bgImg = genIcon("", "Filter").appendTo(background);
+    bgImg.css("font-size", "0.8em");
+    bgImg.click(function(){
+      var actionsList = [
+        {
+          name : "Reset",
+          click : function(){
+            data.options.filter = data.options.filter || {}
+            for (var i in data.options.filter) {
+              if (i != "brightness") {
+                delete data.options.filter[i];
+              }
+            }
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Old-timey",
+          click : function(){
+            data.options.filter = data.options.filter || {}
+            for (var i in data.options.filter) {
+              if (i != "brightness") {
+                delete data.options.filter[i];
+              }
+            }
+            data.options.filter["grayscale"] = 70;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Memory",
+          click : function(){
+            data.options.filter = data.options.filter || {}
+            for (var i in data.options.filter) {
+              if (i != "brightness") {
+                delete data.options.filter[i];
+              }
+            }
+            data.options.filter["sepia"] = 40;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+        {
+          name : "Bent Reality",
+          click : function(){
+            data.options.filter = data.options.filter || {}
+            for (var i in data.options.filter) {
+              if (i != "brightness") {
+                delete data.options.filter[i];
+              }
+            }
+            data.options.filter["invert"] = 100;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+          }
+        },
+      ];
+      ui_dropMenu($(this), actionsList, {id : "time"});
+    });
+
+
+    var draw = genIcon("cog", "Normal Options")//.appendTo(background);
+    draw.addClass("subtitle");
+    draw.click(function(){
+      app.attr("configuring", "true");
+      var parent = $("#"+app.attr("id")+"-menu-"+obj.id());
+      parent.replaceWith(boardApi.buildMenu(obj, app, scope, true));
+    });
 
     var content = sync.newApp("ui_boardFilters").appendTo(background);
     content.attr("local", scope.local);
     content.attr("viewOnly", scope.viewOnly);
     content.attr("target", targetApp.attr("id"));
     obj.addApp(content);
-
   }
 
   return div;
@@ -1299,13 +1308,26 @@ sync.render("ui_mapBackground", function(obj, app, scope){
   var data = obj.data;
 
   var div = $("<div>");
-  div.addClass("flexrow fit-x lrpadding");
+  div.addClass("flexcolumn fit-x padding");
 
   var background = $("<div>").appendTo(div);
-  background.addClass("flexcolumn flex subtitle middle");
+  background.addClass("flexcolumn flex");
 
-  background.append("<b class='underline' style='font-size:1.4em;'>Background</b>");
+  var nameInput = genInput({
+    parent : background,
+    classes : "line smooth subtitle middle flex size3",
+    value : sync.rawVal(data.info.name) || "[No Name]",
+  });
 
+  nameInput.change(function(){
+    sync.rawVal(obj.data.info.name, $(this).val() || "[No Name]");
+    if (!scope.local) {
+      obj.sync("updateAsset");
+    }
+    else {
+      obj.update();
+    }
+  });
 
   var bgImg = $("<div>").appendTo(background);
   bgImg.addClass("outline smooth flexmiddle white");
@@ -1313,32 +1335,18 @@ sync.render("ui_mapBackground", function(obj, app, scope){
     genIcon("play").css("pointer-events", "none");
   }
   else {
-    bgImg.css("background-image", "url('"+ obj.data.map || "/content/quickstart.png" +"')");
+    bgImg.css("background-image", "url('"+ (obj.data.map || "/content/quickstart.png") +"')");
     bgImg.css("background-size", "contain");
     bgImg.css("background-repeat", "no-repeat");
     bgImg.css("background-position", "center");
   }
-  bgImg.css("width", "300px");
   bgImg.css("height", "150px");
   bgImg.css("font-size", "1.4em");
   if (!scope.viewOnly) {
     bgImg.addClass("hover2");
     bgImg.click(function(){
       var imgList = sync.render("ui_filePicker")(obj, app, {
-        filter : [
-          "img",
-          "video",
-          "png",
-          "jpg",
-          "jpeg",
-          "bmp",
-          "ico",
-          "apng",
-          "gif",
-          "mp4",
-          "ogg",
-          "webm"
-        ],
+        filter :     "img",
         change : function(ev, ui, val){
 
           if (val.match(".mp4") || val.match(".webm") || val.match(".ogg")) {
@@ -1417,11 +1425,14 @@ sync.render("ui_mapBackground", function(obj, app, scope){
   }
 
   var checkWrap = $("<div>").appendTo(background);
-  checkWrap.addClass("flexcolumn flexmiddle");
+  checkWrap.addClass("flexrow");
 
-  var healthbars = genIcon("cog", "Size").appendTo(checkWrap);
-  healthbars.addClass("subtitle");
-  healthbars.click(function(){
+  var checkWrap1 = $("<div>").appendTo(checkWrap);
+  checkWrap1.addClass("flexrow flexmiddle flex link");
+
+  var healthbars = genIcon("cog", "Size").appendTo(checkWrap1);
+  healthbars.addClass("subtitle alttext");
+  checkWrap1.click(function(){
     ui_prompt({
       target : $(this),
       inputs : {
@@ -1441,19 +1452,17 @@ sync.render("ui_mapBackground", function(obj, app, scope){
     });
   });
 
-  var background = $("<div>").appendTo(div);
-  background.addClass("flexcolumn flex subtitle middle");
+  var checkWrap2 = $("<div>").appendTo(checkWrap);
+  checkWrap2.addClass("flexrow flex2 flexmiddle alttext subtitle");
+  checkWrap2.append("<b class='lrmargin'>Background Color</b>");
 
-  background.append("<b class='underline' style='font-size:1.4em;'>Color</b>");
-
-  var bgCol = $("<div>").appendTo(background);
-  bgCol.addClass("outline smooth flexmiddle white");
+  var bgCol = $("<div>").appendTo(checkWrap2);
+  bgCol.addClass("outline smooth white dull lpadding");
   bgCol.css("background", obj.data.c);
-  bgCol.css("width", "150px");
-  bgCol.css("height", "150px");
+
   if (!scope.viewOnly) {
-    bgCol.addClass("hover2");
-    bgCol.click(function(){
+    checkWrap2.addClass("hover2");
+    checkWrap2.click(function(){
       var optionList = [];
       var submenu = [
         "rgba(34,34,34,1)",
@@ -1488,6 +1497,195 @@ sync.render("ui_mapBackground", function(obj, app, scope){
     });
   }
 
+
+  var background = $("<div>").appendTo(div);
+  background.addClass("flexcolumn flex");
+
+  background.append("<b class='underline flexmiddle fit-x' style='font-size:1.4em;'>Grid</b>");
+
+  if (obj.data.gridW && obj.data.gridH) {
+    var gridColor = genIcon("tint", "Configure Grid").appendTo(background);
+    gridColor.addClass("subtitle");
+    gridColor.click(function(){
+      var content = sync.newApp("ui_boardControls");
+      content.addClass("subtitle");
+      content.attr("local", scope.local);
+      content.attr("viewOnly", scope.viewOnly);
+      content.attr("target", app.attr("id"));
+      obj.addApp(content);
+
+      $(this).replaceWith(content);
+    });
+  }
+
+  if (!data.options || !data.options.hex) {
+    var drawGrid = genIcon("edit", "Draw Grid").appendTo(background);
+    drawGrid.addClass("subtitle");
+    drawGrid.click(function(){
+      if (!game.locals["drawing"]) {
+        game.locals["drawing"] = sync.obj();
+        game.locals["drawing"].data = {};
+      }
+      game.locals["drawing"].data.drawing = "grid";
+      game.locals["drawing"].data.target = app.attr("id");
+      game.locals["drawing"].update();
+      sendAlert({text : "Draw a square matching the grid on the map"});
+    });
+  }
+
+  if (obj.data.gridW && obj.data.gridH && !(data.options && data.options.hex)) {
+    var drawGrid = genIcon("move", "Shift Grid").appendTo(background);
+    drawGrid.addClass("subtitle");
+    drawGrid.click(function(){
+      if (!game.locals["drawing"]) {
+        game.locals["drawing"] = sync.obj();
+        game.locals["drawing"].data = {};
+      }
+      game.locals["drawing"].data.drawing = "shiftg";
+      game.locals["drawing"].data.target = app.attr("id");
+      game.locals["drawing"].update();
+      sendAlert({text : "Shift the grid by dragging it around"});
+    });
+  }
+
+  if (obj.data.gridW && obj.data.gridH) {
+    var colWrap = $("<div>").appendTo(background);
+    colWrap.addClass("flexrow flexbetween");
+    colWrap.append("<b class='subtitle flexmiddle'>Grid Color</b>");
+
+    var bgCol = $("<div>").appendTo(colWrap);
+    bgCol.addClass("outline smooth flexmiddle dull padding");
+    bgCol.css("background", obj.data.gc);
+    if (!scope.viewOnly) {
+      colWrap.addClass("hover2");
+      colWrap.click(function(){
+        var optionList = [];
+        var submenu = [
+          "rgba(34,34,34,0.2)",
+          "rgba(187,0,0,0.2)",
+          "rgba(255,153,0,0.2)",
+          "rgba(255,240,0,0.2)",
+          "rgba(0,187,0,0.2)",
+          "rgba(0,115,230,0.2)",
+          "rgba(176,0,187,0.2)",
+          "rgba(255,115,255,0.2)",
+          "rgba(255,255,255,0.2)",
+        ];
+        var primaryCol = sync.render("ui_colorPicker")(obj, app, {
+          hideColor : true,
+          custom : true,
+          colors : submenu,
+          colorChange : function(ev, ui, value){
+            obj.data.gc = value;
+            if (!scope.local) {
+              obj.sync("updateAsset");
+            }
+            else {
+              obj.update();
+            }
+            layout.coverlay("grid-color");
+          }
+        });
+
+        ui_popOut({
+          target : bgCol,
+          id : "grid-color",
+        }, primaryCol);
+      });
+    }
+
+    var inputWrap = $("<div>").appendTo(background);
+    inputWrap.addClass("flexrow flexbetween subtitle");
+    inputWrap.append("<text>Grid Distance</text>");
+
+    var inputWrap = $("<div>").appendTo(inputWrap);
+    inputWrap.addClass("flexmiddle");
+
+    var mapScaleInput = genInput({
+      parent : inputWrap,
+      classes : "middle",
+      value : (obj.data.gridW || 0)/(obj.data.options.unitScale || 1),
+      placeholder : "Distance",
+      style : {"width" : "80px", color : "#333"},
+    });
+    mapScaleInput.change(function(){
+      obj.data.options.unitScale = obj.data.gridW/$(this).val();
+      obj.sync("updateAsset");
+    });
+
+    var scaleType = genInput({
+      parent : inputWrap,
+      classes : "middle",
+      placeholder : "(m,ft,..)",
+      value : obj.data.options.unit,
+      style : {"width" : "30px", color : "#333"},
+    });
+    scaleType.change(function(){
+      obj.data.options.unit = $(this).val();
+      obj.sync("updateAsset");
+    });
+
+    if (data.options && data.options.hex) {
+      var gridType = genIcon("", "Switch to Squares").appendTo(background);
+      gridType.addClass("subtitle");
+      gridType.click(function(){
+        data.options = data.options || {};
+        delete data.options.hex;
+        data.gridW = 64;
+        data.gridH = 64;
+        if (!scope.local) {
+          obj.sync("updateAsset");
+        }
+        else {
+          obj.update();
+        }
+      });
+    }
+    else {
+      var gridType = genIcon("", "Switch to Hex").appendTo(background);
+      gridType.addClass("subtitle");
+      gridType.click(function(){
+        data.options = data.options || {};
+        data.options.hex = true;
+        data.gridW = 140;
+        data.gridH = 120;
+        if (!scope.local) {
+          obj.sync("updateAsset");
+        }
+        else {
+          obj.update();
+        }
+      });
+    }
+
+    var disableGrid = genIcon("remove", "Disable Grid").appendTo(background);
+    disableGrid.addClass("subtitle destroy");
+    disableGrid.click(function(){
+      obj.data.gridW = 0;
+      obj.data.gridH = 0;
+      if (!scope.local) {
+        obj.sync("updateAsset");
+      }
+      else {
+        obj.update();
+      }
+    });
+  }
+  else {
+    var enableGrid = genIcon("ok", "Enable Grid").appendTo(background);
+    enableGrid.addClass("subtitle create");
+    enableGrid.click(function(){
+      obj.data.gridW = 64;
+      obj.data.gridH = 64;
+      if (!scope.local) {
+        obj.sync("updateAsset");
+      }
+      else {
+        obj.update();
+      }
+    });
+  }
+
   return div;
 });
 
@@ -1516,11 +1714,7 @@ sync.render("ui_mapGrid", function(obj, app, scope){
       content.css("font-size", "1.2em");
       obj.addApp(content);
 
-      ui_popOut({
-        target : $(this),
-        id : "board-controls",
-        title : "Grid Options"
-      }, content);
+      $(this).replaceWith(content);
     });
   }
 
@@ -1570,7 +1764,7 @@ sync.render("ui_mapGrid", function(obj, app, scope){
       });
     }
     else {
-      var gridType = genIcon("", "Switch to Hex")//.appendTo(background);
+      var gridType = genIcon("", "Switch to Hex").appendTo(background);
       gridType.addClass("subtitle");
       gridType.click(function(){
         data.options = data.options || {};

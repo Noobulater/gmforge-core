@@ -1,0 +1,1724 @@
+{
+  "info": {
+    "name": {
+      "current": "Heresyv2"
+    },
+    "img": {
+      "current": "/content/games/heresy.png"
+    }
+  },
+  "identifier": "adfasd",
+  "dice": {
+    "defaults": [
+      "d100",
+      "d10",
+      "d5"
+    ],
+    "modifiers": [
+      0,
+      5,
+      10,
+      20,
+      30,
+      40,
+      50,
+      60
+    ],
+    "keys": {
+      "a": {
+        "name": "Advantage",
+        "img": "/content/dice/advantage.png"
+      },
+      "f": {
+        "name": "Failure",
+        "img": "/content/dice/failure.png"
+      },
+      "s": {
+        "name": "Success",
+        "img": "/content/dice/success.png"
+      },
+      "t": {
+        "name": "Threat",
+        "img": "/content/dice/threat.png"
+      },
+      "tri": {
+        "name": "Triumph",
+        "img": "/content/dice/triumph.png"
+      },
+      "des": {
+        "name": "Despair",
+        "img": "/content/dice/despair.png"
+      },
+      "light": {
+        "name": "Light",
+        "img": "/content/dice/lightside.png"
+      },
+      "dark": {
+        "name": "Dark",
+        "img": "/content/dice/darkside.png"
+      },
+      "minus": {
+        "name": "Minus",
+        "img": "/content/dice/minus.png"
+      },
+      "plus": {
+        "name": "Plus",
+        "img": "/content/dice/plus.png"
+      }
+    },
+    "pool": {
+      "d2": {
+        "value": "d2"
+      },
+      "d4": {
+        "value": "d4"
+      },
+      "d5": {
+        "value": "d5"
+      },
+      "d6": {
+        "value": "d6"
+      },
+      "d8": {
+        "value": "d8"
+      },
+      "d10": {
+        "value": "d10"
+      },
+      "d12": {
+        "value": "d12"
+      },
+      "d20": {
+        "value": "d20"
+      },
+      "d100": {
+        "value": "d100"
+      },
+      "proficiency": {
+        "static": true,
+        "value": "d12",
+        "display": {
+          "background-color": "rgb(255,230,0)",
+          "border": "1px solid black",
+          "color": "black"
+        },
+        "results": {
+          "1": {
+            "a": 2
+          },
+          "2": {
+            "a": 1
+          },
+          "3": {
+            "a": 2
+          },
+          "4": {
+            "tri": 1,
+            "s": 1
+          },
+          "5": {
+            "s": 1
+          },
+          "6": {
+            "s": 1,
+            "a": 1
+          },
+          "7": {
+            "s": 1
+          },
+          "8": {
+            "s": 1,
+            "a": 1
+          },
+          "9": {
+            "s": 2
+          },
+          "10": {
+            "s": 1,
+            "a": 1
+          },
+          "11": {
+            "s": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/triumph.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "9": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/success.png"
+            ]
+          },
+          "10": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "11": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/success.png"
+            ]
+          },
+          "12": {
+            "imgs": []
+          }
+        }
+      },
+      "ability": {
+        "static": true,
+        "value": "d8",
+        "display": {
+          "background-color": "rgb(80,185,75)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "s": 1
+          },
+          "2": {
+            "a": 1
+          },
+          "3": {
+            "s": 1,
+            "a": 1
+          },
+          "4": {
+            "s": 2
+          },
+          "5": {
+            "a": 1
+          },
+          "6": {
+            "s": 1
+          },
+          "7": {
+            "a": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/success.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "8": {}
+        }
+      },
+      "boost": {
+        "static": true,
+        "value": "d6",
+        "display": {
+          "background-color": "rgb(135,215,245)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "s": 1,
+            "a": 1
+          },
+          "2": {
+            "a": 1
+          },
+          "3": {
+            "a": 2
+          },
+          "4": {
+            "s": 1
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "5": {},
+          "6": {}
+        }
+      },
+      "challenge": {
+        "static": true,
+        "value": "d12",
+        "display": {
+          "background-color": "rgb(230,25,55)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "t": 2
+          },
+          "2": {
+            "t": 1
+          },
+          "3": {
+            "t": 2
+          },
+          "4": {
+            "t": 1
+          },
+          "5": {
+            "f": 1,
+            "t": 1
+          },
+          "6": {
+            "f": 1
+          },
+          "7": {
+            "f": 1,
+            "t": 1
+          },
+          "8": {
+            "f": 1
+          },
+          "9": {
+            "des": 1,
+            "f": 1
+          },
+          "10": {
+            "f": 2
+          },
+          "11": {
+            "f": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/threat.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/threat.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ]
+          },
+          "9": {
+            "imgs": [
+              "/content/dice/despair.png"
+            ]
+          },
+          "10": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/failure.png"
+            ]
+          },
+          "11": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/failure.png"
+            ]
+          },
+          "12": {
+            "imgs": []
+          }
+        }
+      },
+      "difficulty": {
+        "static": true,
+        "value": "d8",
+        "display": {
+          "background-color": "rgb(85,35,130)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "t": 1
+          },
+          "2": {
+            "f": 1
+          },
+          "3": {
+            "f": 1,
+            "t": 1
+          },
+          "4": {
+            "t": 1
+          },
+          "6": {
+            "t": 2
+          },
+          "7": {
+            "f": 2
+          },
+          "8": {
+            "t": 1
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "5": {
+            "imgs": []
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/threat.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/failure.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          }
+        }
+      },
+      "setback": {
+        "static": true,
+        "value": "d6",
+        "display": {
+          "background-color": "black",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "f": 1
+          },
+          "2": {
+            "f": 1
+          },
+          "3": {
+            "t": 1
+          },
+          "4": {
+            "t": 1
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ],
+            "f": 1
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ],
+            "f": 1
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ],
+            "t": 1
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ],
+            "t": 1
+          },
+          "5": {},
+          "6": {}
+        }
+      },
+      "force": {
+        "static": true,
+        "value": "d12",
+        "display": {
+          "background-color": "white",
+          "border": "1px solid black",
+          "color": "black"
+        },
+        "results": {
+          "1": {
+            "dark": 1
+          },
+          "2": {
+            "light": 2
+          },
+          "3": {
+            "dark": 1
+          },
+          "4": {
+            "light": 2
+          },
+          "5": {
+            "dark": 1
+          },
+          "6": {
+            "light": 2
+          },
+          "7": {
+            "dark": 1
+          },
+          "8": {
+            "light": 1
+          },
+          "9": {
+            "dark": 1
+          },
+          "10": {
+            "light": 1
+          },
+          "11": {
+            "dark": 1
+          },
+          "12": {
+            "dark": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/lightside.png",
+              "/content/dice/lightside.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/lightside.png",
+              "/content/dice/lightside.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/lightside.png",
+              "/content/dice/lightside.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/lightside.png"
+            ]
+          },
+          "9": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "10": {
+            "imgs": [
+              "/content/dice/lightside.png"
+            ]
+          },
+          "11": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "12": {
+            "imgs": [
+              "/content/dice/darkside.png",
+              "/content/dice/darkside.png"
+            ]
+          }
+        }
+      },
+      "fate": {
+        "value": "(d3-2)",
+        "results": {
+          "0": {},
+          "1": {
+            "plus": 1
+          },
+          "-1": {
+            "minus": 1
+          }
+        },
+        "translations": {
+          "0": {},
+          "1": {
+            "imgs": [
+              "/content/dice/plus.png"
+            ],
+            "plus": 1
+          },
+          "-1": {
+            "imgs": [
+              "/content/dice/minus.png"
+            ],
+            "minus": 1
+          }
+        }
+      }
+    }
+  },
+  "initiative": {
+    "query": "d10+(@Ag/10)f",
+    "compare": "(@i1.total>@i2.total)?(1):((@i1.total==@i2.total)?(0):(-1))"
+  },
+  "character": {
+    "_t": "c",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Character"
+      },
+      "img": {
+        "name": "Character Art"
+      },
+      "notes": {
+        "name": "Character Notes"
+      },
+      "div": {
+        "name": "Divination"
+      },
+      "home": {
+        "name": "Homeworld"
+      },
+      "back": {
+        "name": "Background"
+      },
+      "adv": {
+        "name": "Elite Advances"
+      },
+      "role": {
+        "name": "Role"
+      },
+      "size": {
+        "name": "Size"
+      }
+    },
+    "stats": {
+      "WS": {
+        "name": "Weapon Skill",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "BS": {
+        "name": "Ballistic Skill",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "S": {
+        "name": "Strength",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "T": {
+        "name": "Toughness",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "Ag": {
+        "name": "Agility",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "Int": {
+        "name": "Intelligence",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "Per": {
+        "name": "Perception",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "WP": {
+        "name": "Willpower",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "Fel": {
+        "name": "Fellowship",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      },
+      "Ifl": {
+        "name": "Influence",
+        "current": "2d10+20",
+        "min": 0,
+        "max": 100
+      }
+    },
+    "counters": {
+      "fate": {
+        "name": "Fate",
+        "current": 0,
+        "min": 0
+      },
+      "exp": {
+        "name": "Experience",
+        "current": 0,
+        "min": 0,
+        "modifiers": {
+          "Starting": 1000
+        }
+      },
+      "exhaustion": {
+        "name": "Exhaustion",
+        "current": 0,
+        "min": 0,
+        "max": 12
+      },
+      "wounds": {
+        "name": "Wounds",
+        "current": "1d5+8",
+        "min": 0
+      },
+      "insanity": {
+        "name": "Insanity",
+        "current": 0,
+        "min": 0,
+        "max": 100
+      },
+      "corruption": {
+        "name": "Corruption",
+        "current": 0,
+        "min": 0,
+        "max": 100
+      },
+      "daemonic": {
+        "name": "Daemonic Bonus"
+      },
+      "nnWS": {
+        "name": "Non-natural Weapon Skill"
+      },
+      "nnBS": {
+        "name": "Non-natural Ballistic Skill"
+      },
+      "nnS": {
+        "name": "Non-natural Strength"
+      },
+      "nnT": {
+        "name": "Non-natural Toughness"
+      },
+      "nnAg": {
+        "name": "Non-natural Agility"
+      },
+      "nnInt": {
+        "name": "Non-natural Intelligence"
+      },
+      "nnPer": {
+        "name": "Non-natural Perception"
+      },
+      "nnWP": {
+        "name": "Non-natural Willpower"
+      },
+      "nnFel": {
+        "name": "Non-natural Fellowship"
+      }
+    },
+    "tags": {},
+    "skills": {
+      "acr": {
+        "name": "Acrobatics (Ag)",
+        "stat": "Ag"
+      },
+      "ath": {
+        "name": "Athletics (S)",
+        "stat": "S"
+      },
+      "awa": {
+        "name": "Awareness (Per)",
+        "stat": "Per"
+      },
+      "cha": {
+        "name": "Charm (Fel)",
+        "stat": "Fel"
+      },
+      "com": {
+        "name": "Command (Fel)",
+        "stat": "Fel"
+      },
+      "cmL": {
+        "name": "Common Lore (Int)",
+        "stat": "Int"
+      },
+      "dec": {
+        "name": "Deceive (Fel)",
+        "stat": "Fel"
+      },
+      "dod": {
+        "name": "Dodge (Ag)",
+        "stat": "Ag"
+      },
+      "fbL": {
+        "name": "Forbidden Lore (Int)",
+        "stat": "Int"
+      },
+      "inq": {
+        "name": "Inquiry (Fel)",
+        "stat": "Fel"
+      },
+      "int": {
+        "name": "Interrogation (WP)",
+        "stat": "WP"
+      },
+      "itm": {
+        "name": "Intimidate (S)",
+        "stat": "S"
+      },
+      "lin": {
+        "name": "Linguistics (Int)",
+        "stat": "Int"
+      },
+      "log": {
+        "name": "Logic (Int)",
+        "stat": "Int"
+      },
+      "med": {
+        "name": "Medicae (Int)",
+        "stat": "Int"
+      },
+      "nvG": {
+        "name": "Navigate - Surface (Int)",
+        "stat": "Int"
+      },
+      "nvS": {
+        "name": "Navigate - Stellar (Int)",
+        "stat": "Int"
+      },
+      "nvW": {
+        "name": "Navigate - Warp (Int)",
+        "stat": "Int"
+      },
+      "opA": {
+        "name": "Operate - Aeronautics (Ag)",
+        "stat": "Ag"
+      },
+      "opS": {
+        "name": "Operate - Surface (Ag)",
+        "stat": "Ag"
+      },
+      "opV": {
+        "name": "Operate - Void (Ag)",
+        "stat": "Ag"
+      },
+      "par": {
+        "name": "Parry (WS)",
+        "stat": "WS"
+      },
+      "psy": {
+        "name": "Psyniscience (Per)",
+        "stat": "Per"
+      },
+      "scL": {
+        "name": "Scholastic Lore (Int)",
+        "stat": "Int"
+      },
+      "scr": {
+        "name": "Scrutiny (Per)",
+        "stat": "Per"
+      },
+      "sec": {
+        "name": "Security (Int)",
+        "stat": "Int"
+      },
+      "sle": {
+        "name": "Sleight of Hand (Ag)",
+        "stat": "Ag"
+      },
+      "ste": {
+        "name": "Stealth (Ag)",
+        "stat": "Ag"
+      },
+      "sur": {
+        "name": "Survival (Per)",
+        "stat": "Per"
+      },
+      "tec": {
+        "name": "Tech-Use (Int)",
+        "stat": "Int"
+      },
+      "tra": {
+        "name": "Trade (Int)",
+        "stat": "Int"
+      }
+    },
+    "talents": {},
+    "traits": {},
+    "inventory": [],
+    "spellbook": [],
+    "specials": {}
+  },
+  "item": {
+    "_t": "i",
+    "tags": {},
+    "info": {
+      "name": {
+        "name": "Name"
+      },
+      "weight": {
+        "name": "Weight",
+        "min": 0
+      },
+      "quantity": {
+        "name": "Quantity",
+        "min": 0
+      },
+      "img": {
+        "name": "Image"
+      },
+      "special": {
+        "name": "Special Rules"
+      },
+      "notes": {
+        "name": "Notes"
+      },
+      "price": {
+        "name": "Price"
+      }
+    },
+    "equip": {
+      "armor": {
+        "name": "Armor"
+      }
+    },
+    "weapon": {
+      "damage": {
+        "name": "Damage"
+      },
+      "hit": {
+        "name": "Hit Bonus"
+      },
+      "range": {
+        "name": "Range"
+      },
+      "rof": {
+        "name": "Rate of Fire"
+      },
+      "mags": {
+        "name": "Magazine"
+      },
+      "reload": {
+        "name": "Reload Time"
+      },
+      "pen": {
+        "name": "Penetration"
+      }
+    },
+    "spell": {
+      "level": {
+        "name": "Level"
+      },
+      "required": {
+        "name": "Materials"
+      },
+      "duration": {
+        "name": "Duration"
+      },
+      "time": {
+        "name": "Casting Time"
+      }
+    }
+  },
+  "page": {
+    "_t": "p",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Page"
+      },
+      "img": {
+        "name": "Art"
+      },
+      "notes": {
+        "name": "Notes"
+      },
+      "mode": {
+        "name": "Mode"
+      }
+    }
+  },
+  "security": {
+    "player": {
+      "Game Master": 1,
+      "Assistant Master": 2,
+      "Trusted Player": 3,
+      "Player": 4,
+      "Spectator": 5
+    },
+    "object": {
+      "Default Access": 0,
+      "Owner": 1,
+      "Rights": 2,
+      "Visible": 3,
+      "Deny": 4
+    }
+  },
+  "constants": {
+    "basearmor": "{\"human_head\" : \"#:T+@nnT+@daemonic\",\"human_torso\" : \"#:T+@nnT+@daemonic\",\"human_larm\" : \"#:T+@nnT+@daemonic\",\"human_rarm\" : \"#:T+@nnT+@daemonic\",\"human_lleg\" : \"#:T+@nnT+@daemonic\",\"human_rleg\" : \"#:T+@nnT+@daemonic\"}",
+    "ws": "(@c.stats.WS/10)f",
+    "bs": "(@c.stats.BS/10)f",
+    "s": "(@c.stats.S/10)f",
+    "t": "(@c.stats.T/10)f",
+    "ag": "(@c.stats.Ag/10)f",
+    "int": "(@c.stats.Int/10)f",
+    "per": "(@c.stats.Per/10)f",
+    "fel": "(@c.stats.Fel/10)f",
+    "wp": "(@c.stats.WP/10)f",
+    "ifl": "(@c.stats.Ifl/10)f"
+  },
+  "tables": {
+    "RAW": {
+      "T": "((@T/10)f+@nnT+@daemonic)",
+      "TB": "((@T/10)f+@nnT",
+      "TR": "((@T/10)f"
+    }
+  },
+  "tags": {},
+  "actions": {
+    "c": {
+      "Stat Test": {
+        "hot": "1",
+        "display": ""
+      }
+    },
+    "i": {
+      "Ranged Attack": {
+        "options": {
+          "bonus": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60
+          ],
+          "penalty": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60
+          ],
+          "threshold": true,
+          "degBonus": true,
+          "degrees": true
+        },
+        "eventData": {
+          "msg": "'Ranged Attack'",
+          "ui": "ui_attack",
+          "data": "$bonus=@i.weapon.hit;#threshold=@BS+(@bonus)-(@penalty);d100"
+        }
+      },
+      "Melee Attack": {
+        "options": {
+          "bonus": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60
+          ],
+          "penalty": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60
+          ],
+          "threshold": true,
+          "degBonus": true,
+          "degrees": true
+        },
+        "eventData": {
+          "msg": "'Melee Attack'",
+          "ui": "ui_attack",
+          "data": "$bonus=@i.weapon.hit;#threshold=@WS+(@bonus)-(@penalty);d100"
+        }
+      },
+      "Damage": {
+        "targets": {
+          "cond": "@c._t=='c'"
+        },
+        "options": {
+          "bonus": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "penalty": true
+        },
+        "eventData": {
+          "msg": "'rolled damage'",
+          "data": "@i.weapon.damage+(@bonus)-(@penalty)",
+          "var": {
+            "pen": "@i.weapon.pen"
+          }
+        },
+        "targeting": {
+          "cond": "1",
+          "calc": [
+            {
+              "target": "counters.wounds",
+              "eq": "(@c.counters.wounds-(@:armor()-@total))_0",
+              "cond": "1"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "effects": {
+    "dmg": {
+      "name": "Take Damage",
+      "submenu": {
+        "head": {
+          "name": "Head",
+          "msg": "@pName : Applied @total damage (pen : @pen)",
+          "calc": [
+            {
+              "eq": "(@wounds-(@total-(((@:armor(human_head)-#:RAW(T))-@pen)_0+#:RAW(T)))_0)",
+              "target": "counters.wounds"
+            }
+          ]
+        },
+        "larm": {
+          "name": "Left Arm",
+          "msg": "@pName : Applied @total damage (pen : @pen)",
+          "calc": [
+            {
+              "eq": "(@wounds-(@total-(((@:armor(human_llarm)-#:RAW(T))-@pen)_0+#:RAW(T)))_0)",
+              "target": "counters.wounds"
+            }
+          ]
+        },
+        "rarm": {
+          "name": "Right Arm",
+          "msg": "@pName : Applied @total damage (pen : @pen)",
+          "calc": [
+            {
+              "eq": "(@wounds-(@total-(((@:armor(human_rarm)-#:RAW(T))-@pen)_0+#:RAW(T)))_0)",
+              "target": "counters.wounds"
+            }
+          ]
+        },
+        "body": {
+          "name": "Body",
+          "msg": "@pName : Applied @total damage (pen : @pen)",
+          "calc": [
+            {
+              "eq": "(@wounds-(@total-(((@:armor(human_torso)-#:RAW(T))-@pen)_0+#:RAW(T)))_0)",
+              "target": "counters.wounds"
+            }
+          ]
+        },
+        "lleg": {
+          "name": "Left Leg",
+          "msg": "@pName : Applied @total damage (pen : @pen)",
+          "calc": [
+            {
+              "eq": "(@wounds-(@total-(((@:armor(human_lleg)-#:RAW(T))-@pen)_0+#:RAW(T)))_0)",
+              "target": "counters.wounds"
+            }
+          ]
+        },
+        "rleg": {
+          "name": "Right Leg",
+          "msg": "@pName : Applied @total damage (pen : @pen)",
+          "calc": [
+            {
+              "eq": "(@wounds-(@total-(((@:armor(human_rleg)-#:RAW(T))-@pen)_0+#:RAW(T)))_0)",
+              "target": "counters.wounds"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "display": {
+    "ui": {
+      "ui_statTest": {
+        "classes": "flexrow flexaround",
+        "dice": {
+          "top": "((@threshold-@total)/10)c",
+          "cond": "@threshold!=0",
+          "results": [
+            {
+              "classes": "focus outline",
+              "top": "((@threshold-@total)/10)c",
+              "cond": "@total==100",
+              "bottom": "'Fail'"
+            },
+            {
+              "classes": "highlight outline",
+              "top": "((@threshold-@total)/10)c+@degBonus",
+              "cond": "@total<=@threshold",
+              "bottom": "'Success'"
+            },
+            {
+              "classes": "highlight outline",
+              "top": "((@threshold-@total)/10)c_1+@degBonus",
+              "cond": "@total==1",
+              "bottom": "'Success'"
+            }
+          ]
+        }
+      },
+      "ui_poolResults": {
+        "classes": "flexrow flexaround",
+        "dice": {
+          "width": "30px",
+          "height": "30px"
+        },
+        "results": {
+          "style": {
+            "width": "50%",
+            "background-color": "grey"
+          },
+          "display": {
+            "classes": "flexrow flexaround flex",
+            "display": [
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.s-@pool.f)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/success.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.s-@pool.f)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.f-@pool.s)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/failure.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.f-@pool.s)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.a-@pool.t)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/advantage.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.a-@pool.t)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.t-@pool.a)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/threat.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.t-@pool.a)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "@pool.tri>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/triumph.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+@pool.tri"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "@pool.des>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/despair.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+@pool.des"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.light-@pool.dark)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/lightside.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.light-@pool.dark)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.dark-@pool.light)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/darkside.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.dark-@pool.light)"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "display": {
+          "classes": "outline lrpadding flexrow flexmiddle flexwrap flex"
+        }
+      },
+      "ui_attack": {
+        "classes": "flexrow flexaround",
+        "style": {},
+        "dice": {
+          "top": "-((@threshold-@total)/10)c",
+          "cond": "@threshold!=0",
+          "bottom": "",
+          "results": [
+            {
+              "classes": "highlight outline",
+              "style": {},
+              "top": "((@threshold-@total)/10)c+@degBonus",
+              "cond": "@total<=@threshold",
+              "bottom": "'Success'",
+              "results": {
+                "classes": "flex subtitle",
+                "display": [
+                  {
+                    "classes": "flexcolumn flexmiddle",
+                    "cond": "(@total-(@total/10)f*10)*10+(@total/10)f<=10",
+                    "display": [
+                      {
+                        "name": "Head"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+1*(@degrees)_1)",
+                        "name": "Head"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+2*(@degrees)_1)",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+3*(@degrees)_1)",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+4*(@degrees)_1)",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+5*(@degrees)_1)",
+                        "name": "Body",
+                        "count": "(((@threshold-@total)/10)c+@degBonus)-(1+4*(@degrees)_1)"
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexcolumn flexmiddle",
+                    "cond": "(@total-(@total/10)f*10)*10+(@total/10)f>=11 && (@total-(@total/10)f*10)*10+(@total/10)f<=20",
+                    "display": [
+                      {
+                        "name": "Right Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+1*(@degrees)_1)",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+2*(@degrees)_1)",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+3*(@degrees)_1)",
+                        "name": "Head"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+4*(@degrees)_1)",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+5*(@degrees)_1)",
+                        "name": "Arm",
+                        "count": "(((@threshold-@total)/10)c+@degBonus)-(1+4*(@degrees)_1)"
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexcolumn flexmiddle",
+                    "cond": "(@total-(@total/10)f*10)*10+(@total/10)f>=21 && (@total-(@total/10)f*10)*10+(@total/10)f<=30",
+                    "display": [
+                      {
+                        "name": "Left Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+1*(@degrees)_1)",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+2*(@degrees)_1)",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+3*(@degrees)_1)",
+                        "name": "Head"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+4*(@degrees)_1)",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+5*(@degrees)_1)",
+                        "name": "Arm",
+                        "count": "(((@threshold-@total)/10)c+@degBonus)-(1+4*(@degrees)_1)"
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexcolumn flexmiddle",
+                    "cond": "(@total-(@total/10)f*10)*10+(@total/10)f>=30 && (@total-(@total/10)f*10)*10+(@total/10)f<=70",
+                    "display": [
+                      {
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+1*(@degrees)_1)",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+2*(@degrees)_1)",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+3*(@degrees)_1)",
+                        "name": "Head"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+4*(@degrees)_1)",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+5*(@degrees)_1)",
+                        "name": "Body",
+                        "count": "(((@threshold-@total)/10)c+@degBonus)-(1+4*(@degrees)_1)"
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexcolumn flexmiddle",
+                    "cond": "(@total-(@total/10)f*10)*10+(@total/10)f>=71 && (@total-(@total/10)f*10)*10+(@total/10)f<=85",
+                    "display": [
+                      {
+                        "name": "Right Leg"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+1*(@degrees)_1)",
+                        "name": "Leg"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+2*(@degrees)_1)",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+3*(@degrees)_1)",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+4*(@degrees)_1)",
+                        "name": "Head"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+5*(@degrees)_1)",
+                        "name": "Leg",
+                        "count": "(((@threshold-@total)/10)c+@degBonus)-(1+4*(@degrees)_1)"
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexcolumn flexmiddle",
+                    "cond": "(@total-(@total/10)f*10)*10+(@total/10)f>=86 && (@total-(@total/10)f*10)*10+(@total/10)f<=100",
+                    "display": [
+                      {
+                        "name": "Left Leg"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+1*(@degrees)_1)",
+                        "name": "Leg"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+2*(@degrees)_1",
+                        "name": "Body"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+3*(@degrees)_1",
+                        "name": "Arm"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+4*(@degrees)_1",
+                        "name": "Head"
+                      },
+                      {
+                        "cond": "(((@threshold-@total)/10)c+@degBonus)>=(1+5*(@degrees)_1",
+                        "name": "Leg",
+                        "count": "(((@threshold-@total)/10)c+@degBonus)-(1+4*(@degrees)_1)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "results": {
+          "classes": "flex",
+          "title": {
+            "classes": "fit-x bold subtitle",
+            "name": "Results"
+          }
+        },
+        "display": {
+          "classes": "outline lrpadding flexrow flexmiddle flexwrap flex"
+        }
+      }
+    },
+    "item": {
+      "sheet": "",
+      "summary": ""
+    },
+    "sheet": {
+      "health": "counters.wounds",
+      "style": {
+        "background-image": "url('/content/sheet3.png')",
+        "background-size": "cover",
+        "box-shadow": "inset 0em 0em 0.5em 0.5em rgba(0,0,0,0.2)"
+      },
+      "content": "\n<div class='flexcolumn fit-xy lpadding' style='font-family : \"ColumbusMTStd-Semibold\"'>\n  <input class='size7 line fit-x middle' style='font-family : \"Celestia Antiqua Std Bold\"; border-color : transparent;' target='info.name'/>\n  \n  <list class='flexrow fit-x flexbetween' target='stats'>\n    <div class='flexcolumn outline smooth' style='background : radial-gradient(rgb(77, 42, 22), rgb(42, 21, 14))'>\n      <div class='outlinebottom inactive flexmiddle subtitle lrpadding destroy' cond='eval{(@exhaustion > (@%path%/10)f)}' title='exhausted'>\n        <input class='line middle' target='stats.%index%' style=\"width : 30px;\"/>\n        (<input title='eval{@c.counters.nn%index%.name}' class='line middle subtitle' target=\"counters.nn%index%\" style=\"width : 20px;\"/>)\n      </div>\n      <div class='outlinebottom inactive flexmiddle subtitle lrpadding' cond='eval{(@exhaustion <= (@%path%/10)f)}'>\n        <input class='line middle' target='stats.%index%' style=\"width : 30px;\"/>\n        (<input title='eval{@c.counters.nn%index%.name}' class='line middle subtitle' target=\"counters.nn%index%\" style=\"width : 20px;\"/>)\n      </div>\n      <div class='white outlinebottom bold flexmiddle size3 link' title='roll'>\n        eval{@%path%}\n      </div>\n      <div class='flexrow flexmiddle lrmargin'>\n        <input type=\"checkbox\" style='width : 10px; height : 10px;' target='stats.%index%' mod='Rank' check='5' uncheck='0' isChecked='eval{@%path%.modifiers.Rank>0}'/>\n        <input type=\"checkbox\" style='width : 10px; height : 10px;' target='stats.%index%' mod='Rank' check='10' uncheck='5' isChecked='eval{@%path%.modifiers.Rank>5}'/>\n        <input type=\"checkbox\" style='width : 10px; height : 10px;' target='stats.%index%' mod='Rank' check='15' uncheck='10' isChecked='eval{@%path%.modifiers.Rank>10}'/>\n        <input type=\"checkbox\" style='width : 10px; height : 10px;' target='stats.%index%' mod='Rank' check='20' uncheck='15' isChecked='eval{@%path%.modifiers.Rank>15}'/>\n        <input type=\"checkbox\" style='width : 10px; height : 10px;' target='stats.%index%' mod='Rank' check='25' uncheck='20' isChecked='eval{@%path%.modifiers.Rank>20}'/>\n      </div>\n      <div class='bold flexmiddle' style='color : rgb(235,225,210)' title='eval{@%path%.name}'>\n        %index%\n      </div>\n    </div>\n  </list>\n  <div class='padding'></div>\n  <div class='flexrow flex'>\n    <div class='flexcolumn flex lrmargin' style='min-height:100%;'>\n      <div style='min-width : 200px; height : 200px; position : relative;' class='flexcolumn outline smooth white'>\n        <ui name='ui_image'/>\n        <ui name='ui_token' class='white outline smooth hover2' style='position : absolute; right : 0; bottom : 0; width : 30px; height : 30px;'/>\n      </div>\n\n      <div class='flexrow flexbetween lrpadding'>\n        <div class='flexbetween'>\n          <b>Corruption</b>\n          <input target=\"counters.corruption\" class='line lrmargin middle' style='width : 25px;'/>\n        </div>\n        <div class='flexbetween'>\n          <b>Insanity</b>\n          <input target=\"counters.insanity\" class='line lrmargin middle' style='width : 25px;'/>\n        </div>\n      </div>\n\n      <div class='spadding'></div>\n      \n      <div class='flexrow flexbetween'>\n        <b> Wounds eval{(@wounds < 0)?(\"(Critical)\"):((@wounds < @c.counters.wounds.max)?(((@c.counters.wounds.max - @wounds) <= (#:T*2))?(\"(Light)\"):(\"(Heavy)\")):(\"\"))} </b> \n        <text>\n          <input target=\"counters.wounds\" style='width : 20px; border-color:transparent;' class='line middle'/> / \n          <input target=\"counters.wounds\" field=\"max\" style='width : 20px; border-color:transparent;' class='line middle'/> \n        </text>\n      </div>\n      <loop class='flexrow flexbetween flexwrap' count=\"@c.counters.wounds.max\">\n        <div class='flex flexcolumn'>\n          <div cond=\"eval{%index% < @wounds && (@c.counters.wounds.max - @wounds) <= (#:T*2)}\" class='spadding flex outline smooth' style='background : rgb(45, 136, 45);'></div>\n          <div cond=\"eval{%index% < @wounds && (@c.counters.wounds.max - @wounds) > (#:T*2)}\" class='spadding flex outline smooth' style='background : rgb(170, 110, 57);'></div>\n          <div cond=\"eval{%index% < @wounds*-1 && @wounds < 0}\" class='spadding flex outline smooth' style='background : rgb(170, 57, 57);'></div>\n          <div cond=\"eval{%index% >= ((@wounds)_0 - (@wounds)|0)}\" class='spadding flex outline smooth'></div>\n        </div>\n      </loop>\n      \n      <div class='spadding'></div>\n      \n      <div class='flexrow flexbetween'>\n        <b> Exhaustion eval{(@exhaustion > (#:WP + #:T))?(\"(Pass Out)\"):(\"\")} </b> \n        <text>\n          <input target=\"counters.exhaustion\" style='width : 20px; border-color:transparent;' class='line middle'/> / \n          <input target=\"counters.exhaustion\" field=\"max\" style='width : 20px; border-color:transparent;' class='line middle'/> \n        </text>\n      </div>\n      <loop class='flexrow flexbetween flexwrap' count=\"@c.counters.exhaustion.max\">\n        <div class='flex flexcolumn'>\n          <div cond=\"eval{%index% < @exhaustion && %index% < (#:WP + #:T)}\" class='outline smooth flex spadding' style='background : rgb(200, 100, 10)'></div>\n          <div cond=\"eval{%index% < @exhaustion && %index% >= (#:WP + #:T)}\" class='outline smooth flex spadding' style='background : rgb(100, 50, 10)'></div>\n          <div cond=\"eval{%index% >= @exhaustion}\" class='outline smooth flex spadding'></div>\n        </div>\n      </loop>\n\n      <div class='spadding'></div>\n      \n      <div class='flexrow flexbetween'>\n        <b> Fate </b> \n        <text>\n          <input target=\"counters.fate\" style='width : 20px; border-color:transparent;' class='line middle'/> / \n          <input target=\"counters.fate\" field=\"max\" style='width : 20px; border-color:transparent;' class='line middle'/> \n        </text>\n      </div>\n      <loop class='flexrow flexbetween flexwrap' count=\"@c.counters.fate.max\">\n        <div class='flex flexcolumn'>\n          <div cond=\"eval{%index% < @fate}\" class='outline smooth flex spadding' style='background : rgb(136, 124, 175);'></div>\n          <div cond=\"eval{%index% >= @fate}\" class='outline smooth flex spadding'></div>\n        </div>\n      </loop>\n\n      <div class='padding'></div>\n      \n      <div class='flexcolumn flex'>\n        <div class='flexrow'>\n          <div class='flexcolumn flexaround outline smooth inactive subtitle' style='position : relative; background-image : url(\"/content/outline.png\"); background-size : contain; background-position : center; background-repeat : no-repeat; width : 150px; height : 150px;'>\n            <div class='flexcolumn subtitle spadding' style='position : absolute; right : 1%; top : 1%;'>\n              <div class='flexrow flexmiddle destroy' title='Daemonic Bonus'>\n                <input class='line middle' style='width : 20px' target=\"counters.daemonic\"/>\n              </div>\n            </div>\n            <div class='flexrow flexaround'>\n              <div class='flexcolumn white outline smooth spadding'>\n                <b>Head</b>\n                <div class='flexrow'>\n                  <input class='line middle' style='width : 20px' target=\"counters.armorH\"/>(eval{#:T + @armorH})\n                </div>\n              </div>\n            </div>\n            <div class='flexrow flexaround'>\n              <div class='flexcolumn white outline smooth spadding'>\n                <b>R. Arm</b>\n                <div class='flexrow'>\n                  <input class='line middle' style='width : 20px'  target=\"counters.armorAR\"/>(eval{#:T + @armorAR})\n                </div>\n              </div>\n              <div class='flexcolumn white outline smooth spadding'>\n                <b>Body</b>\n                <div class='flexrow'>\n                  <input class='line middle' style='width : 20px'  target=\"counters.armorB\"/>(eval{#:T + @armorB})\n                </div>\n              </div>\n              <div class='flexcolumn white outline smooth spadding'>\n                <b>L. Arm</b>\n                <div class='flexrow'>\n                  <input class='line middle' style='width : 20px'  target=\"counters.armorAL\"/>(eval{#:T + @armorAL})\n                </div>\n              </div>\n            </div>\n            <div class='flexrow flexaround'>\n              <div class='flexcolumn white outline smooth spadding'>\n                <b>R. Leg</b>\n                <div class='flexrow'>\n                  <input class='line middle' style='width : 20px'  target=\"counters.armorLR\"/>(eval{#:T + @armorRL})\n                </div>\n              </div>\n              <div class='flexcolumn white outline smooth spadding' target=\"counters.armorLR\">\n                <b>L. Leg</b>\n                <div class='flexrow'>\n                  <input class='line middle' style='width : 20px'  target=\"counters.armorLL\"/>(eval{#:T + @armorLL})\n                </div>\n              </div>\n            </div>\n          </div>\n          <div class='flexcolumn flexbetween'>\n            <div class='flexcolumn flexmiddle'>  \n              <b class='subtitle flexmiddle' style='font-family : \"Celestia Antiqua Std Bold\"'>Size (eval{@:sign(@c.info.size)})</b>\n              <select class='inactive middle smooth subtitle lrmargin' target='info.size'>\n                <option value=-3>Mini</option>\n                <option value=-2>Puny</option>\n                <option value=-1>Scrawny</option>\n                <option value=0>Average</option>\n                <option value=1>Hulking</option>\n                <option value=2>Enormous</option>\n                <option value=3>Massive</option>\n                <option value=4>Immense</option>\n                <option value=5>Monumental</option>\n                <option value=6>Titanic</option>\n              </select>\n            </div>\n            <div class='flexcolumn subtitle lrpadding lrmargin'>\n              <b class='flexmiddle' style='font-family : \"Celestia Antiqua Std Bold\"'>Movement</b>\n              <div class='flexbetween'>Half <text>eval{(#:Ag + @size + @nnAg)}</text></div>\n              <div class='flexbetween'>Full <text>eval{(#:Ag + @size + @nnAg)*2}</text></div>\n              <div class='flexbetween'>Run <text>eval{(#:Ag + @size + @nnAg)*3}</text></div>\n              <div class='flexbetween'>Charge <text>eval{(#:Ag + @size + @nnAg)*6}</text></div>\n            </div>\n          </div>\n        </div>\n        <div class='flexcolumn flex'>\n          <b style='font-family : \"Celestia Antiqua Std Bold\";'> Conditions / Criticals </b>\n          <textarea target='info.conditions' class='flex subtitle'>eval{@c.info.conditions}</textarea>\n        </div>\n      </div>\n    </div>\n    <div class='outline lrmargin'></div>\n    <div class='flexcolumn flex2 lrmargin smooth'>\n      <tabs class='flexrow flexaround fit-x size4' tab-category=\"main-tab\" tab-selected=\"alttext flexmiddle lrpadding smooth\" tab-selected-style=\"color : rgb(235,225,210); background : radial-gradient(rgb(77, 42, 22), rgb(42, 21, 14));\" style='font-family : \"Celestia Antiqua Std Bold\";'>\n        <tab class='flexmiddle link lrpadding' primary=true> Bio </tab>\n        <tab class='flexmiddle link lrpadding'> Info </tab>\n        <tab class='flexmiddle link lrpadding'> Gear </tab>\n        <tab class='flexmiddle link lrpadding'> Skills </tab>\n        <tab class='flexmiddle link lrpadding'> Psychic </tab>\n      </tabs>\n      <div main-tab=\"Bio\" class='flex flexcolumn'>\n        <ui class='flex2 flexcolumn outlinebottom' name='ui_rawNotes'/>\n      </div>\n      <div main-tab=\"Info\" class='flex flexcolumn'>\n        <div class='flexrow padding'>\n          <div class='flexcolumn'>\n            <b style='font-family : \"Celestia Antiqua Std Bold\";'>Info</b>\n            <bank target='info' ignore=\"name,img,notes,aptitudes,conditions\">\n              <div class='flexrow flexbetween'>\n                <b> eval{@%path%.name} </b>\n                <input class='line lrmargin middle' target='info.%index%'></input>\n              </div>\n            </bank>\n          </div>\n          <div class='spadding'></div>\n          <div class='flex flexcolumn'>\n            <b style='font-family : \"Celestia Antiqua Std Bold\";'>Aptitudes</b>\n            <textarea class='flex' target='info.aptitudes'>eval{@aptitudes || \"\"}</textarea>\n      \n            <b class='flexbetween' style='font-family : \"Celestia Antiqua Std Bold\";'><text>Experience</text> <text>(eval{@exp + @exp_spent})</text></b>\n            <div class='flexrow flexbetween'>\n              <div class='subtitle flexbetween flex'>\n                <b>Available</b>\n                <b class='lrmargin' edit=\"counters.exp\">eval{@exp}</b>\n              </div>\n              <div class='flex'></div>\n              <div class='subtitle flexbetween flex'>\n                <b>Spent</b>\n                <b class='lrmargin' edit=\"counters.exp_spent\">eval{@exp_spent}</b>\n              </div>\n            </div>\n          </div>\n        </div>\n        <div class='flexcolumn flex padding'>         \n          <div class='flexbetween outlinebottom'>\n            <b>Talents</b> \n            <b class='create link'>\n              Add\n              <click>\n                <create type='VALUE' target=\"talents\"/>\n              </click>\n            </b>\n          </div>\n          <div class='flex scroll-y'>\n            <bank target='talents'>\n              <div>\n                <div class='flexbetween'>\n                  <b class='link' style='font-family : \"Celestia Antiqua Std Bold\";'>\n                    eval{@%path%.name}\n                    <click>\n                      <delete cond=\"eval{@%path%.hidden != 0}\" target=\"talents.%index%.hidden\"></delete>\n                      <setAttr cond=\"eval{@%path%.hidden == 0}\" target=\"talents.%index%.hidden\" value=\"true\"></setAttr>\n                    </click>\n                  </b>\n                  <div>\n                    <span class='glyphicon glyphicon-edit link'>\n                      <click>\n                        <change target=\"talents.%index%\"></change>\n                      </click>\n                    </span>\n                    <span class='glyphicon glyphicon-trash destroy link'>\n                      <click>\n                        <delete target=\"talents.%index%\"></delete>\n                      </click>\n                    </span>\n                  </div>\n                </div>\n                <div cond=\"eval{@%path%.hidden == 0}\" class='flexbetween lrpadding outlinebottom' edit=\"talents.%index%.current\" style='margin-bottom : 1.0em;'>\n                  <b>traverse{talents.%index%.current}</b>\n                </div>\n              </div>\n            </bank>\n          </div>\n        </div>\n        <div class='flexrow padding'>\n          <div class='flex'>\n            <div class='flexbetween outlinebottom'>\n              <b>Special Rules</b>\n              <b class='create link'>\n                Add\n                <click>\n                  <create type='VALUE' target=\"specials\"/>\n                </click>\n              </b>\n            </div>\n            <bank class='scroll-y' target='specials' style='height : 70px;'>\n              <div>\n                <div class='flexbetween'>\n                  <b class='link' style='font-family : \"Celestia Antiqua Std Bold\";'>\n                    eval{@%path%.name}\n                    <click>\n                      <delete cond=\"eval{@%path%.hidden != 0}\" target=\"specials.%index%.hidden\"></delete>\n                      <setAttr cond=\"eval{@%path%.hidden == 0}\" target=\"specials.%index%.hidden\" value=\"true\"></setAttr>\n                    </click>\n                  </b>\n                  <div>\n                    <span class='glyphicon glyphicon-edit link'>\n                      <click>\n                        <change target=\"specials.%index%\"></change>\n                      </click>\n                    </span>\n                    <span class='glyphicon glyphicon-trash destroy link'>\n                      <click>\n                        <delete target=\"specials.%index%\"></delete>\n                      </click>\n                    </span>\n                  </div>\n                </div>\n                <div cond=\"eval{@%path%.hidden == 0}\" class='flexbetween lrpadding outlinebottom' edit=\"specials.%index%.current\" style='margin-bottom : 1.0em;'>\n                  <b>traverse{specials.%index%.current}</b>\n                </div>\n              </div>\n            </bank>\n          </div>\n          <div class='spadding'></div>\n          <div class='flex'>\n            <div class='flexbetween outlinebottom'>\n              <b>Traits</b>\n              <b class='create link'>\n                Add\n                <click>\n                  <create type='VALUE' target=\"traits\"/>\n                </click>\n              </b>\n            </div>\n            <bank class='scroll-y' target='traits' style='height : 70px;'>\n              <div>\n                <div class='flexbetween'>\n                  <b class='link' style='font-family : \"Celestia Antiqua Std Bold\";'>\n                    eval{@%path%.name}\n                    <click>\n                      <delete cond=\"eval{@%path%.hidden != 0}\" target=\"traits.%index%.hidden\"></delete>\n                      <setAttr cond=\"eval{@%path%.hidden == 0}\" target=\"traits.%index%.hidden\" value=\"true\"></setAttr>\n                    </click>\n                  </b>\n                  <div>\n                    <span class='glyphicon glyphicon-edit link'>\n                      <click>\n                        <change target=\"traits.%index%\"></change>\n                      </click>\n                    </span>\n                    <span class='glyphicon glyphicon-trash destroy link'>\n                      <click>\n                        <delete target=\"traits.%index%\"></delete>\n                      </click>\n                    </span>\n                  </div>\n                </div>\n                <div cond=\"eval{@%path%.hidden == 0}\" class='flexbetween lrpadding outlinebottom' edit=\"traits.%index%.current\" style='margin-bottom : 1.0em;'>\n                  <b>traverse{traits.%index%.current}</b>\n                </div>\n              </div>\n            </bank>\n          </div>\n        </div>\n      </div>\n      <div main-tab=\"Gear\" class='scroll-y flex padding'>\n        <div class='flexbetween'>\n          <b>Gear(eval{@:weight() kg})</b> \n          <b class='create link'>\n            Add\n            <click>\n              <create type='ITEM' target=\"inventory\"/>\n            </click>\n          </b>\n        </div>\n        <list target='inventory' sortable=\"inventorySort\">\n          <div>\n            <div class='flexrow'> \n              <div class='flexrow outline smooth' style='width : 100px;'>\n                <ui name='ui_image' scope-lookup=\"inventory.%index%.info.img\" scope-fit='cover'/>\n              </div>\n              <div class='flexcolumn flex outlinebottom'>\n                <div class='flexrow flexbetween'>\n                  <b class='line size2 lrpadding flex' edit=\"inventory.%index%.info.name\" style='font-family : \"Celestia Antiqua Std Bold\"; min-height : 10px; min-width : 10px;'>traverse{inventory.%index%.info.name.current}</b>\n                  <div class='flexrow'>\n                    <div class='flexrow flexmiddle'>\n                      <div>\n                        <span class='glyphicon glyphicon-search link'>\n                          <click>\n                            <prompt title='traverse{inventory.%index%.info.name.current}'>\n                              traverse{inventory.%index%.info.notes.current}\n                            </prompt>\n                          </click>\n                        </span>\n                        <span class='glyphicon glyphicon-edit link'>\n                          <click>\n                            <change target=\"inventory.%index%\"></change>\n                          </click>\n                        </span>\n                        <span class='glyphicon glyphicon-trash link destroy'>\n                          <click>\n                            <delete target=\"inventory.%index%\"></delete>\n                          </click>\n                        </span>\n                      </div>\n                    </div>\n                  </div>\n                </div>\n                <div class='flexrow flexbetween subtitle'>\n                  <div class='flexrow flexmiddle lrmargin'>\n                    <div class='flexrow flexmiddle bold'>x<input class='lrmargin line middle' target='inventory.%index%.info.quantity' style='width : 24px;'/></div>\n                    <div class='flexrow flexmiddle bold'><input class='lrmargin line middle' target='inventory.%index%.info.weight' style='width : 24px;'/>kg</div>\n                  </div>\n                  \n                  <b class='middle lrpadding' edit=\"inventory.%index%.info.specials.current\" style='font-family : \"Celestia Antiqua Std Bold\";'>traverse{inventory.%index%.info.specials.current}</b>\n                  \n                  <div class='flexrow flexbetween flex'>\n                    <select class='inactive middle smooth' target='inventory.%index%.info.type'>\n                      <option value=''>None</option>\n                      <option>Basic</option>\n                      <option>Pistol</option>\n                      <option>Heavy</option>\n                      <option>Melee</option>\n                      <option>Thrown</option>\n                      <option>Armor</option>\n                      <option>Shield</option>\n                    </select>\n                    <div cond='eval{@%path%.tags.equipped}'>\n                      <select class='inactive middle smooth' cond=\"eval{'@%path%.info.type'!='Armor'}\" target='inventory.%index%.equip.hands'>\n                        <option>One-Handed</option>\n                        <option>Two-Handed</option>\n                        <option selected=\"true\">Other</option>\n                      </select>\n                    </div>\n                  </div>\n                  \n                  <div class='background alttext lrpadding outline smooth hover2 flexmiddle' cond='eval{!@%path%.tags.equipped}'>\n                    Equip\n                    <click>\n                      <setAttr target=\"inventory.%index%.tags.equipped\" value='1'/>\n                    </click>\n                  </div>\n                  <div class='background alttext lrpadding outline smooth hover2 flexmiddle' cond='eval{@%path%.tags.equipped}'>\n                    Un-Equip\n                    <click>\n                      <setAttr target=\"inventory.%index%.tags.equipped\" value='0'/>\n                    </click>\n                  </div>                  \n                </div>\n                <div class='flexrow flexbetween flex' cond='eval{@%path%.tags.equipped}'>\n                  <div class='flexcolumn flex' style='min-height : 60px;' edit='inventory.%index%.info.notes' cond=\"eval{'@%path%.info.type' == 'None' || '@%path%.info.type' == '0'}\"> \n                    traverse{inventory.%index%.info.notes.current}\n                  </div>\n                  <div class='flexrow flexbetween flexwrap subtitle lrmargin' cond=\"eval{'@%path%.info.type'!='Armor' && '@%path%.info.type'!='Shield' && '@%path%.info.type'!='Melee' && '@%path%.info.type' != 'None' && '@%path%.info.type' != '0'}\">\n                    <div class='flexrow flexmiddle'>RNG<input class='lrmargin middle line' target='inventory.%index%.weapon.range' style='width : 40px;'/></div>\n                    <div class='flexrow flexmiddle'>DMG<input class='lrmargin middle line' target='inventory.%index%.weapon.damage' style='width : 40px;'/></div>\n                    <div class='flexrow flexmiddle'>PEN<input class='lrmargin middle line' target='inventory.%index%.weapon.pen' style='width : 40px;'/></div>\n                    <div class='flexrow flexmiddle'>ROF<input class='lrmargin middle line' target='inventory.%index%.weapon.rof' style='width : 40px;'/></div>\n                    <div class='flexrow flexmiddle'>CLP<input class='lrmargin middle line' target='inventory.%index%.weapon.ammo' style='width : 40px;'/></div>\n                    <div class='flexrow flexmiddle'>RLD<input class='lrmargin middle line' target='inventory.%index%.weapon.reload' style='width : 40px;'/></div>\n                  </div>\n                  <div class='flexcolumn flexaround subtitle lrmargin inactive outline smooth' cond=\"eval{'@%path%.info.type'=='Armor' || '@%path%.info.type'=='Shield'}\" style='width:80px; height : 80px; background-image : url(\"/content/outline.png\"); background-size : contain; background-position : center; background-repeat : no-repeat;'>\n                    <div class='flexrow flexaround'>\n                      <input class='lrmargin middle' target='inventory.%index%.equip.armorH' style='width : 20px;'/>\n                    </div>\n                    <div class='flexrow flexaround'>\n                      <input class='lrmargin middle' target='inventory.%index%.equip.armorAR' style='width : 20px;'/>\n                      <input class='lrmargin middle' target='inventory.%index%.equip.armorB' style='width : 20px;'/>\n                      <input class='lrmargin middle' target='inventory.%index%.equip.armorAL' style='width : 20px;'/>\n                    </div>\n                    <div class='flexrow flexaround'>\n                      <input class='lrmargin middle' target='inventory.%index%.equip.armorLR' style='width : 20px;'/>\n                      <input class='lrmargin middle' target='inventory.%index%.equip.armorLL' style='width : 20px;'/>\n                    </div>\n                  </div>\n                  <div class='flexrow subtitle flex' cond=\"eval{'@%path%.info.type'=='Armor' || '@%path%.info.type'=='Shield'}\">\n                    <div class='flex'></div>\n                    <div class='flexcolumn'>\n                      <button class='background alttext outline smooth hover2 flexmiddle' cond='eval{@%path%.tags.equipped}'>\n                        Armor On\n                        <click>\n                          <setAttr target=\"counters.armorH\" value='eval{@%path%.equip.armorH}'/>\n                          <setAttr target=\"counters.armorAR\" value='eval{@%path%.equip.armorAR}'/>\n                          <setAttr target=\"counters.armorB\" value='eval{@%path%.equip.armorB}'/>\n                          <setAttr target=\"counters.armorAL\" value='eval{@%path%.equip.armorAL}'/>\n                          <setAttr target=\"counters.armorLR\" value='eval{@%path%.equip.armorLR}'/>\n                          <setAttr target=\"counters.armorLL\" value='eval{@%path%.equip.armorLL}'/>\n                        </click>\n                      </button>\n                      <button class='background alttext outline smooth hover2 flexmiddle' cond='eval{@%path%.tags.equipped}'>\n                        Armor Off\n                        <click>\n                          <setAttr target=\"counters.armorH\" value='0'/>\n                          <setAttr target=\"counters.armorAR\" value='0'/>\n                          <setAttr target=\"counters.armorB\" value='0'/>\n                          <setAttr target=\"counters.armorAL\" value='0'/>\n                          <setAttr target=\"counters.armorLR\" value='0'/>\n                          <setAttr target=\"counters.armorLL\" value='0'/>\n                        </click>\n                      </button>\n                    </div>\n                  </div>\n                  <div class='flexrow flexwrap lrmargin' cond=\"eval{'@%path%.info.type'=='Melee'}\">\n                    <div class='flexrow flexmiddle' style='width : 100px;'>eval{@%path%.weapon.damage.name}<input class='lrmargin line' target='inventory.%index%.weapon.damage' style='width : 40px;'/></div>\n                    <div class='flexrow flexmiddle' style='width : 100px;'>eval{@%path%.weapon.class.name}<input class='lrmargin line' target='inventory.%index%.weapon.pen' style='width : 40px;'/></div>\n                  </div>\n                  <div class='flexrow subtitle'>\n                    <div class='flexcolumn middle' cond=\"eval{'@%path%.info.type'!='Armor' && '@%path%.info.type'!='Shield' && '@%path%.info.type'!='None' && '@%path%.info.type'!='0'}\">\n                      <button class='background alttext' style='width'>\n                        eval{'@%path%.info.type'==\"Melee\"?'Single':'Single'}\n                        <click>\n                          <prompt align=\"right\">\n                            <b>Modifier</b>\n                            <userinput varname=\"modifier\" value='10'/>\n                          </prompt>\n                          <chat roll=\"d100 + @modifier * -1\" />\n                        </click>\n                      </button>\n                      <button class='background alttext'>eval{'@%path%.info.type'==\"Melee\"?'Swift':'Semi'}</button>\n                      <button class='background alttext'>eval{'@%path%.info.type'==\"Melee\"?'Lightning':'Full'}</button>\n                    </div>\n                  </div>\n                </div>\n              </div>\n            </div>\n          </div>\n        </list>\n      </div>\n      <div main-tab=\"Skills\" class='flex flexcolumn padding'>\n        <div class='flexbetween'>\n          <b>Skills</b> \n          <b class='create link'>\n            Add\n            <click>\n              <create type='VALUE' target=\"skills\"/>\n            </click>\n          </b>\n        </div>\n        <bank class='flex scroll-y' target='skills'>\n          <div class='flexrow flexbetween subtitle'>\n            <input class='line flex lrmargin' target='skills.%index%' field='name'/>\n            \n            <select class='inactive middle smooth subtitle' target='skills.%index%.stat'>\n              <option>WS</option>\n              <option>BS</option>\n              <option>S</option>\n              <option>T</option>\n              <option>Ag</option>\n              <option>Int</option>\n              <option>Per</option>\n              <option>WP</option>\n              <option>Fel</option>\n            </select>\n            \n            <div class='flexrow flexmiddle lrpadding lrmargin'> \n              <input type=\"checkbox\" target='skills.%index%' check='1' uncheck='0' isChecked='eval{R@%path%}'/>\n              <text>Trained</text>\n            </div>\n\n            <div class='flexmiddle lrpadding lrmargin'>\n              <input type=\"checkbox\" target='skills.%index%' mod='Rank' check='5' uncheck='0' isChecked='eval{@%path%.modifiers.Rank>0}'/>\n              <input type=\"checkbox\" target='skills.%index%' mod='Rank' check='10' uncheck='5' isChecked='eval{@%path%.modifiers.Rank>5}'/>\n              <input type=\"checkbox\" target='skills.%index%' mod='Rank' check='15' uncheck='10' isChecked='eval{@%path%.modifiers.Rank>10}'/>\n              <input type=\"checkbox\" target='skills.%index%' mod='Rank' check='20' uncheck='15' isChecked='eval{@%path%.modifiers.Rank>15}'/>\n            </div>\n            <button class='lrmargin' style=\"width : 30px\">\n              eval{@:sign((20-R@%path%*20-M@%path%)*-1)}\n            </button>\n\n            <ui name=\"ui_link\" scope-click=\"ui_modifiers\" scope-lookup=\"skills.%index%\" scope-icon=\"list-alt\"></span>\n          </div>\n        </bank>\n      </div>\n      <div main-tab=\"Psychic\" class='scroll-y flex padding'>\n        <div class='flexbetween'>\n          <b>Psychic Powers</b> \n          <b class='create link'>\n            Add\n            <click>\n              <create type='ITEM' target=\"spellbook\"/>\n            </click>\n          </b>\n        </div>\n        <list target='spellbook' sortable='spellbookList'>\n          <div class='flexrow outlinebottom'>\n            <div class='flexcolumn flex lrmargin'>\n              <div class='flexrow flexbetween'>\n                <b class='line size2 middle' edit=\"spellbook.%index%.info.name\" style='font-family : \"Celestia Antiqua Std Bold\";'>traverse{spellbook.%index%.info.name.current}</b>\n                <div>\n                  <text>\n                    <b>traverse{spellbook.%index%.info.type.name}</b>\n                    <select class='inactive middle smooth subtitle' target='inventory.%index%.info.type'>\n                      <option selected=\"true\">Power</option>\n                      <option>Barrage</option>\n                      <option>Bolt</option>\n                      <option>Blash</option>\n                    </select>\n                  </text>\n                  <span class='glyphicon glyphicon-edit link'>\n                    <click>\n                      <change target=\"spellbook.%index%\"></change>\n                    </click>\n                  </span>\n                  <span class='glyphicon glyphicon-trash link destroy'>\n                    <click>\n                      <delete target=\"spellbook.%index%\"></delete>\n                    </click>\n                  </span>\n                </div>\n              </div>\n              <div class='flexrow flex'>\n                <div class='flexrow outline smooth' style='width : 100px;'>\n                  <ui name='ui_image' scope-lookup=\"spellbook.%index%.info.img\" scope-fit='cover'/>\n                </div>\n                <div edit='spellbook.%index%.info.notes' class='lrmargin flex subtitle'>\n                  traverse{spellbook.%index%.info.notes.current}\n                </div>\n                <div class='flexcolumn subtitle lrmargin'>\n                  <div class='flexrow flexbetween' style='width : 100px;'>eval{@%path%.weapon.range.name}<input class='lrmargin middle line' target='spellbook.%index%.weapon.range' style='width : 40px;'/></div>\n                  <div class='flexrow flexbetween' style='width : 100px;'>eval{@%path%.weapon.damage.name}<input class='lrmargin middle line' target='spellbook.%index%.weapon.damage' style='width : 40px;'/></div>\n                  <div class='flexrow flexbetween' style='width : 100px;'>eval{@%path%.weapon.class.name}<input class='lrmargin middle line' target='spellbook.%index%.weapon.class' style='width : 40px;'/></div>\n                  <div class='flexrow flexbetween' style='width : 100px;'>eval{@%path%.spell.class.name}<input class='lrmargin middle line' target='spellbook.%index%.spell.action' style='width : 40px;'/></div>\n                  <div class='flexrow flexbetween' style='width : 100px;'>eval{@%path%.spell.class.name}<input class='lrmargin middle line' target='spellbook.%index%.spell.focus' style='width : 40px;'/></div>\n                  <div class='flexrow flexbetween' style='width : 100px;'>eval{@%path%.spell.class.name}<input class='lrmargin middle line' target='spellbook.%index%.spell.sustained' style='width : 40px;'/></div>\n                  <div class='flexrow flexbetween' style='width : 100px;'>eval{@%path%.spell.class.name}<input class='lrmargin middle line' target='spellbook.%index%.spell.subtype' style='width : 40px;'/></div>\n                </div>\n              </div>\n            </div>\n          </div>\n        </list>\n      </div>\n    </div>\n  </div>\n</div>\n"
+    }
+  },
+  "v2": "true",
+  "version": "36",
+  "grid": {
+    "unitScale": 64,
+    "unit": "m"
+  }
+}

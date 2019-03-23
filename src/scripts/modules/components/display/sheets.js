@@ -80,20 +80,25 @@ sync.render("ui_sheet", function(obj, app, scope) {
           break;
         }
       }
-      if (cont) {
-        data.objs.push(duplicate(floatingTile));
+      if (floatingTile) {
+        if (cont) {
+          data.objs.push(duplicate(floatingTile));
 
-        sendAlert({text : "Object Saved"});
+          sendAlert({text : "Object Saved"});
 
-        if (!scope.local) {
-          obj.sync("updateAsset");
+          if (!scope.local) {
+            obj.sync("updateAsset");
+          }
+          else {
+            obj.update();
+          }
         }
         else {
-          obj.update();
+          sendAlert({text : "Duplicate detected"});
         }
       }
       else {
-        sendAlert({text : "Duplicate detected"});
+        sendAlert({text : "No Tile"});
       }
     });
 
@@ -279,7 +284,10 @@ sync.render("ui_sheet", function(obj, app, scope) {
         }
       });
     }
+    console.log(data.objs);
+    for (var i=0; i<data.objs.length; i++) {
 
+    }
     for (var i=0; i<data.objs.length; i++) {
       var tileData = data.objs[i];
 
@@ -328,7 +336,7 @@ sync.render("ui_sheet", function(obj, app, scope) {
       img.css("position", "absolute");
       img.css("pointer-events", "none");
 
-      var sheetData = obj.data.sheets[tileData.s];
+      var sheetData = obj.data.sheets[tileData.s || scope.index];
       var tileW = sheetData.gW + sheetData.p;
       var tileH = sheetData.gH + sheetData.p;
       var xGrid = Math.ceil(sheetData.w/(tileW));
@@ -579,52 +587,6 @@ sync.render("ui_boardSheets", function(obj, app, scope) {
   div.addClass("flexcolumn flex");
   div.css("position", "relative");
 
-  var optionsBar = $("<div>").appendTo(div);
-  optionsBar.addClass("flexaround foreground alttext");
-
-  var create = genIcon("plus", "New").appendTo(optionsBar);
-  create.attr("title", "Create Tile Sheet");
-  create.click(function(){
-    obj.data.sheets.push({p : 0, gW : data.gridW || 64, gH : data.gridH || 64});
-    obj.update();
-  });
-
-  var create = genIcon("cloud-download", "Load").appendTo(optionsBar);
-  create.attr("title", "Load Tile Sheet");
-  create.click(function(){
-    var newApp = sync.newApp("ui_boardStamps", null, {tile : true, board : obj.id()});
-
-    var pop = ui_popOut({
-      target : app,
-      id : "load-tiles",
-      align : "left",
-      style : {"width" : "400px", height : "600px"}
-    }, newApp);
-    pop.resizable();
-  });
-
-  optionsBar.append("<div class='flexmiddle subtitle'><b>"+data.sheets.length+"/"+(game.config.data.sheetLimit || 0)+"</b></div>");
-
-  var listWrap = $("<div>").appendTo(div);
-
-  var list = $("<div>").appendTo(listWrap);
-  list.addClass("flexrow flexwrap");
-  list.sortable({
-    update : function(ev, ui){
-      var newOrder = [];
-      $(ui.item).attr("ignore", true);
-      list.children().each(function(){
-        newOrder.push(obj.data.sheets[$(this).attr("index")]);
-      });
-      obj.data.sheets = newOrder;
-      if (!scope.local) {
-        obj.sync("updateAsset");
-      }
-      else {
-        obj.update();
-      }
-    }
-  });
   if (!layout.mobile) {
     div.on("dragover", function(ev) {
       ev.preventDefault();
@@ -677,9 +639,53 @@ sync.render("ui_boardSheets", function(obj, app, scope) {
     });
   }
 
-  var wrap = $("<div>").appendTo(div);
-  wrap.addClass("flex");
-  wrap.css("position", "relative");
+  var listWrap = $("<div>").appendTo(div);
+  listWrap.addClass("flex");
+  listWrap.css("position", "relative");
+  listWrap.css("overflow", "auto");
+
+  var optionsBar = $("<div>").appendTo(div);
+  optionsBar.addClass("flexaround foreground alttext subtitle");
+
+  var create = genIcon("plus", "New").appendTo(optionsBar);
+  create.attr("title", "Create Tile Sheet");
+  create.click(function(){
+    obj.data.sheets.push({p : 0, gW : data.gridW || 64, gH : data.gridH || 64});
+    obj.update();
+  });
+
+  var create = genIcon("cloud-download", "Load").appendTo(optionsBar);
+  create.attr("title", "Load Tile Sheet");
+  create.click(function(){
+    var newApp = sync.newApp("ui_boardStamps", null, {tile : true, board : obj.id()});
+
+    var pop = ui_popOut({
+      target : $("body"),
+      id : "load-tiles",
+      style : {"width" : "400px", height : "600px"}
+    }, newApp);
+    pop.resizable();
+  });
+
+  var list = $("<div>").appendTo(listWrap);
+  list.addClass("flexrow flexwrap fit-x");
+  list.css("position", "absolute");
+  list.sortable({
+    update : function(ev, ui){
+      var newOrder = [];
+      $(ui.item).attr("ignore", true);
+      list.children().each(function(){
+        newOrder.push(obj.data.sheets[$(this).attr("index")]);
+      });
+      obj.data.sheets = newOrder;
+      if (!scope.local) {
+        obj.sync("updateAsset");
+      }
+      else {
+        obj.update();
+      }
+    }
+  });
 
   for (var i in data.sheets) {
     var sheetContainer = $("<div>").appendTo(list);
@@ -691,7 +697,7 @@ sync.render("ui_boardSheets", function(obj, app, scope) {
 
     var del = genIcon("trash").appendTo(optionsBar);
     del.attr("index", i);
-    del.attr("title", "Delete Tile Sheet")
+    del.attr("title", "Delete Tile Sheet");
     del.click(function(){
       var index = $(this).attr("index");
       ui_prompt({
@@ -752,13 +758,13 @@ sync.render("ui_boardSheets", function(obj, app, scope) {
       }
       obj.addApp(newApp);
       var popout = ui_popOut({
-        target : app,
+        target : $("body"),
         id : "sheet-"+index+"-display",
         dragThickness : "0.5em",
         align : "bottom",
         minimize : true,
         title : "sheet",
-        style : {"width" : app.width(), "height" : "70vh"}
+        style : {"width" : "400px", "height" : "600px"}
       }, newApp);
       popout.addClass("board-"+app.attr("board")+"-sheet-controls");
       popout.resizable();
@@ -780,31 +786,6 @@ sync.render("ui_boardSheets", function(obj, app, scope) {
       }, newApp);
       pop.resizable();
     });
-  }
-  var tileIndex;
-  if (app.attr("targetapp")) {
-    tileIndex = $("#"+app.attr("targetapp")).attr("tilesheet");
-  }
-  else {
-    tileIndex = app.attr("tilesheet");
-  }
-  if (tileIndex && data.sheets[tileIndex]) {
-    var index = tileIndex;
-    var newScope = {};
-    merge(newScope, duplicate(scope));
-    if (data.sheets[index].i) {
-      newScope.hideOptions = true;
-    }
-    newScope.index = index;
-    if (app.attr("targetapp")) {
-      newScope.source = ($("#"+app.attr("targetapp")).attr("source") == "true");
-    }
-    else {
-      newScope.source = (app.attr("source") == "true");
-    }
-
-    var newApp = sync.render("ui_sheet")(obj, app, newScope).appendTo(wrap);
-    newApp.css("position", "absolute");
   }
 
   return div;

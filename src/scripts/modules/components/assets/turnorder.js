@@ -203,7 +203,7 @@ sync.render("ui_combat", function(obj, app, scope) {
     if (game.templates.initiative.display) {
       if (compare(data.combat.current, inits[j]) == 0 && data.combat.round != null) { // not prepraings
         header.addClass("highlight alttext");
-        initWrap.css("font-size", "1.6em");
+        initWrap.css("font-size", "1.4em");
       }
       else if (data.combat.round != null) {
         initWrap.addClass("subtitle");
@@ -215,7 +215,7 @@ sync.render("ui_combat", function(obj, app, scope) {
 
       if (compare(data.combat.current, inits[j]) == 0 && data.combat.round != null) { // not prepraings
         initWrap.addClass("highlight");
-        initWrap.css("font-size", "1.6em");
+        initWrap.css("font-size", "1.4em");
       }
       else if (data.combat.round != null) {
         initWrap.addClass("subtitle");
@@ -308,7 +308,7 @@ sync.render("ui_combat", function(obj, app, scope) {
       var index = inits[j].e[idx];
       if (game.entities.data[index]) {
         var charObj = game.entities.data[index];
-        var hidden = charObj.data.info && charObj.data.info.hide;
+        var hidden = charObj.data._flags && charObj.data._flags.hidden;
         if (!hidden || (hidden && hasSecurity(getCookie("UserID"), "Visible", charObj.data))) {
           var charDivWrap = $("<div>").appendTo(charPlate);
           charDivWrap.addClass("flexrow flex smooth white outlinebottom");
@@ -346,7 +346,7 @@ sync.render("ui_combat", function(obj, app, scope) {
           charDiv.attr("viewOnly", scope.viewOnly);
           charDiv.attr("noOutline", true);
           charDiv.attr("minimized", "true");
-          charDiv.attr("hide", hidden);
+          charDiv.attr("hide", charObj.data.tags && charObj.data.tags.unidentified);
           charDiv.addClass("subtitle flex");
           charDiv.removeClass("application");
 
@@ -362,17 +362,17 @@ sync.render("ui_combat", function(obj, app, scope) {
           if (data.combat.engaged[index].ok) {
             charDivWrap.css("background-color", "rgb(235,235,228)");
             if (compare(data.combat.current, inits[j]) == 0) {
-              charDivWrap.css("font-size", "0.5em");
+              charDivWrap.css("font-size", "0.8em");
             }
           }
           if (data.combat.engaged[index].sp) {
             charDivWrap.addClass("boxinshadow");
           }
           charDiv.click(function(ev) {
-            ev.stopPropagation();
+          ev.stopPropagation();
           });
           charObj.addApp(charDiv);
-
+          
           function visionWrap(target, cObj, charDiv, turn) {
             if (hasSecurity(getCookie("UserID"), "Rights", cObj.data)) {
               var optionsBar = $("<div>").appendTo(target);
@@ -398,27 +398,66 @@ sync.render("ui_combat", function(obj, app, scope) {
                 });
               }
 
+              if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+                var optionsBarWrap = $("<div>").appendTo(optionsBar);
+                optionsBarWrap.addClass("flexcolumn flexmiddle lrmargin subtitle");
 
-              if (cObj.data.info.hide) {
-                var eye = genIcon("eye-close");
-                eye.appendTo(optionsBar);
-                eye.addClass("flexmiddle spadding");
-                eye.changeIcon("eye-close");
-                eye.attr("title", "Show Character");
-                eye.click(function(ev){
-                  if (hasSecurity(getCookie("UserID"), "Rights", cObj.data)) {
-                    cObj.data.info.hide = !cObj.data.info.hide;
-                    if (cObj.data.info.hide) {
-                      charDiv.attr("hide", true);
-                      eye.changeIcon("eye-close");
-                      eye.attr("title", "Show Character");
+                var changeInit = genIcon("retweet").appendTo(optionsBarWrap);
+                changeInit.attr("Title", "Reroll Initiative");
+                changeInit.attr("index", index);
+                changeInit.click(function(ev){
+                  var ent = getEnt($(this).attr("index"));
+                  if (ent && ent.data) {
+                    if (ent.data.tags && ent.data._flags.hidden) {
+                      _actions["Set/Roll Initiative"].click(null, $(this), ent, $(this), {});
                     }
                     else {
-                      charDiv.attr("hide", false);
+                      _actions["Set/Roll Initiative (Hidden)"].click(null, $(this), ent, $(this), {});
+                    }
+                  }
+
+                  ev.stopPropagation();
+                });
+
+
+                var eye = genIcon("eye-open");
+                eye.appendTo(optionsBarWrap);
+                eye.addClass("flexmiddle spadding");
+                eye.attr("title", "Hide Actor");
+                if (cObj.data.tags && cObj.data._flags.hidden) {
+                  eye.changeIcon("eye-close");
+                  eye.attr("title", "Show Actor");
+                }
+                eye.click(function(ev){
+                  if (hasSecurity(getCookie("UserID"), "Rights", cObj.data)) {
+                    cObj.data._flags = cObj.data._flags || duplicate(cObj.data.tags) || {};
+                    cObj.data._flags.hidden = !cObj.data._flags.hidden;
+                    if (cObj.data.tags && cObj.data._flags.hidden) {
+                      charDiv.attr("hide", cObj.data.tags.unidentified);
+                      eye.changeIcon("eye-close");
+                      eye.attr("title", "Show Actor");
+                    }
+                    else {
+                      charDiv.attr("hide", cObj.data.tags.unidentified);
                       eye.changeIcon("eye-open");
-                      eye.attr("title", "Hide Character");
+                      eye.attr("title", "Hide Actor");
                     }
                     cObj.sync("updateAsset");
+                    $(".application[ui-name='ui_board']").each(function(){
+                      var app = $(this);
+                      var board = getEnt(app.attr("index"));
+                      for (var lid in board.data.layers) {
+                        var layerData = board.data.layers[lid];
+                        for (var pInd in layerData.p) {
+                          var pieceData = layerData.p[pInd];
+                          if (pieceData.eID == cObj.id()) {
+                            board.data.layers[lid].p[pInd].v = cObj.data._flags.hidden;
+                            runCommand("boardMove", {id : board.id(), layer : lid, type : "p", index : pInd, data : board.data.layers[lid].p[pInd]});
+                            boardApi.updateObject(lid, "p", pInd, board);
+                          }
+                        }
+                      }
+                    });
                   }
                   else {
                     eye.remove();
@@ -478,7 +517,6 @@ sync.render("ui_combat", function(obj, app, scope) {
                             }
                           }
                         }
-                        console.log("change");
                         obj.data.combat.current = inits[newTurn];
                         obj.sync("updateCombatState");
                       }
@@ -520,7 +558,7 @@ sync.render("ui_combat", function(obj, app, scope) {
       }
     }
     if (!charPlate.children().length) {
-      turnPlate.remove();
+      initWrap.remove();
     }
   }
   if (!scope.viewOnly) {
@@ -530,7 +568,6 @@ sync.render("ui_combat", function(obj, app, scope) {
       handle : ".nothing",
       connectWith : ".dropContent",
       over : function(ev, ui){
-        console.log("oer");
         if ($(ui.item).attr("index")) {
           if (!$("#"+app.attr("id")+"-drag-overlay").length) {
             var olay = layout.overlay({

@@ -1,4 +1,11 @@
 sync.render("ui_link", function(obj, app, scope){
+
+  scope = scope || {};
+  scope.lookup = scope.lookup || app.attr("lookup");
+  if (scope.attr && !(scope.attr instanceof Object)) {
+    scope.attr = duplicate(scope);
+  }
+
   var data = obj.data;
   var value = sync.traverse(data, scope.lookup);
 

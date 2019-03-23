@@ -106,7 +106,7 @@ div.ui-dropoption-disabled {
 
 div.ui-dropoption {
 	cursor: pointer;
-  font-size: 1.2em;
+  font-size: 1.0em;
   font-weight: bold;
 }
 
@@ -159,4 +159,45 @@ div.piece {
 	outline: 3px solid #ff8a42;
   background-color: rgba(66, 138, 66, 0.4);
   cursor : pointer;
+}
+
+
+.size1 {
+  font-size : 1.0em
+}
+.size2 {
+  font-size : 1.2em
+}
+.size3 {
+  font-size : 1.4em
+}
+.size4 {
+  font-size : 1.6em
+}
+.size5 {
+  font-size : 1.8em
+}
+.size6 {
+  font-size : 2.0em
+}
+.size7 {
+  font-size : 3.0em
+}
+.size8 {
+  font-size : 4.0em
+}
+
+tabs {
+  display: flex;
+  min-height: 0;
+}
+
+list {
+  display: block;
+  min-height: 0;
+}
+
+bank {
+  display: block;
+  min-height: 0;
 }

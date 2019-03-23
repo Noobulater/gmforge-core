@@ -7,6 +7,10 @@ sync.render("ui_layerOptions", function(obj, app, scope){
   optionsDiv.addClass("flexcolumn subtitle");
 
   var layerNameWrap = $("<div>").appendTo(optionsDiv);
+  layerNameWrap.addClass("flexcolumn flexmiddle");
+  layerNameWrap.append("<b class='subtitle'>Layer Name</b>");
+
+  var layerNameWrap = $("<div>").appendTo(optionsDiv);
   layerNameWrap.addClass("flexrow flexbetween");
 
   var layerName = genInput({
@@ -158,8 +162,7 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
   scope.layer = targetApp.attr("layer") || 0;
 
   var div = $("<div>");
-  div.addClass("flexcolumn");
-  div.css("min-width", "10vw");
+  div.addClass("flexcolumn flex");
 
   if (game.config.data.offline) {
     scope.local = true;
@@ -171,40 +174,13 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
   }
 
   var layerWrapper = $("<div>").appendTo(div);
-  layerWrapper.addClass("flexcolumn");
-
-  var optionsBar = $("<div>").appendTo(layerWrapper);
-  optionsBar.addClass("flexaround foreground bold spadding");
-  optionsBar.css("color", "white");
-
-  var create = genIcon("plus", "New Layer").appendTo(optionsBar);
-  create.attr("title", "Create a new layer");
-  create.click(function(){
-    if (!game.config.data.layerLimit || (obj.data.layers.length+1 <= game.config.data.layerLimit)) {
-      obj.data.layers.push({
-        n : "New Layer",
-        _s : {default : "1"},
-        t : [], //tiles
-        p : [], //pieces
-        d : [], //drawing
-      });
-      obj.update();
-    }
-    else {
-      sendAlert({text : "Layer limit reached"});
-    }
-  });
-  var create = genIcon("refresh", "Redraw").appendTo(optionsBar);
-  create.attr("title", "Refreshes the display");
-  create.click(function(){
-    obj.update();
-  });
-
-  if (getCookie("UserID") != "Sandboxer") {
-    optionsBar.append("<div class='flexmiddle'><b class='subtitle'>"+obj.data.layers.length+"/"+(game.config.data.layerLimit || 0)+"</b></div>");
-  }
+  layerWrapper.addClass("flex");
+  layerWrapper.css("position", "relative");
+  layerWrapper.css("overflow", "auto");
 
   var layerContainer = $("<div>").appendTo(layerWrapper);
+  layerContainer.addClass("fit-x");
+  layerContainer.css("position", "absolute");
 
   if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
     layerContainer.sortable({
@@ -220,7 +196,8 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
         });
         var old = obj.data.layers.splice($(ui.item).attr("index"), 1);
         util.insert(obj.data.layers, newIndex, old[0]);
-        obj.update();
+        app.attr("rebuildmenu", true);
+        obj.sync("updateAsset");
       }
     });
   }
@@ -231,14 +208,9 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
     layerPlate.attr("index", i);
 
     var optionsBar = $("<div>").appendTo(layerPlate);
-    optionsBar.addClass("flexrow flexmiddle foreground outlinebottom bold");
-
-
-    var label = $("<b class='subtitle alttext flexmiddle lrpadding'>#"+i+"</b>").appendTo(optionsBar);
-    label.css("padding-right", "0");
+    optionsBar.addClass("flexrow flexmiddle foreground bold lrpadding");
 
     var options = genIcon("cog").appendTo(optionsBar);
-    options.addClass("lrpadding");
     options.attr("index", i);
     options.attr("title", "options");
     options.css("color", "white");
@@ -387,7 +359,7 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
             else {
               delete obj.data.layers[index].o.f["opacity"];
             }
-
+            app.attr("rebuildmenu", true);
             if (!scope.local) {
               obj.sync("updateAsset");
             }
@@ -432,74 +404,10 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
       }
       buildSecurity().appendTo(securityContent);
 
-
-      var storageBar = $("<div>").appendTo(content);
-      storageBar.addClass('subtitle flexrow flexmiddle flex');
-      storageBar.append("<b class='spadding' style='width:60px'>Pieces</b>");
-
-      var progress = $("<div>").appendTo(storageBar);
-      progress.addClass("outline focus");
-      progress.css("position", "relative");
-      progress.css("border-radius", "2px");
-      progress.css("height", "10px");
-      progress.css("width", "100%");
-
-      var bar = $("<div>").appendTo(progress);
-      bar.addClass("outline");
-      bar.css("position", "absolute");
-      bar.css("right", 0);
-      bar.css("width", 100-Math.floor(obj.data.layers[index].p.length/game.config.data.entityLimit * 100)+"%");
-      bar.css("background-color", "grey");
-      bar.css("height", "100%");
-
-      storageBar.append("<b class='flexmiddle spadding'>"+obj.data.layers[index].p.length+"/"+game.config.data.entityLimit+"</b>");
-
-      var storageBar = $("<div>").appendTo(content);
-      storageBar.addClass('subtitle flexrow flexmiddle flex');
-      storageBar.append("<b class='spadding' style='width:60px'>Tiles</b>");
-
-      var progress = $("<div>").appendTo(storageBar);
-      progress.addClass("outline focus");
-      progress.css("position", "relative");
-      progress.css("border-radius", "2px");
-      progress.css("height", "10px");
-      progress.css("width", "100%");
-
-      var bar = $("<div>").appendTo(progress);
-      bar.addClass("outline");
-      bar.css("position", "absolute");
-      bar.css("right", 0);
-      bar.css("width", 100-Math.floor(obj.data.layers[index].t.length/game.config.data.tileLimit * 100)+"%");
-      bar.css("background-color", "grey");
-      bar.css("height", "100%");
-
-      storageBar.append("<b class='flexmiddle spadding'>"+obj.data.layers[index].t.length+"/"+game.config.data.tileLimit+"</b>");
-
-      var storageBar = $("<div>").appendTo(content);
-      storageBar.addClass('subtitle flexrow flexmiddle flex');
-      storageBar.append("<b class='spadding' style='width:60px'>Drawings</b>");
-
-      var progress = $("<div>").appendTo(storageBar);
-      progress.addClass("outline focus");
-      progress.css("position", "relative");
-      progress.css("border-radius", "2px");
-      progress.css("height", "10px");
-      progress.css("width", "100%");
-
-      var bar = $("<div>").appendTo(progress);
-      bar.addClass("outline");
-      bar.css("position", "absolute");
-      bar.css("right", 0);
-      bar.css("width", 100-Math.floor(obj.data.layers[index].d.length/game.config.data.drawLimit * 100)+"%");
-      bar.css("background-color", "grey");
-      bar.css("height", "100%");
-
-      storageBar.append("<b class='flexmiddle spadding'>"+obj.data.layers[index].d.length+"/"+game.config.data.drawLimit+"</b>");
-
       var optionsBar = $("<div>").appendTo(content);
       optionsBar.addClass("flexrow flexaround");
 
-      var height = genIcon("resize-vertical", "Altitude : " + (obj.data.layers[index].alt || 0)).appendTo(optionsBar);
+      var height = genIcon("resize-vertical", "Altitude : " + (obj.data.layers[index].alt || 0))//.appendTo(optionsBar);
       height.attr("title", "Change layer name");
       height.click(function(){
         ui_prompt({
@@ -508,6 +416,7 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
           inputs : {"Altitude" : obj.data.layers[index].alt},
           click : function(ev, inputs) {
             obj.data.layers[index].alt = inputs["Altitude"].val();
+            app.attr("rebuildmenu", true);
             if (!scope.local) {
               obj.sync("updateAsset");
             }
@@ -562,11 +471,12 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
       var index = $(this).attr("index");
 
       obj.data.layers[index].l = !obj.data.layers[index].l;
+      app.attr("rebuildmenu", true);
       obj.update();
     });
 
     var layerLabel = $("<div>").appendTo(layerPlate);
-    layerLabel.addClass("outlinebottom flex hover2 flexrow spadding");
+    layerLabel.addClass("outlinebottom flex white link flexrow spadding");
     layerLabel.attr("index", i);
     layerLabel.css("border-radius", "0px");
 
@@ -575,7 +485,8 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
       value : obj.data.layers[i].n,
       classes : "line fit-x bold",
       placeholder : "Layer Name",
-      index : i
+      index : i,
+      style : {"color" : "#333"}
     });
     nameInput.click(function(ev){
       ev.stopPropagation();
@@ -583,6 +494,7 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
     nameInput.change(function(){
       var index = $(this).attr("index");
       obj.data.layers[index].n = $(this).val();
+      app.attr("rebuildmenu", true);
       if (!scope.local) {
         obj.sync("updateAsset");
       }
@@ -591,23 +503,15 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
       }
     });
 
-    if ((scope.layer || 0) == i) {
-      layerLabel.addClass("highlight2 alttext");
-    }
-    layerLabel.click(function(){
-      targetApp.attr("layer", $(this).attr("index"));
-      obj.update();
-    });
-
     var optionsBar = $("<div>").appendTo(layerPlate);
-    optionsBar.addClass("foreground outlinebottom bold");
+    optionsBar.addClass("foreground outlinebottom bold flexmiddle");
 
-    var hidden = genIcon("eye-open", "Toggle");
+    var hidden = genIcon("eye-open", "Visible");
     hidden.css("color", "white");
     if (obj.data.layers[i].h) {
-      hidden.changeIcon("eye-close", "Toggle");
+      hidden.changeIcon("eye-close", "Hidden");
     }
-    hidden.addClass("subtitle lrpadding");
+    hidden.addClass("subtitle lrpadding flexmiddle");
     hidden.appendTo(optionsBar);
     hidden.attr("index", i);
     hidden.click(function(){
@@ -617,6 +521,7 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
       else {
         delete obj.data.layers[$(this).attr("index")].h;
       }
+      app.attr("rebuildmenu", true);
       if (!scope.local) {
         obj.sync("updateAsset");
       }
@@ -624,6 +529,26 @@ sync.render("ui_boardLayers", function(obj, app, scope) {
         obj.update();
       }
       layout.coverlay("layer-options");
+    });
+  }
+
+  if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
+    var optionsBar = $("<div>").appendTo(div);
+    optionsBar.addClass("flexrow flexmiddle foreground bold subtitle");
+    optionsBar.css("color", "white");
+
+    var create = genIcon("plus", "New Layer").appendTo(optionsBar);
+    create.attr("title", "Create a new layer");
+    create.click(function(){
+      app.attr("rebuildmenu", true);
+      obj.data.layers.push({
+        n : "New Layer",
+        _s : {default : "1"},
+        t : [], //tiles
+        p : [], //pieces
+        d : [], //drawing
+      });
+      obj.sync("updateAsset");
     });
   }
 

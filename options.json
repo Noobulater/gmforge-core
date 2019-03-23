@@ -1,0 +1,38 @@
+{
+  "port": "30000",
+  "fullscreen": true,
+  "width": "",
+  "height": "",
+  "accounts": {
+    "player_1": {
+      "displayName": "Whisszard",
+      "password": ""
+    },
+    "player_2": {
+      "displayName": "Kindle",
+      "password": ""
+    },
+    "player_3": {
+      "displayName": "I only play Dwarves",
+      "password": ""
+    },
+    "player_4": {
+      "password": "",
+      "displayName": "dd"
+    },
+    "player_5": {
+      "password": ""
+    },
+    "player_6": {
+      "password": ""
+    },
+    "player_7": {
+      "password": ""
+    },
+    "player_8": {
+      "password": ""
+    }
+  },
+  "hostName": "New host name",
+  "hostPW": "test"
+}

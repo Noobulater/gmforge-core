@@ -10,7 +10,12 @@ sync.render = function(uiName, renderFunc) {
     _render[uiName] = renderFunc;
   }
   else {
-    return _render[uiName];
+    if (!_render[uiName]) {
+      return function(obj, app, scope){return $("<div class='flexmiddle subtitle bold'>No App</div>");}
+    }
+    else {
+      return _render[uiName];
+    }
   }
 }
 
@@ -43,47 +48,31 @@ sync.newApp = function(uiName, obj, scope) {
 
 var _syncuid = 0;
 
-// javascript objects
-function _deepCompare(oldUi, newUi) {
-  var chillun = newUi.children();
-  var done = false;
-  for (var index in oldUi.children()) {
-    if (!done && newUi.children()[index] && newUi.children()[index] != oldUi.children()[index]) {
-      console.log(oldUi.children()[index]);
-      console.log(newUi.children()[index]);
-      $(oldUi.children()[index]).replaceWith(newUi.children()[index]);
-      done = true;
-    }
-  }
-}
-
 sync.updateApp = function(ref, obj){
-  if (obj.data) {
-    var output = sync.render(ref.attr("ui-name"))(obj, ref);
-    // compare output to the current element, replacing different parts
-    //_deepCompare(ref.children(), output);
-    ref.empty();
-    ref.append(output);
-    // preserve submenus
-    output.find("[_lastScrollTop]").each(function(){
-      $(this).scrollTop($(this).attr("_lastScrollTop"));
-    });
-    output.find("[_lastScrollLeft]").each(function(){
-      $(this).scrollLeft($(this).attr("_lastScrollLeft"));
-    });
-    if (ref.css("overflow-y") == "scroll") {
-      ref.scrollTop(ref.attr("_lastScrollTop"));
-    }
-    else {
-      output.scrollTop(ref.attr("_lastScrollTop"));
-    }
+  var output = sync.render(ref.attr("ui-name"))(obj, ref);
+  // compare output to the current element, replacing different parts
+  //_deepCompare(ref.children(), output);
+  ref.empty();
+  ref.append(output);
+  // preserve submenus
+  output.find("[_lastScrollTop]").each(function(){
+    $(this).scrollTop($(this).attr("_lastScrollTop"));
+  });
+  output.find("[_lastScrollLeft]").each(function(){
+    $(this).scrollLeft($(this).attr("_lastScrollLeft"));
+  });
+  if (ref.css("overflow-y") == "scroll") {
+    ref.scrollTop(ref.attr("_lastScrollTop"));
+  }
+  else {
+    output.scrollTop(ref.attr("_lastScrollTop"));
+  }
 
-    if (ref.css("overflow-y") == "scroll") {
-      ref.scrollLeft(ref.attr("_lastScrollLeft"));
-    }
-    else {
-      output.scrollLeft(ref.attr("_lastScrollLeft"));
-    }
+  if (ref.css("overflow-y") == "scroll") {
+    ref.scrollLeft(ref.attr("_lastScrollLeft"));
+  }
+  else {
+    output.scrollLeft(ref.attr("_lastScrollLeft"));
   }
   return false;
 }
@@ -143,10 +132,26 @@ sync.update = function(obj, newObj, keys) {
   }
 }
 
+// javascript objects
+/*
+function _deepCompare(oldUi, newUi) {
+  var chillun = newUi.children();
+  var done = false;
+  for (var index in oldUi.children()) {
+    if (!done && newUi.children()[index] && newUi.children()[index] != oldUi.children()[index]) {
+      console.log(oldUi.children()[index]);
+      console.log(newUi.children()[index]);
+      $(oldUi.children()[index]).replaceWith(newUi.children()[index]);
+      done = true;
+    }
+  }
+}
+
 sync.copy = function(obj) {
   var recurseCopy;
   return newObj;
 }
+*/
 
 sync.rebuildApp = function(targetApp) {
   var found = false;
@@ -251,13 +256,7 @@ sync.dummyObj = function(id, defaultApps) {
   rObj.sync = function(cmd, target) {
     rObj.update();
     if (connection.alive && !rObj.local) {
-      if (!rObj.data._t || ((rObj.data._t == "pk" || rObj.data._t == "a" || rObj.data._t == "b") || JSON.stringify(rObj.data).length < 100000)) { // 0.01 mb
-        runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
-        // don't respond to the client, they already have this message
-      }
-      else {
-        layout.page({title : "Your character sheet has become too large to store, please trim down some of your content in order to properly send this object " + rObj.id(), blur : 0.5});
-      }
+      runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
     }
     else {
       sendAlert({text : "CONNECTION IS BROKEN"});
@@ -318,13 +317,7 @@ sync.obj = function(id, defaultApps) {
   rObj.sync = function(cmd, target) {
     rObj.update();
     if (connection.alive && !rObj.local) {
-      if (!rObj.data._t || ((rObj.data._t == "pk" || rObj.data._t == "a" || rObj.data._t == "b") || JSON.stringify(rObj.data).length < 100000)) { // 0.01 mb
-        runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
-        // don't respond to the client, they already have this message
-      }
-      else {
-        layout.page({title : "Your character sheet has become too large to store, please trim down some of your content in order to properly send this object", blur : 0.5});
-      }
+      runCommand(cmd, {id: rObj.id(), respond : false, target : target, data : jQuery.extend(true, {}, rObj.data)});
     }
   };
   _syncList[_syncuid] = rObj; // save the pointer
@@ -402,10 +395,10 @@ sync.clamped = function(valueObj, inVal) {
   if (!valueObj || inVal == null) {return;}
   var result = inVal;
   if (!isNaN(inVal)) {
-    if (valueObj.min != null) {
+    if (valueObj.min != null && valueObj.min !== "") {
       result = Math.max(result, valueObj.min);
     }
-    if (valueObj.max != null) {
+    if (valueObj.max != null && valueObj.max !== "") {
       result = Math.min(result, valueObj.max);
     }
   }
@@ -475,7 +468,8 @@ sync.rawVal = function(valueObj, newVal) {
 // regular Expressions, define them once
 var diceAddRegex = /([0-9]*)[\s]*([+|-])[\s]*([-]*[0-9]*)/; // find addition
 var diceNumber = /\d+/;
-var diceRegex = /(\d*)d(\d+)([k|d][\d+])?/i; // find a <x>d<y>
+var diceRegex = /(\d*)d(\d+)([k|d]([l|h])?[\d+])?(([r|e])(\d*)?(([<|=|>]+)(\d)+)?)?/i; // find a <x>d<y>
+var diceRegexReroll = /(\d*)d(\d+)([r|e](\d+)?([<|=|>]+(\d)+)?)?/i;
 var diceQuery = /([^\[]*)\[([^\[^\]]+)\]([\+|-].*)*/i; // how many times will it run
 var queryType = /([\d|\)|}])([B|R|W])([\d|\(|{])?/i;
 var clampRegex =  /\(([^(^)]*)\)([frc])*([_][\d]*)*([|][\d]*)*/i;
@@ -641,7 +635,7 @@ sync.context = function(equation, targets, noRoll) {
   }
 
   var tmatch = str.match(tableMatch);
-  if (calcAPI["table"] || calcAPI["constant"]) {
+  if (util.calcAPI["table"] || util.calcAPI["constant"]) {
     while (tmatch) {
       var cmd = "table";
       var trav = tmatch[1];
@@ -678,7 +672,7 @@ sync.context = function(equation, targets, noRoll) {
       else {
         cmd = "constant";
       }
-      val = calcAPI[cmd](args, targets);
+      val = util.calcAPI[cmd](args, targets);
       if (val instanceof Object) {
         val = JSON.stringify(val);
       }
@@ -737,6 +731,31 @@ sync.keySearch = function(key, targets) {
       }
     }
   }
+  if (targets.var) {
+    for (var refKey in targets.var) {
+      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
+        return targets.var[refKey];
+      }
+    }
+  }
+  if (targets.c) {
+    for (var refKey in targets.c.info) {
+      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
+        return targets.c.info[refKey];
+      }
+    }
+    for (var refKey in targets.c.stats) {
+      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
+        return targets.c.stats[refKey];
+      }
+    }
+    for (var refKey in targets.c.counters) {
+      if (isNaN(refKey) && refKey.toLowerCase() == key.toLowerCase()) {
+        return targets.c.counters[refKey];
+      }
+    }
+  }
+
   if (targets[key] && !Array.isArray(targets[key])) {
     return targets[key];
   }
@@ -776,7 +795,7 @@ sync.reduce = function(equation, targets, noRoll, fillOnce) {
     var trav = fmatch[1];
     var fn = fmatch[2];
     var val = "";
-    if (calcAPI[fn]) {
+    if (util.calcAPI[fn]) {
       var parenths = [];
       var args = [];
       if (fmatch.index + fmatch[0].length < str.length && str[fmatch.index + fmatch[0].length] == "(") {
@@ -800,7 +819,7 @@ sync.reduce = function(equation, targets, noRoll, fillOnce) {
           }
         }
       }
-      val = calcAPI[fn](args, targets);
+      val = util.calcAPI[fn](args, targets);
       if (val instanceof Object) {
         val = JSON.stringify(val);
       }
@@ -816,7 +835,7 @@ sync.reduce = function(equation, targets, noRoll, fillOnce) {
   }
 
   var tmatch = str.match(tableMatch);
-  if (calcAPI["table"] || calcAPI["constant"]) {
+  if (util.calcAPI["table"] || util.calcAPI["constant"]) {
     while (tmatch) {
       var cmd = "table";
       var trav = tmatch[1];
@@ -853,7 +872,7 @@ sync.reduce = function(equation, targets, noRoll, fillOnce) {
       else {
         cmd = "constant";
       }
-      val = calcAPI[cmd](args, targets);
+      val = util.calcAPI[cmd](args, targets);
       if (val instanceof Object) {
         val = JSON.stringify(val);
       }
@@ -910,7 +929,7 @@ sync.reduce = function(equation, targets, noRoll, fillOnce) {
   }
   if (!fillOnce) {
     var tmatch = str.match(tableMatch);
-    if (calcAPI["table"] || calcAPI["constant"]) {
+    if (util.calcAPI["table"] || util.calcAPI["constant"]) {
       while (tmatch) {
         var cmd = "table";
         var trav = tmatch[1];
@@ -947,7 +966,7 @@ sync.reduce = function(equation, targets, noRoll, fillOnce) {
         else {
           cmd = "constant";
         }
-        val = calcAPI[cmd](args, targets);
+        val = util.calcAPI[cmd](args, targets);
         if (val instanceof Object) {
           val = JSON.stringify(val);
         }
@@ -967,6 +986,15 @@ sync.reduce = function(equation, targets, noRoll, fillOnce) {
     var diceMatch = diceRegex.exec(str);
     while (diceMatch) {
       var rep = sync.evalDice(diceMatch[0]);
+      // explode dice and re-roll dice
+      if (diceMatch.index + diceMatch[0].length < str.length) {
+        if (str[diceMatch.index + diceMatch[0].length + 1] == "r") {
+
+        }
+        else if (str[diceMatch.index + diceMatch[0].length + 1] == "e") {
+
+        }
+      }
       if (str.match(diceMatch[0]+"]")) {
         str = str.replace(diceMatch[0]+"]", diceMatch[0]);
       }
@@ -988,302 +1016,6 @@ var fnMatch = /(@):([\w]*)/i
 
 var tableMatch = /(#):([\w]*)/i
 var condMatch = /(\?):([\w]*)/i
-
-var calcAPI = {
-  sign : function(args, targets){
-    var val = (Number(sync.eval(args[0], targets))>=0)?("+"+Number(sync.eval(args[0], targets))):(Number(sync.eval(args[0], targets)));
-    return "'"+val+"'";
-  },
-  int : function(args, targets){
-    return parseInt(sync.eval(args[0], targets));
-  },
-  num : function(args, targets){
-    return parseFloat(sync.eval(args[0], targets));
-  },
-  str : function(args, targets) {
-    return String(sync.eval(args[0], targets));
-  },
-  raw : function(args, targets) {
-    return String(sync.reduce(args[0], targets, true, true));
-  },
-  gm : function(args, targets){
-    if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-      return "1";
-    }
-    return "0";
-  },
-  armor : function(args, targets) {
-    if (!targets || !game.templates || !game.templates.display) {return "0"}
-    if (targets["c"] && !args[1]) {
-      var val;
-      if (game.templates.display.sheet.rules && game.templates.display.sheet.rules.baseArmor) {
-        val = duplicate(sync.rawVal(game.templates.display.sheet.rules.baseArmor)) || 0;
-      }
-      else {
-        val = sync.eval(game.templates.constants.basearmor, targets) || 0;
-      }
-      if (val instanceof Object) {
-        for (var k in val) {
-          val[k] = sync.eval(val[k], targets);
-        }
-      }
-      else {
-        val = sync.eval(val, targets);
-      }
-      if (targets["c"].inventory) {
-        for (var index in targets["c"].inventory) {
-          var itemData = targets["c"].inventory[index];
-          itemData.tags = itemData.tags || {};
-          var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
-          if (itemData.tags["equipped"] && itemArmor) {
-            var armorBonus = 0;
-            for (var i in itemData.equip.armor.modifiers) {
-              armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
-            }
-            if (itemArmor instanceof Object) {
-              for (var k in val) {
-                if (itemArmor[k]) {
-                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
-                }
-                else {
-                  val[k] += armorBonus;
-                }
-              }
-            }
-            else {
-              val += sync.eval(itemArmor, targets) + armorBonus;
-            }
-          }
-        }
-      }
-      if (args[0]){
-        return val[args[0]];
-      }
-      else {
-        return val;
-      }
-    }
-    if (targets["i"]) {
-      var itemData = targets["i"];
-      var itemArmor = duplicate(sync.rawVal(itemData.equip.armor)) || 0;
-      if (itemArmor) {
-        if (args[1]) {
-          itemArmor = 0;
-        }
-        var armorBonus = 0;
-        for (var i in itemData.equip.armor.modifiers) {
-          armorBonus += sync.eval(itemData.equip.armor.modifiers[i], targets);
-        }
-        if (itemArmor instanceof Object) {
-          for (var k in itemArmor) {
-            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
-          }
-        }
-        else {
-          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
-        }
-        return itemArmor;
-      }
-      return 0;
-    }
-    return 0;
-  },
-  weight : function(args, targets) {
-    if (!targets || !game.templates || !game.templates.display) {return "0"}
-    if (targets["c"]) {
-      var weight = 0;
-      for (var index in targets["c"].inventory) {
-        weight += (sync.rawVal(targets["c"].inventory[index].info.quantity) || 0) * (sync.rawVal(targets["c"].inventory[index].info.weight) || 0);
-      }
-      return weight;
-    }
-  },
-  equip : function(args, targets) {
-    if (!targets || !game.templates || !game.templates.display) {return "0"}
-    if (targets["c"]) {
-      if (game.templates.display.sheet.rules && game.templates.display.sheet.rules[args[0]]) {
-        val = duplicate(sync.rawVal(game.templates.display.sheet.rules[args[0]])) || 0;
-      }
-      else {
-        val = sync.eval(game.templates.constants[args[0]], targets) || 0;
-      }
-      if (val instanceof Object) {
-        for (var k in val) {
-          val[k] = sync.eval(val[k], targets);
-        }
-      }
-      else {
-        val = sync.eval(val, targets);
-      }
-      if (targets["c"].inventory) {
-        for (var index in targets["c"].inventory) {
-          var itemData = targets["c"].inventory[index];
-          itemData.tags = itemData.tags || {};
-          var itemArmor = duplicate(sync.rawVal(itemData.equip[args[1]])) || 0;
-          if (itemData.tags["equipped"] && itemArmor) {
-            var armorBonus = 0;
-            for (var i in itemData.equip[args[1]].modifiers) {
-              armorBonus += sync.eval(itemData.equip[args[1]].modifiers[i], targets);
-            }
-            if (itemArmor instanceof Object) {
-              for (var k in val) {
-                if (itemArmor[k]) {
-                  val[k] += sync.eval(itemArmor[k], targets) + armorBonus;
-                }
-                else {
-                  val[k] += armorBonus;
-                }
-              }
-            }
-            else {
-              val += sync.eval(itemArmor, targets) + armorBonus;
-            }
-          }
-        }
-      }
-      return val;
-    }
-    if (targets["i"]) {
-      var itemData = targets["i"];
-      var itemArmor = duplicate(sync.rawVal(itemData.equip[args[0]])) || 0;
-      if (itemArmor) {
-        var armorBonus = 0;
-        for (var i in itemData.equip[args[0]].modifiers) {
-          armorBonus += sync.eval(itemData.equip[args[0]].modifiers[i], targets);
-        }
-        if (itemArmor instanceof Object) {
-          for (var k in itemArmor) {
-            itemArmor[k] = sync.eval(itemArmor[k], targets) + armorBonus;
-          }
-        }
-        else {
-          itemArmor = sync.eval(itemArmor, targets) + armorBonus;
-        }
-        return itemArmor;
-      }
-      return 0;
-    }
-    return 0;
-  },
-  t : function(args, targets) {
-    if (!targets) {return "0"}
-    if (targets["c"] && !args[1]) {
-      if (targets["c"].tags[args[0]]) {
-        return 1;
-      }
-      else {
-        return 0;
-      }
-    }
-    if (targets[args[1]]) {
-      if (targets[args[1]].tags[args[0]]) {
-        return 1;
-      }
-      else {
-        return 0;
-      }
-    }
-  },
-  explode : function(args, targets) {
-    var maxLoop = 1000;
-    var loop = 0;
-    var cachedTargets = duplicate(targets);
-    var expVal = sync.eval(args[0], cachedTargets);
-    cachedTargets.val = expVal;
-    var cond = sync.eval(args[1], cachedTargets);
-    while (cond) {
-      cachedTargets.val = sync.eval(args[0], cachedTargets);
-      expVal = expVal + cachedTargets.val;
-      cond = sync.eval(args[1], cachedTargets);
-      loop++;
-      if (loop > maxLoop) {
-        sendAlert({text : "Error Processing Equation"});
-        console.log(equation);
-        return "0";
-      }
-    }
-    return expVal;
-  },
-  total : function(args, targets) {
-    var maxLoop = 1000;
-    var loop = 0;
-    var expVal = sync.eval(args[0], targets);
-    var cond = sync.eval(args[1], targets);
-    while (loop < cond) {
-      expVal = expVal + sync.eval(args[0], targets);
-      cond = sync.eval(args[1], targets);
-      loop++;
-      if (loop > maxLoop) {
-        sendAlert({text : "Error Processing Equation"});
-        console.log(equation);
-        return "0";
-      }
-    }
-    return expVal;
-  },
-  /*roll : function(args, targets) {
-    setTimeout(function(){
-      util.processEvent(args[0]);
-    }, 100);
-  },
-  chat : function(args, targets) {
-    setTimeout(function(){
-      util.chatEvent(args[0], sync.eval(args[1] || "@me.name", targets));
-    }, 100);
-  },*/
-  rand : function(args, targets) {
-    if (Number(args[0]) >= Math.random()) {
-      return 1;
-    }
-    return 0;
-  },
-  table : function(args, targets) {
-    var maxLoop = 1000;
-    var loop = 0;
-    var expVal = sync.eval(args[0], targets);
-    var cond = sync.eval(args[1], targets);
-
-    if (game.templates.tables[expVal]) {
-      if (game.templates.tables[expVal][cond]) {
-        return sync.eval(game.templates.tables[expVal][cond], targets);
-      }
-      else {
-        var reg = /(\d*)-(\d*)/i;
-        var keys = Object.keys(game.templates.tables[expVal]);
-        for (var i in keys) {
-          var val = keys[i];
-          var match = val.match(reg);
-          if (match) {
-            if (match[1] <= cond && cond <= match[2]) {
-              return sync.eval(game.templates.tables[expVal][val], targets);
-            }
-            loop++;
-            if (loop > maxLoop) {
-              sendAlert({text : "Error Processing Equation"});
-              console.log(equation);
-              return "0";
-            }
-          }
-        }
-      }
-    }
-    return "0";
-  },
-  constant : function(args, targets) {
-    var key = sync.eval(args[0], targets);
-    if (game.templates.constants && (game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()])) {
-      return sync.eval(game.templates.constants[key] || game.templates.constants[String(key).toLowerCase()], targets);
-    }
-    return "0";
-  },
-  empty : function(args, targets) {
-    var key = sync.eval(args[0], targets);
-    if (key instanceof Object) {
-      return Object.keys(key).length;
-    }
-    return "0";
-  },
-};
 
 sync.result = function(equation, targets, noRoll, fillOnce) {
   var str = sync.reduce(String(equation), targets, noRoll, fillOnce);
@@ -1371,31 +1103,85 @@ sync.evalDice = function(term) {
     var res;
     if (dice) {
       var values = [];
+      var rollsLeft = dice[7];
+      var condition = dice[9] || "==";
+      if (condition == "=") {
+        condition = "==";
+      }
+      var conditionValue = dice[10] || 1;
       for (var i=0; i<(dice[1] || 1); i++) {
-        values.push(Math.ceil(chance.natural({min: 1, max: dice[2]})));
+        var newValue = Math.ceil(chance.natural({min: 1, max: dice[2]}));
+        if (dice[6] == "r") {
+          if (dice[7]) {
+            if (eval(String(newValue + condition + conditionValue))) {
+              newValue = Math.ceil(chance.natural({min: 1, max: dice[2]}));
+              rollsLeft--;
+            }
+          }
+          else if (eval(String(newValue + condition + conditionValue))) {
+            newValue = Math.ceil(chance.natural({min: 1, max: dice[2]}));
+          }
+        }
+        else if (dice[6] == "e") {
+          var maxLoop = 1000;
+          var loop = 0;
+          var totalValue = newValue;
+          while (eval(String(newValue + condition + conditionValue)) && (!dice[7] || rollsLeft)) {
+            newValue = Math.ceil(chance.natural({min: 1, max: dice[2]}));
+            totalValue += newValue;
+            if (rollsLeft) {
+              rollsLeft--;
+            }
+            loop++;
+            if (loop > maxLoop) {
+              sendAlert({text : "Error Processing Equation"});
+              return "0";
+            }
+          }
+          newValue = totalValue;
+        }
+        values.push(newValue);
       }
       if (dice[3]) {
+        //descending order;
+        values.sort(function(a,b){
+          if (b > a) {
+            return -1;
+          }
+          else if (a > b) {
+            return 1;
+          }
+          return 0;
+        });
         if (dice[3][0] == "k") {
-          values.sort(function(a,b){
-            if (b > a) {
-              return -1;
+          if (dice[4]) {
+            var amount = dice[3].substring(2, dice[3].length) || 1;
+            if (dice[4] == "h") {
+              values.splice(0, values.length-amount);
             }
-            else if (a > b) {
-              return 1;
+            else if (dice[4] == "l") {
+              values.splice(amount, values.length-amount);
             }
-            return 0;
-          });
+          }
+          else {
+            var amount = dice[3].substring(1, dice[3].length) || 1;
+            values.splice(0, values.length-amount);
+          }
         }
         else if (dice[3][0] == "d") {
-          values.sort(function(a,b){
-            if (b > a) {
-              return 1;
+          if (dice[4]) {
+            var amount = dice[3].substring(2, dice[3].length) || 1;
+            if (dice[4] == "h") {
+              values.splice(values.length-amount, amount);
             }
-            else if (a > b) {
-              return -1;
+            else if (dice[4] == "l") {
+              values.splice(0, amount);
             }
-            return 0;
-          });
+          }
+          else {
+            var amount = dice[3].substring(1, dice[3].length) || 1;
+            values.splice(0, amount);
+          }
         }
       }
 
@@ -1422,14 +1208,14 @@ sync.evalDice = function(term) {
 
 sync.defaultContext = function() {
   var context = {
-    setting : duplicate(game.state.setting),
+    setting : duplicate(game.state.data.setting),
     me : {
       cName : getPlayerCharacterName(getCookie("UserID")),
       char : getPlayerCharacter(getCookie("UserID")),
       pName : getPlayerName(getCookie("UserID")),
       name : "(`@me.cName`!=`0`)?(`@me.cName(@me.pName)`):(`@me.pName`)",
     },
-    location : svd.location
+    location : svd.location || {}
   };
 
   if (game.templates && game.templates.security) {

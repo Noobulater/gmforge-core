@@ -1,4 +1,4 @@
-boardApi.pix.buildPath = function(obj, sX, sY, eX, eY, color) {
+boardApi.buildPath = function(obj, sX, sY, eX, eY, color) {
   var data = obj.data;
 
   var gridWidth = data.gridW;
@@ -79,7 +79,7 @@ boardApi.pix.buildPath = function(obj, sX, sY, eX, eY, color) {
   return dummyCanvas;
 }
 
-boardApi.pix.drawGrid = function(obj, app, scope){
+boardApi.drawGrid = function(obj, app, scope){
   var data = obj.data;
   var isHex = data.options && data.options.hex;
   var hasGrid = data.gridW && data.gridW;
@@ -97,7 +97,28 @@ boardApi.pix.drawGrid = function(obj, app, scope){
     var yGrid = Math.ceil(data.h/(data.gridH));
 
     if (isHex) {
+      for (var x=0; x<xGrid; x++) {
+        var xPos = (x * data.gridW)/data.gridW;
+        for (var y=0; y<yGrid; y++) {
+          var yPos = (y * data.gridH)/data.gridH;
+          var sX = (xPos * data.gridW + (data.gridX || 0) - (xPos * data.gridW + (data.gridX || 0))/4) + data.gridX;
+          var sY;
+          if (x % 2) {
+            sY = (yPos * data.gridH + (data.gridY || 0) + data.gridH/2) + data.gridY;
+          }
+          else {
+            sY = (yPos * data.gridH + (data.gridY || 0)) + data.gridY;
+          }
 
+          gridWrap.moveTo(sX + 0, sY + data.gridH/2);
+          gridWrap.lineTo(sX + data.gridW * 1/4, sY + 0);
+          gridWrap.lineTo(sX + data.gridW * 3/4, sY + 0);
+          gridWrap.lineTo(sX + data.gridW-0, sY + data.gridH/2);
+          gridWrap.lineTo(sX + data.gridW * 3/4, sY + data.gridH-0);
+          gridWrap.lineTo(sX + data.gridW * 1/4, sY + data.gridH-0);
+          gridWrap.lineTo(sX + 0, sY + data.gridH/2);
+        }
+      }
     }
     else {
       for (var y=0; y<yGrid; y++) {

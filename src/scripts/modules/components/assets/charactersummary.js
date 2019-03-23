@@ -84,25 +84,13 @@ sync.render("ui_characterSummary", function(obj, app, scope){
 
   var imgWrap = $("<div>").appendTo(namePlate);
   imgWrap.addClass("flexmiddle");
-  imgWrap.css("width", (scope.width || ((parseInt(scope.height) || 20) * 3)) + "px");
+  imgWrap.css("width", (scope.width || ((parseInt(scope.height) || 20) * 2)) + "px");
   imgWrap.css("height", scope.height || "auto");
   imgWrap.css("background-image", "url('"+(info.img.min || sync.rawVal(info.img) || "/content/icons/blankchar.png")+"')");
   imgWrap.css("background-size", "cover");
   imgWrap.css("background-repeat", "no-repeat");
   imgWrap.css("background-position", "center 25%");
-  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-    imgWrap.addClass("hover2");
-    imgWrap.click(function(ev){
-      var applied = false;
-      $(".application[ui-name='ui_display']").each(function(){
-        if (!applied && $(this).attr("tabKey") != null) {
-          util.slideshow(sync.rawVal(obj.data.info.img));
-          ev.stopPropagation();
-          ev.preventDefault();
-        }
-      });
-    });
-  }
+
   $("<div class='padding'>").appendTo(namePlate); // so you can access actions
 
   var nameWrap = $("<div>").appendTo(namePlate);
@@ -121,12 +109,12 @@ sync.render("ui_characterSummary", function(obj, app, scope){
 
   if (scope.hide) {
     imgWrap.css("background-image" , "url('/content/icons/blankchar.png')");
-    name.text("[Hidden]");
+    name.text("[Unidentified]");
     if (hasSecurity(getCookie("UserID"), "Visible", obj.data)) {
-      name.text(sync.rawVal(info.name)+" [Hidden]");
+      name.text(sync.rawVal(info.name)+" [Unidentified]");
     }
     else {
-      name.text("[Hidden]");
+      name.text("[Unidentified]");
     }
   }
   if (app.width() && (name.text().length || "") * 12 > app.width()) {
@@ -248,64 +236,79 @@ sync.render("ui_characterSummary", function(obj, app, scope){
     if (hasSecurity(getCookie("UserID"), "Rights", data) || scope.markup) {
       var optionsBar = $("<div>").appendTo(optionsBack);
       optionsBar.addClass("lrpadding flexwrap");
+      if (sheet.summary instanceof Object) {
+        for (var i in sheet.summary) {
+          var tabData = sheet.summary[i];
+          var tab = genIcon(tabData.icon).appendTo(optionsBar);
+          tab.addClass("lrpadding")
+          tab.attr("title", tabData.name);
+          tab.attr("index", i);
+          tab.click(function(){
+            app.attr("displayMode", $(this).attr("index"));
+            obj.update();
+          });
+        }
 
-      for (var i in sheet.summary) {
-        var tabData = sheet.summary[i];
-        var tab = genIcon(tabData.icon).appendTo(optionsBar);
-        tab.addClass("lrpadding")
-        tab.attr("title", tabData.name);
-        tab.attr("index", i);
-        tab.click(function(){
-          app.attr("displayMode", $(this).attr("index"));
-          obj.update();
+        var expand = genIcon("new-window").appendTo(optionsBack);
+        expand.css("margin-left", "8px");
+        expand.attr("title", "hold shift to expand this menu");
+        expand.click(function(){
+          if (_down[16]) {
+            app.attr("from", app.attr("ui-name"));
+            app.attr("ui-name", "ui_characterSheet");
+            var parent = app.parent();
+            if (parent && parent.parent() && parent.parent().parent() && parent.parent().parent().hasClass("ui-popout")) {
+              parent = parent.parent().parent();
+              parent.css("width", assetTypes["c"].width);
+              parent.css("height", assetTypes["c"].height);
+              parent.resizable();
+            }
+            obj.update();
+          }
+          else {
+            assetTypes[obj.data._t].preview(obj, $(this));
+          }
         });
       }
-
-      var expand = genIcon("new-window").appendTo(optionsBack);
-      expand.css("margin-left", "8px");
-      expand.attr("title", "hold shift to expand this menu");
-      expand.click(function(){
-        if (_down[16]) {
-          app.attr("from", app.attr("ui-name"));
-          app.attr("ui-name", "ui_characterSheet");
-          var parent = app.parent();
-          if (parent && parent.parent() && parent.parent().parent() && parent.parent().parent().hasClass("ui-popout")) {
-            parent = parent.parent().parent();
-            parent.css("width", assetTypes["c"].width);
-            parent.css("height", assetTypes["c"].height);
-            parent.resizable();
-          }
-          obj.update();
-        }
-        else {
-          assetTypes[obj.data._t].preview(obj, $(this));
-        }
-      });
     }
   }
 
-  var infoPanel = $("<div>").appendTo(div);
-  infoPanel.addClass("flexcolumn");
+  if (sheet.summary instanceof Object) {
+    var infoPanel = $("<div>").appendTo(div);
+    infoPanel.addClass("flexcolumn");
 
-  var ctx = sync.defaultContext();
-  ctx[obj.data._t] = duplicate(obj.data);
+    var ctx = sync.defaultContext();
+    ctx[obj.data._t] = duplicate(obj.data);
 
-  var newScope = duplicate(scope);
-  newScope.display = sheet.summary[scope.displayMode].display;
-  newScope.context = ctx;
-  if (scope.markup) {
-    newScope.markup = "summary"+scope.displayMode;
-  }
-  infoPanel.append(sync.render("ui_processUI")(obj, app, newScope));
-
-  var parent = app.parent();
-  if (parent && parent.parent() && parent.parent().parent() && parent.parent().parent().hasClass("ui-popout")) {
-    parent = parent.parent().parent();
-    if (!parent.css("width")) {
-      parent.css("width", "300px");
-      parent.css("height", "");
+    var newScope = duplicate(scope);
+    newScope.display = sheet.summary[scope.displayMode].display;
+    newScope.context = ctx;
+    if (scope.markup) {
+      newScope.markup = "summary"+scope.displayMode;
     }
-    parent.resizable();
+    infoPanel.append(sync.render("ui_processUI")(obj, app, newScope));
+
+    var parent = app.parent();
+    if (parent && parent.parent() && parent.parent().parent() && parent.parent().parent().hasClass("ui-popout")) {
+      parent = parent.parent().parent();
+      if (!parent.css("width")) {
+        parent.css("width", "300px");
+        parent.css("height", "");
+      }
+      parent.resizable();
+    }
+  }
+  else {
+    optionsBack.hide();
+    div.removeClass("outline");
+    var ctx = sync.defaultContext();
+    ctx[obj.data._t] = duplicate(obj.data);
+
+    var newScope = duplicate(scope);
+    newScope.display = sheet.summary;
+    newScope.context = ctx;
+
+    div.append(sync.render("ui_processUI")(obj, app, newScope));
   }
 
   return div;

@@ -57,7 +57,7 @@ var assetTypes = {
         layout.coverlay($(this), 500);
       });
     },
-    contextmenu : function(ev, plate, src){
+    contextmenu : function(ev, plate, src, returnList){
       var actionsList = [
         {
           name : "View Image",
@@ -139,7 +139,7 @@ var assetTypes = {
   "c" : {
     n : "Actors",
     i : "user",
-    ui : "ui_characterSheet",
+    ui : "ui_characterSheetv2",
     width : "750px",
     height : "800px",
     edit : function(ent, target, align, title, prompt) {
@@ -147,6 +147,17 @@ var assetTypes = {
       content.attr("from", "ui_characterSummary");
       content.attr("viewOnly", !hasSecurity(getCookie("UserID"), "Rights", ent.data));
       ent.addApp(content);
+
+      var width = assetTypes["c"].width;
+      var height = assetTypes["c"].height;
+      if (ent.data && ent.data._type) {
+        width = game.templates.display.actors[ent.data._type].width || width;
+        height = game.templates.display.actors[ent.data._type].height || height;
+        if (ent.data._d) {
+          width = ent.data._d.width || width;
+          height = ent.data._d.height || height;
+        }
+      }
 
       var popout = ui_popOut({
         title : title || sync.rawVal(ent.data.info.name),
@@ -156,7 +167,7 @@ var assetTypes = {
         maximize : true,
         dragThickness : "0.5em",
         resizable : true,
-        style : {width : assetTypes["c"].width, height : assetTypes["c"].height},
+        style : {width : width, height : height},
       }, content);
       popout.resizable();
       return popout;
@@ -178,6 +189,17 @@ var assetTypes = {
         content.attr("viewOnly", !hasSecurity(getCookie("UserID"), "Rights", ent.data));
         ent.addApp(content);
 
+        var width = assetTypes["c"].width;
+        var height = assetTypes["c"].height;
+        if (ent.data && ent.data._type) {
+          width = game.templates.display.actors[ent.data._type].width || width;
+          height = game.templates.display.actors[ent.data._type].height || height;
+          if (ent.data._d) {
+            width = ent.data._d.width || width;
+            height = ent.data._d.height || height;
+          }
+        }
+
         var popout = ui_popOut({
           title : title || sync.rawVal(ent.data.info.name),
           target : target,
@@ -187,14 +209,14 @@ var assetTypes = {
           maximize : true,
           dragThickness : "0.5em",
           resizable : true,
-          style : {width : assetTypes["c"].width, height : assetTypes["c"].height},
+          style : {width : width, height : height},
         }, content);
         popout.resizable();
         return popout;
       }
     },
     summary : function(ent, target, align, title, prompt, ui) {
-      if (!game.templates.display.sheet.summary) {
+      if ((game.templates.display.sheet && !game.templates.display.sheet.summary) || (game.templates.display.actors[ent.data._type] && !game.templates.display.actors[ent.data._type].summary)) {
         return assetTypes["c"].preview(ent, target, align, title, prompt, ui);
       }
       else if (layout.mobile) {
@@ -287,15 +309,26 @@ var assetTypes = {
     }
   },
   "i" : {
-    n : "Items/Spells",
+    n : "Elements",
     i : "briefcase",
-    ui : "ui_renderItem",
+    ui : "ui_renderItemv2",
     width : "600px",
     height : "400px",
     edit : function(ent, target, align, title, prompt) {
       var content = sync.newApp(assetTypes["i"].ui);
       content.attr("viewOnly", !hasSecurity(getCookie("UserID"), "Rights", ent.data));
       ent.addApp(content);
+
+      var width = assetTypes["i"].width;
+      var height = assetTypes["i"].height;
+      if (ent.data && ent.data._type) {
+        width = game.templates.display.elements[ent.data._type].width || width;
+        height = game.templates.display.elements[ent.data._type].height || height;
+        if (ent.data._d) {
+          width = ent.data._d.width || width;
+          height = ent.data._d.height || height;
+        }
+      }
 
       var popout = ui_popOut({
         title : title || sync.rawVal(ent.data.info.name),
@@ -306,7 +339,7 @@ var assetTypes = {
         maximize : true,
         dragThickness : "0.5em",
         resizable : true,
-        style : {width : assetTypes["i"].width, height : assetTypes["i"].height},
+        style : {width : width, height : height},
       }, content);
       popout.resizable();
       return popout;
@@ -328,6 +361,17 @@ var assetTypes = {
         content.attr("viewOnly", !hasSecurity(getCookie("UserID"), "Rights", ent.data));
         ent.addApp(content);
 
+        var width = assetTypes["i"].width;
+        var height = assetTypes["i"].height;
+        if (ent.data && ent.data._type) {
+          width = game.templates.display.elements[ent.data._type].width || width;
+          height = game.templates.display.elements[ent.data._type].height || height;
+          if (ent.data._d) {
+            width = ent.data._d.width || width;
+            height = ent.data._d.height || height;
+          }
+        }
+
         var popout = ui_popOut({
           title : title || sync.rawVal(ent.data.info.name),
           target : target,
@@ -337,7 +381,7 @@ var assetTypes = {
           maximize : true,
           dragThickness : "0.5em",
           resizable : true,
-          style : {width : assetTypes["i"].width, height : assetTypes["i"].height},
+          style : {width : width, height : height},
         }, content);
         popout.resizable();
         return popout;
@@ -400,7 +444,7 @@ var assetTypes = {
       }
     }
   },
-  contextmenu : function(ev, plate, ent, app, scope){
+  contextmenu : function(ev, plate, ent, app, scope, returnList){
     var type = ent.data._t;
 
     var actionList = scope.contextmenu || [];
@@ -620,6 +664,22 @@ var assetTypes = {
               actionList.push({name : "Use", submenu : commands});
             }
           }
+          actionList.push({
+            name : "Impersonate...",
+            icon : "user",
+            click : function(ev, ui){
+              runCommand("selectPlayerEntity", {id : ent.id(), userID : getCookie("UserID")});
+              sendAlert({text : "Impersonating Character : " + sync.rawVal(ent.data.info.name)});
+              $(".chatType").text("IC");
+              $(".chatType").addClass("highlight alttext");
+              $(".chatType").attr("title", "In Character");
+              $(".application[ui-name='_imperson']").attr("src", sync.rawVal(ent.data.info.img) || "/content/icons/blankchar.png");
+              $(".application[ui-name='_imperson']").attr("ICText", sync.rawVal(ent.data.info.name));
+              $(".application[ui-name='_imperson']").each(function(){
+                sync.updateApp($(this), game.players);
+              });
+            }
+          });
         }
 
         actionList.push({
@@ -660,6 +720,38 @@ var assetTypes = {
             }, content);
           }
         });
+        ent.data._flags = ent.data._flags || duplicate(ent.data.tags) || {};
+        var newSubmenu = [
+          {
+            name : ent.data._flags.hidden?"Combat Visible":"Combat Hidden",
+            click : function(){
+              ent.data._flags.hidden = !ent.data._flags.hidden;
+              ent.sync("updateAsset");
+            }
+          },
+          {
+            name : ent.data._flags.temp?"Stable":"Temporary",
+            attr : {title : "Stable assets do not delete when their tokens are removed, while temporary assets do"},
+            click : function(){
+              ent.data._flags.temp = !ent.data._flags.temp;
+              ent.sync("updateAsset");
+            }
+          },
+          /*{
+            name : ent.data._flags.unidentified?"Identified":"Unidentified",
+            attr : {title : "Unidentified Actors do no reveal their name or images in the combat tab"},
+            click : function(){
+              ent.data._flags.unidentified = !ent.data._flags.unidentified;
+              ent.sync("updateAsset");
+            }
+          }*/
+        ];
+
+        actionList.push({
+          name : "Flag",
+          icon : "flag",
+          submenu : newSubmenu
+        });
         if (ent.data._c == getCookie("UserID")) {
           actionList.push({
             name : "Duplicate",
@@ -667,6 +759,9 @@ var assetTypes = {
             click : function(ev, ui){
               if (ent.data._t == "c") {
                 createCharacter(duplicate(ent.data), true);
+              }
+              else if (ent.data._t == "i") {
+                runCommand("createItem", ent.data);
               }
               else if (ent.data._t == "b") {
                 runCommand("createBoard", ent.data);
@@ -746,7 +841,7 @@ var assetTypes = {
           }
         });
 
-        if (ent.data._t == "c") {
+        if (ent.data._t == "c" && plate) {
           if (!plate.hasClass("card-selected")) {
             actionList.push({
               name : "Target",
@@ -838,6 +933,9 @@ var assetTypes = {
         }
       });
     }
+    if (returnList) {
+      return actionList;
+    }
     var menu = ui_dropMenu(plate, actionList, {id : "ent-context"});
     return menu;
   }
@@ -873,10 +971,10 @@ sync.render("ui_assetList", function(entities, app, scope) {
         olay.append("<b>Drop to Create</b>");
       }
     });
-    listedWrap.on('drop', function(ev){
+    listedWrap.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
       var ent = JSON.parse(dt.getData("OBJ"));
 
       game.locals["newAssetList"] = game.locals["newAssetList"] || [];
@@ -932,17 +1030,6 @@ sync.render("ui_assetList", function(entities, app, scope) {
       else if (ent._t == "p") {
         if (!game.config.data.offline) {
           runCommand("createPage", ent);
-        }
-        else {
-          game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-          game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-          game.entities.data["tempObj"+game.config.data.offline++].data = ent;
-          game.entities.update();
-        }
-      }
-      else if (ent._t == "v") {
-        if (!game.config.data.offline) {
-          runCommand("createVehicle", ent);
         }
         else {
           game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
@@ -1141,43 +1228,196 @@ sync.render("ui_assetList", function(entities, app, scope) {
         });
       }
       else if (obj.data.category == "c") {
-        var createChar = genIcon("user", "New Character").appendTo(wrap);
-        createChar.attr("title", "Create Character");
+        var createChar = genIcon("user", "New Actor").appendTo(wrap);
+        createChar.attr("title", "Create Actor");
         createChar.click(function(){
-          createCharacter(duplicate(game.templates.character), null, null, true, true);
-          sendAlert({text : "Created Character"});
-          app.removeAttr("hideAssets");
-          game.entities.update();
+          if (game.templates.build) {
+            if (Object.keys(game.templates.actors).length > 1) {
+              var content = $("<div>");
+              content.addClass("flexcolumn flex");
+
+              for (var k in game.templates.actors) {
+                var button = $("<div>").appendTo(content);
+                button.addClass("hover2 alttext spadding flexmiddle background padding fit-x subtitle");
+                button.text(k);
+                button.click(function(){
+                  createCharacter(duplicate(game.templates.actors[$(this).text()]), null, null, null, true);
+                  sendAlert({text : "Created Actor"});
+                  app.removeAttr("hideAssets");
+                  game.entities.update();
+                  layout.coverlay("resource-select");
+                });
+              }
+
+              ui_popOut({
+                prompt : true,
+                title : "Type",
+                align : "top",
+                target : $(this),
+                id : "resource-select",
+                style : {"width" : "100px"},
+              }, content);
+            }
+            else if (Object.keys(game.templates.actors).length) {
+              createCharacter(duplicate(game.templates.actors[Object.keys(game.templates.actors)[0]]), null, null, null, true);
+              sendAlert({text : "Created Actor"});
+              app.removeAttr("hideAssets");
+              game.entities.update();
+            }
+          }
+          else {
+            createCharacter(duplicate(game.templates.character), null, null, null, true);
+            sendAlert({text : "Created Actor"});
+            app.removeAttr("hideAssets");
+            game.entities.update();
+          }
         });
       }
       else if (obj.data.category == "i") {
-        var button = genIcon("briefcase", "New Item/Spell");
-        button.attr("title", "Create a new Item/Spell");
+        var button = genIcon("briefcase", "New Element");
+        button.attr("title", "Create a new Item Element");
         button.appendTo(wrap);
         button.click(function() {
           app.removeAttr("hideAssets");
-          game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-          var lastKeys = Object.keys(game.entities.data);
-          game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-            var change = true;
-            for (var key in game.entities.data) {
-              if (!util.contains(lastKeys, key)) {
-                game.locals["newAssetList"].push(key);
-                change = false;
+          var content = $("<div>");
+          content.addClass("flexcolumn flex");
+          if (game.templates.build) {
+            if (Object.keys(game.templates.elements).length > 1) {
+              for (var k in game.templates.elements) {
+                var button = $("<div>").appendTo(content);
+                button.addClass("hover2 alttext spadding flexmiddle background padding fit-x subtitle");
+                button.text(k);
+                button.click(function(){
+                  app.attr("category", "i");
+                  app.removeAttr("hideAssets");
+                  game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+                  var lastKeys = Object.keys(game.entities.data);
+                  game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+                    var change = true;
+                    for (var key in game.entities.data) {
+                      if (!util.contains(lastKeys, key)) {
+                        game.locals["newAssetList"].push(key);
+                        change = false;
+                      }
+                    }
+                    return change;
+                  }
+                  if (!game.config.data.offline) {
+                    runCommand("createItem", duplicate(game.templates.elements[$(this).text()]));
+                  }
+                  else {
+                    game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                    game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                    game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.elements[$(this).text()]);
+                    game.entities.update();
+                  }
+                  sendAlert({text : "Created Item"});
+                  layout.coverlay("resource-select");
+                });
               }
             }
-            return change;
-          }
-          if (!game.config.data.offline) {
-            runCommand("createItem", {});
+            else {
+              app.attr("category", "i");
+              app.removeAttr("hideAssets");
+              game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+              var lastKeys = Object.keys(game.entities.data);
+              game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+                var change = true;
+                for (var key in game.entities.data) {
+                  if (!util.contains(lastKeys, key)) {
+                    game.locals["newAssetList"].push(key);
+                    change = false;
+                  }
+                }
+                return change;
+              }
+              if (!game.config.data.offline) {
+                runCommand("createItem", duplicate(game.templates.elements[Object.keys(game.templates.elements)[0]]));
+              }
+              else {
+                game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.elements[Object.keys(game.templates.elements)[0]]);
+                game.entities.update();
+              }
+              sendAlert({text : "Created Element"});
+              layout.coverlay("resource-select");
+            }
           }
           else {
-            game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-            game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-            game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.item);
-            game.entities.update();
+            var button = $("<div>").appendTo(content);
+            button.addClass("hover2 alttext spadding flexmiddle background padding fit-x");
+            button.text("Item");
+            button.click(function(){
+              app.attr("category", "i");
+              app.removeAttr("hideAssets");
+              game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+              var lastKeys = Object.keys(game.entities.data);
+              game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+                var change = true;
+                for (var key in game.entities.data) {
+                  if (!util.contains(lastKeys, key)) {
+                    game.locals["newAssetList"].push(key);
+                    change = false;
+                  }
+                }
+                return change;
+              }
+              if (!game.config.data.offline) {
+                runCommand("createItem", duplicate(game.templates.item));
+              }
+              else {
+                game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.item);
+                game.entities.update();
+              }
+              sendAlert({text : "Created Item"});
+              layout.coverlay("resource-select");
+            });
+
+            var button = $("<div>").appendTo(content);
+            button.addClass("hover2 alttext spadding flexmiddle background padding fit-x");
+            button.text("Spell");
+            button.click(function(){
+              app.attr("category", "i");
+              app.removeAttr("hideAssets");
+              game.locals["newAssetList"] = game.locals["newAssetList"] || [];
+              var lastKeys = Object.keys(game.entities.data);
+              game.entities.listen["newAsset"] = function(rObj, newObj, target) {
+                var change = true;
+                for (var key in game.entities.data) {
+                  if (!util.contains(lastKeys, key)) {
+                    game.locals["newAssetList"].push(key);
+                    change = false;
+                  }
+                }
+                return change;
+              }
+              if (!game.config.data.offline) {
+                var newEnt = duplicate(game.templates.item);
+                newEnt.tags = {spell : 1};
+                runCommand("createItem", newEnt);
+              }
+              else {
+                game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
+                game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
+                game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.item);
+                game.entities.update();
+              }
+              sendAlert({text : "Created Spell"});
+              layout.coverlay("resource-select");
+            });
           }
-          sendAlert({text : "Created Item"});
+
+          ui_popOut({
+            prompt : true,
+            title : "Type",
+            align : "top",
+            target : $(this),
+            id : "resource-select",
+            style : {"width" : "100px"},
+          }, content);
         });
       }
       else if (obj.data.category == "p") {
@@ -1210,37 +1450,6 @@ sync.render("ui_assetList", function(entities, app, scope) {
           sendAlert({text : "Created Page"});
         });
       }
-      else if (obj.data.category == "v") {
-        $("<b class='highlight outline lrpadding smooth' style='color:white;'>Beta</b>").appendTo(wrap);
-
-        var createVehicle = genIcon("plane", "New Vehicle").appendTo(wrap);
-        createVehicle.attr("title", "Create a Blank Vehicle");
-        createVehicle.click(function(){
-          game.locals["newAssetList"] = game.locals["newAssetList"] || [];
-          var lastKeys = Object.keys(game.entities.data);
-          game.entities.listen["newAsset"] = function(rObj, newObj, target) {
-            var change = true;
-            for (var key in game.entities.data) {
-              if (!util.contains(lastKeys, key)) {
-                game.locals["newAssetList"].push(key);
-                change = false;
-              }
-            }
-            return change;
-          }
-          app.removeAttr("hideAssets");
-          if (!game.config.data.offline) {
-            runCommand("createVehicle", {data : {}});
-          }
-          else {
-            game.entities.data["tempObj"+game.config.data.offline] = sync.obj("");
-            game.entities.data["tempObj"+game.config.data.offline]._lid = "tempObj"+game.config.data.offline;
-            game.entities.data["tempObj"+game.config.data.offline++].data = duplicate(game.templates.vehicle);
-            game.entities.update();
-          }
-          sendAlert({text : "Created Vehicle"});
-        });
-      }
     }
   }
 
@@ -1261,7 +1470,7 @@ sync.render("ui_assetList", function(entities, app, scope) {
         else if (util.contains(game.locals["newAssetList"], obj1) && util.contains(game.locals["newAssetList"], obj2)) {
           var obj1 = getEnt(obj1);
           var obj2 = getEnt(obj2);
-          return (sync.rawVal(obj1.data.info.name) || "").toLowerCase().localeCompare((sync.rawVal(obj2.data.info.name) || "").toLowerCase());
+          return (String(sync.rawVal(obj1.data.info.name) || "")).toLowerCase().localeCompare(String(sync.rawVal(obj2.data.info.name) || "").toLowerCase());
         }
         else if (!util.contains(game.locals["newAssetList"], obj1) && util.contains(game.locals["newAssetList"], obj2)) {
           return 1;
@@ -1269,7 +1478,7 @@ sync.render("ui_assetList", function(entities, app, scope) {
       }
       var obj1 = getEnt(obj1);
       var obj2 = getEnt(obj2);
-      return (sync.rawVal(obj1.data.info.name) || "").toLowerCase().localeCompare((sync.rawVal(obj2.data.info.name) || "").toLowerCase());
+      return (String(sync.rawVal(obj1.data.info.name) || "")).toLowerCase().localeCompare(String(sync.rawVal(obj2.data.info.name) || "").toLowerCase());
     });
   }
 

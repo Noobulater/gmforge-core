@@ -57,7 +57,7 @@ sync.render("ui_rights", function(obj, app, scope){
           nameWrap.addClass("flexcolumn flexmiddle flex lrpadding lrmargin");
 
           if (players[id]) {
-            nameWrap.append("<b>"+players[id].displayName+"</b>");
+            nameWrap.append("<b>"+(players[id].displayName || id)+"</b>");
 
             for (var key in game.templates.security.player) {
               if (game.templates.security.player[key] == players[id].rank) {
@@ -86,7 +86,7 @@ sync.render("ui_rights", function(obj, app, scope){
           select.css("border", "none");
           select.css("outline", "none");
 
-          if ((id == getCookie("UserID")) || scope.viewOnly) {
+          if ((id == getCookie("UserID")) || scope.viewOnly || !hasSecurity(getCookie("UserID"), "Owner", obj.data)) {
             select.attr("disabled", true);
             select.css("background-color", "rgb(235,235,228)");
           }
@@ -121,7 +121,7 @@ sync.render("ui_rights", function(obj, app, scope){
         nameWrap.addClass("flexcolumn flexmiddle flex");
 
         if (players[id]) {
-          nameWrap.append("<b>"+players[id].displayName+"</b>");
+          nameWrap.append("<b>"+(players[id].displayName||id)+"</b>");
 
           for (var key in game.templates.security.player) {
             if (game.templates.security.player[key] == players[id].rank) {

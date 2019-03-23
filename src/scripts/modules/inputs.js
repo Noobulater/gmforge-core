@@ -4,7 +4,7 @@ function genIcon(options, name, reverse) {
     options = {icon : options, text : name, reverse : reverse};
   }
   var link = $('<a>');
-
+  link.css("white-space", "nowrap");
   var icon;
   if (options.reverse || reverse) {
     icon = $('<span>').appendTo(link);
@@ -76,8 +76,30 @@ function _inputSync(obj) {
   }, 50);
 }
 
-function genInput(options, delay) {
-  var input = $("<input>");
+function genInput(options, delay, inputOverride) {
+  var input;
+
+  if (!inputOverride) {
+    input = $("<input>");
+    if (options.select) {
+      input = $("<select>");
+      for (var key in options.select) {
+        var optionInput = $("<option>").appendTo(input);
+        optionInput.attr("value", options.select[key]);
+        optionInput.text(key);
+        if (sync.rawVal(options.value) == options.select[key]) {
+          optionInput.attr("selected", "selected");
+        }
+      }
+    }
+    if (options.type == "textarea") {
+      input = $("<textarea>");
+    }
+  }
+  else {
+    input = inputOverride;
+  }
+
   if (options.paste) {
     input.bind("paste", function(ev){
       input.val(ev.originalEvent.clipboardData.getData('text') || "");
@@ -86,6 +108,27 @@ function genInput(options, delay) {
     });
   }
   if (options.value != null) {
+    input.click(function(ev){
+      if (_down["16"]) {
+        // increment the field
+        $(this).attr("title", "Add a # to this field");
+        $(this).tooltip({
+          content : "Add to value",
+          position: { my: "center bottom", at: "top center" }
+        });
+        $(this).tooltip("show");
+        $(this).attr("relative", $(this).val());
+        $(this).val("");
+      }
+    });
+    input.blur(function(){
+      if ($(this).attr("relative") != null) {
+        $(this).val($(this).attr("relative"));
+        $(this).tooltip("destroy");
+        $(this).removeAttr("relative");
+        $(this).removeAttr("title");
+      }
+    });
     if (options.type == "number" || options.type == "range") {
       input.bind('mousewheel', function(e) {
         if ($(this).prop("disabled") || (!$(this).is(':focus') && options.type != "range")) {return;}
@@ -118,14 +161,7 @@ function genInput(options, delay) {
         }
       });
     }
-    else if (options.type == "checkbox") {
-      if (options.value == "true" || options.value == true || (options.value && options.value != "false")) {
-        input.prop("checked", true);
-      }
-      else {
-        input.prop("checked", false);
-      }
-    }
+
     if (options.value instanceof Object) {
       var value = options.value;
       if (value.max) {
@@ -152,8 +188,17 @@ function genInput(options, delay) {
         input.val(value.name);
       }
       else {
-        if (sync.val(value) != null) {
-          input.val(sync.val(value));
+        if (sync.rawVal(value) != null) {
+          input.val(sync.rawVal(value));
+        }
+      }
+
+      if (options.type == "checkbox" || options.type == "radio") {
+        if (input.val() == options.checked) {
+          input.prop("checked", true);
+        }
+        else {
+          input.prop("checked", false);
         }
       }
       // decide once, not everytime click is run
@@ -164,50 +209,94 @@ function genInput(options, delay) {
         });
         if (options.cmd) {
           input.change(function() {
-            if (options.raw) {
-              if (options.raw == "min") {
-                value.min = $(this).val();
+            var newVal = $(this).val();
+            if ($(this).attr("relative") != null) {
+              var ctx = sync.defaultContext();
+              if (options.obj.data) {
+                ctx[options.obj.data._t] = duplicate(options.obj.data);
               }
-              else if (options.raw == "max") {
-                value.max = $(this).val();
+              if (options.mod) {
+                newVal = Number(sync.modifier(value, options.mod) || 0) + Number(sync.eval(newVal, ctx));
               }
               else {
-                sync.rawVal(value, $(this).val());
+                newVal = Number(sync.rawVal(value) || 0) + Number(sync.eval(newVal, ctx));
+              }
+              $(this).removeAttr("relative");
+            }
+            if (options.type == "checkbox" || options.type == "radio") {
+              if ($(this).prop("checked") == false || $(this).prop("checked") == "false") {
+                newVal = options.unchecked || "";
+              }
+              else {
+                newVal = options.checked;
+              }
+            }
+            if (options.raw) {
+              if (options.raw == "min") {
+                value.min = newVal;
+              }
+              else if (options.raw == "max") {
+                value.max = newVal;
+              }
+              else {
+                sync.rawVal(value, newVal);
               }
             }
             else if (options.mod) {
-              sync.modifier(value, options.mod, $(this).val());
+              sync.modifier(value, options.mod, newVal);
             }
             else if (options.name) {
-              value.name = $(this).val();
+              value.name = newVal;
             }
             else {
-              sync.val(value, $(this).val());
+              sync.rawVal(value, newVal);
             }
             _stageUpdate(options.obj, options.cmd, options.target);
           });
         }
         else {
           input.change(function() {
-            if (options.raw) {
-              if (options.raw == "min") {
-                value.min = $(this).val();
+            var newVal = $(this).val();
+            if ($(this).attr("relative") != null) {
+              var ctx = sync.defaultContext();
+              if (options.obj.data) {
+                ctx[options.obj.data._t] = duplicate(options.obj.data);
               }
-              else if (options.raw == "max") {
-                value.max = $(this).val();
+              if (options.mod) {
+                newVal = Number(sync.modifier(value, options.mod) || 0) + Number(sync.eval(newVal, ctx));
               }
               else {
-                sync.rawVal(value, $(this).val());
+                newVal = Number(sync.rawVal(value) || 0) + Number(sync.eval(newVal, ctx));
+              }
+              $(this).removeAttr("relative");
+            }
+            if (options.type == "checkbox" || options.type == "radio") {
+              if ($(this).prop("checked") == false || $(this).prop("checked") == "false") {
+                newVal = options.unchecked || "";
+              }
+              else {
+                newVal = options.checked;
+              }
+            }
+            if (options.raw) {
+              if (options.raw == "min") {
+                value.min = newVal;
+              }
+              else if (options.raw == "max") {
+                value.max = newVal;
+              }
+              else {
+                sync.rawVal(value, newVal);
               }
             }
             else if (options.mod) {
-              sync.modifier(value, options.mod, $(this).val());
+              sync.modifier(value, options.mod, newVal);
             }
             else if (options.name) {
-              value.name = $(this).val();
+              value.name = newVal;
             }
             else {
-              sync.val(value, $(this).val());
+              sync.rawVal(value, newVal);
             }
             _stageUpdate(options.obj, options.cmd, options.target);
           });
@@ -215,25 +304,43 @@ function genInput(options, delay) {
       }
       else {
         input.change(function() {
-          if (options.raw) {
-            if (options.raw == "min") {
-              value.min = $(this).val();
-            }
-            else if (options.raw == "max") {
-              value.max = $(this).val();
+          var newVal = $(this).val();
+          if ($(this).attr("relative") != null) {
+            if (options.mod) {
+              newVal = Number(sync.modifier(value, options.mod) || 0) + Number(newVal);
             }
             else {
-              sync.rawVal(value, $(this).val());
+              newVal = Number(sync.rawVal(value) || 0) + Number(newVal);
+            }
+            $(this).removeAttr("relative");
+          }
+          if (options.type == "checkbox" || options.type == "radio") {
+            if ($(this).prop("checked") == false || $(this).prop("checked") == "false") {
+              newVal = options.unchecked || "";
+            }
+            else {
+              newVal = options.checked;
+            }
+          }
+          if (options.raw) {
+            if (options.raw == "min") {
+              value.min = newVal;
+            }
+            else if (options.raw == "max") {
+              value.max = newVal;
+            }
+            else {
+              sync.rawVal(value, newVal);
             }
           }
           else if (options.mod) {
-            sync.modifier(value, options.mod, $(this).val());
+            sync.modifier(value, options.mod, newVal);
           }
           else if (options.name) {
-            value.name = $(this).val();
+            value.name = newVal;
           }
           else {
-            sync.val(value, $(this).val());
+            sync.rawVal(value, newVal);
           }
         });
       }
@@ -271,7 +378,58 @@ function genInput(options, delay) {
     }
   }
 
-  input.attr("maxlength", "255");
+  if (options.list && !options.select) {
+    input.removeAttr("list");
+    var listWrap;
+    if (options.parent) {
+      listWrap = $("<div>").appendTo(options.parent);
+      listWrap.addClass("flexrow");
+      listWrap.css("position", "relative");
+
+      if (options.classes && options.classes.match("fit-x")) {
+        listWrap.addClass("fit-x");
+      }
+
+      listWrap.append(input);
+
+      var carret = genIcon({raw : true, icon : "triangle-bottom"}).appendTo(listWrap);
+      carret.addClass("link");
+      if (options.classes && options.classes.match("subtitle")) {
+        carret.addClass("subtitle");
+      }
+      input.css("margin-right", "15px");
+      carret.css("color", "#333");
+      carret.css("position", "absolute");
+      carret.css("right", "0");
+      carret.css("top", "25%");
+      carret.click(function(){
+        input.trigger("focus");
+        input.autocomplete('widget').css('z-index', util.getMaxZ("ui-popout")+1);
+        input.autocomplete("search");
+      });
+    }
+
+    var availableTags = [];
+    if (options.list instanceof Object) {
+      availableTags = options.list;
+    }
+    else {
+      $("#"+options.list).children().each(function(){
+        availableTags.push($(this).attr("value") || $(this).text());
+      });
+    }
+
+    input.autocomplete({
+      source: availableTags,
+      minLength: 0,
+      change : function(){input.change();}
+    });
+
+    if (options.parent) {
+      return input;
+    }
+  }
+
   return input;
 }
 
@@ -549,6 +707,12 @@ function ui_dropMenu(target, options, style) {
       else {
         overlay.css("left", offsets.left + target.outerWidth());
       }
+
+      if (!style.child) {
+        x = cursorX-10;
+        y = cursorY-10;
+      }
+
       if (x+overlay.outerWidth() > $(window).outerWidth()) {
         x = x - ((x+overlay.outerWidth())-$(window).outerWidth());
       }
@@ -568,6 +732,14 @@ function ui_dropMenu(target, options, style) {
   return overlay;
 }
 
+var cursorX;
+var cursorY;
+// hacky way of doing this, but i'm not updating everything
+document.onmousemove = function(e){
+  cursorX = e.pageX;
+  cursorY = e.pageY;
+}
+
 function ui_popOut(options, content) {
   var overlay = $("<div>").appendTo($("body"));
   overlay.addClass("boxshadow ui-popout flexcolumn");
@@ -581,6 +753,8 @@ function ui_popOut(options, content) {
       _promptClicked = true;
     });
   }
+  var pin;
+
   overlay.hover(function(){
     if ($(this).attr("locked") && $(this).hasClass("main-dock")) {
       var max = util.getMaxZ(".main-dock");
@@ -595,7 +769,7 @@ function ui_popOut(options, content) {
       if (overlay.attr("fadeHide")) {
         overlay.css("opacity", "1.0");
       }
-      $(this).css("transition", "left 0.1s, top 0.1s, opacity 0.0s");
+      $(this).css("transition", "width 0.0s, height 0.0s, left 0.0s, top 0.0s, opacity 0.0s");
       if ($(this).attr("docked") == "left") {
         $(this).css("left", 0);
       }
@@ -627,7 +801,7 @@ function ui_popOut(options, content) {
           if (overlay.attr("fadeHide")) {
             overlay.css("opacity", "0");
           }
-          overlay.css("transition", "left 0.35s, top 0.35s, opacity 0.35s");
+          overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s, opacity 0.35s");
           if (overlay.attr("docked") == "left") {
             overlay.css("left", -1 * overlay.width() + 20);
           }
@@ -648,7 +822,7 @@ function ui_popOut(options, content) {
     }
   });
   if (!options.noCss) {
-    overlay.addClass("white snapCss");
+    overlay.addClass("inactives snapCss");
     overlay.css("overflow", "hidden");
     overlay.draggable({
       containment : "window",
@@ -660,6 +834,7 @@ function ui_popOut(options, content) {
         if (overlay.attr("docked")) {
           overlay.css("transition", "");
           overlay.removeAttr("docked");
+          if(pin) {pin.hide(); }
           overlay.removeAttr("_dockStartX");
           overlay.removeAttr("_dockStartY");
           overlay.removeAttr("docked-z");
@@ -714,26 +889,31 @@ function ui_popOut(options, content) {
           if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
             overlay.attr("docked", "left");
             overlay.css("left", -1 * overlay.width() + 20);
-            overlay.css("transition", "left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
             overlay.attr("docked", "right");
             overlay.css("left", $(window).width() - 20);
-            overlay.css("transition", "left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
             overlay.attr("docked", "top");
             overlay.css("top", -1 * overlay.height() + 20);
-            overlay.css("transition", "left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
           }
           else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
             overlay.attr("docked", "bottom");
             overlay.css("top", $(window).height() - 20);
-            overlay.css("transition", "left 0.35s, top 0.35s");
+            overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
             overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+          }
+
+          if(overlay.attr("docked"))
+          {
+            if(pin) { pin.show(); }
           }
         }
 
@@ -747,18 +927,116 @@ function ui_popOut(options, content) {
   }
   else {
     overlay.css("background-color", "none");
-    overlay.draggable({
-      containment : "window",
-      stack : ".ui-popout.snapCss",
-      snap : ".ui-popout.snapCss",
-      snapMode : "Outer",
-      stop : function(ev, ui){
-        overlay.attr("_lastDrag", Date.now());
-        if (options.moved) {
-          options.moved(ev, overlay, ui);
+    if (options.allowDock) {
+      overlay.draggable({
+        containment : "window",
+        stack : ".ui-popout.snapCss",
+        snap : ".ui-popout.snapCss",
+        snapMode : "Outer",
+        handle : ".dragcontrol",
+        start : function(ev, ui) {
+          if (overlay.attr("docked")) {
+            overlay.css("transition", "");
+            overlay.removeAttr("docked");
+            overlay.removeAttr("_dockStartX");
+            overlay.removeAttr("_dockStartY");
+            overlay.removeAttr("docked-z");
+          }
+        },
+        drag : function(ev, ui) {
+          var offset = overlay.offset();
+          var xPos = offset.left;
+          var yPos = offset.top;
+
+          if (xPos <= 1 || yPos <= 1 || xPos + overlay.width() >= $(window).width()-5 || yPos + overlay.height() >= $(window).height()-5) {
+            var lastX = overlay.attr("_dockStartX") || ev.screenX;
+            var lastY = overlay.attr("_dockStartY") || ev.screenY;
+
+            var velX = ev.screenX - lastX;
+            var velY = ev.screenY - lastY;
+
+            if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
+              ui.position.left -= 50;
+            }
+            else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
+              ui.position.left += 50;
+            }
+            else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
+              ui.position.top -= 50;
+            }
+            else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
+              ui.position.top += 50;
+            }
+            if (!overlay.attr("_dockStartX") && !overlay.attr("_dockStartY")) {
+              overlay.attr("_dockStartX", ev.screenX);
+              overlay.attr("_dockStartY", ev.screenY);
+            }
+          }
+          else {
+            overlay.removeAttr("_dockStartX");
+            overlay.removeAttr("_dockStartY");
+          }
+        },
+        stop : function(ev, ui){
+          overlay.attr("_lastDrag", Date.now());
+          var offset = overlay.offset();
+          var xPos = offset.left;
+          var yPos = offset.top;
+          if (xPos <= 1 || yPos <= 1 || xPos + overlay.width() >= $(window).width()-5 || yPos + overlay.height() >= $(window).height()-5) {
+            var lastX = overlay.attr("_dockStartX") || ev.screenX;
+            var lastY = overlay.attr("_dockStartY") || ev.screenY;
+
+            var velX = ev.screenX - lastX;
+            var velY = ev.screenY - lastY;
+
+            if ((velX < $(window).width()*-0.10 || ev.offsetX < 10) && xPos <= 1) {
+              overlay.attr("docked", "left");
+              overlay.css("left", -1 * overlay.width() + 20);
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+            else if ((velX > $(window).width()*0.10 || ev.offsetX > $(window).width()-10) && xPos+overlay.width() >= $(window).width()-5) {
+              overlay.attr("docked", "right");
+              overlay.css("left", $(window).width() - 20);
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+            else if ((velY < $(window).height()*-0.05) && yPos <= 1) {
+              overlay.attr("docked", "top");
+              overlay.css("top", -1 * overlay.height() + 20);
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+            else if ((velY > $(window).height()*0.15 || ev.offsetY > $(window).height()-2) && yPos+overlay.height() >= $(window).height()-5) {
+              overlay.attr("docked", "bottom");
+              overlay.css("top", $(window).height() - 20);
+              overlay.css("transition", "width 0.35s, height 0.35s, left 0.35s, top 0.35s");
+              overlay.attr("docked-z", overlay.attr("docked-z") || overlay.css("z-index"));
+            }
+          }
+
+          overlay.removeAttr("_dockStartX");
+          overlay.removeAttr("_dockStartY");
+          if (options.moved) {
+            options.moved(ev, overlay, ui);
+          }
         }
-      }
-    });
+      });
+    }
+    else {
+      overlay.draggable({
+        containment : "window",
+        stack : ".ui-popout.snapCss",
+        snap : ".ui-popout.snapCss",
+        snapMode : "Outer",
+        stop : function(ev, ui){
+          overlay.attr("_lastDrag", Date.now());
+          if (options.moved) {
+            options.moved(ev, overlay, ui);
+          }
+        }
+      });
+    }
   }
 
   if (options) {
@@ -778,8 +1056,9 @@ function ui_popOut(options, content) {
   }
 
   var removeWrapper = $("<text>");
-  removeWrapper.addClass("lrpadding alttext flexrow fit-x");
+  removeWrapper.addClass("padding alttext flexrow fit-x subtitle");
   removeWrapper.css("position", "absolute");
+  removeWrapper.css("font-family", "Scaly Sans");
   removeWrapper.css("top", "0");
   removeWrapper.css("right", "0");
   removeWrapper.css("pointer-events", "none");
@@ -789,14 +1068,47 @@ function ui_popOut(options, content) {
   function(){
 
   });
+  if(options.pin == undefined) {
+    options.pin = true;
+  }
+  if (options.pin) {
+    pin = genIcon("pushpin").appendTo(removeWrapper);
+    pin.addClass("flexrow lrpadding subtitle flexmiddle middle");
+    pin.attr("title", "Lock this menu down");
+    pin.css("pointer-events", "auto");
+    pin.css("text-shadow", "0px 0px 4px white");
+    pin.css("margin-left","-4px");
+    pin.click(function(){
+      if (overlay.attr("locked")) {
+        overlay.removeAttr("locked");
+        pin.removeClass("highlight");
+      }
+      else {
+        pin.addClass("highlight");
+        overlay.attr("locked", true);
+      }
+    });
+    setTimeout(function(){
+      if (overlay.attr("locked")) {
+        pin.addClass("highlight");
+      }
+      else {
+        pin.removeClass("highlight");
+      }
 
-  var title;
+      if (overlay.attr("docked")) {
+        pin.show();
+      }
+      else {
+        pin.hide();
+      }
+    }, 0);
+  }
+  var title = $("<b>").appendTo(removeWrapper);
+  title.css("pointer-events", "auto");
+  title.css("overflow", "hidden");
+  title.css("white-space", "nowrap");
   if (options.title) {
-    var title = $("<b>").appendTo(removeWrapper);
-    title.addClass("flexrow lrpadding subtitle flexmiddle middle");
-    title.css("pointer-events", "auto");
-    title.css("overflow", "hidden");
-    title.css("white-space", "nowrap");
     if (options.title instanceof Object) {
       title.append(options.title);
     }
@@ -805,12 +1117,20 @@ function ui_popOut(options, content) {
       title.text(options.title);
     }
   }
+  else
+  {
+    title.prepend("&nbsp;");
+  }
+  if(options.noCss){
+    title.css("pointer-events","none");
+  }
+
+
   removeWrapper.append("<div class='flex'></div>");
   var minimize
   if (options.minimize) {
-    removeWrapper.addClass("hover");
-
     minimize = genIcon("minus");
+    minimize.addClass("lrmargin");
     minimize.attr("title", "minimize");
     minimize.appendTo(removeWrapper);
     minimize.css("text-shadow", "0px 0px 4px white");
@@ -833,7 +1153,6 @@ function ui_popOut(options, content) {
         if (title) {
           title.attr("contenteditable", "true");
           title.text(title.text().trim());
-          removeWrapper.removeClass("hover");
           title.unbind('click');
         }
         if (options.resizable) {
@@ -874,13 +1193,11 @@ function ui_popOut(options, content) {
         overlay.attr("_lastY", overlay.offset().top);
         overlay.css("left", oldX);
         overlay.css("top", oldY);
-        removeWrapper.css("font-size", "1.6em");
         overlay.css("width", removeWrapper.width() + 36);
-        overlay.css("height", removeWrapper.height());
+        overlay.css("height", "1.8em");
         if (title) {
           title.removeAttr("contenteditable");
           title.text(title.text().trim());
-          removeWrapper.addClass("hover");
           title.click(function(ev){
             minimize.click();
           });
@@ -930,11 +1247,10 @@ function ui_popOut(options, content) {
     subOverlay.addClass("flexcolumn flex");
 
     var dcTop = $("<div>").appendTo(subOverlay);
-    dcTop.addClass("dragcontrol");
+    dcTop.addClass("dragcontrol foreground");
     dcTop.css("width", "auto");
-    dcTop.css("min-height", "1.5em");
+    dcTop.css("min-height", "1.8em");
     dcTop.css("cursor", "pointer");
-    dcTop.addClass("background");
     if (options.minimize) {
       dcTop.attr("title", "Left click to minimize, right click to remove");
       dcTop.click(function(){
@@ -947,7 +1263,10 @@ function ui_popOut(options, content) {
     dcTop.contextmenu(function(){
       if (!overlay.attr("_lastDrag") || (Date.now()-Number(overlay.attr("_lastDrag"))) > 500) {
         overlay.attr("_lastDrag", Date.now());
-        removeIcon.click();
+        if(!options.hideclose)
+        {
+          removeIcon.click();
+        }
       }
       return false;
     });
@@ -977,7 +1296,6 @@ function ui_popOut(options, content) {
     dcBot.css("cursor", "pointer");
   }
   else {
-    removeWrapper.addClass("background");
     overlay.append(content);
   }
 
@@ -997,7 +1315,7 @@ function ui_popOut(options, content) {
           $(this).removeAttr("noOptions");
         });
         if (!options.noCss) {
-          dcTop.css("min-height", "1.5em");
+          dcTop.css("min-height", "1.8em");
           removeWrapper.removeClass("hardoutline");
         }
         overlay.css("width", overlay.attr("_lastWidth"));
@@ -1022,7 +1340,7 @@ function ui_popOut(options, content) {
           $(this).attr("noOptions", true);
         });
         if (!options.noCss) {
-          dcTop.css("min-height", 0);
+          dcTop.css("min-height", "1.8em");
           removeWrapper.addClass("hardoutline");
         }
         overlay.attr("_lastWidth", overlay.width());
@@ -1107,12 +1425,15 @@ function ui_popOut(options, content) {
 
     setTimeout(function(){
       $(overlay.find("input,textarea")[0]).focus();
+      $(overlay.find("input,textarea")[0]).scrollTop(0);
     },0);
   }
   overlay.mousedown(function(){
     var max = Math.max(util.getMaxZ(".ui-popout"), util.getMaxZ(".main-dock"));
     $(this).css("z-index", max+1);
   });
+  $(window).resize(function() { overlay.mouseenter(); });
+  hook.call("DrawWindow", overlay, options, content);
   return overlay;
 }
 
@@ -1267,7 +1588,7 @@ function ui_prompt(options) {
     if (options.inputs[title] instanceof Object && !options.inputs[title].length) {
       var newInput = duplicate(options.inputs[title]);
       newInput.parent = inputDiv;
-      newInput.style = newInput.style || {"display" : "block"}
+      newInput.style = newInput.style || {"display" : "block", width : "100%"}
       input = genInput(newInput);
     }
     else if (options.inputs[title] instanceof Object && options.inputs[title].length) {
@@ -1278,7 +1599,7 @@ function ui_prompt(options) {
       input = genInput({
         parent : inputDiv,
         value : options.inputs[title],
-        style : {"display" : "block"}
+        style : {"display" : "block", width : "100%"}
       });
     }
     /*if (options.inputs[title] instanceof Object) {
@@ -1314,7 +1635,7 @@ function ui_prompt(options) {
     close : options.close,
     noCss : options.noCss,
     hideclose : options.hideclose,
-    prompt : true
+    prompt : (options.prompt == null)?(true):(options.prompt)
   }, content);
 }
 
@@ -1454,7 +1775,14 @@ function ui_controlForm(options) {
     inputDiv.addClass("flexrow flexbetween subtitle outlinebottom");
     if (title.trim()) {
       var label = $("<text class='flex spadding'>"+title+"</text>").appendTo(inputDiv);
-      label.attr("style", options.lblStyle);
+      if (options.lblStyle instanceof Object) {
+        for (var key in options.lblStyle) {
+          label.css(key, options.lblStyle[key]);
+        }
+      }
+      else {
+        label.attr("style", options.lblStyle);
+      }
     }
     var input;
     if (options.inputs[title] instanceof Object && !options.inputs[title].length) {

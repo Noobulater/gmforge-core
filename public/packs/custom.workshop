@@ -1,0 +1,3813 @@
+{
+  "info": {
+    "name": {
+      "name": "Name",
+      "current": "Custom Library"
+    },
+    "img": {
+      "name": "Art",
+      "current": "/content/games/custom.png"
+    },
+    "notes": {
+      "name": "Notes",
+      "current": ""
+    },
+    "mode": {
+      "name": "Mode",
+      "current": ""
+    }
+  },
+  "custom": true,
+  "content": {
+    "Actors": {
+      "_t": "c",
+      "data": [
+        {
+          "_t": "c",
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "Awakened Shrub"
+            },
+            "img": {
+              "name": "Character Art",
+              "current": "/dnd5e/icons/plant@2x.jpg"
+            },
+            "race": {
+              "name": "Race",
+              "current": "plant"
+            },
+            "class": {
+              "name": "Class"
+            },
+            "back": {
+              "name": "Background"
+            },
+            "size": {
+              "name": "Size",
+              "current": "Medium"
+            },
+            "notes": {
+              "name": "Notes",
+              "current": "<h2 style=\"margin: 0; font-size: 1.4em; font-weight: bold;\" data-mce-style=\"margin: 0; font-size: 1.4em; font-weight: bold;\">Attributes</h2><hr style=\"display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;\" data-mce-style=\"display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;\"><p><strong>Aligned&nbsp;&nbsp;</strong>unaligned<br><strong>Challenge Rating&nbsp;&nbsp;</strong>0<br><strong>Damage Resistances&nbsp;&nbsp;</strong>piercing<br><strong>Damage Vulnerabilities&nbsp;&nbsp;</strong>fire<br><strong>Senses&nbsp;&nbsp;</strong>passive Perception 10<br><strong>Size&nbsp;&nbsp;</strong>Small<br><strong>Type&nbsp;&nbsp;</strong>plant<br></p><strong>Langauges&nbsp;&nbsp;</strong><ul><li>one language known by its creator</li></ul>"
+            },
+            "hide": false
+          },
+          "stats": {
+            "Str": {
+              "name": "Strength",
+              "current": 3,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -4
+              }
+            },
+            "Dex": {
+              "name": "Dexterity",
+              "current": 8,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -1
+              }
+            },
+            "Con": {
+              "name": "Constitution",
+              "current": 11,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Int": {
+              "name": "Intelligence",
+              "current": 10,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Wis": {
+              "name": "Wisdom",
+              "current": 10,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Cha": {
+              "name": "Charisma",
+              "current": 6,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -2
+              }
+            }
+          },
+          "counters": {
+            "level": {
+              "name": "Level",
+              "current": 1,
+              "min": 0
+            },
+            "exp": {
+              "name": "Experience",
+              "current": 0,
+              "min": 0
+            },
+            "hp": {
+              "name": "Hit Points",
+              "current": 4,
+              "min": 0,
+              "max": 10
+            },
+            "speed": {
+              "name": "Speed",
+              "current": 20,
+              "max": 20
+            },
+            "armor": {
+              "name": "Base Armor",
+              "current": 9
+            },
+            "proficiency": {
+              "name": "Proficiency",
+              "current": 0,
+              "min": 0
+            },
+            "inspiration": {
+              "name": "Inspiration",
+              "current": 0,
+              "min": 0
+            },
+            "hit": {
+              "name": "Hit Dice",
+              "current": "3d6"
+            },
+            "svStr": {
+              "name": "Strength Save",
+              "current": 0
+            },
+            "svDex": {
+              "name": "Dexterity Save",
+              "current": 0
+            },
+            "svCon": {
+              "name": "Constitution Save",
+              "current": 0
+            },
+            "svInt": {
+              "name": "Intelligence Save",
+              "current": 0
+            },
+            "svWis": {
+              "name": "Wisdom Save",
+              "current": 0
+            },
+            "svCha": {
+              "name": "Charisma Save",
+              "current": 0
+            },
+            "svDeath": {
+              "name": "Death Save",
+              "current": 0,
+              "min": 0
+            },
+            "svLife": {
+              "name": "Life Save",
+              "current": 0,
+              "min": 0
+            },
+            "ac": {
+              "name": "Armor",
+              "current": 0
+            },
+            "cp": {
+              "name": "CP",
+              "current": 0,
+              "min": 0
+            },
+            "sp": {
+              "name": "SP",
+              "current": 0,
+              "min": 0
+            },
+            "gp": {
+              "name": "GP",
+              "current": 0,
+              "min": 0
+            },
+            "1st": {
+              "name": "1st",
+              "current": 0,
+              "min": 0
+            },
+            "2nd": {
+              "name": "2nd",
+              "current": 0,
+              "min": 0
+            },
+            "3rd": {
+              "name": "3rd",
+              "current": 0,
+              "min": 0
+            },
+            "4th": {
+              "name": "4th",
+              "current": 0,
+              "min": 0
+            },
+            "5th": {
+              "name": "5th",
+              "current": 0,
+              "min": 0
+            },
+            "6th": {
+              "name": "6th",
+              "current": 0,
+              "min": 0
+            },
+            "7th": {
+              "name": "7th",
+              "current": 0,
+              "min": 0
+            },
+            "8th": {
+              "name": "8th",
+              "current": 0,
+              "min": 0
+            },
+            "9th": {
+              "name": "9th",
+              "current": 0,
+              "min": 0
+            }
+          },
+          "tags": {
+            "lang_one language known by its creator": true
+          },
+          "spells": {},
+          "skills": {
+            "acr": {
+              "name": "Acrobatics (Dex)"
+            },
+            "ani": {
+              "name": "Animal Handling (Wis)"
+            },
+            "arc": {
+              "name": "Arcana (Int)"
+            },
+            "ath": {
+              "name": "Athletics (Str)"
+            },
+            "dec": {
+              "name": "Deception (Cha)"
+            },
+            "his": {
+              "name": "History (Int)"
+            },
+            "ins": {
+              "name": "Insight (Wis)"
+            },
+            "int": {
+              "name": "Intimidation (Cha)"
+            },
+            "inv": {
+              "name": "Investigation (Int)"
+            },
+            "med": {
+              "name": "Medicine (Wis)"
+            },
+            "nat": {
+              "name": "Nature (Int)"
+            },
+            "per": {
+              "name": "Perception (Wis)"
+            },
+            "pfm": {
+              "name": "Performance (Cha)"
+            },
+            "prs": {
+              "name": "Persuasion (Cha)"
+            },
+            "rel": {
+              "name": "Religion (Int)"
+            },
+            "sle": {
+              "name": "Sleight of Hand (Dex)"
+            },
+            "ste": {
+              "name": "Stealth (Dex)"
+            },
+            "sur": {
+              "name": "Survival (Wis)"
+            }
+          },
+          "talents": {},
+          "inventory": [
+            {
+              "_t": "i",
+              "tags": {
+                "spells": 1
+              },
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Rake"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "notes": {
+                  "name": "Notes",
+                  "current": "Melee Weapon Attack: +1 to hit, reach 5 ft., one target. Hit: 1 (1d4 — 1) slashing damage. Attack Bonus : 1"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "hit": {
+                  "name": "+Hit Bonus"
+                },
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage",
+                  "current": "1d4-1"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                }
+              },
+              "spell": {
+                "level": {
+                  "name": "Level"
+                },
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": false
+                }
+              }
+            }
+          ],
+          "spellbook": [],
+          "specials": {
+            "2": {
+              "name": "False Appearance",
+              "current": "While the shrub remains motionless, it is indistinguishable from a normal shrub. "
+            },
+            "senses": {
+              "name": "Senses",
+              "current": "passive Perception 10"
+            }
+          },
+          "_s": {},
+          "_lclock": 7,
+          "_c": "s-76561197990379371",
+          "_uid": null,
+          "_sync": null,
+          "_uTime": 1524421832224
+        },
+        {
+          "_t": "c",
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "Father Michael"
+            },
+            "img": {
+              "name": "Character Art",
+              "current": "/custom//rosenorchard/fathermichael.jpg"
+            },
+            "race": {
+              "name": "Race",
+              "current": "Human"
+            },
+            "class": {
+              "name": "Class",
+              "current": "Priest"
+            },
+            "back": {
+              "name": "Background",
+              "current": "Sage"
+            },
+            "size": {
+              "name": "Size",
+              "current": "Medium"
+            },
+            "notes": {
+              "name": "Notes"
+            }
+          },
+          "stats": {
+            "Str": {
+              "name": "Strength",
+              "current": 15,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Dex": {
+              "name": "Dexterity",
+              "current": 14,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Con": {
+              "name": "Constitution",
+              "current": 15,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Int": {
+              "name": "Intelligence",
+              "current": 16,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 3
+              }
+            },
+            "Wis": {
+              "name": "Wisdom",
+              "current": 12,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 1
+              }
+            },
+            "Cha": {
+              "name": "Charisma",
+              "current": 11,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            }
+          },
+          "counters": {
+            "level": {
+              "name": "Level",
+              "current": 1,
+              "min": 0
+            },
+            "exp": {
+              "name": "Experience",
+              "current": 0,
+              "min": 0
+            },
+            "wounds": {
+              "name": "Hit Points",
+              "current": 10,
+              "min": 0,
+              "max": 10
+            },
+            "speed": {
+              "name": "Speed",
+              "current": 30
+            },
+            "proficiency": {
+              "name": "Proficiency",
+              "current": 0,
+              "min": 0
+            },
+            "hit": {
+              "name": "Hit Dice",
+              "current": "1d10",
+              "min": 0
+            },
+            "armor": {
+              "name": "Base Armor",
+              "current": 10
+            },
+            "svStr": {
+              "current": 0,
+              "name": "Strength",
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svDex": {
+              "current": 0,
+              "name": "Dexterity",
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svCon": {
+              "current": 0,
+              "name": "Constitution",
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svInt": {
+              "current": 0,
+              "name": "Intelligence",
+              "modifiers": {
+                "Stat-Bonus": 3,
+                "Proficiency": 0
+              }
+            },
+            "svWis": {
+              "current": 0,
+              "name": "Wisdom",
+              "modifiers": {
+                "Stat-Bonus": 1,
+                "Proficiency": 0
+              }
+            },
+            "svCha": {
+              "current": 0,
+              "name": "Charisma",
+              "modifiers": {
+                "Stat-Bonus": 0,
+                "Proficiency": 0
+              }
+            },
+            "hp": {
+              "name": "Hit Points",
+              "current": 10,
+              "min": 0,
+              "max": 10
+            },
+            "ac": {},
+            "inspiration": {},
+            "cp": {},
+            "sp": {},
+            "gp": {},
+            "1st": {},
+            "2nd": {},
+            "3rd": {},
+            "4th": {},
+            "5th": {},
+            "6th": {},
+            "7th": {},
+            "8th": {},
+            "9th": {}
+          },
+          "equipment": {},
+          "proficient": {
+            "Language Common": "true",
+            "Language Celestial ": " true",
+            "Language Abyssal ": " true",
+            "Language Elvish ": " true"
+          },
+          "spells": {},
+          "skills": {
+            "17": {
+              "name": "Perception (Wis)"
+            },
+            "18": {
+              "name": "Aracana (Int)",
+              "current": 1
+            },
+            "acr": {
+              "name": "Acrobatics (Dex)"
+            },
+            "ani": {
+              "name": "Animal Handling (Wis)"
+            },
+            "arc": {
+              "name": "Arcana (Int)"
+            },
+            "ath": {
+              "name": "Athletics (Str)"
+            },
+            "dec": {
+              "name": "Deception (Cha)"
+            },
+            "his": {
+              "name": "History (Int)",
+              "current": 1
+            },
+            "ins": {
+              "name": "Insight (Wis)"
+            },
+            "int": {
+              "name": "Intimidation (Cha)"
+            },
+            "inv": {
+              "name": "Investigation (Int)"
+            },
+            "med": {
+              "name": "Medicine (Wis)"
+            },
+            "nat": {
+              "name": "Nature (Int)"
+            },
+            "per": {
+              "name": "Persuasion (Cha)"
+            },
+            "pfm": {
+              "name": "Performance (Cha)"
+            },
+            "rel": {
+              "name": "Religion (Int)"
+            },
+            "sle": {
+              "name": "Sleight of Hand (Dex)"
+            },
+            "ste": {
+              "name": "Stealth (Dex)"
+            },
+            "sur": {
+              "name": "Survival (Wis)"
+            }
+          },
+          "talents": {
+            "0": {
+              "name": "Researcher"
+            }
+          },
+          "inventory": [
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Bottle of Black Ink"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Quill"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Small Knife"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Mysterious Letter"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Common Clothes"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Belt Pouch"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image",
+                  "current": "/content/icons/Pouch1000p.png"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Gold"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 10
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            }
+          ],
+          "spellbook": [],
+          "specials": {},
+          "_s": {},
+          "_lclock": 8,
+          "_c": "s-76561197990379371",
+          "tags": {
+            "prof_Language Common": 1,
+            "prof_Language Celestial ": 1,
+            "prof_Language Abyssal ": 1,
+            "prof_Language Elvish ": 1
+          },
+          "_uTime": 1525292640368
+        },
+        {
+          "_t": "c",
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "Nimbly"
+            },
+            "img": {
+              "name": "Character Art",
+              "current": "/custom//rosenorchard/nimbly.jpg"
+            },
+            "race": {
+              "name": "Race",
+              "current": "Stout Halfling"
+            },
+            "class": {
+              "name": "Class",
+              "current": "N/A"
+            },
+            "back": {
+              "name": "Background",
+              "current": "Charlatan"
+            },
+            "size": {
+              "name": "Size",
+              "current": "Medium"
+            },
+            "notes": {
+              "name": "Notes",
+              "current": "Nimbly the half ling owns and runs the tavern, he is an energetic fellow, who's only concern is to provide a good time for all of his guests."
+            }
+          },
+          "stats": {
+            "Str": {
+              "name": "Strength",
+              "current": 9,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -1
+              }
+            },
+            "Dex": {
+              "name": "Dexterity",
+              "current": 12,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 1
+              }
+            },
+            "Con": {
+              "name": "Constitution",
+              "current": 13,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 1
+              }
+            },
+            "Int": {
+              "name": "Intelligence",
+              "current": 14,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Wis": {
+              "name": "Wisdom",
+              "current": 15,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Cha": {
+              "name": "Charisma",
+              "current": 13,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 1
+              }
+            }
+          },
+          "counters": {
+            "level": {
+              "name": "Level",
+              "current": 1,
+              "min": 0
+            },
+            "exp": {
+              "name": "Experience",
+              "current": 0,
+              "min": 0
+            },
+            "wounds": {
+              "name": "Hit Points",
+              "current": 10,
+              "min": 0,
+              "max": 10
+            },
+            "speed": {
+              "name": "Speed",
+              "current": 25
+            },
+            "proficiency": {
+              "name": "Proficiency",
+              "current": 0,
+              "min": 0
+            },
+            "hit": {
+              "name": "Hit Dice",
+              "current": "1d10",
+              "min": 0
+            },
+            "armor": {
+              "name": "Base Armor",
+              "current": 10
+            },
+            "svStr": {
+              "current": 0,
+              "name": "Strength",
+              "modifiers": {
+                "Stat-Bonus": -1,
+                "Proficiency": 0
+              }
+            },
+            "svDex": {
+              "current": 0,
+              "name": "Dexterity",
+              "modifiers": {
+                "Stat-Bonus": 1,
+                "Proficiency": 0
+              }
+            },
+            "svCon": {
+              "current": 0,
+              "name": "Constitution",
+              "modifiers": {
+                "Stat-Bonus": 1,
+                "Proficiency": 0
+              }
+            },
+            "svInt": {
+              "current": 0,
+              "name": "Intelligence",
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svWis": {
+              "current": 0,
+              "name": "Wisdom",
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svCha": {
+              "current": 0,
+              "name": "Charisma",
+              "modifiers": {
+                "Stat-Bonus": 1,
+                "Proficiency": 0
+              }
+            },
+            "hp": {
+              "name": "Hit Points",
+              "current": 10,
+              "min": 0,
+              "max": 10
+            },
+            "ac": {},
+            "inspiration": {},
+            "cp": {},
+            "sp": {},
+            "gp": {},
+            "1st": {},
+            "2nd": {},
+            "3rd": {},
+            "4th": {},
+            "5th": {},
+            "6th": {},
+            "7th": {},
+            "8th": {},
+            "9th": {}
+          },
+          "equipment": {
+            "0": true
+          },
+          "proficient": {
+            "Language Halfling": "true",
+            "Language Common": "true"
+          },
+          "spells": {},
+          "skills": {
+            "17": {
+              "name": "Perception (Wis)"
+            },
+            "acr": {
+              "name": "Acrobatics (Dex)"
+            },
+            "ani": {
+              "name": "Animal Handling (Wis)"
+            },
+            "arc": {
+              "name": "Arcana (Int)"
+            },
+            "ath": {
+              "name": "Athletics (Str)"
+            },
+            "dec": {
+              "name": "Deception (Cha)",
+              "current": 1
+            },
+            "his": {
+              "name": "History (Int)"
+            },
+            "ins": {
+              "name": "Insight (Wis)"
+            },
+            "int": {
+              "name": "Intimidation (Cha)"
+            },
+            "inv": {
+              "name": "Investigation (Int)"
+            },
+            "med": {
+              "name": "Medicine (Wis)"
+            },
+            "nat": {
+              "name": "Nature (Int)"
+            },
+            "per": {
+              "name": "Persuasion (Cha)"
+            },
+            "pfm": {
+              "name": "Performance (Cha)"
+            },
+            "rel": {
+              "name": "Religion (Int)"
+            },
+            "sle": {
+              "name": "Sleight of Hand (Dex)",
+              "current": 1
+            },
+            "ste": {
+              "name": "Stealth (Dex)"
+            },
+            "sur": {
+              "name": "Survival (Wis)"
+            }
+          },
+          "talents": {
+            "0": {
+              "name": "False Identity"
+            }
+          },
+          "inventory": [
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Fine Clothes"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image",
+                  "current": "/content/icons/CommonClothes1000p.png"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Disguise Kit"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image",
+                  "current": "/content/icons/Robes1000p.png"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Belt Pouch"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image",
+                  "current": "/content/icons/Pouch1000p.png"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Gold"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 15
+                },
+                "img": {
+                  "name": "Image",
+                  "current": "/content/icons/Pouch1000p.png"
+                },
+                "special": {
+                  "name": "Special Rules"
+                },
+                "notes": {
+                  "name": "Notes"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                },
+                "hit": {
+                  "name": "+Hit Bonus"
+                }
+              },
+              "spell": {
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "level": {
+                  "name": "Level"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": null
+                }
+              }
+            }
+          ],
+          "spellbook": [],
+          "specials": {
+            "0": {
+              "name": "Lucky",
+              "current": "When a critical failure is rolled on a saving bonus, re-roll it and use the new result"
+            },
+            "1": {
+              "name": "Brave",
+              "current": "When saving against being frightened, Halflings have advantage"
+            },
+            "2": {
+              "name": "Nimble",
+              "current": "Halflings can not be blocked by creatures larger than them"
+            },
+            "3": {
+              "name": "Stout Toughness",
+              "current": "Stout Halflings have resistance against poison, and have advantage when making these rolls"
+            }
+          },
+          "_s": {},
+          "_lclock": 18,
+          "_c": "s-76561197990379371",
+          "tags": {
+            "prof_Language Halfling": 1,
+            "prof_Language Common": 1
+          },
+          "_uTime": 1525292667772
+        },
+        {
+          "_t": "c",
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "Skeleton"
+            },
+            "img": {
+              "name": "Character Art",
+              "current": "/custom//art/Skeleton_warrior.png",
+              "min": "/custom//art/Skeleton_warrior_token.png",
+              "modifiers": {
+                "w": 3276.8,
+                "h": 3276.8,
+                "d": 2,
+                "c": "rgb(187, 0, 0)",
+                "i": "/custom//art/Skeleton_warrior_token.png",
+                "ts": 1.5,
+                "r": 0,
+                "hp": true
+              }
+            },
+            "race": {
+              "name": "Race",
+              "current": "undead"
+            },
+            "class": {
+              "name": "Class"
+            },
+            "back": {
+              "name": "Background"
+            },
+            "size": {
+              "name": "Size",
+              "current": "Medium"
+            },
+            "notes": {
+              "name": "Notes",
+              "current": "<h2 style=\"margin: 0; font-size: 1.4em; font-weight: bold;\" data-mce-style=\"margin: 0; font-size: 1.4em; font-weight: bold;\">Attributes</h2><hr style=\"display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;\" data-mce-style=\"display: block; width: 100%; height: 1px; background-color: grey; margin-top: 0px; margin-bottom: 0.5em;\"><p><strong>Aligned&nbsp;&nbsp;</strong>lawful evil<br><strong>Challenge Rating&nbsp;&nbsp;</strong>1/4<br><strong>Condition Immunities&nbsp;&nbsp;</strong>poisoned<br><strong>Damage Vulnerabilities&nbsp;&nbsp;</strong>bludgeoning<br><strong>Senses&nbsp;&nbsp;</strong>darkvision 60 ft., passive Perception 9<br><strong>Size&nbsp;&nbsp;</strong>Medium<br><strong>Type&nbsp;&nbsp;</strong>undead<br></p><strong>Langauges&nbsp;&nbsp;</strong><ul><li>understands all languages it spoke in life but can't speak</li></ul>"
+            }
+          },
+          "stats": {
+            "Str": {
+              "name": "Strength",
+              "current": 10,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 0
+              }
+            },
+            "Dex": {
+              "name": "Dexterity",
+              "current": 14,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Con": {
+              "name": "Constitution",
+              "current": 15,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": 2
+              }
+            },
+            "Int": {
+              "name": "Intelligence",
+              "current": 6,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -2
+              }
+            },
+            "Wis": {
+              "name": "Wisdom",
+              "current": 8,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -1
+              }
+            },
+            "Cha": {
+              "name": "Charisma",
+              "current": 5,
+              "min": 0,
+              "modifiers": {
+                "Stat-Bonus": -3
+              }
+            }
+          },
+          "counters": {
+            "level": {
+              "name": "Level",
+              "current": 1,
+              "min": 0
+            },
+            "exp": {
+              "name": "Experience",
+              "current": 0,
+              "min": 0
+            },
+            "hp": {
+              "name": "Hit Points",
+              "current": 13,
+              "min": 0,
+              "max": 13
+            },
+            "speed": {
+              "name": "Speed",
+              "current": 30,
+              "max": 30
+            },
+            "armor": {
+              "name": "Base Armor",
+              "current": 13
+            },
+            "proficiency": {
+              "name": "Proficiency",
+              "current": 0,
+              "min": 0
+            },
+            "inspiration": {
+              "name": "Inspiration",
+              "current": 0,
+              "min": 0
+            },
+            "hit": {
+              "name": "Hit Dice",
+              "current": "2d8"
+            },
+            "svStr": {
+              "name": "Strength Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": 0,
+                "Proficiency": 0
+              }
+            },
+            "svDex": {
+              "name": "Dexterity Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svCon": {
+              "name": "Constitution Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": 2,
+                "Proficiency": 0
+              }
+            },
+            "svInt": {
+              "name": "Intelligence Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -2,
+                "Proficiency": 0
+              }
+            },
+            "svWis": {
+              "name": "Wisdom Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -1,
+                "Proficiency": 0
+              }
+            },
+            "svCha": {
+              "name": "Charisma Save",
+              "current": 0,
+              "modifiers": {
+                "Stat-Bonus": -3,
+                "Proficiency": 0
+              }
+            },
+            "svDeath": {
+              "name": "Death Save",
+              "current": 0,
+              "min": 0
+            },
+            "svLife": {
+              "name": "Life Save",
+              "current": 0,
+              "min": 0
+            },
+            "ac": {
+              "name": "Armor",
+              "current": 0
+            },
+            "cp": {
+              "name": "CP",
+              "current": 0,
+              "min": 0
+            },
+            "sp": {
+              "name": "SP",
+              "current": 0,
+              "min": 0
+            },
+            "gp": {
+              "name": "GP",
+              "current": 0,
+              "min": 0
+            },
+            "1st": {
+              "name": "1st",
+              "current": 0,
+              "min": 0
+            },
+            "2nd": {
+              "name": "2nd",
+              "current": 0,
+              "min": 0
+            },
+            "3rd": {
+              "name": "3rd",
+              "current": 0,
+              "min": 0
+            },
+            "4th": {
+              "name": "4th",
+              "current": 0,
+              "min": 0
+            },
+            "5th": {
+              "name": "5th",
+              "current": 0,
+              "min": 0
+            },
+            "6th": {
+              "name": "6th",
+              "current": 0,
+              "min": 0
+            },
+            "7th": {
+              "name": "7th",
+              "current": 0,
+              "min": 0
+            },
+            "8th": {
+              "name": "8th",
+              "current": 0,
+              "min": 0
+            },
+            "9th": {
+              "name": "9th",
+              "current": 0,
+              "min": 0
+            }
+          },
+          "tags": {
+            "lang_understands all languages it spoke in life but can't speak": true
+          },
+          "spells": {},
+          "skills": {
+            "acr": {
+              "name": "Acrobatics (Dex)"
+            },
+            "ani": {
+              "name": "Animal Handling (Wis)"
+            },
+            "arc": {
+              "name": "Arcana (Int)"
+            },
+            "ath": {
+              "name": "Athletics (Str)"
+            },
+            "dec": {
+              "name": "Deception (Cha)"
+            },
+            "his": {
+              "name": "History (Int)"
+            },
+            "ins": {
+              "name": "Insight (Wis)"
+            },
+            "int": {
+              "name": "Intimidation (Cha)"
+            },
+            "inv": {
+              "name": "Investigation (Int)"
+            },
+            "med": {
+              "name": "Medicine (Wis)"
+            },
+            "nat": {
+              "name": "Nature (Int)"
+            },
+            "per": {
+              "name": "Perception (Wis)"
+            },
+            "pfm": {
+              "name": "Performance (Cha)"
+            },
+            "prs": {
+              "name": "Persuasion (Cha)"
+            },
+            "rel": {
+              "name": "Religion (Int)"
+            },
+            "sle": {
+              "name": "Sleight of Hand (Dex)"
+            },
+            "ste": {
+              "name": "Stealth (Dex)"
+            },
+            "sur": {
+              "name": "Survival (Wis)"
+            }
+          },
+          "talents": {},
+          "inventory": [
+            {
+              "_t": "i",
+              "tags": {
+                "spells": 1
+              },
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Shortsword"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "notes": {
+                  "name": "Notes",
+                  "current": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) piercing damage. Attack Bonus : 4"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "hit": {
+                  "name": "+Hit Bonus"
+                },
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage",
+                  "current": "1d6 + 2"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                }
+              },
+              "spell": {
+                "level": {
+                  "name": "Level"
+                },
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": false
+                }
+              }
+            },
+            {
+              "_t": "i",
+              "tags": {
+                "spells": 1
+              },
+              "info": {
+                "name": {
+                  "name": "Name",
+                  "current": "Shortbow"
+                },
+                "weight": {
+                  "name": "Weight",
+                  "min": 0
+                },
+                "quantity": {
+                  "name": "Quantity",
+                  "min": 0,
+                  "current": 1
+                },
+                "img": {
+                  "name": "Image"
+                },
+                "notes": {
+                  "name": "Notes",
+                  "current": "Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage. Attack Bonus : 4"
+                }
+              },
+              "equip": {
+                "armor": {
+                  "name": "Armor"
+                }
+              },
+              "weapon": {
+                "hit": {
+                  "name": "+Hit Bonus"
+                },
+                "range": {
+                  "name": "Range"
+                },
+                "ammo": {
+                  "name": "Ammunition"
+                },
+                "damage": {
+                  "name": "Damage",
+                  "current": "1d6 + 2"
+                },
+                "prof": {
+                  "name": "Proficiency"
+                }
+              },
+              "spell": {
+                "level": {
+                  "name": "Level"
+                },
+                "required": {
+                  "name": "Materials"
+                },
+                "duration": {
+                  "name": "Duration"
+                },
+                "time": {
+                  "name": "Casting Time"
+                },
+                "comps": {
+                  "name": "Casting Components",
+                  "current": false
+                }
+              }
+            }
+          ],
+          "spellbook": [],
+          "specials": {
+            "senses": {
+              "name": "Senses",
+              "current": "darkvision 60 ft., passive Perception 9"
+            }
+          },
+          "_s": {},
+          "_lclock": 0,
+          "_c": "localhost",
+          "_uid": null,
+          "_sync": null
+        }
+      ]
+    },
+    "Items": {
+      "_t": "i",
+      "data": [
+        {
+          "_t": "i",
+          "_drop": "inventory",
+          "tags": {},
+          "info": {
+            "name": {
+              "name": "Name"
+            },
+            "weight": {
+              "name": "Weight",
+              "min": 0
+            },
+            "quantity": {
+              "name": "Quantity",
+              "min": 0
+            },
+            "img": {
+              "name": "Image"
+            },
+            "specials": {
+              "name": "Special Rules"
+            },
+            "notes": {
+              "name": "Notes"
+            },
+            "type": {
+              "name": "Weapon Type"
+            }
+          },
+          "equip": {
+            "hands": {
+              "name": "Hands"
+            },
+            "armorH": {
+              "name": "Head Armor"
+            },
+            "armorAR": {
+              "name": "Right Arm Armor"
+            },
+            "armorB": {
+              "name": "Body Armor"
+            },
+            "armorAL": {
+              "name": "Left Arm Armor"
+            },
+            "armorLR": {
+              "name": "Right Leg Armor"
+            },
+            "armorLL": {
+              "name": "Left Leg Armor"
+            }
+          },
+          "weapon": {
+            "damage": {
+              "name": "Damage"
+            },
+            "hit": {
+              "name": "Hit Bonus"
+            },
+            "range": {
+              "name": "Range"
+            },
+            "rof": {
+              "name": "Rate of Fire"
+            },
+            "clip": {
+              "name": "Clip/Magazine"
+            },
+            "reload": {
+              "name": "Reload Time"
+            },
+            "pen": {
+              "name": "Penetration"
+            },
+            "ammo": {
+              "name": "Ammo"
+            }
+          },
+          "spell": {
+            "Action": {
+              "name": "Action"
+            },
+            "class": {
+              "name": "Level"
+            },
+            "focus": {
+              "name": "Focus"
+            },
+            "sustained": {
+              "name": "Sustained"
+            },
+            "subtype": {
+              "name": "Concentrate"
+            }
+          },
+          "_s": {}
+        },
+        {
+          "_t": "i",
+          "_drop": "inventory",
+          "tags": {},
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "gadfgdsgfdsf"
+            },
+            "weight": {
+              "name": "Weight",
+              "min": 0
+            },
+            "quantity": {
+              "name": "Quantity",
+              "min": 0
+            },
+            "img": {
+              "name": "Image"
+            },
+            "specials": {
+              "name": "Special Rules"
+            },
+            "notes": {
+              "name": "Notes"
+            },
+            "type": {
+              "name": "Weapon Type"
+            }
+          },
+          "equip": {
+            "hands": {
+              "name": "Hands"
+            },
+            "armorH": {
+              "name": "Head Armor"
+            },
+            "armorAR": {
+              "name": "Right Arm Armor"
+            },
+            "armorB": {
+              "name": "Body Armor"
+            },
+            "armorAL": {
+              "name": "Left Arm Armor"
+            },
+            "armorLR": {
+              "name": "Right Leg Armor"
+            },
+            "armorLL": {
+              "name": "Left Leg Armor"
+            }
+          },
+          "weapon": {
+            "damage": {
+              "name": "Damage"
+            },
+            "hit": {
+              "name": "Hit Bonus"
+            },
+            "range": {
+              "name": "Range"
+            },
+            "rof": {
+              "name": "Rate of Fire"
+            },
+            "clip": {
+              "name": "Clip/Magazine"
+            },
+            "reload": {
+              "name": "Reload Time"
+            },
+            "pen": {
+              "name": "Penetration"
+            },
+            "ammo": {
+              "name": "Ammo"
+            }
+          },
+          "spell": {
+            "Action": {
+              "name": "Action"
+            },
+            "class": {
+              "name": "Level"
+            },
+            "focus": {
+              "name": "Focus"
+            },
+            "sustained": {
+              "name": "Sustained"
+            },
+            "subtype": {
+              "name": "Concentrate"
+            }
+          },
+          "_s": {}
+        }
+      ]
+    },
+    "Spells": {
+      "_t": "i"
+    },
+    "Maps": {
+      "_t": "b",
+      "data": [
+        {
+          "_t": "b",
+          "info": {
+            "name": {
+              "current": "Forest Path"
+            }
+          },
+          "bc": "rgb(34,34,34)",
+          "c": "rgb(34,34,34)",
+          "sheets": [
+            {
+              "i": "/content/bluesword/ground.png",
+              "p": 0,
+              "gW": 64,
+              "gH": 64,
+              "w": 512,
+              "h": 512,
+              "objs": [
+                {
+                  "i": 3,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 128,
+                  "h": 128,
+                  "s": 0
+                },
+                {
+                  "i": 0,
+                  "gW": 1,
+                  "gH": 3,
+                  "w": 64,
+                  "h": 192,
+                  "s": 0
+                },
+                {
+                  "i": 1,
+                  "gW": 2,
+                  "gH": 3,
+                  "w": 128,
+                  "h": 192,
+                  "s": 0
+                },
+                {
+                  "i": 19,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64,
+                  "s": 0
+                },
+                {
+                  "i": 59,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64,
+                  "s": 0
+                },
+                {
+                  "i": 40,
+                  "gW": 1,
+                  "gH": 3,
+                  "w": 64,
+                  "h": 192,
+                  "s": 0
+                },
+                {
+                  "i": 41,
+                  "gW": 2,
+                  "gH": 3,
+                  "w": 128,
+                  "h": 192,
+                  "s": 0
+                },
+                {
+                  "i": 60,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64,
+                  "s": 0
+                },
+                {
+                  "i": 5,
+                  "gW": 3,
+                  "gH": 1,
+                  "w": 192,
+                  "h": 64,
+                  "s": 0
+                },
+                {
+                  "i": 13,
+                  "gW": 3,
+                  "gH": 2,
+                  "w": 192,
+                  "h": 128,
+                  "s": 0
+                }
+              ],
+              "nW": 1024,
+              "nH": 1024
+            },
+            {
+              "i": "/content/bluesword/interior.png",
+              "p": 0,
+              "gW": 64,
+              "gH": 64,
+              "w": 512,
+              "h": 1024,
+              "objs": [
+                {
+                  "i": 0,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 1,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 2,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 4,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 6,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 128,
+                  "h": 128
+                },
+                {
+                  "i": 8,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 16,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 9,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 128,
+                  "h": 128
+                },
+                {
+                  "i": 11,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 128,
+                  "h": 128
+                },
+                {
+                  "i": 13,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 21,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 22,
+                  "gW": 2,
+                  "gH": 3,
+                  "w": 128,
+                  "h": 192
+                },
+                {
+                  "i": 29,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 128
+                },
+                {
+                  "i": 27,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 25,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 128,
+                  "h": 128
+                },
+                {
+                  "i": 24,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 32,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 35,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 40,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 128,
+                  "h": 128
+                },
+                {
+                  "i": 42,
+                  "gW": 3,
+                  "gH": 2,
+                  "w": 192,
+                  "h": 128
+                },
+                {
+                  "i": 45,
+                  "gW": 3,
+                  "gH": 3,
+                  "w": 192,
+                  "h": 192
+                },
+                {
+                  "i": 56,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 57,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 58,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 59,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 60,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 64,
+                  "gW": 4,
+                  "gH": 2,
+                  "w": 256,
+                  "h": 128
+                },
+                {
+                  "i": 68,
+                  "gW": 3,
+                  "gH": 2,
+                  "w": 192,
+                  "h": 128
+                },
+                {
+                  "i": 71,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 79,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 80,
+                  "gW": 3,
+                  "gH": 2,
+                  "w": 192,
+                  "h": 128
+                },
+                {
+                  "i": 83,
+                  "gW": 4,
+                  "gH": 2,
+                  "w": 256,
+                  "h": 128
+                },
+                {
+                  "i": 87,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 95,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 96,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 98,
+                  "gW": 4,
+                  "gH": 1,
+                  "w": 256,
+                  "h": 64
+                },
+                {
+                  "i": 102,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 104,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 106,
+                  "gW": 4,
+                  "gH": 1,
+                  "w": 256,
+                  "h": 64
+                },
+                {
+                  "i": 112,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 116,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 117,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 118,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 119,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 110,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 113,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 128,
+                  "h": 64
+                },
+                {
+                  "i": 115,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 64
+                }
+              ],
+              "nW": 1024,
+              "nH": 2048
+            },
+            {
+              "i": "/content/bluesword/items.png",
+              "p": 0,
+              "gW": 64,
+              "gH": 64,
+              "w": 512,
+              "h": 512,
+              "objs": [
+                {
+                  "i": 0,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 1,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 8,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 9,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 2,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 3,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 4,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 5,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 13,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 6,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 32
+                },
+                {
+                  "i": 14,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 32
+                },
+                {
+                  "i": 16,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 17,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 18,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 19,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 20,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 21,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 22,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 23,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 24,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 25,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 26,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 27,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 28,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 29,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 30,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 31,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 32,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 33,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 35,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 36,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 37,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 38,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 39,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 40,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 41,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 42,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 43,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 44,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 45,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 46,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 47,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 48,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 49,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 50,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 51,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 52,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 53,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 54,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 56,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 57,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 58,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 59,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 60,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 61,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                }
+              ],
+              "nW": 1024,
+              "nH": 1024
+            },
+            {
+              "i": "/content/bluesword/forest.png",
+              "p": 0,
+              "gW": 64,
+              "gH": 64,
+              "w": 512,
+              "h": 512,
+              "objs": [
+                {
+                  "i": 0,
+                  "gW": 3,
+                  "gH": 3,
+                  "w": 96,
+                  "h": 96
+                },
+                {
+                  "i": 3,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 5,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 7,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 24,
+                  "gW": 3,
+                  "gH": 3,
+                  "w": 96,
+                  "h": 96
+                },
+                {
+                  "i": 21,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 37,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 22,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 38,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 15,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 23,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 31,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 24,
+                  "gW": 3,
+                  "gH": 2,
+                  "w": 96,
+                  "h": 64
+                },
+                {
+                  "i": 19,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                }
+              ],
+              "nW": 1024,
+              "nH": 1024
+            },
+            {
+              "i": "/content/bluesword/desert.png",
+              "p": 0,
+              "gW": 64,
+              "gH": 64,
+              "w": 576,
+              "h": 1024,
+              "objs": [
+                {
+                  "i": 0,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 2,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 11,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 3,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 12,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 4,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 6,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 8,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 17,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 25,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 24,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 33,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 23,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 21,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 20,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 19,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 18,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 29,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 27,
+                  "gW": 2,
+                  "gH": 1,
+                  "w": 64,
+                  "h": 32
+                },
+                {
+                  "i": 36,
+                  "gW": 3,
+                  "gH": 2,
+                  "w": 96,
+                  "h": 64
+                },
+                {
+                  "i": 39,
+                  "gW": 3,
+                  "gH": 3,
+                  "w": 96,
+                  "h": 96
+                },
+                {
+                  "i": 42,
+                  "gW": 3,
+                  "gH": 3,
+                  "w": 96,
+                  "h": 96
+                },
+                {
+                  "i": 54,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 56,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 65,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 66,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 67,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 68,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 77,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 76,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 75,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 74,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 72,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 90,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 108,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 83,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 85,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 87,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 96,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 69,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 70,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 88,
+                  "gW": 1,
+                  "gH": 2,
+                  "w": 32,
+                  "h": 64
+                },
+                {
+                  "i": 89,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 98,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 101,
+                  "gW": 2,
+                  "gH": 2,
+                  "w": 64,
+                  "h": 64
+                },
+                {
+                  "i": 119,
+                  "gW": 1,
+                  "gH": 1,
+                  "w": 32,
+                  "h": 32
+                },
+                {
+                  "i": 103,
+                  "gW": 4,
+                  "gH": 4,
+                  "w": 128,
+                  "h": 128
+                }
+              ],
+              "nW": 1152,
+              "nH": 2048
+            }
+          ],
+          "layers": [
+            {
+              "_s": {
+                "default": "1"
+              },
+              "n": "Background Layer",
+              "t": [],
+              "p": [
+                {
+                  "x": 448,
+                  "y": 320,
+                  "w": 64,
+                  "h": 64,
+                  "d": 2,
+                  "c": "rgba(0,127,255,0.38)",
+                  "eID": 14,
+                  "i": "/cdn/bluesword/tokens/human.png"
+                },
+                {
+                  "x": 960,
+                  "y": 512,
+                  "w": 128,
+                  "h": 128,
+                  "i": "https://www.gmforge.io/cdn/bluesword/tokens/freybug_fire.png",
+                  "c": "rgba(255,0,0,0.45)",
+                  "d": 2,
+                  "ts": 1.5
+                }
+              ],
+              "d": [],
+              "r": [],
+              "w": []
+            },
+            {
+              "_s": {
+                "default": "1"
+              },
+              "n": "Player Layer",
+              "t": [],
+              "p": [],
+              "d": [],
+              "r": [],
+              "w": []
+            },
+            {
+              "n": "Trap Layer",
+              "_s": {
+                "default": "1"
+              },
+              "t": [],
+              "p": [],
+              "d": [],
+              "r": [],
+              "w": []
+            },
+            {
+              "n": "GM Layer",
+              "_s": {
+                "default": "(@me.rank=='Game Master')?(1):((@me.rank=='Assistant Master')?(1):(0))"
+              },
+              "t": [],
+              "p": [],
+              "d": [],
+              "r": [],
+              "w": []
+            }
+          ],
+          "w": 1920,
+          "h": 1080,
+          "gridX": 0,
+          "gridY": 0,
+          "gridW": 64,
+          "gridH": 64,
+          "gc": "rgba(0,0,0,0.10)",
+          "vZ": 100,
+          "options": {
+            "gLayer": 0,
+            "pLayer": 1,
+            "zoomAsset": "9"
+          },
+          "_s": {},
+          "_lclock": 9,
+          "_c": "s-76561197990379371",
+          "_uid": null,
+          "_sync": null,
+          "cursors": {
+            "s-76561197990379371": {
+              "x": 0,
+              "y": 0,
+              "v": true
+            },
+            "gmf-testacc": {
+              "x": 64,
+              "y": 63,
+              "l": 1,
+              "v": false
+            }
+          },
+          "map": "/cloud/s-76561197990379371/dynamic.mp4",
+          "_uTime": 1520101427991
+        }
+      ]
+    },
+    "Resources": {
+      "_t": "p",
+      "data": [
+        {
+          "_t": "p",
+          "info": {
+            "name": {
+              "name": "Name",
+              "current": "Default Page"
+            },
+            "img": {
+              "name": "Art"
+            },
+            "notes": {
+              "name": "Notes",
+              "modifiers": {
+                "HR": "rgba(190,4,15,1.0)",
+                "style": {
+                  "background-image": "url('/content/sheet2.png')",
+                  "background-size": "100% auto",
+                  "font-family": "Bookinsanity",
+                  "font-size": "1.1em"
+                },
+                "H1F": "Nodesto Caps Condensed",
+                "H2F": "Nodesto Caps Condensed",
+                "H2FS": 2.1,
+                "H1FS": 2.7
+              }
+            },
+            "mode": {
+              "name": "Mode",
+              "current": "Rich Text"
+            }
+          },
+          "_s": {},
+          "_lclock": 1,
+          "_c": "s-76561197990379371",
+          "_uid": null,
+          "_sync": null,
+          "_uTime": 1523503962612
+        }
+      ]
+    }
+  }
+}

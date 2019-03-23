@@ -888,7 +888,7 @@ sync.render("ui_import", function(obj, app, scope) {
 				reader.onload = function(e2) {
 					humanReadable.val(e2.target.result);
 					if (multiple) {
-						var override = JSON.parse(JSON.stringify(game.templates.character || {}));
+						var override = duplicate(game.templates.character || {});
 
 						char_import(e2.target.result, override);
 						if (sync.val(override.info.name) == "Default Character") {
@@ -1252,3 +1252,55 @@ sync.render("ui_import_web", function(obj, app, scope) {
 
 	return div;
 });
+
+/*
+sync.render("ui_heroImport", function(obj, app, scope) {
+	var div = $("<div>");
+	div.addClass("flex flexmiddle");
+	div.text("Drop Files here to Import");
+
+	div.on("dragover", function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).addClass('boxinshadow');
+	});
+
+	div.on("dragleave", function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).removeClass('boxinshadow');
+	});
+	div.unbind("drop");
+	div.bind("drop", function(e) {
+		e.stopPropagation();
+		e.preventDefault();
+
+		var files = e.originalEvent.dataTransfer.files;
+		var multiple = (files.length > 1);
+		for (var i=0; i<files.length; i++) {
+			var reader = new FileReader();
+			reader.ref = i;
+			reader.onload = function(e2) {
+				var rawText = e2.target.result;
+				console.log(rawText);
+				// parse XML to JSON
+				// xmlToJson($.parseXML(rawText));
+				var newCharacter = duplicate(game.templates.character || {});
+				runCommand("createCharacter", newCharacter);
+			}
+			reader.readAsText(files[i]);
+		}
+		$(this).removeClass('boxinshadow');
+	});
+
+	return div;
+});
+
+game.components.push({
+	name : "Hero Importer",
+	ui : "ui_heroImport",
+	basic : "Hero Lab importer",
+	author : "You",
+	w : 50,
+	h : 50
+}); // first action is the default)*/

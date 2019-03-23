@@ -333,7 +333,6 @@ function media_init() {
     }
     else if (data.cmd == "update") {
       if (!mediaPlayer.iframe) {
-        console.log(data.data.list);
         mediaPlayer.iframe = new YT.Player('media', {
           width: mediaPlayer.width,
           height: mediaPlayer.height,

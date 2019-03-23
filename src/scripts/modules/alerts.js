@@ -20,7 +20,6 @@ function sendAlert(options) {
   alert.css("padding-right", "1em");
   alert.css("pointer-events", "auto");
   alert.css("max-width", "90vw");
-  alert.css("font-size", "1.4em");
   if (options.id && $("#"+options.id).length) {
     $("#"+options.id).remove();
   }
@@ -119,7 +118,14 @@ function sendAlert(options) {
   }
 
   if (options.player) {
-    util.dockReveal($($(".main-dock")[2]));
+    if ($("#main-menu").length && $("#main-menu").css("opacity") == 0 && $("#main-menu").attr("docked") && !$("#main-menu").attr("locked")) {
+      util.dockReveal($("#main-menu"));
+      $("#chat-button").click();
+    }
+    else {
+      $("#chat-button").addClass("highlight");
+    }
+
     return alert;
     alert.css("padding", "0");
     alert.css("background-color", "white");
@@ -292,7 +298,7 @@ function sendAlert(options) {
     }
   }
   else {
-    alert.addClass("focus");
+    alert.addClass("bounce");
     alert.appendTo($("#alertList"));
     if (options.duration != -1) {
       coverAlert(alert, options.fadeTime || 500, options.duration || 4000, _alertCount);

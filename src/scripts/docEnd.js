@@ -1,8 +1,67 @@
 var snd_diceRoll;
 
 $(document).ready(function() {
-  // firefox fix
   setupGame();
+  if (!layout.webclient) {
+    $.getJSON("https://api.ipify.org/?format=json", function(e) {
+      setCookie("ExternalIP", e.ip);
+    });
+
+    document.addEventListener('dragover', function(ev){ev.preventDefault();});
+    document.addEventListener('drop', function(ev){ev.preventDefault();});
+  }
+
+
+  $.ajax({
+    url: '/getWhitelistedMods',
+    error: function(code) {
+      console.log(code);
+    },
+    dataType: 'json',
+    success: function(modData) {
+      $.ajax({
+        url: '/getScripts',
+        error: function(code) {
+          console.log(code);
+        },
+        dataType: 'json',
+        success: function(data) {
+          sendAlert({text : "Loaded Custom Scripts", duration : 1000});
+          for (var i in data) {
+            if (!modData.mods || !data[i].mod || modData.mods[data[i].mod]) {
+              if ((/.+\.js/.test(data[i].src))) {
+                $("body").append("<script src='/scripts/"+data[i].src+"'></script>");
+              }
+            }
+          }
+        },
+        type: 'GET'
+      });
+    }
+  });
+
+  $.ajax({
+    url: '/getFonts',
+    error: function(code) {
+      console.log(code);
+    },
+    dataType: 'json',
+    success: function(data) {
+      for (var i in data) {
+        if (!util.contains(util.fonts, data[i])) {
+          util.fonts.push(data[i].split(".")[0]);
+          $("body").append(`
+            <style>
+              @font-face {
+                font-family: "`+data[i].split(".")[0]+`";
+                src: url('/fonts/`+data[i]+`');
+              }
+            </style>`
+          );
+        }
+      }
+    }
+  });
 
   snd_diceRoll = new Audio("/sounds/dice.mp3");
   // connect to local server
@@ -95,7 +154,7 @@ var _supressResize = false;
 function _resizeDelay() {
   if (lastResize+500 < Date.now()) {
     for (var app in _syncList) {
-      _syncList[app].update();
+      //_syncList[app].update();
     }
   }
 }
@@ -105,6 +164,8 @@ var resizeHooks = {};
 $(window).resize(function() {
   $("#splash-screen").width($(window).width());
   $("#splash-screen").height($(window).height());
+  $("#player-list").css("left", "");
+  $("#player-list").css("right", "0");
   $("body").find(".application[ui-name='ui_board']").each(function(){
     $(this).removeAttr("divWidth");
     $(this).removeAttr("divHeight");
@@ -113,13 +174,15 @@ $(window).resize(function() {
     resizeHooks[index]();
   }
   if (!_supressResize) {
-    _resizeDelay();
     lastResize = Date.now();
     setTimeout(function(){
       _resizeDelay();
     }, 500);
   }
   $(".ui-popout").each(function(){
+    if ($(this).attr("id") == "left-menu" || $(this).attr("id") == "right-menu") {
+      return;
+    }
     if (!$(this).hasClass("popup") && !$(this).attr("docked")) {
       var overlay = $(this);
       var x = overlay.offset().left;
@@ -141,6 +204,9 @@ $(window).resize(function() {
     }
   });
   $(".main-dock").each(function(){
+    if ($(this).attr("id") == "left-menu" || $(this).attr("id") == "right-menu") {
+      return;
+    }
     if (!$(this).attr("locked")) {
       $(this).css("opacity", "0");
       util.dockHide($(this));
@@ -153,30 +219,24 @@ $(window).resize(function() {
 });
 
 $(window).mousemove(function(ev) {
-  if (boardApi.pix.dragging) {
-    boardApi.pix.dragging.move(ev);
+  if (boardApi.dragging) {
+    boardApi.dragging.move(ev);
   }
 });
 
 $(window).mouseup(function(ev) {
   _mouseupCleanup(ev);
-  if (boardApi.pix.dragging) {
-    var dragging = boardApi.pix.dragging;
-    boardApi.pix.dragging.end(ev);
+  if (boardApi.dragging) {
+    var dragging = boardApi.dragging;
+    boardApi.dragging.end(ev);
     if (dragging.followup) {
       dragging.followup(ev);
     }
   }
   $(".main-dock").css("pointer-events", "");
   $(".boardMenu").css("pointer-events", "auto");
-  boardApi.pix.objectClick = false;
+  boardApi.objectClick = false;
 });
-
-window.onbeforeunload = function(e) {
-  if ($(".displayApp").attr("background") == "true") {
-    return "Wait! Save your map before you go!";
-  }
-};
 
 var _winHasFocus = true;
 window.onfocus = function(ev){

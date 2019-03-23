@@ -1,0 +1,2165 @@
+{
+  "info" : {
+    "name": {
+      "current": "Cthulhu"
+    },
+    "img": {
+      "current": "/content/games/cthulhu.png"
+    }
+  },
+  "identifier" : "cthulhu",
+  "dice": {
+    "defaults": [
+      "d20",
+      "d12",
+      "d10",
+      "d8",
+      "d6",
+      "d4"
+    ],
+    "modifiers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "ui": "ui_diceResults",
+    "keys": {
+      "a": {
+        "name": "Advantage",
+        "img": "/content/dice/advantage.png"
+      },
+      "f": {
+        "name": "Failure",
+        "img": "/content/dice/failure.png"
+      },
+      "s": {
+        "name": "Success",
+        "img": "/content/dice/success.png"
+      },
+      "t": {
+        "name": "Threat",
+        "img": "/content/dice/threat.png"
+      },
+      "tri": {
+        "name": "Triumph",
+        "img": "/content/dice/triumph.png"
+      },
+      "des": {
+        "name": "Despair",
+        "img": "/content/dice/despair.png"
+      },
+      "light": {
+        "name": "Light",
+        "img": "/content/dice/lightside.png"
+      },
+      "dark": {
+        "name": "Dark",
+        "img": "/content/dice/darkside.png"
+      },
+      "minus": {
+        "name": "Minus",
+        "img": "/content/dice/minus.png"
+      },
+      "plus": {
+        "name": "Plus",
+        "img": "/content/dice/plus.png"
+      }
+    },
+    "pool": {
+      "d2": {
+        "value": "d2"
+      },
+      "d4": {
+        "value": "d4"
+      },
+      "d5": {
+        "value": "d5"
+      },
+      "d6": {
+        "value": "d6"
+      },
+      "d8": {
+        "value": "d8"
+      },
+      "d10": {
+        "value": "d10"
+      },
+      "d12": {
+        "value": "d12"
+      },
+      "d20": {
+        "value": "d20"
+      },
+      "d100": {
+        "value": "d100"
+      },
+      "proficiency": {
+        "static": true,
+        "value": "d12",
+        "display": {
+          "background-color": "rgb(255,230,0)",
+          "border": "1px solid black",
+          "color": "black"
+        },
+        "results": {
+          "1": {
+            "a": 2
+          },
+          "2": {
+            "a": 1
+          },
+          "3": {
+            "a": 2
+          },
+          "4": {
+            "tri": 1,
+            "s": 1
+          },
+          "5": {
+            "s": 1
+          },
+          "6": {
+            "s": 1,
+            "a": 1
+          },
+          "7": {
+            "s": 1
+          },
+          "8": {
+            "s": 1,
+            "a": 1
+          },
+          "9": {
+            "s": 2
+          },
+          "10": {
+            "s": 1,
+            "a": 1
+          },
+          "11": {
+            "s": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/triumph.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "9": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/success.png"
+            ]
+          },
+          "10": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "11": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/success.png"
+            ]
+          },
+          "12": {
+            "imgs": []
+          }
+        }
+      },
+      "ability": {
+        "static": true,
+        "value": "d8",
+        "display": {
+          "background-color": "rgb(80,185,75)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "s": 1
+          },
+          "2": {
+            "a": 1
+          },
+          "3": {
+            "s": 1,
+            "a": 1
+          },
+          "4": {
+            "s": 2
+          },
+          "5": {
+            "a": 1
+          },
+          "6": {
+            "s": 1
+          },
+          "7": {
+            "a": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/success.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "8": {}
+        }
+      },
+      "boost": {
+        "static": true,
+        "value": "d6",
+        "display": {
+          "background-color": "rgb(135,215,245)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "s": 1,
+            "a": 1
+          },
+          "2": {
+            "a": 1
+          },
+          "3": {
+            "a": 2
+          },
+          "4": {
+            "s": 1
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/success.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/advantage.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/advantage.png",
+              "/content/dice/advantage.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/success.png"
+            ]
+          },
+          "5": {},
+          "6": {}
+        }
+      },
+      "challenge": {
+        "static": true,
+        "value": "d12",
+        "display": {
+          "background-color": "rgb(230,25,55)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "t": 2
+          },
+          "2": {
+            "t": 1
+          },
+          "3": {
+            "t": 2
+          },
+          "4": {
+            "t": 1
+          },
+          "5": {
+            "f": 1,
+            "t": 1
+          },
+          "6": {
+            "f": 1
+          },
+          "7": {
+            "f": 1,
+            "t": 1
+          },
+          "8": {
+            "f": 1
+          },
+          "9": {
+            "des": 1,
+            "f": 1
+          },
+          "10": {
+            "f": 2
+          },
+          "11": {
+            "f": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/threat.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/threat.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ]
+          },
+          "9": {
+            "imgs": [
+              "/content/dice/despair.png"
+            ]
+          },
+          "10": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/failure.png"
+            ]
+          },
+          "11": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/failure.png"
+            ]
+          },
+          "12": {
+            "imgs": []
+          }
+        }
+      },
+      "difficulty": {
+        "static": true,
+        "value": "d8",
+        "display": {
+          "background-color": "rgb(85,35,130)",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "t": 1
+          },
+          "2": {
+            "f": 1
+          },
+          "3": {
+            "f": 1,
+            "t": 1
+          },
+          "4": {
+            "t": 1
+          },
+          "6": {
+            "t": 2
+          },
+          "7": {
+            "f": 2
+          },
+          "8": {
+            "t": 1
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          },
+          "5": {
+            "imgs": []
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/threat.png",
+              "/content/dice/threat.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/failure.png",
+              "/content/dice/failure.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ]
+          }
+        }
+      },
+      "setback": {
+        "static": true,
+        "value": "d6",
+        "display": {
+          "background-color": "black",
+          "border": "1px solid black"
+        },
+        "results": {
+          "1": {
+            "f": 1
+          },
+          "2": {
+            "f": 1
+          },
+          "3": {
+            "t": 1
+          },
+          "4": {
+            "t": 1
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ],
+            "f": 1
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/failure.png"
+            ],
+            "f": 1
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ],
+            "t": 1
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/threat.png"
+            ],
+            "t": 1
+          },
+          "5": {},
+          "6": {}
+        }
+      },
+      "force": {
+        "static": true,
+        "value": "d12",
+        "display": {
+          "background-color": "white",
+          "border": "1px solid black",
+          "color": "black"
+        },
+        "results": {
+          "1": {
+            "dark": 1
+          },
+          "2": {
+            "light": 2
+          },
+          "3": {
+            "dark": 1
+          },
+          "4": {
+            "light": 2
+          },
+          "5": {
+            "dark": 1
+          },
+          "6": {
+            "light": 2
+          },
+          "7": {
+            "dark": 1
+          },
+          "8": {
+            "light": 1
+          },
+          "9": {
+            "dark": 1
+          },
+          "10": {
+            "light": 1
+          },
+          "11": {
+            "dark": 1
+          },
+          "12": {
+            "dark": 2
+          }
+        },
+        "translations": {
+          "1": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "2": {
+            "imgs": [
+              "/content/dice/lightside.png",
+              "/content/dice/lightside.png"
+            ]
+          },
+          "3": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "4": {
+            "imgs": [
+              "/content/dice/lightside.png",
+              "/content/dice/lightside.png"
+            ]
+          },
+          "5": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "6": {
+            "imgs": [
+              "/content/dice/lightside.png",
+              "/content/dice/lightside.png"
+            ]
+          },
+          "7": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "8": {
+            "imgs": [
+              "/content/dice/lightside.png"
+            ]
+          },
+          "9": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "10": {
+            "imgs": [
+              "/content/dice/lightside.png"
+            ]
+          },
+          "11": {
+            "imgs": [
+              "/content/dice/darkside.png"
+            ]
+          },
+          "12": {
+            "imgs": [
+              "/content/dice/darkside.png",
+              "/content/dice/darkside.png"
+            ]
+          }
+        }
+      },
+      "fate": {
+        "value": "(d3-2)",
+        "results": {
+          "0": {},
+          "1": {
+            "plus": 1
+          },
+          "-1": {
+            "minus": 1
+          }
+        },
+        "translations": {
+          "0": {},
+          "1": {
+            "imgs": [
+              "/content/dice/plus.png"
+            ],
+            "plus": 1
+          },
+          "-1": {
+            "imgs": [
+              "/content/dice/minus.png"
+            ],
+            "minus": 1
+          }
+        }
+      }
+    }
+  },
+  "adventure": {
+    "_t": "a",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Adventure"
+      },
+      "img": {
+        "name": "Art"
+      },
+      "notes": {
+        "name": "Summary"
+      }
+    },
+    "entities": [],
+    "story": []
+  },
+  "initiative": {
+    "query": "d20+M@Dex",
+    "compare": "(@i1.total>@i2.total)?(1):(@i1.total==@i2.total?(0):(-1))"
+  },
+  "character": {
+    "_t": "c",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Character"
+      },
+      "img": {
+        "name": "Character Art"
+      },
+      "notes": {
+        "name": "Notes"
+      },
+      "job": {
+        "name": "Occupation"
+      },
+      "edu": {
+        "name": "Education"
+      },
+      "birth": {
+        "name": "Birthplace"
+      },
+      "sex": {
+        "name": "Sex"
+      },
+      "mental": {
+        "name": "Mental Disorders"
+      },
+      "age": {
+        "name": "Age"
+      }
+    },
+    "stats": {
+      "Str": {
+        "name": "Strength",
+        "current": "3d6",
+        "min": 0
+      },
+      "Dex": {
+        "name": "Dexterity",
+        "current": "3d6",
+        "min": 0
+      },
+      "Con": {
+        "name": "Constitution",
+        "current": "3d6",
+        "min": 0
+      },
+      "Int": {
+        "name": "Intelligence",
+        "current": "2d6+6",
+        "min": 0
+      },
+      "App": {
+        "name": "App",
+        "current": "3d6",
+        "min": 0
+      },
+      "Pow": {
+        "name": "Power",
+        "current": "3d6",
+        "min": 0
+      },
+      "Siz": {
+        "name": "Size",
+        "current": "2d6",
+        "min": 0
+      },
+      "San": {
+        "name": "Sanity",
+        "current": "@Pow*5",
+        "min": 0
+      },
+      "Edu": {
+        "name": "Education",
+        "current": "3d6+3",
+        "min": 0
+      },
+      "Idea": {
+        "name": "Idea",
+        "current": "4B3[1d6]",
+        "min": 0
+      },
+      "Luck": {
+        "name": "Luck",
+        "current": "4B3[1d6]",
+        "min": 0
+      },
+      "Know": {
+        "name": "Know",
+        "current": "4B3[1d6]",
+        "min": 0
+      }
+    },
+    "counters": {
+      "hp": {
+        "name": "Hit Points",
+        "current": 10,
+        "min": 0
+      },
+      "mythos": {
+        "name": "99-Cthulu",
+        "current": 0,
+        "min": 0
+      },
+      "dmg": {
+        "name": "Damage Bonus",
+        "current": 0,
+        "min": 0
+      },
+      "sp": {
+        "name": "Sanity Points",
+        "current": 10,
+        "min": 0
+      },
+      "mp": {
+        "name": "Magic Points",
+        "current": 10,
+        "min": 0
+      }
+    },
+    "tags": {},
+    "skills": {
+      "acc": {
+        "name": "Accounting",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "ant": {
+        "name": "Anthropology",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "anr": {
+        "name": "Archaeology",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "art": {
+        "name": "Art",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "ast": {
+        "name": "Astronomy",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "bar": {
+        "name": "Bargain",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "bio": {
+        "name": "Biology",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "che": {
+        "name": "Chemistry",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "cli": {
+        "name": "Climb",
+        "modifiers": {
+          "rank": 40
+        }
+      },
+      "con": {
+        "name": "Conceal",
+        "modifiers": {
+          "rank": 15
+        }
+      },
+      "cra": {
+        "name": "Craft",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "cre": {
+        "name": "Credit Rating",
+        "modifiers": {
+          "rank": 15
+        }
+      },
+      "dis": {
+        "name": "Disguise",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "dog": {
+        "name": "Dodge",
+        "modifiers": {
+          "rank": "@Dex*2"
+        }
+      },
+      "dri": {
+        "name": "Drive Auto",
+        "modifiers": {
+          "rank": 20
+        }
+      },
+      "ele": {
+        "name": "Electric Repair",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "fas": {
+        "name": "Fast Talk",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "fir": {
+        "name": "First Aid",
+        "modifiers": {
+          "rank": 30
+        }
+      },
+      "gen": {
+        "name": "Geology",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "hid": {
+        "name": "Hide",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "his": {
+        "name": "History",
+        "modifiers": {
+          "rank": 20
+        }
+      },
+      "jum": {
+        "name": "Jump",
+        "modifiers": {
+          "rank": 25
+        }
+      },
+      "law": {
+        "name": "Law",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "lib": {
+        "name": "Library Use",
+        "modifiers": {
+          "rank": 25
+        }
+      },
+      "loc": {
+        "name": "Locksmith",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "mar": {
+        "name": "Martial Arts",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "mec": {
+        "name": "Mechanical Repair",
+        "modifiers": {
+          "rank": 20
+        }
+      },
+      "med": {
+        "name": "Medicine",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "nat": {
+        "name": "Natural History",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "nav": {
+        "name": "Navigate",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "occ": {
+        "name": "Occult",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "ope": {
+        "name": "Operate Heavy",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "per": {
+        "name": "Persuade",
+        "modifiers": {
+          "rank": 15
+        }
+      },
+      "pha": {
+        "name": "Pharmacy",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "pho": {
+        "name": "Photography",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "phy": {
+        "name": "Physics",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "pil": {
+        "name": "Pilot",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "psya": {
+        "name": "Psychoanalysis",
+        "modifiers": {
+          "rank": 1
+        }
+      },
+      "psy": {
+        "name": "Psychology",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "rid": {
+        "name": "Ride",
+        "modifiers": {
+          "rank": 5
+        }
+      },
+      "sne": {
+        "name": "Sneak",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "spo": {
+        "name": "Spot Hidden",
+        "modifiers": {
+          "rank": 25
+        }
+      },
+      "swi": {
+        "name": "Swim",
+        "modifiers": {
+          "rank": 25
+        }
+      },
+      "thr": {
+        "name": "Throw",
+        "modifiers": {
+          "rank": 25
+        }
+      },
+      "tra": {
+        "name": "Track",
+        "modifiers": {
+          "rank": 10
+        }
+      },
+      "fhand": {
+        "name": "Hand Gun",
+        "modifiers": {
+          "rank": 20
+        }
+      },
+      "fmach": {
+        "name": "Machine Gun",
+        "modifiers": {
+          "rank": 15
+        }
+      },
+      "frifl": {
+        "name": "Rifle",
+        "modifiers": {
+          "rank": 25
+        }
+      },
+      "fshot": {
+        "name": "Shotgun",
+        "modifiers": {
+          "rank": 30
+        }
+      },
+      "fsmg": {
+        "name": "SMG",
+        "modifiers": {
+          "rank": 15
+        }
+      }
+    },
+    "talents": {},
+    "inventory": [],
+    "spellbook": [],
+    "specials": {},
+    "spells": {}
+  },
+  "item": {
+    "_t": "i",
+    "tags": {},
+    "info": {
+      "name": {
+        "name": "Name"
+      },
+      "weight": {
+        "name": "Weight",
+        "min": 0
+      },
+      "quantity": {
+        "name": "Quantity",
+        "min": 0
+      },
+      "img": {
+        "name": "Image"
+      },
+      "special": {
+        "name": "Special Rules"
+      },
+      "notes": {
+        "name": "Notes"
+      },
+      "price": {
+        "name": "Price"
+      }
+    },
+    "equip": {
+      "armor": {
+        "name": "Armor"
+      }
+    },
+    "weapon": {
+      "damage": {
+        "name": "Damage"
+      },
+      "per": {
+        "name": "Percent"
+      },
+      "rng": {
+        "name": "Range"
+      },
+      "shots": {
+        "name": "Shots"
+      },
+      "dmg": {
+        "name": "Damage"
+      },
+      "malf": {
+        "name": "Malfunction"
+      },
+      "hp": {
+        "name": "HP"
+      },
+      "type": {
+        "name": "Type"
+      },
+      "att": {
+        "name": "Attacks"
+      }
+    },
+    "spell": {
+      "level": {
+        "name": "Level"
+      },
+      "required": {
+        "name": "Materials"
+      },
+      "duration": {
+        "name": "Duration"
+      },
+      "time": {
+        "name": "Casting Time"
+      },
+      "comps": {
+        "name": "Casting Components",
+        "current": null
+      }
+    }
+  },
+  "page": {
+    "_t": "p",
+    "info": {
+      "name": {
+        "name": "Name",
+        "current": "Default Page"
+      },
+      "img": {
+        "name": "Art"
+      },
+      "notes": {
+        "name": "Notes",
+        "modifiers": {
+          "style": {
+            "background-image": "url('/content/sheet2.png')",
+            "background-size": "100% auto"
+          }
+        }
+      },
+      "mode": {
+        "name": "Mode"
+      }
+    }
+  },
+  "security": {
+    "player": {
+      "Game Master": 1,
+      "Assistant Master": 2,
+      "Trusted Player": 3,
+      "Player": 4,
+      "Spectator": 5
+    },
+    "object": {
+      "Default Access": 0,
+      "Owner": 1,
+      "Rights": 2,
+      "Visible": 3,
+      "Deny": 4
+    }
+  },
+  "constants": {},
+  "tables": {
+    "size": {
+      "fine": -8,
+      "diminutive": -4,
+      "tiny": -2,
+      "small": -1,
+      "medium": 0,
+      "large": 1,
+      "huge": 2,
+      "gargantuan": 4,
+      "colossal": 8
+    }
+  },
+  "tags": {},
+  "actions": {
+    "c": {
+      "Test": {
+        "options": {
+          "bonus": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60
+          ],
+          "penalty": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60
+          ],
+          "threshold": true
+        },
+        "eventData": {
+          "ui": "ui_statTest",
+          "msg": "'@c.info.name tested'",
+          "data": "#roll=d100;@roll-(@bonus)+(@penalty)"
+        }
+      }
+    },
+    "i": {}
+  },
+  "effects": {},
+  "display": {
+    "ui": {
+      "ui_statTest": {
+        "classes": "flexrow flexaround",
+        "style": {},
+        "dice": {
+          "results": [
+            {
+              "classes": "highlight outline",
+              "cond": "@threshold!=0&&@threshold>=@total",
+              "bottom": "'Success'"
+            }
+          ]
+        },
+        "results" : {
+          "display" : {
+            "cond" :"@:valid(@rollTitle)==1||@:valid(@rollText)==1",
+            "classes" : "flexcolumn",
+            "ui" : "ui_rollText",
+            "passContext" : true
+          }
+        }
+      },
+      "ui_poolResults": {
+        "classes": "flexrow flexaround",
+        "dice": {
+          "width": "30px",
+          "height": "30px"
+        },
+        "results": {
+          "style": {
+            "width": "50%",
+            "background-color": "grey"
+          },
+          "display": {
+            "classes": "flexrow flexaround flex",
+            "display": [
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.s-@pool.f)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/success.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.s-@pool.f)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.f-@pool.s)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/failure.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.f-@pool.s)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.a-@pool.t)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/advantage.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.a-@pool.t)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.t-@pool.a)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/threat.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.t-@pool.a)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "@pool.tri>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/triumph.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+@pool.tri"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "@pool.des>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/despair.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+@pool.des"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.light-@pool.dark)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/lightside.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.light-@pool.dark)"
+                  }
+                ]
+              },
+              {
+                "classes": "flexmiddle",
+                "cond": "(@pool.dark-@pool.light)>0",
+                "ui": "ui_icon",
+                "scope": {
+                  "image": "/content/dice/darkside.png"
+                },
+                "display": [
+                  {
+                    "style": {
+                      "font-weight": "bold"
+                    },
+                    "value": "'x'+(@pool.dark-@pool.light)"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "display": {
+          "classes": "outline lrpadding flexrow flexmiddle flexwrap flex"
+        }
+      }
+    },
+    "item": {
+      "params": {}
+    },
+    "sheet": {
+      "health": "counters.hp",
+      "style": {
+        "background-image": "url('/content/sheet1.png')",
+        "background-size": "cover",
+        "box-shadow": "inset 0em 0em 0.5em 0.5em rgba(0,0,0,0.2)"
+      },
+      "content": {
+        "classes": "lpadding",
+        "display": [
+          {
+            "classes": "flexrow flex padding",
+            "display": [
+              {
+                "classes": "flexrow flexaround fit-x",
+                "display": [
+                  {
+                    "classes": "flexcolumn smooth outline flex white",
+                    "ui": "ui_image",
+                    "target": "info.img",
+                    "style": {
+                      "min-width": "100px",
+                      "min-height": "100px"
+                    }
+                  },
+                  {
+                    "classes": "spadding"
+                  },
+                  {
+                    "classes": "flexcolumn flex2 padding white outline smooth",
+                    "display": [
+                      {
+                        "classes": "flexrow fit-x spadding",
+                        "name": "",
+                        "style": {
+                          "font-size": "1.2em"
+                        },
+                        "target": "info.name",
+                        "edit": {
+                          "classes": "lrmargin line",
+                          "style": {
+                            "-webkit-text-stroke-width": "2px",
+                            "text-align": "center"
+                          }
+                        }
+                      },
+                      {
+                        "classes": "flexrow spadding subtitle",
+                        "display": [
+                          {
+                            "value": "@c.info.job.name",
+                            "classes": "flexmiddle bold",
+                            "style": {
+                              "width": "120px"
+                            }
+                          },
+                          {
+                            "classes": "flexrow fit-x lrmargin",
+                            "name": "",
+                            "target": "info.race",
+                            "edit": {
+                              "classes": "lrmargin line"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "classes": "flexrow spadding subtitle",
+                        "display": [
+                          {
+                            "value": "@c.info.edu.name",
+                            "classes": "bold flexmiddle",
+                            "style": {
+                              "width": "120px"
+                            }
+                          },
+                          {
+                            "classes": "flexrow fit-x lrmargin",
+                            "name": "",
+                            "target": "info.career",
+                            "edit": {
+                              "classes": "lrmargin line"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "classes": "flexrow spadding subtitle",
+                        "display": [
+                          {
+                            "value": "@c.info.birth.name",
+                            "classes": "bold flexmiddle",
+                            "style": {
+                              "width": "120px"
+                            }
+                          },
+                          {
+                            "classes": "flexrow fit-x lrmargin",
+                            "name": "",
+                            "target": "info.spec",
+                            "edit": {
+                              "classes": "lrmargin line"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "classes": "flexrow flexbetween subtitle",
+                        "display": [
+                          {
+                            "classes": "flexrow flexmiddle subtitle spadding smooth",
+                            "target": "info.sex",
+                            "edit": {
+                              "classes": "line lrmargin",
+                              "mod": "Starting",
+                              "style": {
+                                "width": "50px",
+                                "text-align": "center"
+                              }
+                            }
+                          },
+                          {
+                            "classes": "flexrow flexmiddle subtitle spadding smooth",
+                            "target": "info.age",
+                            "edit": {
+                              "classes": "line lrmargin",
+                              "raw": "1",
+                              "style": {
+                                "width": "50px",
+                                "text-align": "center"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "spadding"
+                  },
+                  {
+                    "classes": "flexcolumn flex2 padding white outline smooth",
+                    "display": [
+                      {
+                        "classes": "flexrow flexbetween fit-x flexwrap spadding",
+                        "target": "stats",
+                        "applyUI": {
+                          "classes": "flexrow",
+                          "display": {
+                            "classes": "flexrow middle lrpadding bold",
+                            "style": {
+                              "width": "30%"
+                            },
+                            "name": "@applyKey",
+                            "target": "@applyTarget",
+                            "edit": {
+                              "classes": "lrmargin middle line",
+                              "style": {
+                                "width": "24px",
+                                "font-weight": "normal"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "classes": "flexrow flexmiddle subtitle",
+                        "display": [
+                          {
+                            "classes": "lrpadding",
+                            "target": "counters.mythos",
+                            "edit": {
+                              "classes": "line middle",
+                              "style": {
+                                "width": "24px"
+                              }
+                            }
+                          },
+                          {
+                            "classes": "lrpadding",
+                            "target": "counters.dmg",
+                            "edit": {
+                              "classes": "line middle",
+                              "style": {
+                                "width": "24px"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "classes": "flexrow flexaround flex padding white outline smooth",
+            "display": [
+              {
+                "classes": "lrpadding",
+                "target": "counters.hp",
+                "edit": {
+                  "classes": "line middle",
+                  "style": {
+                    "width": "24px"
+                  }
+                }
+              },
+              {
+                "classes": "lrpadding",
+                "target": "counters.sp",
+                "edit": {
+                  "classes": "line middle",
+                  "style": {
+                    "width": "24px"
+                  }
+                }
+              },
+              {
+                "classes": "lrpadding",
+                "target": "counters.mp",
+                "edit": {
+                  "classes": "line middle",
+                  "style": {
+                    "width": "24px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "classes": "flexrow flex padding",
+            "display": [
+              {
+                "classes": "flexcolumn",
+                "display": [
+                  {
+                    "classes": "flexrow flexmiddle underline bold",
+                    "style": {
+                      "font-size": "1.4em"
+                    },
+                    "display": [
+                      {
+                        "name": "Skills"
+                      },
+                      {
+                        "classes": "bold flexmiddle create subtitle lrmargin",
+                        "style": {
+                          "cursor": "pointer"
+                        },
+                        "icon": "plus",
+                        "click": {
+                          "create": "skills"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexcolumn flex padding white outline smooth",
+                    "ui": "ui_skillList",
+                    "scope": {
+                      "lookup": "skills",
+                      "applyUI": {
+                        "classes": "flexrow flexaround flex subtitle smooth",
+                        "display": [
+                          {
+                            "classes": "flexrow flexmiddle",
+                            "display": [
+                              {
+                                "title": "Trained?",
+                                "target": "skills.@skillKey",
+                                "ui": "ui_checkbox",
+                                "scope": {
+                                  "saveInto": "skills.@skillKey",
+                                  "cond": "R@c.skills.@skillKey==1",
+                                  "checked": "1",
+                                  "unchecked": "0"
+                                }
+                              },
+                              {
+                                "value": "@c.skills.@skillKey.name",
+                                "style": {
+                                  "width": "150px",
+                                  "text-align": "left"
+                                },
+                                "title": "@skillKey",
+                                "classes": "lrpadding bold subtitle"
+                              },
+                              {
+                                "cond": "R@c.skills.@skillKey<1",
+                                "name": "",
+                                "title": "Rank Modifier",
+                                "target": "skills.@skillKey",
+                                "edit": {
+                                  "disabled": true,
+                                  "classes": "line middle lrmargin",
+                                  "mod": "rank",
+                                  "style": {
+                                    "width": "50px",
+                                    "border-color": "transparent"
+                                  }
+                                }
+                              },
+                              {
+                                "cond": "R@c.skills.@skillKey>0",
+                                "name": "",
+                                "title": "Rank Modifier",
+                                "target": "skills.@skillKey",
+                                "edit": {
+                                  "classes": "line middle lrmargin",
+                                  "mod": "rank",
+                                  "style": {
+                                    "width": "50px"
+                                  }
+                                }
+                              },
+                              {
+                                "classes": "flexmiddle",
+                                "ui": "ui_link",
+                                "scope": {
+                                  "classes": "flexmiddle",
+                                  "icon": "'list-alt'",
+                                  "click": "ui_modifiers",
+                                  "lookup": "skills.@skillKey",
+                                  "attr": {
+                                    "modsOnly": true
+                                  }
+                                }
+                              },
+                              {
+                                "classes": "lrpadding bold white outline smooth hover2 flexmiddle",
+                                "style": {
+                                  "min-width": "40px",
+                                  "margin-left": "4px"
+                                },
+                                "value": "@:int(M@c.skills.@skillKey.modifiers.rank)+'%'",
+                                "click": {
+                                  "action": "Test",
+                                  "options": {
+                                    "threshold": "M@c.skills.@skillKey"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "classes": "spadding"
+              },
+              {
+                "classes": "flexcolumn flex",
+                "display": [
+                  {
+                    "classes": "flexrow flexmiddle underline",
+                    "style": {
+                      "font-size": "1.4em"
+                    },
+                    "display": [
+                      {
+                        "classes": "bold",
+                        "name": "Inventory"
+                      },
+                      {
+                        "classes": "bold flexmiddle create subtitle lrmargin",
+                        "style": {
+                          "cursor": "pointer"
+                        },
+                        "icon": "plus",
+                        "click": {
+                          "create": "inventory"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flexrow flexmiddle",
+                    "display": [
+                      {
+                        "classes": "bold subtitle middle lrmargin",
+                        "name": "Quantity"
+                      },
+                      {
+                        "classes": "bold subtitle flex middle lrmargin",
+                        "name": "Weapon"
+                      },
+                      {
+                        "classes": "bold subtitle middle lrmargin",
+                        "name": "%",
+                        "style": {
+                          "width": "24px"
+                        }
+                      },
+                      {
+                        "classes": "bold subtitle lrmargin",
+                        "name": "dmg"
+                      },
+                      {
+                        "classes": "bold subtitle lrmargin",
+                        "name": "malf"
+                      },
+                      {
+                        "classes": "bold subtitle",
+                        "name": "shots"
+                      },
+                      {
+                        "classes": "bold subtitle lrmargin",
+                        "name": "hp"
+                      },
+                      {
+                        "classes": "flexmiddle",
+                        "name": "",
+                        "icon": "edit",
+                        "style": {
+                          "color": "transparent"
+                        }
+                      },
+                      {
+                        "classes": "flexmiddle lrmargin",
+                        "name": "",
+                        "icon": "trash",
+                        "style": {
+                          "color": "transparent"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "classes": "flex spadding white outline smooth",
+                    "style": {
+                      "text-align": "left",
+                      "max-height": "200px",
+                      "overflow-y": "auto"
+                    },
+                    "scrl": "inv",
+                    "ui": "ui_entryList",
+                    "scope": {
+                      "drop": "inventoryDrop",
+                      "connectWith": ".inventoryDrop",
+                      "reposition": true,
+                      "lookup": "inventory",
+                      "applyUI": {
+                        "classes": "flexrow flex subtitle",
+                        "display": [
+                          {
+                            "classes": "flexcolumn",
+                            "ui": "ui_image",
+                            "target": "@applyTarget.info.img",
+                            "style": {
+                              "width": "15px",
+                              "height": "15px"
+                            },
+                            "scope": {
+                              "def": "/content/icons/Backpack1000p.png"
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.info.quantity",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "Quantity",
+                              "style": {
+                                "width": "24px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "classes": "flex lrpadding",
+                            "name": "",
+                            "target": "@applyTarget.info.name",
+                            "edit": {
+                              "classes": "lrpadding line flex",
+                              "style": {
+                                "min-width": "70px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "classes": "bold hover2 spadding white outline smooth flexrow flexmiddle subtitle",
+                            "cond": "@c.@applyTarget.equip.armor!=0",
+                            "value": "(@c.@applyTarget.tags.equipped==0)?('Equip'):('Un-equip')",
+                            "style": {
+                              "white-space": "nowrap"
+                            },
+                            "click": {
+                              "calc": [
+                                {
+                                  "target": "@applyTarget.tags.equipped",
+                                  "cond": "@c.@applyTarget.tags.equipped==0",
+                                  "eq": "1"
+                                },
+                                {
+                                  "target": "@applyTarget.tags.equipped",
+                                  "cond": "@c.@applyTarget.tags.equipped==1",
+                                  "eq": "0"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "classes": "bold hover2 white outline smooth flexmiddle spadding subtitle",
+                            "style": {
+                              "width": "30px"
+                            },
+                            "title": "Roll",
+                            "cond": "(@c.@applyTarget.weapon.%!=0)",
+                            "value": "@:int(@c.@applyTarget.weapon.per)+'%'",
+                            "click": {
+                              "action": "Normal Check",
+                              "options": {
+                                "bonus": "@c.@applyTarget.weapon.per"
+                              }
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.weapon.per",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "%",
+                              "style": {
+                                "width": "18px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.weapon.damage",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "Damage",
+                              "style": {
+                                "width": "24px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.weapon.malf",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "Malf",
+                              "style": {
+                                "width": "24px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.weapon.shots",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "Shots",
+                              "style": {
+                                "width": "18px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "name": "",
+                            "target": "@applyTarget.weapon.hp",
+                            "edit": {
+                              "classes": "lrmargin line middle",
+                              "title": "HP",
+                              "style": {
+                                "width": "18px"
+                              },
+                              "raw": "1"
+                            }
+                          },
+                          {
+                            "classes": "flexmiddle",
+                            "name": "",
+                            "link": "edit",
+                            "target": "@applyTarget",
+                            "click": {
+                              "edit": "@applyTarget"
+                            }
+                          },
+                          {
+                            "classes": "flexmiddle destroy lrmargin",
+                            "name": "",
+                            "link": "trash",
+                            "click": {
+                              "delete": true,
+                              "target": "@applyTarget"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "classes": "spadding"
+                  },
+                  {
+                    "classes": "flexcolumn flex",
+                    "apps": [
+                      "ui_characterNotes"
+                    ],
+                    "scope": {
+                      "noPadding": "true"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "calc": [
+        {
+          "target": "stats.Idea",
+          "eq": "@Int*5"
+        },
+        {
+          "target": "stats.Luck",
+          "eq": "@Pow*5"
+        },
+        {
+          "target": "stats.Know",
+          "eq": "@Edu*5"
+        }
+      ],
+      "rules": {
+        "baseArmor": {
+          "name": "Armor",
+          "current": "@pow"
+        }
+      }
+    }
+  },
+  "version": 28,
+  "grid": {}
+}

@@ -34,7 +34,7 @@ hotkeys[_undo] = {
   combo : _keyTrans(_undo),
   exe : function() {
     if (!($(':focus').is("input") || $(':focus').is("textarea"))) {
-      util.undo();
+      //util.undo();
     }
   },
   override : false,
@@ -46,21 +46,20 @@ hotkeys[_copy] = {
   name : "Copy Map Selection",
   combo : _keyTrans(_copy),
   exe : function() {
-    if (Object.keys(boardApi.pix.selections) && Object.keys(boardApi.pix.selections).length) {
+    if (Object.keys(boardApi.selections) && Object.keys(boardApi.selections).length) {
       if (!($(':focus').is("input") || $(':focus').is("textarea"))) {
-        var numSelected = Object.keys(boardApi.pix.selections).length;
-        for (var i in boardApi.pix.selections) {
-          var selectData = boardApi.pix.selections[i];
+        var numSelected = Object.keys(boardApi.selections).length;
+        for (var i in boardApi.selections) {
+          var selectData = boardApi.selections[i];
           var board = getEnt(selectData.board);
           if (board && hasSecurity(getCookie("UserID"), "Rights", board.data)) {
             var objectData = board.data.layers[selectData.layer][selectData.type][selectData.index];
             if (selectData.type == "t") {
-              boardApi.pix.addObject(duplicate(objectData), selectData.layer, selectData.type, board);
+              boardApi.addObject(duplicate(objectData), selectData.layer, selectData.type, board);
             }
             else if (selectData.type == "p") {
               // duplicate the entity
               var ent = getEnt(objectData.eID);
-              console.log(ent, objectData);
               if (ent && ent.data && ent.data._t == "c" && numSelected == 1) {
                 function dupeReturn(ent, pieceData, boardIndex, layer) {
                   var lastKeys = Object.keys(game.entities.data);
@@ -86,7 +85,7 @@ hotkeys[_copy] = {
                     for (var key in game.entities.data) {
                       if (!util.contains(lastKeys, key)) {
                         pieceData.eID = key;
-                        boardApi.pix.addObject(pieceData, selectData.layer, selectData.type, board);
+                        boardApi.addObject(pieceData, selectData.layer, selectData.type, board);
                         change = false;
                         break;
                       }
@@ -98,11 +97,11 @@ hotkeys[_copy] = {
                 break;
               }
               else {
-                boardApi.pix.addObject(duplicate(objectData), selectData.layer, selectData.type, board);
+                boardApi.addObject(duplicate(objectData), selectData.layer, selectData.type, board);
               }
             }
             else if (selectData.type == "d") {
-              boardApi.pix.addObject(duplicate(objectData), selectData.layer, selectData.type, board);
+              boardApi.addObject(duplicate(objectData), selectData.layer, selectData.type, board);
             }
           }
         }
@@ -119,22 +118,42 @@ hotkeys[_quickSearch] = {
   combo : _keyTrans(_quickSearch),
   exe : function() {
     if (!$("#quick-search").length) {
-      var newApp = sync.newApp("ui_quickSearch");
-      newApp.addClass("flex");
+      if (!game.locals["workshop"]) {
+        var tempObj = sync.obj();
+        tempObj.data = {};
 
-      game.locals["quicksearch"] = game.locals["quicksearch"] || sync.obj();
-      game.locals["quicksearch"].data = game.locals["quicksearch"].data || {filters : {"storage" : true}};
+      }
+      else {
+        var newApp = sync.newApp("ui_quickSearch");
+        newApp.addClass("flex");
+        newApp.css("border-color", "transparent");
 
-      game.locals["quicksearch"].addApp(newApp);
+        game.locals["quicksearch"] = game.locals["quicksearch"] || sync.obj();
+        game.locals["quicksearch"].data = game.locals["quicksearch"].data || {filter : "c"};
 
-      ui_popOut({
-        target : $("body"),
-        id : "quick-search",
-        style : {width : "60vw", height : "40vh"}
-      }, newApp);
+        game.locals["quicksearch"].addApp(newApp);
+
+        var pop = ui_popOut({
+          target : $("body"),
+          noCss : true,
+          prompt : true,
+          id : "quick-search",
+          style : {width : "400px", "border-width" : "0px"}
+        }, newApp);
+        pop.removeClass("ui-popout")
+        pop.draggable("destroy");
+        pop.css("box-shadow", "none");
+        pop.css("z-index", "100000000000000");
+        pop.css("left", "20px");
+        pop.css("top", "40px");
+      }
     }
     else {
-      layout.coverlay("quick-search");
+      $("#quick-search").toggle();
+      if ($("#quick-search").is(":visible")) {
+        $("#quick-search").addClass("prompt");
+        $("#quick-search").find("input").focus();
+      }
     }
   },
 }
@@ -775,226 +794,275 @@ hotkeys[_finalTurn] = {
 }
 
 var _down = {};
+var KEYCODE_ESC = 27;
 function controlsKeyDown(e) {
   e.keyCode = e.keyCode || e.which;
   _down[e.keyCode] = true;
+
   if (!($(':focus').is("input") || $(':focus').is("textarea"))) {
-    var updateList = {};
-    var spliceData = {list : []};
-    var deleteSelections = {};
-    for (var i in boardApi.pix.selections) {
-      var selectData = boardApi.pix.selections[i];
-      var board = getEnt(selectData.board);
-      if (board && board.data) {
-        if (selectData.index != null) {
-          if (selectData.type == "p") {
-            var pieceData = board.data.layers[selectData.layer].p[selectData.index];
-            if (pieceData) {
-              var ent = getEnt(pieceData.eID);
-              if (hasSecurity(getCookie("UserID"), "Rights", board.data) || (ent && hasSecurity(getCookie("UserID"), "Rights", ent.data))) {
-                var oldX = pieceData.x;
-                var oldY = pieceData.y;
-                var diffX = 0;
-                var diffY = 0;
+    if (e.keyCode == KEYCODE_ESC && $("#splash-button").length) {
+      if ($("#splash-screen").length) {
+        layout.coverlay("splash-screen");
+      }
+      else {
+        $("#splash-button").click();
+      }
+    }
+    else {
+      var updateList = {};
+      var spliceData = {list : []};
+      var deleteSelections = {};
+      for (var i in boardApi.selections) {
+        var selectData = boardApi.selections[i];
+        var board = getEnt(selectData.board);
+        if (board && board.data) {
+          if (selectData.index != null) {
+            if (selectData.type == "p") {
+              var pieceData = board.data.layers[selectData.layer].p[selectData.index];
+              if (pieceData) {
+                var ent = getEnt(pieceData.eID);
+                if (hasSecurity(getCookie("UserID"), "Rights", board.data) || (ent && hasSecurity(getCookie("UserID"), "Rights", ent.data))) {
+                  var oldX = pieceData.x;
+                  var oldY = pieceData.y;
+                  var diffX = 0;
+                  var diffY = 0;
 
-                var layer = selectData.layer;
-                var override = false;
+                  var layer = selectData.layer;
+                  var override = false;
 
+                  if (e.keyCode == 46) { // delete
+                    spliceData.target = board.data.layers[selectData.layer].p;
+                    layout.coverlay($(".piece-quick-edit"));
+                    if (hasSecurity(getCookie("UserID"), "Rights", board.data)) {
+                      deleteSelections[i] = selectData;
+                      boardApi.selections[i].selected.visible = false;
+                      //boardApi.destroyObject(selectData.layer, selectData.type, selectData.index, board);
+                    }
+                  }
+                  else if (e.keyCode == 37) {
+                    pieceData.x = pieceData.x - (board.data.gridW || pieceData.w);
+                    diffX = (board.data.gridW || pieceData.w) * -1;
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 38) {
+                    pieceData.y = pieceData.y - (board.data.gridH || pieceData.h);
+                    diffY = (board.data.gridH || pieceData.h) * -1;
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 39) {
+                    pieceData.x = pieceData.x + (board.data.gridW || pieceData.w);
+                    diffX = (board.data.gridW || pieceData.w);
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 40) {
+                    pieceData.y = pieceData.y + (board.data.gridH || pieceData.h);
+                    diffY = (board.data.gridH || pieceData.h);
+                    selectData.wrap.update();
+                    e.stopPropagation();
+                    e.preventDefault();
+                    //updateList[board.id()] = "updateAsset";
+                  }
+                  else if (e.keyCode == 32) { // space bar
+                    boardApi.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
+                  }
+                  if (diffX || diffY){
+                    layout.coverlay($(".piece-quick-edit"));
+                    selectData.wrap.move(e, diffX*-1, diffY*-1);
+                    boardApi.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
+                    if (boardApi.fog[board.id()] && boardApi.fog[board.id()].length && pieceData.eID) {
+                      var range;
+                      if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
+                        var ent = getEnt(pieceData.eID);
+                        var context = sync.defaultContext();
+                        if (ent && ent.data) {
+                          context[ent.data._t] = duplicate(ent.data);
+                        }
+                        var auraData = pieceData.o.Sight;
+                        range = boardApi.scale(sync.eval(auraData.d, context), board, true);
+                      }
+                      boardApi.apps[selectData.app].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.buildDynamicFog(board, $("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
+                      boardApi.rebuildDynamicFog(board, $("#"+selectData.app));
+                    }
+                  }
+                }
+              }
+            }
+            else {
+              var tileData = board.data.layers[selectData.layer][selectData.type][selectData.index];
+              if (tileData) {
                 if (e.keyCode == 46) { // delete
-                  spliceData.target = board.data.layers[selectData.layer].p;
                   layout.coverlay($(".piece-quick-edit"));
+                  spliceData.target = board.data.layers[selectData.layer][selectData.type];
                   if (hasSecurity(getCookie("UserID"), "Rights", board.data)) {
                     deleteSelections[i] = selectData;
-                    boardApi.pix.selections[i].selected.visible = false;
-                    //boardApi.pix.destroyObject(selectData.layer, selectData.type, selectData.index, board);
+                    boardApi.selections[i].selected.visible = false;
                   }
                 }
                 else if (e.keyCode == 37) {
-                  pieceData.x = pieceData.x - (board.data.gridW || pieceData.w);
-                  diffX = (board.data.gridW || pieceData.w) * -1;
+                  tileData.x = tileData.x - (board.data.gridW || tileData.w);
+                  diffX = (board.data.gridW || tileData.w) * -1;
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 38) {
-                  pieceData.y = pieceData.y - (board.data.gridH || pieceData.h);
-                  diffY = (board.data.gridH || pieceData.h) * -1;
+                  tileData.y = tileData.y - (board.data.gridH || tileData.h);
+                  diffY = (board.data.gridH || tileData.h) * -1;
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 39) {
-                  pieceData.x = pieceData.x + (board.data.gridW || pieceData.w);
-                  diffX = (board.data.gridW || pieceData.w);
+                  tileData.x = tileData.x + (board.data.gridW || tileData.w);
+                  diffX = (board.data.gridW || tileData.w);
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 40) {
-                  pieceData.y = pieceData.y + (board.data.gridH || pieceData.h);
-                  diffY = (board.data.gridH || pieceData.h);
+                  tileData.y = tileData.y + (board.data.gridH || tileData.h);
+                  diffY = (board.data.gridH || tileData.h);
                   selectData.wrap.update();
                   e.stopPropagation();
                   e.preventDefault();
                   //updateList[board.id()] = "updateAsset";
                 }
                 else if (e.keyCode == 32) { // space bar
-                  boardApi.pix.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
+                  boardApi.scrollTo($("#"+selectData.app), tileData.x + tileData.w/2, tileData.y + tileData.h/2);
                 }
-                if (diffX || diffY){
-                  layout.coverlay($(".piece-quick-edit"));
-                  selectData.wrap.move(e, diffX, diffY);
-                  boardApi.pix.scrollTo($("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
-                  if (boardApi.pix.fog[board.id()] && boardApi.pix.fog[board.id()].length && pieceData.eID) {
-                    var range;
-                    if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
-                      var ent = getEnt(pieceData.eID);
-                      var context = sync.defaultContext();
-                      if (ent && ent.data) {
-                        context[ent.data._t] = duplicate(ent.data);
+              }
+            }
+          }
+        }
+      }
+      if (Object.keys(deleteSelections).length) {
+        var rebuild = {};
+        for (var i in deleteSelections) {
+          var selectData = deleteSelections[i];
+          if (selectData.type) {
+            if (!rebuild[selectData.board]) {
+              rebuild[selectData.board] = {};
+            }
+            var boardData = rebuild[selectData.board];
+            if (!boardData[selectData.layer]) {
+              boardData[selectData.layer] = {};
+            }
+            if (!boardData[selectData.layer][selectData.type]) {
+              boardData[selectData.layer][selectData.type] = {indexs : []};
+            }
+            boardData[selectData.layer][selectData.type].indexs.push(Number(selectData.index));
+            if (boardData[selectData.layer][selectData.type].rebuild == null || boardData[selectData.layer][selectData.type].rebuild > selectData.index) {
+              boardData[selectData.layer][selectData.type].rebuild = Number(selectData.index);
+            }
+          }
+        }
+        //boardApi.destroyObject(selectData.layer, selectData.type, selectData.index, board);
+        var undo = duplicate(board.data.layers);
+        for (var bID in rebuild) {
+          var boardData = rebuild[bID];
+          var board = getEnt(bID);
+          if (board && board.data) {
+            for (var layer in boardData) {
+              var layerData = boardData[layer];
+              var update = {
+                layer : layer,
+                id : bID,
+                cmd : "destroy",
+                rebuild : {},
+              };
+              var last = duplicate(board.data.layers[layer]);
+              for (var type in layerData) {
+                var typeData = layerData[type];
+                update.rebuild[type] = typeData.rebuild;
+
+                typeData.indexs.sort();
+                for (var idx=typeData.indexs.length-1; idx>=0; idx--) {
+                  if (board.data.layers[layer][type][typeData.indexs[idx]] && board.data.layers[layer][type][typeData.indexs[idx]].eID) {
+                    var delEnt = getEnt(board.data.layers[layer][type][typeData.indexs[idx]].eID);
+                    if (delEnt && delEnt.data && delEnt.data._flags && delEnt.data._flags["temp"]) {
+                      if (hasSecurity(getCookie("UserID"), "Owner", delEnt.data)) {
+                        delEnt.sync("deleteAsset");
                       }
-                      var auraData = pieceData.o.Sight;
-                      range = boardApi.pix.scale(sync.eval(auraData.d, context), board, true);
                     }
-                    boardApi.pix.apps[selectData.app].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.pix.buildDynamicFog(board, $("#"+selectData.app), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
-                    boardApi.pix.rebuildDynamicFog(board, $("#"+selectData.app));
+                  }
+                  board.data.layers[layer][type].splice(typeData.indexs[idx], 1);
+                }
+              }
+              update.result = duplicate(board.data.layers[layer]);
+              boardApi.applyUpdate(getCookie("UserID"), update, last);
+              runCommand("updateBoardLayer", update);
+            }
+          }
+        }
+        boardApi.selections = {};
+      }
+      for (var key in updateList) {
+        if (game.entities.data[key]) {
+          if (updateList[key]) {
+            util.addUndo(game.entities.data[key], game.entities.data[key].data, updateList[key]);
+          }
+          else {
+            util.addUndo(game.entities.data[key], game.entities.data[key].data);
+          }
+        }
+      }
+      spliceData.list.sort(function(a,b){return a-b;});
+      for (var i=spliceData.list.length-1; i>=0; i--) {
+        spliceData.target.splice(spliceData.list[i], 1);
+      }
+      spliceData = {list : []};
+
+      if (e.keyCode == 32) { // space bar
+        var pEnt = getPlayerCharacter();
+        if (pEnt && pEnt.data) {
+          $(".application[ui-name='ui_board']").each(function(){
+            for (var i in boardApi.selections) {
+              if (boardApi.selections[i].app == $(this).attr("id")) {
+                return;
+              }
+            }
+            var board = getEnt($(this).attr("index"));
+            if (board && board.data) {
+              for (var l in board.data.layers) {
+                for (var p in board.data.layers[l].p) {
+                  var pieceData = board.data.layers[l].p[p];
+                  if (pieceData.eID == pEnt.id()) {
+                    boardApi.scrollTo($(this), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2);
+                    return;
                   }
                 }
               }
             }
+          });
+        }
+     }
+
+      for (var key in updateList) {
+        if (game.entities.data[key]) {
+          if (updateList[key]) {
+            game.entities.data[key].sync(updateList[key]);
           }
           else {
-            var tileData = board.data.layers[selectData.layer][selectData.type][selectData.index];
-            if (tileData) {
-              if (e.keyCode == 46) { // delete
-                layout.coverlay($(".piece-quick-edit"));
-                spliceData.target = board.data.layers[selectData.layer][selectData.type];
-                if (hasSecurity(getCookie("UserID"), "Rights", board.data)) {
-                  deleteSelections[i] = selectData;
-                  boardApi.pix.selections[i].selected.visible = false;
-                }
-              }
-              else if (e.keyCode == 37) {
-                tileData.x = tileData.x - (board.data.gridW || tileData.w);
-                diffX = (board.data.gridW || tileData.w) * -1;
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 38) {
-                tileData.y = tileData.y - (board.data.gridH || tileData.h);
-                diffY = (board.data.gridH || tileData.h) * -1;
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 39) {
-                tileData.x = tileData.x + (board.data.gridW || tileData.w);
-                diffX = (board.data.gridW || tileData.w);
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 40) {
-                tileData.y = tileData.y + (board.data.gridH || tileData.h);
-                diffY = (board.data.gridH || tileData.h);
-                selectData.wrap.update();
-                e.stopPropagation();
-                e.preventDefault();
-                //updateList[board.id()] = "updateAsset";
-              }
-              else if (e.keyCode == 32) { // space bar
-                boardApi.pix.scrollTo($("#"+selectData.app), tileData.x + tileData.w/2, tileData.y + tileData.h/2);
-              }
-            }
+            game.entities.data[key].update();
           }
         }
       }
     }
-    if (Object.keys(deleteSelections).length) {
-      var rebuild = {};
-      for (var i in deleteSelections) {
-        var selectData = deleteSelections[i];
-        if (selectData.type) {
-          if (!rebuild[selectData.board]) {
-            rebuild[selectData.board] = {};
-          }
-          var boardData = rebuild[selectData.board];
-          if (!boardData[selectData.layer]) {
-            boardData[selectData.layer] = {};
-          }
-          if (!boardData[selectData.layer][selectData.type]) {
-            boardData[selectData.layer][selectData.type] = {indexs : []};
-          }
-          boardData[selectData.layer][selectData.type].indexs.push(Number(selectData.index));
-          if (boardData[selectData.layer][selectData.type].rebuild == null || boardData[selectData.layer][selectData.type].rebuild > selectData.index) {
-            boardData[selectData.layer][selectData.type].rebuild = Number(selectData.index);
-          }
-        }
-      }
-      //boardApi.pix.destroyObject(selectData.layer, selectData.type, selectData.index, board);
-      var undo = duplicate(board.data.layers);
-      for (var bID in rebuild) {
-        var boardData = rebuild[bID];
-        var board = getEnt(bID);
-        if (board && board.data) {
-          for (var layer in boardData) {
-            var layerData = boardData[layer];
-            var update = {
-              layer : layer,
-              id : bID,
-              cmd : "destroy",
-              rebuild : {},
-            };
-            var last = duplicate(board.data.layers[layer]);
-            for (var type in layerData) {
-              var typeData = layerData[type];
-              update.rebuild[type] = typeData.rebuild;
-
-              typeData.indexs.sort();
-              for (var idx=typeData.indexs.length-1; idx>=0; idx--) {
-                board.data.layers[layer][type].splice(typeData.indexs[idx], 1);
-              }
-            }
-            update.result = duplicate(board.data.layers[layer]);
-            boardApi.pix.applyUpdate(getCookie("UserID"), update, last);
-            runCommand("updateBoardLayer", update);
-          }
-        }
-      }
-      boardApi.pix.selections = {};
-    }
-    for (var key in updateList) {
-      if (game.entities.data[key]) {
-        if (updateList[key]) {
-          util.addUndo(game.entities.data[key], game.entities.data[key].data, updateList[key]);
-        }
-        else {
-          util.addUndo(game.entities.data[key], game.entities.data[key].data);
-        }
-      }
-    }
-    spliceData.list.sort(function(a,b){return a-b;});
-    for (var i=spliceData.list.length-1; i>=0; i--) {
-      spliceData.target.splice(spliceData.list[i], 1);
-    }
-    spliceData = {list : []};
-    for (var key in updateList) {
-      if (game.entities.data[key]) {
-        if (updateList[key]) {
-          game.entities.data[key].sync(updateList[key]);
-        }
-        else {
-          game.entities.data[key].update();
-        }
-      }
-    }
+  }
+  else if (e.keyCode == KEYCODE_ESC) {
+    $(':focus').blur();
   }
   if (_nextKey < Date.now()) {
     for (var key in hotkeys) {
@@ -1012,7 +1080,7 @@ function controlsKeyDown(e) {
           e.stopPropagation();
           e.preventDefault();
         }
-        _nextKey = Date.now() + 500;
+        _nextKey = Date.now() + 300;
       }
     }
   }
@@ -1038,7 +1106,7 @@ function toggleHotKeysDisplay() {
     });
 
     var list = $("<div>").appendTo(show);
-    list.addClass("flexcolumn");
+    list.addClass("flexcolumn flexmiddle");
     list.css("width", "50%");
     list.css("width", "50%");
     list.css("margin", "auto");
@@ -1049,7 +1117,7 @@ function toggleHotKeysDisplay() {
       var hotkeyDiv = $("<div>").appendTo(list);
       hotkeyDiv.addClass("flexmiddle");
 
-      var title = $("<div class='flexmiddle highlight2 hardoutline' style='padding : 0.2em'><b class='alttext'>"+hotkey.name+"</b></div>").appendTo(hotkeyDiv);
+      var title = $("<div class='flexmiddle highlight2 outline smooth' style='padding : 0.2em'><b class='alttext'>"+hotkey.name+"</b></div>").appendTo(hotkeyDiv);
       hotkeyDiv.append("<div class='flexmiddle'><b class='alttext'>=</b></div>");
 
       var controls = hotkey.combo.split(":");
@@ -1125,7 +1193,7 @@ function toggleHotKeysDisplay() {
     layout.coverlay("overlay-hotkeys", 500);
   }
 }
-
+/*
 const _channel1 = "16,17,49";
 hotkeys[_channel1] = {
   name : "Voice Channel 1",
@@ -1176,3 +1244,4 @@ hotkeys[_channel3] = {
     }
   },
 }
+*/

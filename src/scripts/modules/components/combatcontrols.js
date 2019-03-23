@@ -16,35 +16,6 @@ sync.render("ui_combatControls", function(obj, app, scope){
 
   data = obj.data;
 
-  if (!data.combat && !hasSecurity(getCookie("UserID"), "Assistant Master")) {
-    div.addClass("flexmiddle");
-    div.append("<b>No Combat</b>");
-    return div;
-  }
-
-  if (!app.attr("hideCombat")) {
-    if (!obj.data.combat) {
-      if (!game.locals["turnOrder"]) {
-        game.locals["turnOrder"] = sync.obj("turnOrder");
-        game.locals["turnOrder"].data = {combat : {engaged : {}, current : {}}};
-      }
-      for (var index in game.players.data) {
-        if (game.players.data[index].entity) {
-          game.locals["turnOrder"].data.combat.engaged[game.players.data[index].entity] = {};
-        }
-      }
-
-      var charList = sync.newApp("ui_turnOrder");
-      game.locals["turnOrder"].addApp(charList);
-      charList.appendTo(div);
-    }
-    else {
-      var charList = sync.newApp("ui_combat");
-      obj.addApp(charList);
-      charList.appendTo(div);
-    }
-  }
-
   if (true) {
     var optionsBar = $("<div>").appendTo(div);
     optionsBar.addClass("flexrow flexaround flexwrap bold");
@@ -115,12 +86,33 @@ sync.render("ui_combatControls", function(obj, app, scope){
         }
       }
 
+
+      function isHiddenTurn(turnCheck){
+        if (inits[turnCheck]) {
+          var valid = true;
+          for (var i in inits[turnCheck].e) {
+            var ent = getEnt(inits[turnCheck].e[i]);
+            if (ent && ent.data && !(ent.data._flags && ent.data._flags.hidden)) {
+              valid = false;
+              break;
+            }
+          }
+        }
+        return valid;
+      }
+
       if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
         var back = genIcon("fast-backward").appendTo(optionsBar);
         back.attr("title", "Last Round");
         back.css("font-size", "1em");
         back.click(function() {
           var newTurn = 0;
+          while (isHiddenTurn(newTurn)) {
+            newTurn = Math.min(newTurn+1, inits.length-1);
+            if (newTurn >= inits.length-1) {
+              break;
+            }
+          }
           sync.val(data.combat.round, sync.val(data.combat.round) - 1);
           data.combat.current = inits[newTurn];
           for (var key in data.combat.engaged) {
@@ -130,12 +122,25 @@ sync.render("ui_combatControls", function(obj, app, scope){
         });
 
         var last = genIcon("backward").appendTo(optionsBar);
-        last.attr("title", "Last Turn");
+        last.attr("title", "Previous Turn");
         last.css("font-size", "1em");
         last.click(function() {
           var newTurn = turn+1;
+          while (isHiddenTurn(newTurn)) {
+            newTurn = Math.min(newTurn+1, inits.length-1);
+            if (newTurn >= inits.length-1) {
+              break;
+            }
+          }
+
           if (turn == inits.length-1) {
             newTurn = 0;
+            while (isHiddenTurn(newTurn)) {
+              newTurn = Math.min(newTurn+1, inits.length-1);
+              if (newTurn >= inits.length-1) {
+                break;
+              }
+            }
             sync.val(data.combat.round, sync.val(data.combat.round) - 1);
             for (var key in data.combat.engaged) {
               data.combat.engaged[key].ok = true;
@@ -177,9 +182,22 @@ sync.render("ui_combatControls", function(obj, app, scope){
         next.css("font-size", "1em");
         next.click(function() {
           var newTurn = turn-1;
+          while (isHiddenTurn(newTurn)) {
+            newTurn = Math.max(newTurn-1, 0);
+            if (newTurn <= 0) {
+              break;
+            }
+          }
+
           function changeTurn() {
             if (turn == 0) {
               newTurn = inits.length-1;
+              while (isHiddenTurn(newTurn)) {
+                newTurn = Math.max(newTurn-1, 0);
+                if (newTurn <= 0) {
+                  break;
+                }
+              }
               sync.val(data.combat.round, sync.val(data.combat.round) + 1);
               for (var key in data.combat.engaged) {
                 delete data.combat.engaged[key].ok;
@@ -231,7 +249,15 @@ sync.render("ui_combatControls", function(obj, app, scope){
         top.attr("title", "Next Round");
         top.css("font-size", "1em");
         top.click(function() {
-          data.combat.current = inits[inits.length-1];
+          var newTurn = inits.length-1;
+          while (isHiddenTurn(newTurn)) {
+            newTurn = Math.max(newTurn-1, 0);
+            if (newTurn <= 0) {
+              break;
+            }
+          }
+
+          data.combat.current = inits[newTurn];
           sync.val(data.combat.round, sync.val(data.combat.round) + 1);
           for (var key in data.combat.engaged) {
             delete data.combat.engaged[key].ok;
@@ -249,7 +275,7 @@ sync.render("ui_combatControls", function(obj, app, scope){
           var round = $("<b>").appendTo(optionsBar);
           round.addClass("flexmiddle subtitle");
 
-          round.text(data.combat.round.name + " : " + sync.val(data.combat.round) || 0);
+          round.text(data.combat.round.name + " " + sync.val(data.combat.round) || 0);
         }
       }
       else {
@@ -327,27 +353,13 @@ sync.render("ui_combatControls", function(obj, app, scope){
                         }
                       }
                     }
-                    layout.coverlay("my-turn-"+$(this).attr("UserID"));
                   });
-                  if ($("#quick-combat").length == 0) {
+                  if ($("#main-menu").length && $("#main-menu").css("opacity") == 0 && $("#main-menu").attr("docked") && !$("#main-menu").attr("locked")) {
                     $("#combat-button").click();
-                  }
-                  else {
-                    $("#cloud-files").hide();
-                    $("#asset-manager").hide();
-                    $("#media-player").hide();
-                    $("#game-options").hide();
-                    $("#audio-player").hide();
-                    $("#quick-combat").show();
-                  }
-                  if (!$($(".main-dock")[0]).attr("locked")) {
-                    util.dockReveal($($(".main-dock")[0]));
+                    util.dockReveal($("#main-menu"));
                   }
                 }
               }
-            }
-            else {
-              $("#my-turn-"+key).remove();
             }
           }
         }
@@ -443,6 +455,36 @@ sync.render("ui_combatControls", function(obj, app, scope){
           }
         }
       });
+    }
+  }
+
+  if (!data.combat && !hasSecurity(getCookie("UserID"), "Assistant Master")) {
+    div.empty();
+    div.addClass("flexmiddle");
+    div.append("<b>No Combat</b>");
+    return div;
+  }
+
+  if (!app.attr("hideCombat")) {
+    if (!obj.data.combat) {
+      if (!game.locals["turnOrder"]) {
+        game.locals["turnOrder"] = sync.obj("turnOrder");
+        game.locals["turnOrder"].data = {combat : {engaged : {}, current : {}}};
+      }
+      for (var index in game.players.data) {
+        if (game.players.data[index].entity) {
+          game.locals["turnOrder"].data.combat.engaged[game.players.data[index].entity] = {};
+        }
+      }
+
+      var charList = sync.newApp("ui_turnOrder");
+      game.locals["turnOrder"].addApp(charList);
+      charList.appendTo(div);
+    }
+    else {
+      var charList = sync.newApp("ui_combat");
+      obj.addApp(charList);
+      charList.appendTo(div);
     }
   }
 

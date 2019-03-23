@@ -1,4 +1,5 @@
-var boardApi = {}
+var boardApi = {};
+var time = 0;
 boardApi.saveChanges = function(obj, mode){
   if (mode == "discard") {
     runCommand("refreshEntity", {id : obj.id()});
@@ -155,16 +156,13 @@ boardApi.saveChanges = function(obj, mode){
   return true;
 };
 
+boardApi.dragging = null;
+boardApi.apps = {};
+boardApi.selections = {};
+boardApi.triggers = {flush : {}, cache : {}}; // a cache for triggers
+boardApi.fog = {};
 
-boardApi.pix = {};
-var time = 0;
-boardApi.pix.dragging = null;
-boardApi.pix.apps = {};
-boardApi.pix.selections = {};
-boardApi.pix.triggers = {flush : {}, cache : {}}; // a cache for triggers
-boardApi.pix.fog = {};
-
-boardApi.pix.fonts = {
+boardApi.fonts = {
   default : {
     fontFamily: "Arial",
     fontWeight: "bold",
@@ -180,7 +178,7 @@ boardApi.pix.fonts = {
   }
 }
 
-boardApi.pix.scale = function(value, obj, reverse) {
+boardApi.scale = function(value, obj, reverse) {
   if (value != null && !isNaN(value)) {
     if (obj.data.options && obj.data.options.unitScale) {
       if (reverse) {
@@ -192,12 +190,12 @@ boardApi.pix.scale = function(value, obj, reverse) {
   return value;
 }
 
-boardApi.pix.tileLayer = function(stage, layer) {
+boardApi.tileLayer = function(stage, layer) {
   return stage.children[1].children[layer].children[1];
 }
 
-boardApi.pix.lookup = function(layer, type, index, app) {
-  var stage = boardApi.pix.apps[app.attr("id")].stage;
+boardApi.lookup = function(layer, type, index, app) {
+  var stage = boardApi.apps[app.attr("id")].stage;
   var board = getEnt(app.attr("index"));
   var layerData = board.data.layers[layer];
   var layerCont = stage.children[1].children[layer];
@@ -226,7 +224,7 @@ boardApi.pix.lookup = function(layer, type, index, app) {
   }
 }
 
-boardApi.pix.context = function(obj, app, scope, ev) {
+boardApi.context = function(obj, app, scope, ev) {
   var actionList = [];
 
   var data = obj.data;
@@ -241,18 +239,39 @@ boardApi.pix.context = function(obj, app, scope, ev) {
   var userID = app.attr("UserID") || getCookie("UserID");
   var hasRights = hasSecurity(userID, "Rights", data) || hasSecurity(userID, "Game Master");
 
-  var point = boardApi.pix.apps[app.attr("id")].stage.toLocal({x : ev.pageX, y : ev.pageY});
+  var point = boardApi.apps[app.attr("id")].stage.toLocal({x : ev.pageX, y : ev.pageY});
 
   var xPos = point.x;
   var yPos = point.y;
 
   var selections = null;
-  for (var key in boardApi.pix.selections) {
-    if (boardApi.pix.selections[key].app == app.attr("id")) {
+  for (var key in boardApi.selections) {
+    if (boardApi.selections[key].app == app.attr("id")) {
       if (!selections) {
         selections = selections || {};
       }
-      selections[key] = boardApi.pix.selections[key];
+      selections[key] = boardApi.selections[key];
+    }
+  }
+
+  if (selections && Object.keys(selections).length == 1) {
+    for (var key in boardApi.selections) {
+      var selectData = boardApi.selections[key];
+      if (selectData.app == app.attr("id") && selectData.type == "p") {
+        var pieceData = obj.data.layers[selectData.layer][selectData.type][selectData.index];
+        if (pieceData.eID) {
+          var ent = getEnt(pieceData.eID);
+          if (ent && ent.data) {
+            actionList = [
+              {
+                name : "Asset",
+                submenu : assetTypes.contextmenu(null, null, ent, app, scope, true)
+              }
+            ];
+          }
+        }
+
+      }
     }
   }
 
@@ -281,7 +300,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
             if (splice[selected[i].layer][selected[i].type].rebuild == null || splice[selected[i].layer][selected[i].type].rebuild > selected[i].index) {
               splice[selected[i].layer][selected[i].type].rebuild = Number(selected[i].index);
             }
-            boardApi.pix.selections[i].selected.visible = false;
+            boardApi.selections[i].selected.visible = false;
           }
         }
         for (var layer in obj.data.layers) {
@@ -322,7 +341,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
             }
           }
           update.result = duplicate(obj.data.layers[layer]);
-          boardApi.pix.applyUpdate(getCookie("UserID"), update);
+          boardApi.applyUpdate(getCookie("UserID"), update);
           runCommand("updateBoardLayer", update);
         }
 
@@ -351,7 +370,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
               splice[selected[i].layer] = splice[selected[i].layer] || {t : {indexs : []}, p : {indexs : []}, d : {indexs : []}, w : {indexs : []}};
               splice[selected[i].layer][selected[i].type].indexs.push(Number(selected[i].index));
               splice[selected[i].layer][selected[i].type].rebuild = 0;
-              boardApi.pix.selections[i].selected.visible = false;
+              boardApi.selections[i].selected.visible = false;
             }
           }
 
@@ -380,10 +399,10 @@ boardApi.pix.context = function(obj, app, scope, ev) {
               }
             }
             update.result = duplicate(obj.data.layers[layer]);
-            boardApi.pix.applyUpdate(getCookie("UserID"), update);
+            boardApi.applyUpdate(getCookie("UserID"), update);
             runCommand("updateBoardLayer", update);
           }
-          boardApi.pix.selections = {};
+          boardApi.selections = {};
         }
       });
       actionList.push({
@@ -407,7 +426,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
               if (splice[selected[i].layer][selected[i].type].rebuild == null || splice[selected[i].layer][selected[i].type].rebuild > selected[i].index) {
                 splice[selected[i].layer][selected[i].type].rebuild = Number(selected[i].index);
               }
-              boardApi.pix.selections[i].selected.visible = false;
+              boardApi.selections[i].selected.visible = false;
             }
           }
 
@@ -438,10 +457,10 @@ boardApi.pix.context = function(obj, app, scope, ev) {
               }
             }
             update.result = duplicate(obj.data.layers[layer]);
-            boardApi.pix.applyUpdate(getCookie("UserID"), update);
+            boardApi.applyUpdate(getCookie("UserID"), update);
             runCommand("updateBoardLayer", update);
           }
-          boardApi.pix.selections = {};
+          boardApi.selections = {};
         }
       });
       actionList.push({
@@ -494,7 +513,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
                   for (var i in ent.data.info.img.modifiers) {
                     var val = ent.data.info.img.modifiers[i];
                     if (val) {
-                      newP[i] = sync.eval(val, context);
+                      newP[i] = val;
                     }
                   }
                   if (ent.data.info.img.modifiers) {
@@ -506,7 +525,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
                     }
                   }
                 }
-                boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                boardApi.addObject(newP, scope.layer, "p", obj);
                 layout.coverlay("add-asset");
               }
             });
@@ -521,7 +540,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
           }
         });
         actionList.push({
-          name : "Create Piece",
+          name : "Create Token",
           click : function(ev, ui){
             var newP = {
               x : xPos,
@@ -531,7 +550,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
               d : (data.pD || null),
               c : (data.pC || "rgba(255,255,255,1)"),
             };
-            boardApi.pix.addObject(newP, scope.layer, "p", obj);
+            boardApi.addObject(newP, scope.layer, "p", obj);
           }
         });
         actionList.push({
@@ -549,7 +568,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
                       w : Math.min(this.naturalWidth, (data.pW || data.gridW || 64)), h : Math.min(this.naturalHeight, (data.pH || data.gridH || 64)),
                       i : value
                     };
-                    boardApi.pix.addObject(newP, scope.layer, "p", obj);
+                    boardApi.addObject(newP, scope.layer, "p", obj);
                     layout.coverlay("icons-picker");
                   }
                 }
@@ -568,7 +587,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
       }
       else {
         actionList.push({
-          name : "Create Piece",
+          name : "Create Token",
           click : function(ev, ui) {
             var ent = getPlayerCharacter(getCookie("UserID"));
             if (ent && ent.data) {
@@ -598,7 +617,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
                   for (var i in ent.data.info.img.modifiers) {
                     var val = ent.data.info.img.modifiers[i];
                     if (val) {
-                      newP[i] = sync.eval(val, context);
+                      newP[i] = val;
                     }
                   }
                   if (ent.data.info.img.modifiers) {
@@ -623,18 +642,18 @@ boardApi.pix.context = function(obj, app, scope, ev) {
         });
       }
     }
-    else if (hasRights && (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length)) {
+    else if (hasRights && (boardApi.fog[obj.id()] && boardApi.fog[obj.id()].length)) {
       actionList.push({
         name : "Selection Vision",
         click : function(ev, ui) {
           app.attr("UserID", "default");
-          boardApi.pix.rebuildFog(obj, app);
-          for (var i in boardApi.pix.apps[app.attr("id")].views) {
-            boardApi.pix.apps[app.attr("id")].views[i].destroy(true);
-            delete boardApi.pix.apps[app.attr("id")].views[i];
+          boardApi.rebuildFog(obj, app);
+          for (var i in boardApi.apps[app.attr("id")].views) {
+            boardApi.apps[app.attr("id")].views[i].destroy(true);
+            delete boardApi.apps[app.attr("id")].views[i];
           }
-          for (var key in boardApi.pix.selections) {
-            var selectData = boardApi.pix.selections[key];
+          for (var key in boardApi.selections) {
+            var selectData = boardApi.selections[key];
             if (selectData.app == app.attr("id") && selectData.type == "p") {
               var pieceData = obj.data.layers[selectData.layer][selectData.type][selectData.index];
               var range;
@@ -645,17 +664,17 @@ boardApi.pix.context = function(obj, app, scope, ev) {
                   context[ent.data._t] = duplicate(ent.data);
                 }
                 var auraData = pieceData.o.Sight;
-                range = boardApi.pix.scale(sync.eval(auraData.d, context), obj, true);
+                range = boardApi.scale(sync.eval(auraData.d, context), obj, true);
               }
-              boardApi.pix.apps[app.attr("id")].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.pix.buildDynamicFog(obj, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
-              boardApi.pix.rebuildDynamicFog(obj, app);
+              boardApi.apps[app.attr("id")].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.buildDynamicFog(obj, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
+              boardApi.rebuildDynamicFog(obj, app);
             }
           }
         }
       });
     }
   }
-  if (app.attr("UserID") == "default" && (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length)) {
+  if (app.attr("UserID") == "default" && (boardApi.fog[obj.id()] && boardApi.fog[obj.id()].length)) {
     actionList.push({
       name : "Restore Vision",
       click : function(ev, ui) {
@@ -677,7 +696,7 @@ boardApi.pix.context = function(obj, app, scope, ev) {
     actionList.push({
       name : "Show Menu",
       click : function(ev, ui) {
-        $("#"+app.attr("id")+"-menu-"+obj.id()).show();
+        $("#"+app.attr("id")+"-menuu-"+obj.id()).show();
         app.removeAttr("hidemenu");
       }
     });
@@ -686,47 +705,23 @@ boardApi.pix.context = function(obj, app, scope, ev) {
     actionList.push({
       name : "Hide Menu",
       click : function(ev, ui) {
-        $("#"+app.attr("id")+"-menu-"+obj.id()).hide();
+        $("#"+app.attr("id")+"-menuu-"+obj.id()).hide();
         app.attr("hidemenu", true);
       }
     });
   }
   if (hasRights) {
+    var submenu = [
+      {name : "All Players", click : function(){runCommand("command", {cmd : "forceToPoint", id : obj.id(), x : xPos, y : yPos, zoom : app.attr("zoom")});}}
+    ];
+    for (var k in game.players.data) {
+      submenu.push({name : game.players.data[k].displayName || k, attr : {player : k}, click : function(ev, ui){runCommand("command", {cmd : "forceToPoint", id : obj.id(), x : xPos, y : yPos, userID : ui.attr("player"), zoom : app.attr("zoom")});}});
+    }
     actionList.push({
-      name : "Map Manager",
-      icon : "list-alt",
+      name : "Focus on point...",
+      submenu : submenu,
       click : function(ev, ui){
-        if (game.locals["drawing"]) {
-          delete game.locals["drawing"].data.drawing;
-        }
-
-        var content = sync.newApp("ui_boardEditor");
-        content.attr("local", scope.local);
-        content.attr("viewOnly", scope.viewOnly);
-        content.attr("targetApp", app.attr("id"));
-        content.attr("hideLayers", true);
-        obj.addApp(content);
-        if (!$("#board-layer-controls-"+obj.id()).length && $(".application[ui-name='ui_boardListener']").length == 0) {
-          var pop = ui_popOut({
-            target : app,
-            id : "board-layer-controls-"+obj.id(),
-            dragThickness : "0.5em",
-            title : "Map Manager",
-            minimize : true,
-            align : "right",
-            close : function(){
-              $("#board-layer-controls-"+obj.id()).hide();
-              $("#board-layer-controls-"+obj.id()).removeAttr("docked");
-              return false;
-            },
-            style : {"width" : "20vw", height : "40vh"}
-          }, content);
-          pop.addClass("layoutHide");
-          pop.resizable();
-        }
-        else {
-          $("#board-layer-controls-"+obj.id()).show();
-        }
+        runCommand("command", {cmd : "forceToPoint", id : obj.id(), x : xPos, y : yPos, zoom : app.attr("zoom")});
       }
     });
   }
@@ -734,12 +729,12 @@ boardApi.pix.context = function(obj, app, scope, ev) {
   return actionList;
 }
 
-boardApi.pix.revealLayers = function(obj, app) {
+boardApi.revealLayers = function(obj, app) {
   var data = obj.data;
 
   var userID = app.attr("UserID") || getCookie("UserID");
   var hasRights = hasSecurity(userID, "Rights", data) || hasSecurity(userID, "Game Master");
-  var stage = boardApi.pix.apps[app.attr("id")].stage;
+  var stage = boardApi.apps[app.attr("id")].stage;
   for (var lid in data.layers) {
     var layerData = data.layers[lid];
     var playerVision = app.attr("UserID") && !layerData.h && (!layerData._s || layerData._s.default == 1);
@@ -764,14 +759,16 @@ boardApi.pix.revealLayers = function(obj, app) {
         var lyr = stage.children[1].children[lid];
         if (lyr && lyr.children && lyr.children[2] && lyr.children[2].children) {
           var pce = lyr.children[2].children[pid];
-          pce.update();
+          if (pce) {
+            pce.update();
+          }
         }
       }
     }
   }
 }
 
-boardApi.pix.updateLayer = function(layer, rebuild, obj, cmd) {
+boardApi.updateLayer = function(layer, rebuild, obj, cmd) {
   var update = {
     layer : layer,
     id : obj.id(),
@@ -779,11 +776,11 @@ boardApi.pix.updateLayer = function(layer, rebuild, obj, cmd) {
     cmd : cmd,
     result : duplicate(obj.data.layers[layer])
   };
-  boardApi.pix.applyUpdate(getCookie("UserID"), update);
+  boardApi.applyUpdate(getCookie("UserID"), update);
   runCommand("updateBoardLayer", update);
 }
 
-boardApi.pix.addObject = function(pieceData, layer, type, obj) {
+boardApi.addObject = function(pieceData, layer, type, obj) {
   var update = {
     layer : layer,
     id : obj.id(),
@@ -798,17 +795,18 @@ boardApi.pix.addObject = function(pieceData, layer, type, obj) {
   obj.data.layers[layer][type].push(pieceData);
   update.result = duplicate(obj.data.layers[layer]);
   update.index = obj.data.layers[layer][type].length-1;
-  boardApi.pix.applyUpdate(getCookie("UserID"), update);
+  boardApi.applyUpdate(getCookie("UserID"), update);
   runCommand("updateBoardLayer", update);
 }
 
-boardApi.pix.destroyObject = function(layer, type, index, obj) {
+boardApi.destroyObject = function(layer, type, index, obj) {
   var update = {
     layer : layer,
     id : obj.id(),
     cmd : "destroy",
     type : type,
   };
+  var pieceData = duplicate(obj.data.layers[layer][type][index]);
   obj.data.layers[layer][type].splice(index, 1);
   update.result = duplicate(obj.data.layers[layer]);
   update.index = index;
@@ -818,25 +816,25 @@ boardApi.pix.destroyObject = function(layer, type, index, obj) {
     update.rebuild = update.rebuild || {};
     update.rebuild.r = true;
   }
-  boardApi.pix.applyUpdate(getCookie("UserID"), update);
+  boardApi.applyUpdate(getCookie("UserID"), update);
   runCommand("updateBoardLayer", update);
 }
 
-boardApi.pix.clearSelection = function(app) {
-  for (var key in boardApi.pix.selections) {
-    var selectData = boardApi.pix.selections[key];
+boardApi.clearSelection = function(app) {
+  for (var key in boardApi.selections) {
+    var selectData = boardApi.selections[key];
     if (!app || app.attr("id") == selectData.app) {
       selectData.wrap.unselect();
-      delete boardApi.pix.selections[key];
+      delete boardApi.selections[key];
     }
   }
 }
 
-boardApi.pix.updateObject = function(layer, type, index, board) {
+boardApi.updateObject = function(layer, type, index, board) {
   $(".application[ui-name='ui_board']").each(function(){
     var userID = $(this).attr("UserID") || getCookie("UserID");
     if ($(this).attr("index") == board.id()) {
-      var stage = boardApi.pix.apps[$(this).attr("id")].stage;
+      var stage = boardApi.apps[$(this).attr("id")].stage;
       var layerData = board.data.layers[layer];
       var layerCont = stage.children[1].children[layer];
       if (layerCont && layerCont.children && layerCont.children.length) {
@@ -845,43 +843,29 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
           if (pieces.children && pieces.children[index]) {
             // naively rebuild because I don't know how to update transformations
             pieces.removeChildren();
+            var fogRebuild = false;
             for (var i=0; i<layerData[type].length; i++) {
               var pieceData = layerData[type][i];
-              var newChild = boardApi.pix.createPiece({data : pieceData, index : i, layer : layer}, board, $(this), {layer : layer});
+              var newChild = boardApi.createPiece({data : pieceData, index : i, layer : layer}, board, $(this), {layer : layer});
               pieces.addChild(newChild);
-              var selectData = boardApi.pix.selections[board.id()+"-"+layer+"-"+type+"-"+i];
+              var selectData = boardApi.selections[board.id()+"-"+layer+"-"+type+"-"+i];
               if (selectData && selectData.app == $(this).attr("id")) {
                 newChild.select();
               }
-              if (boardApi.pix.fog[board.id()] && boardApi.pix.fog[board.id()].length) { // if dynamic fog
+              if (boardApi.fog[board.id()] && boardApi.fog[board.id()].length) { // if dynamic fog
                 // rebuild dynamic fog cache
                 if (pieceData.eID) {
                   var ent = getEnt(pieceData.eID);
                   if (ent && ent.data && ent.data._t == "c") {
-                    console.log(userID);
                     if (hasSecurity(userID, "Visible", ent.data)) {
-                      var range;
-                      if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
-                        var ent = getEnt(pieceData.eID);
-                        var context = sync.defaultContext();
-                        if (ent && ent.data) {
-                          context[ent.data._t] = duplicate(ent.data);
-                        }
-                        var auraData = pieceData.o.Sight;
-                        range = boardApi.pix.scale(sync.eval(auraData.d, context), board, true);
-                      }
-                      console.log("rebuild " + layer+"-"+type+"-"+index, range, boardApi.pix.apps[$(this).attr("id")].views);
-                      boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index] = boardApi.pix.buildDynamicFog(board, $(this), pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
-                      boardApi.pix.rebuildDynamicFog(board, $(this));
-                    }
-                    else if (boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index]) {
-                      boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index].destroy(true);
-                      delete boardApi.pix.apps[$(this).attr("id")].views[layer+"-"+type+"-"+index];
-                      boardApi.pix.rebuildDynamicFog(board, $(this));
+                      fogRebuild = true;
                     }
                   }
                 }
               }
+            }
+            if (fogRebuild) {
+              boardApi.rebuildFog(board, $(this));
             }
           }
         }
@@ -890,10 +874,10 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
           if (drawings.children && drawings.children[index]) {
             drawings.removeChildren();
             for (var i=0; i<layerData[type].length; i++) {
-              var newChild = boardApi.pix.createDrawing({data : layerData[type][i], index : i, layer : layer}, board, $(this), {layer : layer});
+              var newChild = boardApi.createDrawing({data : layerData[type][i], index : i, layer : layer}, board, $(this), {layer : layer});
               drawings.addChild(newChild);
 
-              var selectData = boardApi.pix.selections[board.id()+"-"+layer+"-"+type+"-"+i];
+              var selectData = boardApi.selections[board.id()+"-"+layer+"-"+type+"-"+i];
               if (selectData && selectData.app == $(this).attr("id")) {
                 newChild.select();
               }
@@ -905,10 +889,10 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
           if (tiles.children && tiles.children[index]) {
             tiles.removeChildren();
             for (var i=0; i<layerData[type].length; i++) {
-              var newChild = boardApi.pix.createTile({data : layerData[type][i], index : i, layer : layer}, board, $(this), {layer : layer});
+              var newChild = boardApi.createTile({data : layerData[type][i], index : i, layer : layer}, board, $(this), {layer : layer});
               tiles.addChild(newChild);
 
-              var selectData = boardApi.pix.selections[board.id()+"-"+layer+"-"+type+"-"+i];
+              var selectData = boardApi.selections[board.id()+"-"+layer+"-"+type+"-"+i];
               if (selectData && selectData.app == $(this).attr("id")) {
                 newChild.select();
               }
@@ -920,9 +904,9 @@ boardApi.pix.updateObject = function(layer, type, index, board) {
   });
 };
 
-boardApi.pix.moveObject = function(layer, type, index, board, newData, oldData, speed) {
+boardApi.moveObject = function(layer, type, index, board, newData, oldData, speed) {
   $(".application[ui-name='ui_board']").each(function(){
-    var stage = boardApi.pix.apps[$(this).attr("id")].stage;
+    var stage = boardApi.apps[$(this).attr("id")].stage;
     var layerData = board.data.layers[layer];
     var layerCont = stage.children[1].children[layer];
     if (layerCont && layerCont.children && layerCont.children.length) {
@@ -948,7 +932,7 @@ boardApi.pix.moveObject = function(layer, type, index, board, newData, oldData, 
   });
 }
 
-boardApi.pix.applyUpdate = function(userID, data, last) {
+boardApi.applyUpdate = function(userID, data, last) {
   if (data.cmd == "destroy") {
     if (game.locals["pieceBuilding"] && game.locals["pieceBuilding"].data) {
       delete game.locals["pieceBuilding"].data.layer;
@@ -961,8 +945,8 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
     // found the board, now update it
     board.data.layers[data.layer] = data.result;
     $(".application[ui-name='ui_board']").each(function(){
-      if (boardApi.pix.apps[$(this).attr("id")] && boardApi.pix.apps[$(this).attr("id")].board == data.id) {
-        var stage = boardApi.pix.apps[$(this).attr("id")].stage;
+      if (boardApi.apps[$(this).attr("id")] && boardApi.apps[$(this).attr("id")].board == data.id) {
+        var stage = boardApi.apps[$(this).attr("id")].stage;
         var layer = stage.children[1].children[data.layer];
         var layerData = board.data.layers[data.layer];
         var hasRights = hasSecurity(getCookie("UserID"), "Rights", board.data) || hasSecurity(getCookie("UserID"), "Game Master");
@@ -983,10 +967,10 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
             if (data.cmd == "destroy") {
               tiles.removeChildren();
               for (var i=0; i<layerData.t.length; i++) {
-                var newChild = boardApi.pix.createTile({data : layerData.t[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
+                var newChild = boardApi.createTile({data : layerData.t[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
                 tiles.addChild(newChild);
 
-                var selectData = boardApi.pix.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
+                var selectData = boardApi.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
                 if (selectData && selectData.app == $(this).attr("id")) {
                   newChild.select();
                 }
@@ -1006,25 +990,27 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
               }
               var start = tiles.children.length;
               while (layerData.t.length > tiles.children.length) {
-                tiles.addChild(boardApi.pix.createTile({data : layerData.t[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
+                tiles.addChild(boardApi.createTile({data : layerData.t[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
                 start++;
               }
             }
           }
           else {
             for (var i=0; i<layerData.t.length; i++) {
-              tiles.addChild(boardApi.pix.createTile({data : layerData.t[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
+              tiles.addChild(boardApi.createTile({data : layerData.t[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
             }
           }
           var pieces = layer.children[2];
           if (pieces.children && pieces.children.length) {
             if (data.cmd == "destroy") {
+              data.rebuild = data.rebuild || {};
+              data.rebuild.r = true;
               pieces.removeChildren();
               for (var i=0; i<layerData.p.length; i++) {
-                var newChild = boardApi.pix.createPiece({data : layerData.p[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
+                var newChild = boardApi.createPiece({data : layerData.p[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
                 pieces.addChild(newChild);
 
-                var selectData = boardApi.pix.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
+                var selectData = boardApi.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
                 if (selectData && selectData.app == $(this).attr("id")) {
                   newChild.select();
                 }
@@ -1044,14 +1030,14 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
               }
               var start = pieces.children.length;
               while (layerData.p.length > pieces.children.length) {
-                pieces.addChild(boardApi.pix.createPiece({data : layerData.p[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
+                pieces.addChild(boardApi.createPiece({data : layerData.p[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
                 start++;
               }
             }
           }
           else {
             for (var i=0; i<layerData.p.length; i++) {
-              pieces.addChild(boardApi.pix.createPiece({data : layerData.p[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
+              pieces.addChild(boardApi.createPiece({data : layerData.p[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
             }
           }
           var drawings = layer.children[3];
@@ -1059,10 +1045,10 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
             if (data.cmd == "destroy") {
               drawings.removeChildren();
               for (var i=0; i<layerData.d.length; i++) {
-                var newChild = boardApi.pix.createDrawing({data : layerData.d[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
+                var newChild = boardApi.createDrawing({data : layerData.d[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
                 drawings.addChild(newChild);
 
-                var selectData = boardApi.pix.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
+                var selectData = boardApi.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
                 if (selectData && selectData.app == $(this).attr("id")) {
                   newChild.select();
                 }
@@ -1077,14 +1063,14 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
               }
               var start = drawings.children.length;
               while (layerData.d.length > drawings.children.length) {
-                drawings.addChild(boardApi.pix.createDrawing({data : layerData.d[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
+                drawings.addChild(boardApi.createDrawing({data : layerData.d[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
                 start++;
               }
             }
           }
           else {
             for (var i=0; i<layerData.d.length; i++) {
-              drawings.addChild(boardApi.pix.createDrawing({data : layerData.d[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
+              drawings.addChild(boardApi.createDrawing({data : layerData.d[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
             }
           }
 
@@ -1093,10 +1079,10 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
             if (data.cmd == "destroy") {
               walls.removeChildren();
               for (var i=0; i<layerData.w.length; i++) {
-                var newChild = boardApi.pix.createWall({data : layerData.w[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
+                var newChild = boardApi.createWall({data : layerData.w[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer});
                 walls.addChild(newChild);
 
-                var selectData = boardApi.pix.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
+                var selectData = boardApi.selections[board.id()+"-"+data.layer+"-"+data.type+"-"+i];
                 if (selectData && selectData.app == $(this).attr("id")) {
                   newChild.select();
                 }
@@ -1111,63 +1097,82 @@ boardApi.pix.applyUpdate = function(userID, data, last) {
               }
               var start = walls.children.length;
               while (layerData.w.length > walls.children.length) {
-                walls.addChild(boardApi.pix.createWall({data : layerData.w[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
+                walls.addChild(boardApi.createWall({data : layerData.w[start], index : start, layer : data.layer}, board, $(this), {layer : data.layer}));
                 start++;
               }
             }
           }
           else {
             for (var i=0; i<layerData.w.length; i++) {
-              walls.addChild(boardApi.pix.createWall({data : layerData.w[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
+              walls.addChild(boardApi.createWall({data : layerData.w[i], index : i, layer : data.layer}, board, $(this), {layer : data.layer}));
             }
           }
           if (data.rebuild && data.rebuild.r) {
             // updateTriggers
-            for (var trigID in boardApi.pix.triggers.cache[board.id()]) {
+            for (var trigID in boardApi.triggers.cache[board.id()]) {
               var split = trigID.split("-");
               var tL = split[0];
               var tI = split[1];
               var lyr = stage.children[1].children[tL];
               if (lyr && lyr.children && lyr.children[2] && lyr.children[2].children) {
                 var pce = lyr.children[2].children[tI];
-                pce.update();
+                if (pce) {
+                  pce.update();
+                }
               }
             }
           }
-          if (data.rebuild && (data.rebuild.r || data.rebuild.w != null) && board.data.options.fog) {
-            boardApi.pix.rebuildFog(board, $(this));
+          if (board.data.options.fog) {
+            boardApi.rebuildFog(board, $(this));
           }
+        }
+
+        if ($(this).attr("configuring") == "manage") {
+          var scope = {
+            viewOnly : ($(this).attr("viewOnly") == "true"),
+            local : ($(this).attr("local") == "true"),
+            layer : $(this).attr("layer"),
+            noOptions : ($(this).attr("noOptions") == "true")
+          };
+          var parent = $("#"+$(this).attr("id")+"-menu-"+board.id());
+          parent.replaceWith(boardApi.buildMenu(board, $(this), scope));
         }
       }
     });
-    for (var i in boardApi.pix.selections) {
-      var selectData = boardApi.pix.selections[i];
+    for (var i in boardApi.selections) {
+      var selectData = boardApi.selections[i];
       if (selectData.board == data.id) {
         if (!board.data.layers[selectData.layer] || !board.data.layers[selectData.layer][selectData.type] || !board.data.layers[selectData.layer][selectData.type][selectData.index]) {
-          delete boardApi.pix.selections[i];
+          delete boardApi.selections[i];
         }
       }
     }
   }
 }
 
-boardApi.pix.scrollTo = function(app, xPos, yPos) {
+boardApi.scrollTo = function(app, xPos, yPos, blend) {
   var zoom = app.attr("zoom") / 100;
-  var stage = boardApi.pix.apps[app.attr("id")].stage;
-  stage.x = (-xPos*zoom + app.attr("divWidth")/2);
-  stage.y = (-yPos*zoom + app.attr("divHeight")/2);
-  app.attr("scrollLeft", xPos);
-  app.attr("scrollTop", yPos);
+  var stage = boardApi.apps[app.attr("id")].stage;
+  app.attr("scrollLeft", Number(xPos));
+  app.attr("scrollTop", Number(yPos));
+  if (blend) {
+    stage.dX = Math.round(-xPos*zoom + app.attr("divWidth")/2);
+    stage.dY = Math.round(-yPos*zoom + app.attr("divHeight")/2);
+  }
+  else {
+    stage.x = (-xPos*zoom + app.attr("divWidth")/2);
+    stage.y = (-yPos*zoom + app.attr("divHeight")/2);
+  }
 }
 
-boardApi.pix.entListen = function(entID){
+boardApi.entListen = function(entID){
   var ent = getEnt(entID);
   if (ent && ent.data) {
     ent.listen["healthbars"] = function(oldObj, newObj, override){
       setTimeout(function(){
-        for (var i in boardApi.pix.apps) {
+        for (var i in boardApi.apps) {
           var app = $("#"+i);
-          var layers = boardApi.pix.apps[i].stage.children[1];
+          var layers = boardApi.apps[i].stage.children[1];
           if (layers && layers.children) {
             for (var lid in layers.children) {
               var layerCanvas = layers.children[lid];
@@ -1175,12 +1180,12 @@ boardApi.pix.entListen = function(entID){
                 if (layerCanvas.children[2] && layerCanvas.children[2].children) {
                   for (var index in layerCanvas.children[2].children) { // pieces
                     var piece = layerCanvas.children[2].children[index];
-                    var board = getEnt(boardApi.pix.apps[i].board);
+                    var board = getEnt(boardApi.apps[i].board);
                     if (board.data && board.data.layers[lid] && board.data.layers[lid].p[index]) {
                       var pieceData = board.data.layers[lid].p[index];
                       if (pieceData && pieceData.eID == entID) {
                         piece.animate(pieceData, null, 1);
-                        if (boardApi.pix.fog[board.id()] && boardApi.pix.fog[board.id()].length) { // if dynamic fog
+                        if (boardApi.fog[board.id()] && boardApi.fog[board.id()].length) { // if dynamic fog
                           var ent = getEnt(pieceData.eID);
                           if (ent && ent.data && ent.data._t == "c" && hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
                             var range;
@@ -1191,15 +1196,15 @@ boardApi.pix.entListen = function(entID){
                                 context[ent.data._t] = duplicate(ent.data);
                               }
                               var auraData = pieceData.o.Sight;
-                              range = boardApi.pix.scale(sync.eval(auraData.d, context), board, true);
+                              range = boardApi.scale(sync.eval(auraData.d, context), board, true);
                             }
-                            boardApi.pix.apps[i].views[lid+"-p-"+index] = boardApi.pix.buildDynamicFog(board, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
-                            boardApi.pix.rebuildDynamicFog(board, app);
+                            boardApi.apps[i].views[lid+"-p-"+index] = boardApi.buildDynamicFog(board, app, pieceData.x + pieceData.w/2, pieceData.y + pieceData.h/2, range);
+                            boardApi.rebuildDynamicFog(board, app);
                           }
-                          else if (boardApi.pix.apps[i].views[lid+"-p-"+index]) {
-                            boardApi.pix.apps[i].views[lid+"-p-"+index].destroy(true);
-                            delete boardApi.pix.apps[i].views[lid+"-p-"+index];
-                            boardApi.pix.rebuildDynamicFog(board, app);
+                          else if (boardApi.apps[i].views[lid+"-p-"+index]) {
+                            boardApi.apps[i].views[lid+"-p-"+index].destroy(true);
+                            delete boardApi.apps[i].views[lid+"-p-"+index];
+                            boardApi.rebuildDynamicFog(board, app);
                           }
                         }
                       }
@@ -1216,14 +1221,14 @@ boardApi.pix.entListen = function(entID){
   }
 }
 
-boardApi.pix.endDragEvent = function(ev){
-  if (boardApi.pix.dragging) {
-    boardApi.pix.dragging.end(ev);
-    delete boardApi.pix.dragging;
+boardApi.endDragEvent = function(ev){
+  if (boardApi.dragging) {
+    boardApi.dragging.end(ev);
+    delete boardApi.dragging;
   }
 }
 
-boardApi.pix.newDragEvent = function(options, ev){
-  boardApi.pix.endDragEvent(ev);
-  boardApi.pix.dragging = options;
+boardApi.newDragEvent = function(options, ev){
+  boardApi.endDragEvent(ev);
+  boardApi.dragging = options;
 }

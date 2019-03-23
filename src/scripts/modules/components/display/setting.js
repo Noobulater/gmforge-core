@@ -19,7 +19,7 @@ sync.render("ui_calendar", function(obj, app, scope) {
       ],
       days : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
       units : 365,
-      events : {"17" : [{name : "Looming Doom", ent : "67"},{name : "Looming Doom"}]},
+      events : {},
       weather : {},
       day : 0
     },
@@ -160,62 +160,46 @@ sync.render("ui_calendar", function(obj, app, scope) {
   var config = $("<div>").appendTo(div);
   config.addClass("flexrow fit-x");
 
-  var leftOption = $("<div>").appendTo(config);
-  leftOption.addClass("flexrow flexmiddle");
+  for (var k in obj.data.calendars[scope.calendar].months) {
+    var highlight = $("<button>").appendTo(config);
+    highlight.addClass("flexmiddle flex spadding subtitle");
+    highlight.attr("month", k);
+    highlight.text(obj.data.calendars[scope.calendar].months[k].name);
 
-  var lastMonth = $("<button>").appendTo(leftOption);
-  lastMonth.addClass("lrpadding");
-  lastMonth.append(genIcon({raw : true, icon : "chevron-left"}));
-  lastMonth.click(function(){
-    app.attr("month", Math.max((scope.month || 0) - 1, 0));
-    obj.update();
-  });
-
-  var nextMonth = $("<button>").appendTo(leftOption);
-  nextMonth.addClass("lrpadding");
-  nextMonth.append(genIcon({raw : true, icon : "chevron-right"}));
-  nextMonth.click(function(){
-    app.attr("month", Math.min((scope.month || 0) + 1, Object.keys(obj.data.calendars[scope.calendar].months).length - 1));
-    obj.update();
-  });
-
-  var genWeather = $("<button>");//.appendTo(leftOption);
-  genWeather.append("Generate Weather");
-  genWeather.click(function(){
-    var actionsList = [
-      {
-        name : "This Month",
-
-      },
-      {
-        name : "Whole Year",
-      }
-    ];
-
-    ui_dropMenu($(this), actionsList, {id : "generate-weather"});
-  });
-
-  $("<div class='flex'></div>").appendTo(config);
-
-  var highlight = $("<highlight>").appendTo(config);
-  highlight.addClass("flexmiddle");
-  highlight.click(function(){
-    var month = $(this).attr("month");
-    var calendar = Number(scope.calendar);
-    var actionsList = [
-      {
-        name : "Change Month",
-        click : function(ev, ui){
-          ui_prompt({
-            target : ui,
-            id : "change-month",
-            inputs : {
-              "Name" : obj.data.calendars[calendar].months[month].name,
-              "Days" : obj.data.calendars[calendar].months[month].days
-            },
-            click : function(ev, inputs) {
-              obj.data.calendars[calendar].months[month].name = inputs["Name"].val();
-              obj.data.calendars[calendar].months[month].days = inputs["Days"].val();
+    if ((scope.month || 0) == k) {
+      highlight.addClass("highlight alttext");
+      highlight.click(function(){
+        var month = $(this).attr("month");
+        var calendar = Number(scope.calendar);
+        var actionsList = [
+          {
+            name : "Change Month",
+            click : function(ev, ui){
+              ui_prompt({
+                target : ui,
+                id : "change-month",
+                inputs : {
+                  "Name" : obj.data.calendars[calendar].months[month].name,
+                  "Days" : obj.data.calendars[calendar].months[month].days
+                },
+                click : function(ev, inputs) {
+                  obj.data.calendars[calendar].months[month].name = inputs["Name"].val();
+                  obj.data.calendars[calendar].months[month].days = inputs["Days"].val();
+                  if (obj == game.state) {
+                    obj.sync("updateState");
+                  }
+                  else {
+                    obj.update();
+                  }
+                }
+              });
+            }
+          },
+          {
+            name : "Add new Month",
+            click : function(ev, ui){
+              obj.data.calendars[calendar].months.push({name : "New Month", days : 30});
+              app.attr("month", obj.data.calendars[calendar].months.length-1);
               if (obj == game.state) {
                 obj.sync("updateState");
               }
@@ -223,40 +207,31 @@ sync.render("ui_calendar", function(obj, app, scope) {
                 obj.update();
               }
             }
-          });
-        }
-      },
-      {
-        name : "Add new Month",
-        click : function(ev, ui){
-          obj.data.calendars[calendar].months.push({name : "New Month", days : 30});
-          app.attr("month", obj.data.calendars[calendar].months.length-1);
-          if (obj == game.state) {
-            obj.sync("updateState");
+          },
+          {
+            name : "Remove Month",
+            click : function(ev, ui){
+              obj.data.calendars[calendar].months.splice(month, 1);
+              if (obj == game.state) {
+                obj.sync("updateState");
+              }
+              else {
+                obj.update();
+              }
+            }
           }
-          else {
-            obj.update();
-          }
-        }
-      },
-      {
-        name : "Remove Month",
-        click : function(ev, ui){
-          obj.data.calendars[calendar].months.splice(month, 1);
-          if (obj == game.state) {
-            obj.sync("updateState");
-          }
-          else {
-            obj.update();
-          }
-        }
-      }
-    ];
+        ];
 
-    ui_dropMenu($(this), actionsList, {id : "generate-weather"});
-  });
-
-  $("<div class='flex'></div>").appendTo(config);
+        ui_dropMenu($(this), actionsList, {id : "generate-weather"});
+      });
+    }
+    else {
+      highlight.click(function(){
+        app.attr("month", $(this).attr("month"));
+        obj.update();
+      });
+    }
+  }
 
   var rightOption = $("<div>").appendTo(config);
   rightOption.addClass("flexrow flexmiddle");
@@ -275,11 +250,11 @@ sync.render("ui_calendar", function(obj, app, scope) {
 
   for (var i=0; i<weekDays; i++) {
     var dayWrap = $("<div>").appendTo(weekData);
-    dayWrap.addClass("flexrow flex spadding flexmiddle");
+    dayWrap.addClass("flexrow flex spadding flexmiddle background smooth");
 
     var day = genInput({
       parent : dayWrap,
-      classes : "lrmargin middle outline fit-x line",
+      classes : "lrmargin middle outline fit-x line alttext",
       value : obj.data.calendars[scope.calendar].days[i],
       day : i
     });
@@ -298,7 +273,7 @@ sync.render("ui_calendar", function(obj, app, scope) {
         {
           name : "Add Day",
           click : function(){
-            obj.data.calendars[scope.calendar].days[day].push("");
+            obj.data.calendars[scope.calendar].days.push("");
             if (obj == game.state) {
               obj.sync("updateState");
             }
@@ -352,10 +327,8 @@ sync.render("ui_calendar", function(obj, app, scope) {
   for (var j=0; j<obj.data.calendars[scope.calendar].months.length; j++) {
     monthOverride = j;
     var monthData = obj.data.calendars[scope.calendar].months[j];
+    monthData.days = Number(monthData.days);
     if ((scope.month == j) || (scope.month == null && (presentDay <= monthData.days))) {
-      highlight.addClass("link");
-      highlight.attr("month", j);
-      highlight.text(monthData.name);
       for (var i=0; i<Math.ceil((monthData.days+offset)/weekDays)*weekDays; i++) {
         if (i % weekDays == 0) {
           week = $("<div>").appendTo(table);
@@ -763,12 +736,7 @@ sync.render("ui_calendar", function(obj, app, scope) {
                       var index = $(this).attr("index");
                       var ent = getEnt(index);
                       if (ent) {
-                        if (down[18]) {
-                          assetTypes[ent.data._t].preview(ent, $(this));
-                        }
-                        else {
-                          assetTypes[ent.data._t].contextmenu(ent, $(this));
-                        }
+                        assetTypes[ent.data._t].preview(ent, $(this));
                       }
                       ev.stopPropagation();
                       return false;
@@ -1137,7 +1105,7 @@ sync.render("ui_setting", function(obj, app, scope) {
         }
       });
 
-      ui_dropMenu($(this), actionList, {id : "setting-report", hideClose : true, align : "bottom", style : {"font-size" : "2em"}});
+      ui_dropMenu($(this), actionList, {id : "setting-report", hideClose : true, align : "bottom", style : {"font-size" : "1.6em"}});
     });
 
     weather.addClass("hover2");
@@ -1203,7 +1171,7 @@ sync.render("ui_setting", function(obj, app, scope) {
         }
       });
 
-      ui_dropMenu($(this), actionList, {id : "setting-report", hideClose : true, align : "bottom", style : {"font-size" : "2em"}});
+      ui_dropMenu($(this), actionList, {id : "setting-report", hideClose : true, align : "bottom", style : {"font-size" : "1.6em"}});
     });
 
     temp.addClass("hover2");
@@ -1260,7 +1228,7 @@ sync.render("ui_setting", function(obj, app, scope) {
         }
       });
 
-      ui_dropMenu($(this), actionList, {id : "setting-report", hideClose : true, align : "bottom", style : {"font-size" : "2em"}});
+      ui_dropMenu($(this), actionList, {id : "setting-report", hideClose : true, align : "bottom", style : {"font-size" : "1.6em"}});
     });
   }
 

@@ -1,272 +1,4 @@
-boardApi.pix.createDrawing = function(options, obj, app, scope) {
-  var data = obj.data;
-  var isHex = data.options && data.options.hex;
-  var hasGrid = data.gridW && data.gridW;
-  var objectData = options.data;
-  options.type = "d";
-
-  var layer = options.layer;
-  var type = options.type;
-  var index = options.index;
-
-  var pieceWrap = boardApi.pix.createObject(options, obj, app, scope);
-  pieceWrap.lookup = {layer : layer, type : type, index : index};
-
-  pieceWrap.canInteract = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-    if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.drawing) {
-      return false;
-    }
-    if (app.attr("background")) {
-      return false;
-    }
-    if ((hasRights || objectData.uID == getCookie("UserID")) && app.attr("layer") == layer ) {
-      return true;
-    }
-    return false;
-  }
-  pieceWrap.resize = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-
-    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
-      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
-      return true;
-    }
-    return false;
-  }
-  pieceWrap.rotate = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-
-    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
-      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
-      return true;
-    }
-    return false;
-  }
-  pieceWrap.move = function(ev){
-    if (!pieceWrap.lookup) {return false;}
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    var objectData = obj.data.layers[layer][type][index];
-    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
-      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
-      return true;
-    }
-    return false;
-  }
-
-  var piece = pieceWrap.children[0];
-  var pieceSelected = pieceWrap.children[1];
-  var outline = pieceSelected.children[0];
-
-  pieceWrap.rebuild = function(objectData) {
-    var layer = pieceWrap.lookup.layer;
-    var type = pieceWrap.lookup.type;
-    var index = pieceWrap.lookup.index;
-    if (!objectData && layer != null && index != null) {
-      objectData = obj.data.layers[layer][type][index];
-    }
-
-    var x = objectData.x;
-    var y = objectData.y;
-    var width = Math.max(10, objectData.w);
-    var height = Math.max(10, objectData.h);
-
-    var recreate = false;
-    if (piece.children && piece.children.length && piece.children[0]) {
-      if (piece.children[0].drawing != objectData.drawing) {
-        piece.children[0].destroy(true);
-        recreate = true;
-      }
-    }
-    else {
-      recreate = true;
-    }
-
-    var token;
-    if (objectData.drawing == "box") {
-      if (objectData.i) {
-        var mask;
-        if (recreate) {
-          var text = new PIXI.Texture.fromImage(objectData.i);
-          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
-          token.drawing = objectData.drawing;
-          piece.addChild(token);
-
-          mask = new PIXI.Graphics();
-          piece.addChild(mask);
-        }
-        else {
-          token = piece.children[0];
-          mask = piece.children[1];
-        }
-
-        mask.clear();
-        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        mask.drawRect(0, 0, objectData.w, objectData.h);
-        mask.endFill();
-        mask.w = width;
-        mask.h = height;
-        token.mask = mask;
-      }
-      else {
-        if (recreate) {
-          token = new PIXI.Graphics();
-          piece.addChild(token);
-        }
-        else {
-          token = piece.children[0];
-        }
-        token.clear();
-        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        token.drawRect(0, 0, objectData.w, objectData.h);
-        token.endFill();
-        token.w = width;
-        token.h = height;
-      }
-    }
-    else if (objectData.drawing == "line") {
-      if (recreate) {
-        token = new PIXI.Graphics();
-        piece.addChild(token);
-      }
-      else {
-        token = piece.children[0];
-      }
-      token.clear();
-      token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1 || objectData.c2), util.RGB_ALPHA(objectData.c1 || objectData.c2));
-      token.moveTo(objectData.x1, objectData.y1);
-      token.lineTo(objectData.x2, objectData.y2);
-    }
-    else if (objectData.drawing == "circle") {
-      if (objectData.i) {
-        var mask;
-        if (recreate) {
-          var text = new PIXI.Texture.fromImage(objectData.i);
-          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
-          token.drawing = objectData.drawing;
-          piece.addChild(token);
-
-          mask = new PIXI.Graphics();
-          token.mask = mask;
-          piece.addChild(mask);
-        }
-        else {
-          token = piece.children[0];
-          mask = piece.children[1];
-        }
-
-        mask.clear();
-        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.drawCircle(objectData.radius,objectData.radius,objectData.radius);
-        mask.endFill();
-      }
-      else {
-        if (recreate) {
-          token = new PIXI.Graphics();
-          piece.addChild(token);
-        }
-        else {
-          token = piece.children[0];
-        }
-        token.clear();
-        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
-        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.drawCircle(objectData.radius,objectData.radius,objectData.radius);
-        token.endFill();
-      }
-    }
-    else if (objectData.drawing == "text") {
-      if (recreate) {
-        token = new PIXI.Text(null, new PIXI.TextStyle(objectData.style || boardApi.pix.fonts.default));
-        piece.addChild(token);
-      }
-      else {
-        token = piece.children[0];
-      }
-      if (JSON.stringify(token.style) != JSON.stringify(objectData.style)) {
-        token.style = objectData.style;
-        token.dirty = true;
-      }
-      token.text = objectData.text;
-    }
-    else if (objectData.drawing == "region") {
-      if (objectData.i) {
-        var mask;
-        if (recreate) {
-          var text = new PIXI.Texture.fromImage(objectData.i);
-          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
-          token.drawing = objectData.drawing;
-          piece.addChild(token);
-
-          mask = new PIXI.Graphics();
-          piece.addChild(mask);
-        }
-        else {
-          token = piece.children[0];
-          mask = piece.children[1];
-        }
-
-        mask.clear();
-        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        mask.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        for (var i=1; i<objectData.regions.length; i++) {
-          var regionData = objectData.regions[i];
-          mask.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
-        }
-        mask.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        mask.closePath();
-        mask.endFill();
-        token.mask = mask;
-      }
-      else {
-        if (recreate) {
-          token = new PIXI.Graphics();
-          piece.addChild(token);
-        }
-        else {
-          token = piece.children[0];
-        }
-        token.clear();
-        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
-        token.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        for (var i=1; i<objectData.regions.length; i++) {
-          var regionData = objectData.regions[i];
-          token.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
-        }
-        token.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
-        token.closePath();
-        token.endFill();
-      }
-    }
-  }
-  pieceWrap.update(options.data);
-  return pieceWrap;
-}
-
-boardApi.pix.createObject = function(options, obj, app, scope) {
+boardApi.createObject = function(options, obj, app, scope) {
   var data = obj.data;
   var layer = options.layer;
   var type = options.type;
@@ -372,8 +104,8 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
           var finalW;
           var finalH;
 
-          var startX = boardApi.pix.dragging.pageX;
-          var startY = boardApi.pix.dragging.pageY;
+          var startX = boardApi.dragging.pageX;
+          var startY = boardApi.dragging.pageY;
           var endX = ev.pageX;
           var endY = ev.pageY;
 
@@ -429,7 +161,7 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
 
           return {w : Math.abs(finalW), h : Math.abs(finalH), x : finalX, y : finalY};
         }
-        boardApi.pix.newDragEvent({
+        boardApi.newDragEvent({
           startX : pieceData.x,
           startY : pieceData.y,
           startW : pieceData.w,
@@ -439,11 +171,11 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
           startObject : objectData,
           move : function(ev){
             var result = resize(ev);
-            boardApi.pix.dragging.startObject.x = result.x || boardApi.pix.dragging.startObject.x;
-            boardApi.pix.dragging.startObject.y = result.y || boardApi.pix.dragging.startObject.y;
-            boardApi.pix.dragging.startObject.w = result.w || boardApi.pix.dragging.startObject.w;
-            boardApi.pix.dragging.startObject.h = result.h || boardApi.pix.dragging.startObject.h;
-            objectWrap.update(boardApi.pix.dragging.startObject);
+            boardApi.dragging.startObject.x = result.x || boardApi.dragging.startObject.x;
+            boardApi.dragging.startObject.y = result.y || boardApi.dragging.startObject.y;
+            boardApi.dragging.startObject.w = result.w || boardApi.dragging.startObject.w;
+            boardApi.dragging.startObject.h = result.h || boardApi.dragging.startObject.h;
+            objectWrap.update(boardApi.dragging.startObject);
           },
           end : function(ev){
             var result = resize(ev, !_down[16]);
@@ -462,19 +194,21 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
                 objectWrap.resize(ev);
               }
             }, 10);
-            delete boardApi.pix.dragging;
+            delete boardApi.dragging;
           }
         }, ev);
       }
-      boardApi.pix.objectClick = true;
+      boardApi.objectClick = true;
     });
     handles[i] = dragHandle;
   }
   object.on("mouseover", function(ev){
-    if (objectWrap.canInteract && !objectWrap.canInteract(ev)) {
+    if ((objectWrap.canSelect && !objectWrap.canSelect(ev)) || (objectWrap.canInteract && !objectWrap.canInteract(ev))) {
+      rotateHandle.visible = false;
       object.cursor = "";
     }
     else {
+      rotateHandle.visible = true;
       object.cursor == "pointer";
     }
   });
@@ -482,9 +216,9 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
     var layer = objectWrap.lookup.layer;
     var type = objectWrap.lookup.type;
     var index = objectWrap.lookup.index;
-    if (!objectWrap.canChange || objectWrap.canChange()) {
+    if (!objectWrap.canSelect || objectWrap.canSelect()) {
       objectSelected.visible = true;
-      boardApi.pix.selections[obj.id()+"-"+layer+"-"+type+"-"+index] = {
+      boardApi.selections[obj.id()+"-"+layer+"-"+type+"-"+index] = {
         layer : layer,
         index : index,
         type : type,
@@ -501,30 +235,43 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
     var type = objectWrap.lookup.type;
     var index = objectWrap.lookup.index;
     objectSelected.visible = false;
-    delete boardApi.pix.selections[obj.id()+"-"+layer+"-"+type+"-"+index];
+    delete boardApi.selections[obj.id()+"-"+layer+"-"+type+"-"+index];
   }
   object.on("mousedown", function(ev){
     var layer = objectWrap.lookup.layer;
     var type = objectWrap.lookup.type;
     var index = objectWrap.lookup.index;
-    if (objectWrap.canInteract && !objectWrap.canInteract(ev)) {
+
+    if (objectWrap.canSelect && !objectWrap.canSelect(ev)) {
       return;
     }
 
     var key = ev.data.originalEvent.keyCode || ev.data.originalEvent.which;
     if (key == 1) {
       objectWrap.update();
-      if (!_down[16] && !boardApi.pix.objectClick) {
-        if (Object.keys(boardApi.pix.selections).length <= 1) {
-          for (var id in boardApi.pix.selections) {
-            boardApi.pix.selections[id].selected.visible = false;
-            delete boardApi.pix.selections[id];
+      if (!_down[16] && !boardApi.objectClick) {
+        if (Object.keys(boardApi.selections).length <= 1) {
+          for (var id in boardApi.selections) {
+            boardApi.selections[id].selected.visible = false;
+            delete boardApi.selections[id];
           }
         }
       }
-      objectWrap.select();
+      if (objectSelected.visible && _down[16]) {
+        objectWrap.unselect();
+      }
+      else {
+        objectWrap.select();
+      }
 
-      if (!boardApi.pix.dragging) {
+      if (objectWrap.canInteract && !objectWrap.canInteract(ev)) {
+        boardApi.newDragEvent({
+          move : function(ev){},
+          end : function(ev){delete boardApi.dragging},
+        });
+        return;
+      }
+      if (!boardApi.dragging) {
         var pData;
         if (layer != null && type != null && index != null) {
           pData = obj.data.layers[layer][type][index];
@@ -536,7 +283,7 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
           context[ent.data._t] = duplicate(ent.data);
         }
 
-        boardApi.pix.newDragEvent({
+        boardApi.newDragEvent({
           offsetX : offset.x,
           offsetY : offset.y,
           move : function(ev){
@@ -544,33 +291,39 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
               var layer = objectWrap.lookup.layer;
               var type = objectWrap.lookup.type;
               var index = objectWrap.lookup.index;
-              var stage = boardApi.pix.apps[app.attr("id")].stage;
+              var stage = boardApi.apps[app.attr("id")].stage;
               var pData = obj.data.layers[layer][type][index];
               var focal = stage.toLocal({x : ev.pageX, y : ev.pageY});
 
-              var deltaX = focal.x-objectWrap.x-boardApi.pix.dragging.offsetX;
-              var deltaY = focal.y-objectWrap.y-boardApi.pix.dragging.offsetY;
+              var deltaX = focal.x-objectWrap.x-boardApi.dragging.offsetX;
+              var deltaY = focal.y-objectWrap.y-boardApi.dragging.offsetY;
 
               if (Math.abs(deltaX) >= 1 || Math.abs(deltaY) >= 1) {
-                boardApi.pix.dragging.dragged = true;
+                boardApi.dragging.dragged = true;
                 layout.coverlay($(".piece-quick-edit"));
               }
 
-              for (var key in boardApi.pix.selections) {
-                if (boardApi.pix.selections[key].type == type) {
-                  boardApi.pix.selections[key].wrap.x += deltaX;
-                  boardApi.pix.selections[key].wrap.y += deltaY;
+              for (var key in boardApi.selections) {
+                if (boardApi.selections[key].type == type) {
+                  if (!boardApi.selections[key].wrap.canChange || boardApi.selections[key].wrap.canChange()) {
+                    boardApi.selections[key].wrap.x += deltaX;
+                    boardApi.selections[key].wrap.y += deltaY;
+                  }
+                  else {
+                    boardApi.selections[key].wrap.unselect();
+                  }
                 }
               }
-              if (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length < 800) {
-                if (type == "p" && pData.eID && hasSecurity(getCookie("UserID"), "Visible", obj.data)) {
+              // disabled until more optimized solution can be found
+              if (false && boardApi.fog[obj.id()] && boardApi.fog[obj.id()].length < 800 && obj.data.options.fog) {
+                if (type == "p" && pData.eID && hasSecurity(getCookie("UserID"), "Visible", getEnt(pData.eID).data)) {
                   var range;
                   if (pData.eID && pData.o && pData.o.Sight) {
                     var auraData = pData.o.Sight;
-                    range = boardApi.pix.scale(sync.eval(auraData.d, context), obj, true);
+                    range = boardApi.scale(sync.eval(auraData.d, context), obj, true);
                   }
-                  boardApi.pix.apps[app.attr("id")].views[layer+"-"+type+"-"+index] = boardApi.pix.buildDynamicFog(obj, app, objectWrap.x + pData.w/2, objectWrap.y + pData.h/2, range);
-                  boardApi.pix.rebuildDynamicFog(obj, app);
+                  boardApi.apps[app.attr("id")].views[layer+"-"+type+"-"+index] = boardApi.buildDynamicFog(obj, app, objectWrap.x + pData.w/2, objectWrap.y + pData.h/2, range);
+                  boardApi.rebuildDynamicFog(obj, app);
                 }
               }
             }
@@ -579,27 +332,28 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
             var layer = objectWrap.lookup.layer;
             var type = objectWrap.lookup.type;
             var index = objectWrap.lookup.index;
-            var stage = boardApi.pix.apps[app.attr("id")].stage;
+            var stage = boardApi.apps[app.attr("id")].stage;
             var pData = obj.data.layers[layer][type][index];
             if (!pData) {
-              delete boardApi.pix.dragging;
+              delete boardApi.dragging;
               return;
             }
+            var isHex = obj.data.options && obj.data.options.hex;
             var focal = stage.toLocal({x : ev.pageX, y : ev.pageY});
 
-            var offsetX = boardApi.pix.dragging.offsetX;
-            var offsetY = boardApi.pix.dragging.offsetY;
+            var offsetX = boardApi.dragging.offsetX;
+            var offsetY = boardApi.dragging.offsetY;
             if (data.gridW) {
-              offsetX = boardApi.pix.dragging.offsetX%(data.gridW);
+              offsetX = boardApi.dragging.offsetX%(data.gridW);
             }
             if (data.gridH) {
-              offsetY = boardApi.pix.dragging.offsetY%(data.gridH);
+              offsetY = boardApi.dragging.offsetY%(data.gridH);
             }
 
             var finalX = objectWrap.x+offsetX;
             var finalY = objectWrap.y+offsetY;
             var now = Date.now();
-            if (!boardApi.pix.dragging.dragged || (objectWrap.canChange && !objectWrap.canChange(ev))) {
+            if (!boardApi.dragging.dragged || (objectWrap.canChange && !objectWrap.canChange(ev))) {
               if (!object._doubleClicked) {
                 if (objectWrap.onclick) {
                   objectWrap.onclick(ev);
@@ -618,10 +372,26 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
             }
             else if (Math.abs(finalX-pData.x) > 1 && Math.abs(finalY-pData.y) > 1) {
               if (!_down[16] && data.gridW && data.gridH) {
-                var xGrid = Math.floor((finalX - (data.gridX || 0))/data.gridW);
-                var yGrid = Math.floor((finalY - (data.gridY || 0))/data.gridH);
-                finalX = (xGrid * data.gridW + (data.gridX || 0));
-                finalY = (yGrid * data.gridH + (data.gridY || 0));
+                if (isHex) {
+                  var xGrid = Math.floor((finalX - (data.gridX || 0))/(data.gridW * 0.75));
+                  var yGrid;
+
+                  finalX = (xGrid * data.gridW + (data.gridX || 0) - (xGrid * data.gridW + (data.gridX || 0))/4);
+                  if (xGrid % 2) {
+                    yGrid = Math.floor((finalY - (data.gridY || 0) - data.gridH/2)/data.gridH);
+                    finalY = (yGrid * data.gridH + (data.gridY || 0) + data.gridH/2);
+                  }
+                  else {
+                    yGrid = Math.floor((finalY - (data.gridY || 0))/data.gridH);
+                    finalY = (yGrid * data.gridH + (data.gridY || 0));
+                  }
+                }
+                else {
+                  var xGrid = Math.floor((finalX - (data.gridX || 0))/data.gridW);
+                  var yGrid = Math.floor((finalY - (data.gridY || 0))/data.gridH);
+                  finalX = (xGrid * data.gridW + (data.gridX || 0));
+                  finalY = (yGrid * data.gridH + (data.gridY || 0));
+                }
               }
               else {
                 finalX -= offsetX;
@@ -631,8 +401,8 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
               var deltaX = pData.x - finalX;
               var deltaY = pData.y - finalY;
               // changed
-              for (var key in boardApi.pix.selections) {
-                var selectData = boardApi.pix.selections[key];
+              for (var key in boardApi.selections) {
+                var selectData = boardApi.selections[key];
                 if (selectData.type == type) {
                   obj.data.layers[selectData.layer][selectData.type][selectData.index].x -= deltaX;
                   obj.data.layers[selectData.layer][selectData.type][selectData.index].y -= deltaY;
@@ -642,7 +412,7 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
                     selectData.wrap.move(ev, deltaX, deltaY);
                   }
                   var pieceData = obj.data.layers[selectData.layer][selectData.type][selectData.index];
-                  if (boardApi.pix.fog[obj.id()] && boardApi.pix.fog[obj.id()].length) {
+                  if (boardApi.fog[obj.id()] && boardApi.fog[obj.id()].length) {
                     if (selectData.type == "p" && pieceData.eID) {
                       var ent = getEnt(pieceData.eID);
                       var userID = app.attr("UserID") || getCookie("UserID");
@@ -651,22 +421,22 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
                         var range;
                         if (pieceData.eID && pieceData.o && pieceData.o.Sight) {
                           var auraData = pieceData.o.Sight;
-                          range = boardApi.pix.scale(sync.eval(auraData.d, context), obj, true);
+                          range = boardApi.scale(sync.eval(auraData.d, context), obj, true);
                         }
-                        boardApi.pix.apps[app.attr("id")].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.pix.buildDynamicFog(obj, app, selectData.wrap.x + pieceData.w/2, selectData.wrap.y + pieceData.h/2, range);
-                        boardApi.pix.rebuildDynamicFog(obj, app);
+                        boardApi.apps[app.attr("id")].views[selectData.layer+"-"+selectData.type+"-"+selectData.index] = boardApi.buildDynamicFog(obj, app, selectData.wrap.x + pieceData.w/2, selectData.wrap.y + pieceData.h/2, range);
+                        boardApi.rebuildDynamicFog(obj, app);
                       }
                     }
                   }
                 }
               }
             }
-            delete boardApi.pix.dragging;
+            delete boardApi.dragging;
           }
         }, ev);
       }
     }
-    boardApi.pix.objectClick = true;
+    boardApi.objectClick = true;
   });
   object.on("mouseup", function(ev){});
   object.on("mouseupoutside", function(ev){});
@@ -674,13 +444,13 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
     layout.coverlay($(".piece-quick-edit"));
     var key = ev.data.originalEvent.keyCode || ev.data.originalEvent.which;
     if (key == 1) {
-      boardApi.pix.newDragEvent({
+      boardApi.newDragEvent({
         move : function(ev){
           var xPos = ev.pageX;
           var yPos = ev.pageY;
 
-          for (var key in boardApi.pix.selections) {
-            var selectData = boardApi.pix.selections[key];
+          for (var key in boardApi.selections) {
+            var selectData = boardApi.selections[key];
             var focal = selectData.image.toGlobal({x : selectData.selected.width/2-5, y : selectData.selected.height/2});
 
             var angle = Math.atan2(focal.y - yPos, focal.x - xPos);
@@ -692,8 +462,8 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
           var xPos = ev.pageX;
           var yPos = ev.pageY;
 
-          for (var key in boardApi.pix.selections) {
-            var selectData = boardApi.pix.selections[key];
+          for (var key in boardApi.selections) {
+            var selectData = boardApi.selections[key];
             var focal = selectData.image.toGlobal({x : selectData.selected.width/2-5, y : selectData.selected.height/2});
 
             var angle = Math.atan2(focal.y - yPos, focal.x - xPos);
@@ -711,11 +481,11 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
             selectData.wrap.update();
           }
 
-          delete boardApi.pix.dragging;
+          delete boardApi.dragging;
         }
       }, ev);
     }
-    boardApi.pix.objectClick = true;
+    boardApi.objectClick = true;
   });
 
 
@@ -795,11 +565,17 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
         dragHandle.drawRoundedRect(0, 0, size, size, 2);
         dragHandle.endFill();
         dragHandle.cursor = handlePos[i].cursor;
-        if (objectData.r) {
+        if (objectData.r || (objectData.lookup && objectData.lookup.type == "d") || !hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
           dragHandle.visible = false;
         }
         else {
-          dragHandle.visible = true;
+          var zoom = Number(app.attr("zoom"))/100;
+          if (zoom != 1 && (i != "r" && i != "br" && i != "b")) {
+            dragHandle.visible = false;
+          }
+          else {
+            dragHandle.visible = true;
+          }
         }
       }
       if (objectWrap.rebuild) {
@@ -809,10 +585,10 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
   }
   objectWrap.animate = function(endData, startData, time) {
     var time = time || 1;
-    if (boardApi.pix.apps[app.attr("id")] && boardApi.pix.apps[app.attr("id")].stage) {
+    if (boardApi.apps[app.attr("id")] && boardApi.apps[app.attr("id")].stage) {
       if (objectWrap.animating) {
         objectWrap.update();
-        boardApi.pix.apps[app.attr("id")].ticker.remove(objectWrap.animating);
+        boardApi.apps[app.attr("id")].ticker.remove(objectWrap.animating);
       }
       if (!objectWrap.start) {
         if (startData) {
@@ -897,7 +673,7 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
           if (objectWrap.force <= now) {
             // finish the animation
             objectWrap.update(objectWrap.end);
-            boardApi.pix.apps[app.attr("id")].ticker.remove(objectWrap.animating);
+            boardApi.apps[app.attr("id")].ticker.remove(objectWrap.animating);
             delete objectWrap.force;
             delete objectWrap.end;
             delete objectWrap.duration;
@@ -906,14 +682,297 @@ boardApi.pix.createObject = function(options, obj, app, scope) {
           }
         }
       }
-      boardApi.pix.apps[app.attr("id")].ticker.add(objectWrap.animating);
+      boardApi.apps[app.attr("id")].ticker.add(objectWrap.animating);
     }
   }
   objectWrap.update(options.objectData);
   return objectWrap;
 }
 
-boardApi.pix.createTile = function(options, obj, app, scope){
+boardApi.createDrawing = function(options, obj, app, scope) {
+  var data = obj.data;
+  var isHex = data.options && data.options.hex;
+  var hasGrid = data.gridW && data.gridW;
+  var objectData = options.data;
+  options.type = "d";
+
+  var layer = options.layer;
+  var type = options.type;
+  var index = options.index;
+
+  var pieceWrap = boardApi.createObject(options, obj, app, scope);
+  pieceWrap.lookup = {layer : layer, type : type, index : index};
+
+  pieceWrap.canSelect = function(ev){
+    return pieceWrap.canInteract(ev);
+  }
+
+  pieceWrap.canInteract = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+    if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.drawing) {
+      return false;
+    }
+    if (app.attr("background")) {
+      return false;
+    }
+    if ((hasRights || objectData.uID == getCookie("UserID")) && app.attr("layer") == layer ) {
+      return true;
+    }
+    return false;
+  }
+  pieceWrap.resize = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+
+    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
+      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
+      return true;
+    }
+    return false;
+  }
+  pieceWrap.rotate = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+
+    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
+      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
+      return true;
+    }
+    return false;
+  }
+  pieceWrap.move = function(ev){
+    if (!pieceWrap.lookup) {return false;}
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer][type][index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+    if ((hasRights || objectData.uID == getCookie("UserID")) && !floatingTile) {
+      runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : objectData});
+      return true;
+    }
+    return false;
+  }
+
+  var piece = pieceWrap.children[0];
+  var pieceSelected = pieceWrap.children[1];
+  var outline = pieceSelected.children[0];
+
+  pieceWrap.rebuild = function(objectData) {
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    if (!objectData && layer != null && index != null) {
+      objectData = obj.data.layers[layer][type][index];
+    }
+
+    var x = objectData.x;
+    var y = objectData.y;
+    var width = Math.max(10, objectData.w);
+    var height = Math.max(10, objectData.h);
+
+    var recreate = false;
+    if (piece.children && piece.children.length && piece.children[0]) {
+      if (piece.children[0].drawing != objectData.drawing) {
+        piece.children[0].destroy(true);
+        recreate = true;
+      }
+    }
+    else {
+      recreate = true;
+    }
+
+    var token;
+    if (objectData.drawing == "free") {
+      if (recreate) {
+        token = new PIXI.Sprite.fromImage(objectData.i);
+        piece.addChild(token);
+      }
+      else {
+        token = piece.children[0];
+      }
+      token.width = width;
+      token.height = height;
+    }
+    else if (objectData.drawing == "box") {
+      if (objectData.i) {
+        var mask;
+        if (recreate) {
+          var text = new PIXI.Texture.fromImage(objectData.i);
+          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
+          token.drawing = objectData.drawing;
+          piece.addChild(token);
+
+          mask = new PIXI.Graphics();
+          piece.addChild(mask);
+        }
+        else {
+          token = piece.children[0];
+          mask = piece.children[1];
+        }
+
+        mask.clear();
+        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        mask.drawRect(0, 0, objectData.w, objectData.h);
+        mask.endFill();
+        mask.w = width;
+        mask.h = height;
+        token.mask = mask;
+      }
+      else {
+        if (recreate) {
+          token = new PIXI.Graphics();
+          piece.addChild(token);
+        }
+        else {
+          token = piece.children[0];
+        }
+        token.clear();
+        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.lineStyle(objectData.ls || 2, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        token.drawRect(0, 0, objectData.w, objectData.h);
+        token.endFill();
+        token.w = width;
+        token.h = height;
+      }
+    }
+    else if (objectData.drawing == "line") {
+      if (recreate) {
+        token = new PIXI.Graphics();
+        piece.addChild(token);
+      }
+      else {
+        token = piece.children[0];
+      }
+      token.clear();
+      token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1 || objectData.c2), util.RGB_ALPHA(objectData.c1 || objectData.c2));
+      token.moveTo(objectData.x1, objectData.y1);
+      token.lineTo(objectData.x2, objectData.y2);
+    }
+    else if (objectData.drawing == "circle") {
+      if (objectData.i) {
+        var mask;
+        if (recreate) {
+          var text = new PIXI.Texture.fromImage(objectData.i);
+          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
+          token.drawing = objectData.drawing;
+          piece.addChild(token);
+
+          mask = new PIXI.Graphics();
+          token.mask = mask;
+          piece.addChild(mask);
+        }
+        else {
+          token = piece.children[0];
+          mask = piece.children[1];
+        }
+
+        mask.clear();
+        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.drawCircle(objectData.radius,objectData.radius,objectData.radius);
+        mask.endFill();
+      }
+      else {
+        if (recreate) {
+          token = new PIXI.Graphics();
+          piece.addChild(token);
+        }
+        else {
+          token = piece.children[0];
+        }
+        token.clear();
+        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c2), util.RGB_ALPHA(objectData.c2));
+        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.drawCircle(objectData.radius,objectData.radius,objectData.radius);
+        token.endFill();
+      }
+    }
+    else if (objectData.drawing == "text") {
+      if (recreate) {
+        token = new PIXI.Text(null, new PIXI.TextStyle(objectData.style || boardApi.fonts.default));
+        piece.addChild(token);
+      }
+      else {
+        token = piece.children[0];
+      }
+      if (JSON.stringify(token.style) != JSON.stringify(objectData.style)) {
+        token.style = objectData.style;
+        token.dirty = true;
+      }
+      token.text = objectData.text;
+    }
+    else if (objectData.drawing == "region") {
+      if (objectData.i) {
+        var mask;
+        if (recreate) {
+          var text = new PIXI.Texture.fromImage(objectData.i);
+          token = new PIXI.TilingSprite(text, objectData.w, objectData.h);
+          token.drawing = objectData.drawing;
+          piece.addChild(token);
+
+          mask = new PIXI.Graphics();
+          piece.addChild(mask);
+        }
+        else {
+          token = piece.children[0];
+          mask = piece.children[1];
+        }
+
+        mask.clear();
+        mask.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        mask.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        for (var i=1; i<objectData.regions.length; i++) {
+          var regionData = objectData.regions[i];
+          mask.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
+        }
+        mask.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        mask.closePath();
+        mask.endFill();
+        token.mask = mask;
+      }
+      else {
+        if (recreate) {
+          token = new PIXI.Graphics();
+          piece.addChild(token);
+        }
+        else {
+          token = piece.children[0];
+        }
+        token.clear();
+        token.beginFill(util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.lineStyle(objectData.ls || 3, util.RGB_HEX(objectData.c1), util.RGB_ALPHA(objectData.c1));
+        token.moveTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        for (var i=1; i<objectData.regions.length; i++) {
+          var regionData = objectData.regions[i];
+          token.lineTo(objectData.regions[i].x-objectData.x, objectData.regions[i].y-objectData.y);
+        }
+        token.lineTo(objectData.regions[0].x-objectData.x, objectData.regions[0].y-objectData.y);
+        token.closePath();
+        token.endFill();
+      }
+    }
+  }
+  pieceWrap.update(options.data);
+  return pieceWrap;
+}
+
+boardApi.createTile = function(options, obj, app, scope){
   var data = obj.data;
   var isHex = data.options && data.options.hex;
   var hasGrid = data.gridW && data.gridW;
@@ -924,9 +983,13 @@ boardApi.pix.createTile = function(options, obj, app, scope){
   var type = options.type;
   var index = options.index;
 
-  var pieceWrap = boardApi.pix.createObject(options, obj, app, scope);
+  var pieceWrap = boardApi.createObject(options, obj, app, scope);
   pieceWrap.lookup = {layer : layer, type : type, index : index};
   pieceWrap.tileData = duplicate(options.data);
+
+  pieceWrap.canSelect = function(ev){
+    return pieceWrap.canInteract(ev);
+  }
 
   pieceWrap.canInteract = function(ev){
     if (!pieceWrap.lookup || pieceWrap.lookup.layer == null || pieceWrap.lookup.type == null || pieceWrap.lookup.index == null) {return false;}
@@ -987,6 +1050,12 @@ boardApi.pix.createTile = function(options, obj, app, scope){
         var sH = Math.min(((tileData.gH || 1) * sheetData.gH + ((tileData.gH || 1)-1) * sheetData.p) / aspectH, sheetData.h);
 
         var texture = new PIXI.Texture(PIXI.loader.resources[sheetData.i].texture);
+        if (sX + sW > texture.baseTexture.width) {
+          sW = sW - ((sX + sW)-texture.baseTexture.width);
+        }
+        if ((sY + sH) > texture.baseTexture.height) {
+          sH = sH - ((sY + sH)-texture.baseTexture.height);
+        }
         texture.frame = new PIXI.Rectangle(sX, sY, sW, sH);
 
         if (tileData.t && (width >= (data.gridW || width) && height >= (data.gridH || height)) && !(isHex)) {
@@ -1035,7 +1104,119 @@ boardApi.pix.createTile = function(options, obj, app, scope){
   return pieceWrap;
 }
 
-boardApi.pix.createPiece = function(options, obj, app, scope){
+boardApi.drawShape = function(objectData, stand, lineStyle, isHex){
+  if (objectData.d == null || objectData.d == 0) {
+    var sX = 0;
+    var sY = 0;
+    if (isHex) {
+      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+      stand.moveTo(sX + 0, sY + objectData.h/2);
+      stand.lineTo(sX + objectData.w * 1/4, sY + 0);
+      stand.lineTo(sX + objectData.w * 3/4, sY + 0);
+      stand.lineTo(sX + objectData.w-0, sY + objectData.h/2);
+      stand.lineTo(sX + objectData.w * 3/4, sY + objectData.h-0);
+      stand.lineTo(sX + objectData.w * 1/4, sY + objectData.h-0);
+      stand.lineTo(sX + 0, sY + objectData.h/2);
+      stand.endFill();
+    }
+    else {
+      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+      stand.drawRect(1, 1, objectData.w-1, objectData.h-1);
+      stand.endFill();
+    }
+  }
+  else if (objectData.d == 1) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawRoundedRect(1, 1, objectData.w-1, objectData.h-1, Math.min(objectData.w, objectData.h)*0.1);
+    stand.endFill();
+  }
+  else if (objectData.d == 2) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawEllipse(objectData.w/2-1, objectData.h/2-1, objectData.w/2-1, objectData.h/2-1);
+    stand.endFill();
+  }
+  else if (objectData.d == 3) {
+    var path = [
+      0, 0,
+      objectData.w, 0,
+      objectData.w/2, objectData.h,
+      0, 0
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 4) {
+    var path = [
+      objectData.w/2, 0,
+      0, objectData.h,
+      objectData.w, objectData.h,
+      objectData.w/2, 0
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 5) {
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawStar(objectData.w/2,objectData.h/2,5,objectData.w/2,objectData.w/4);
+    stand.endFill();
+  }
+  else if (objectData.d == 6) {
+    var path = [
+      objectData.w/2, 0,
+      objectData.w, objectData.h * 2/5,
+      objectData.w * 4/5, objectData.h,
+      objectData.w * 1/5, objectData.h,
+      0, objectData.h * 2/5,
+      objectData.w/2, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 7) {
+    var path = [
+      objectData.w * 5/7, 0,
+      objectData.w, objectData.h * 3/6,
+      objectData.w * 5/7, objectData.h,
+      objectData.w * 2/7, objectData.h,
+      0, objectData.h * 3/6,
+      objectData.w * 2/7, 0,
+      objectData.w * 5/7, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+  else if (objectData.d == 9) {
+    var path = [
+      objectData.w * 4/6, 0,
+      objectData.w, objectData.h * 2/6,
+      objectData.w, objectData.h * 4/6,
+      objectData.w * 4/6, objectData.h,
+      objectData.w * 2/6, objectData.h,
+      0, objectData.h * 4/6,
+      0, objectData.h * 2/6,
+      objectData.w * 2/6, 0,
+      objectData.w * 4/6, 0,
+    ];
+    stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
+    stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
+    stand.drawPolygon(path);
+    stand.endFill();
+  }
+}
+
+boardApi.createPiece = function(options, obj, app, scope){
   if (options.data == null) {
     console.error("null value");
   }
@@ -1049,8 +1230,23 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
   var type = options.type;
   var index = options.index;
 
-  var pieceWrap = boardApi.pix.createObject(options, obj, app, scope);
+  var pieceWrap = boardApi.createObject(options, obj, app, scope);
   pieceWrap.lookup = {layer : layer, type : type, index : index};
+  pieceWrap.canSelect = function(){
+    var layer = pieceWrap.lookup.layer;
+    var type = pieceWrap.lookup.type;
+    var index = pieceWrap.lookup.index;
+    var objectData = obj.data.layers[layer].p[index];
+    var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
+    if (_down[17] || (objectData.l && app.attr("layer") != layer)) {
+      return false;
+    }
+
+    if (objectData.eID || hasRights) {
+      return true;
+    }
+    return false;
+  };
 
   pieceWrap.canInteract = function(ev){
     if (!pieceWrap.lookup) {return false;}
@@ -1059,7 +1255,7 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     var index = pieceWrap.lookup.index;
     var objectData = obj.data.layers[layer].p[index];
     var hasRights = hasSecurity(getCookie("UserID"), "Rights", obj.data) || hasSecurity(getCookie("UserID"), "Game Master");
-    if (_down[17]) {
+    if (_down[17] || (objectData.l && app.attr("layer") != layer)) {
       return false;
     }
     if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.drawing) {
@@ -1149,8 +1345,32 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     var objectData = obj.data.layers[layer].p[index];
     var ent = getEnt(objectData.eID);
     if ((hasSecurity(getCookie("UserID"), "Rights", obj.data) || (ent && hasSecurity(getCookie("UserID"), "Rights", ent.data))) && !floatingTile) {
-      var triggered = [];
-      if (Object.keys(boardApi.pix.triggers.cache[obj.id()]).length && objectData && !objectData.e) {
+      if (!hasSecurity(getCookie("UserID"), "Rights", obj.data) && !obj.data.options.noCollide && obj.data.options.fog) {
+        var endX = objectData.x + objectData.w/2;
+        var endY = objectData.y + objectData.h/2;
+
+        var startX = endX + deltaX;
+        var startY = endY + deltaY;
+        var moveDist = util.dist(startX, endX, startY, endY);
+
+        var fog = duplicate(boardApi.fog[obj.id()]);
+        fog.splice(0,8); // get rid of the boundries
+        for (var i in fog) {
+          if (util.intersectLine(fog[i].x1, fog[i].y1, fog[i].x2, fog[i].y2, startX, startY, endX, endY)) {
+            if (!$("#wall-warning").length) {
+              sendAlert({text : "You can't move through walls!", id : "wall-warning"});
+            }
+            obj.data.layers[layer].p[index].x = startX - objectData.w/2;
+            obj.data.layers[layer].p[index].y = startY - objectData.h/2;
+            pieceWrap.update();
+
+            runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : duplicate(obj.data.layers[layer].p[index])});
+            return false;
+          }
+        }
+      }
+
+      if (Object.keys(boardApi.triggers.cache[obj.id()]).length && objectData && !objectData.e) {
         var oldX = objectData.x + deltaX;
         var oldY = objectData.y + deltaY;
 
@@ -1162,51 +1382,53 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
         for (var lid in obj.data.layers) {
           ctx[obj.data._t].layers[lid] = {h : obj.data.layers[lid].h};
         }
-        for (var k in boardApi.pix.triggers.cache[obj.id()]) {
-          var tP = boardApi.pix.triggers.cache[obj.id()][k];
-          if (tP.layer != layer || tP.index != index) {
+        for (var k in boardApi.triggers.cache[obj.id()]) {
+          var triggered = [];
+          var tP = boardApi.triggers.cache[obj.id()][k];
+          if ((tP.layer != layer || tP.index != index) && obj.data.layers[tP.layer]) {
             tP = obj.data.layers[tP.layer].p[tP.index];
-            if (tP.e.t > 1) {
-              if (tP.e.t == 2 && (tP.x < midX && tP.x + tP.w > midX && tP.y < midY && tP.y + tP.h > midY)) {
-                triggered.push(duplicate(boardApi.pix.triggers.cache[obj.id()][k]));
-              }
-              else if ((tP.e.t == 3)) {
-                if (!(tP.x < oldX + objectData.w/2 && tP.x + tP.w > oldX + objectData.w/2 && tP.y < oldY + objectData.h/2 && tP.y + tP.h > oldY + objectData.h/2)) {
-                  if (util.intersectBox(oldX + objectData.w/2, oldY + objectData.h/2, midX, midY, tP.x, tP.y, tP.w, tP.h)) {
-                    triggered.push(duplicate(boardApi.pix.triggers.cache[obj.id()][k]));
+            if (tP) {
+              if (tP.e.t > 1) {
+                if (tP.e.t == 2 && (tP.x < midX && tP.x + tP.w > midX && tP.y < midY && tP.y + tP.h > midY)) { // pressure plate
+                  triggered.push(duplicate(boardApi.triggers.cache[obj.id()][k]));
+                }
+                else if ((tP.e.t == 3)) { // trip wire
+                  if (!(tP.x < oldX + objectData.w/2 && tP.x + tP.w > oldX + objectData.w/2 && tP.y < oldY + objectData.h/2 && tP.y + tP.h > oldY + objectData.h/2)) {
+                    if (util.intersectBox(oldX + objectData.w/2, oldY + objectData.h/2, midX, midY, tP.x, tP.y, tP.w, tP.h)) {
+                      triggered.push(duplicate(boardApi.triggers.cache[obj.id()][k]));
+                    }
                   }
                 }
               }
-            }
-            if (triggered.length) {
-              var tLayer = boardApi.pix.triggers.cache[obj.id()][k].layer;
-              var tIndex = boardApi.pix.triggers.cache[obj.id()][k].index;
-              boardApi.pix.triggers.flush[obj.id()][tLayer+"-"+tIndex] = function() {
-                for (var cID in tP.e.calc) {
-                  var calcData = tP.e.calc[cID];
-                  if (calcData) {
-                    if (!calcData.cond || sync.eval(calcData.cond, ctx)) {
-                      if (calcData.e == 4) { // equation
-                        var evData = {
-                          icon : calcData.data.href,
-                          msg : sync.eval(calcData.msg, ctx),
-                          ui : calcData.ui,
-                          p : calcData.p,
-                          data : sync.executeQuery(calcData.data, ctx),
-                        }
-                        runCommand("diceCheck", evData);
-                      }
-                      else {
-                        var val = sync.eval(calcData.eq, ctx);
-                        var target = sync.traverse(obj.data, calcData.target);
-                        if (target instanceof Object) {
-                          sync.rawVal(target, val);
-                        }
-                        else {
-                          sync.traverse(obj.data, calcData.target, val);
-                        }
-                        if (calcData.target.match("layers\.")) {
-                          boardApi.pix.updateLayer(calcData.target.split(".")[1], null, obj);
+              if (triggered.length) {
+                var tLayer = boardApi.triggers.cache[obj.id()][k].layer;
+                var tIndex = boardApi.triggers.cache[obj.id()][k].index;
+                boardApi.triggers.flush[obj.id()][tLayer+"-"+tIndex] = function(k) {
+                  var tP = boardApi.triggers.cache[obj.id()][k];
+                  if (obj.data.layers[tP.layer]) {
+                    tP = obj.data.layers[tP.layer].p[tP.index];
+                    if (tP) {
+                      for (var cID in tP.e.calc) {
+                        var calcData = tP.e.calc[cID];
+                        if (calcData) {
+                          if (!calcData.cond || sync.eval(calcData.cond, ctx)) {
+                            if (util.events[calcData.e] && util.events[calcData.e].fire) { // equation
+                              util.events[calcData.e].fire(obj, app, calcData, tP, ctx);
+                            }
+                            else {
+                              var val = sync.eval(calcData.eq, ctx);
+                              var target = sync.traverse(obj.data, calcData.target);
+                              if (target instanceof Object) {
+                                sync.rawVal(target, val);
+                              }
+                              else {
+                                sync.traverse(obj.data, calcData.target, val);
+                              }
+                              if (calcData.target.match("layers\.")) {
+                                boardApi.updateLayer(calcData.target.split(".")[1], null, obj);
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -1231,39 +1453,49 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
 
     var point = pieceWrap.toGlobal({x : pieceSelected.width/2-5, y : 0});
     var ent = getEnt(pieceData.eID);
-    if (Object.keys(boardApi.pix.selections).length == 1 && $(".piece-quick-edit").length == 1 && $(".piece-quick-edit-app").attr("idstr") == obj.id()+"-"+layer+"-p-"+index) {
+    if (Object.keys(boardApi.selections).length == 1 && $(".piece-quick-edit").length == 1 && $(".piece-quick-edit-app").attr("idstr") == obj.id()+"-"+layer+"-p-"+index) {
       if (!game.locals["drawing"] || !game.locals["drawing"].data || game.locals["drawing"].data.target != app.attr("id") || !game.locals["drawing"].data.drawing) {
-        var temp;
-        if (!app.attr("creating")) {
-          app.attr("creating", true);
-          app.removeAttr("drawing");
-          app.removeAttr("configuring");
-          temp = true;
+        if (!pieceData.eID) {
+          var content = sync.render("ui_assetPicker")(obj, app, {
+            rights : "Visible",
+            select : function(ev, ui, ent, options){
+              obj.data.layers[layer].p[index].eID = ent.id();
+              if (ent.data.info && ent.data.info.img) {
+                if (ent.data.info.img.min) {
+                  obj.data.layers[layer].p[index].i = ent.data.info.img.min;
+                }
+              }
+              layout.coverlay("add-asset");
+              runCommand("boardMove", {id : obj.id(), layer : layer, type : "p", index : index, data : obj.data.layers[layer].p[index]});
+              boardApi.updateObject(layer, "p", index, obj);
+              ev.stopPropagation();
+              ev.preventDefault();
+            }
+          });
+          var popOut = ui_popOut({
+            target : $("body"),
+            prompt : true,
+            id : "add-asset",
+            title : "Change Link",
+            style : {"width" : assetTypes["assetPicker"].width, "height" : assetTypes["assetPicker"].height}
+          }, content);
+          popOut.resizable();
         }
-        var parent = $("#"+app.attr("id")+"-menu-"+obj.id());
-        parent.replaceWith(boardApi.pix.buildMenu(obj, app, scope));
-
-        game.locals["pieceBuilding"].data.layer = layer;
-        game.locals["pieceBuilding"].data.piece = index;
-        game.locals["pieceBuilding"].update();
-
-        if (temp) {
-          app.removeAttr("creating");
-          app.removeAttr("drawing");
-          app.removeAttr("configuring");
-          app.attr("rebuildmenu", true);
+        else if (ent && ent.data && hasSecurity(getCookie("UserID"), "Rights", ent.data)) {
+          assetTypes[ent.data._t].preview(ent, $(".piece-quick-edit"));
+          layout.coverlay($(".piece-quick-edit"));
         }
-
-        layout.coverlay($(".piece-quick-edit"));
       }
       return;
     }
     if ($(".piece-quick-edit").length == 0 || $(".piece-quick-edit-app").attr("layer") != layer || $(".piece-quick-edit-app").attr("piece") != index || $(".piece-quick-edit-app").attr("board") != obj.id()) {
-      if ((pieceWrap.canChange && !pieceWrap.canChange(ev)) || (Object.keys(boardApi.pix.selections).length == 1 && Object.keys(boardApi.pix.selections)[0] == obj.id()+"-"+layer+"-p-"+index)) {
+      if ((pieceWrap.canChange && !pieceWrap.canChange(ev)) || (Object.keys(boardApi.selections).length == 1 && Object.keys(boardApi.selections)[0] == obj.id()+"-"+layer+"-p-"+index)) {
         if (game.locals["pieceBuilding"] && game.locals["pieceBuilding"].data) {
-          game.locals["pieceBuilding"].data.layer = layer;
-          game.locals["pieceBuilding"].data.piece = index;
-          game.locals["pieceBuilding"].update();
+          if (hasSecurity(getCookie("UserID"), "Rights", obj.data)) {
+            game.locals["pieceBuilding"].data.layer = layer;
+            game.locals["pieceBuilding"].data.piece = index;
+            game.locals["pieceBuilding"].update();
+          }
         }
         //boardApi.drawThreats(board, true);
         //board.drawLayers();
@@ -1286,6 +1518,7 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
           noCss : true,
           hideclose : true,
         }, content);
+        popout.draggable("destroy");
         popout.addClass("piece-quick-edit");
         popout.css("border", "none");
         popout.css("box-shadow", "none");
@@ -1306,8 +1539,8 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
           top : Math.max(Math.min(top, $(window).outerHeight()-popout.height()),0)
         });
 
-        scope.layer = layer;
-        app.attr("layer", scope.layer);
+        //scope.layer = layer;
+        //app.attr("layer", scope.layer);
       }
     }
     if (hasSecurity(getCookie("UserID"), "Rights", data) || (pieceData.eID && ent && hasSecurity(getCookie("UserID"), "Rights", ent.data))) {
@@ -1367,7 +1600,7 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
                     sync.traverse(obj.data, calcData.target, val);
                   }
                   if (calcData.target.match("layers\.")) {
-                    boardApi.pix.updateLayer(calcData.target.split(".")[1], {r : true}, obj);
+                    boardApi.updateLayer(calcData.target.split(".")[1], {r : true}, obj);
                   }
                 }
               }
@@ -1385,6 +1618,9 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
 
   var stand = new PIXI.Graphics();
   piece.addChild(stand);
+
+  var healthbar = new PIXI.Graphics();
+  pieceWrap.addChild(healthbar);
 
   var title = new PIXI.Text("", new PIXI.TextStyle({
     fontFamily: "Arial",
@@ -1404,13 +1640,14 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
   }));
   pieceWrap.addChild(title);
 
-  var healthbar = new PIXI.Graphics();
-  pieceWrap.addChild(healthbar);
+  var statusEffects = new PIXI.Container();
+  pieceWrap.addChild(statusEffects);
 
   pieceWrap.rebuild = function(objectData, rebuild) {
     var layer = pieceWrap.lookup.layer;
     var type = pieceWrap.lookup.type;
     var index = pieceWrap.lookup.index;
+    var isHex = obj.data.options && obj.data.options.hex;
 
     if (!objectData && layer != null && index != null) {
       objectData = obj.data.layers[layer].p[index];
@@ -1426,104 +1663,15 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
       lineStyle = false;
     }
     stand.clear();
-    if (objectData.d == null || objectData.d == 0) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawRect(1, 1, objectData.w-1, objectData.h-1);
-      stand.endFill();
-    }
-    else if (objectData.d == 1) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawRoundedRect(1, 1, objectData.w-1, objectData.h-1, Math.min(objectData.w, objectData.h)*0.1);
-      stand.endFill();
-    }
-    else if (objectData.d == 2) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawEllipse(objectData.w/2-1, objectData.w/2-1, objectData.w/2-1, objectData.h/2-1);
-      stand.endFill();
-    }
-    else if (objectData.d == 3) {
-      var path = [
-        0, 0,
-        objectData.w, 0,
-        objectData.w/2, objectData.h,
-        0, 0
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 4) {
-      var path = [
-        objectData.w/2, 0,
-        0, objectData.h,
-        objectData.w, objectData.h,
-        objectData.w/2, 0
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 5) {
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawStar(objectData.w/2,objectData.h/2,5,objectData.w/2,objectData.w/4);
-      stand.endFill();
-    }
-    else if (objectData.d == 6) {
-      var path = [
-        objectData.w/2, 0,
-        objectData.w, objectData.h * 2/5,
-        objectData.w * 4/5, objectData.h,
-        objectData.w * 1/5, objectData.h,
-        0, objectData.h * 2/5,
-        objectData.w/2, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 7) {
-      var path = [
-        objectData.w * 5/7, 0,
-        objectData.w, objectData.h * 3/6,
-        objectData.w * 5/7, objectData.h,
-        objectData.w * 2/7, objectData.h,
-        0, objectData.h * 3/6,
-        objectData.w * 2/7, 0,
-        objectData.w * 5/7, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
-    else if (objectData.d == 9) {
-      var path = [
-        objectData.w * 4/6, 0,
-        objectData.w, objectData.h * 2/6,
-        objectData.w, objectData.h * 4/6,
-        objectData.w * 4/6, objectData.h,
-        objectData.w * 2/6, objectData.h,
-        0, objectData.h * 4/6,
-        0, objectData.h * 2/6,
-        objectData.w * 2/6, 0,
-        objectData.w * 4/6, 0,
-      ];
-      stand.beginFill(util.RGB_HEX(objectData.c), util.RGB_ALPHA(objectData.c));
-      stand.lineStyle(2, 0x000000, (lineStyle)?(0.4):(0));
-      stand.drawPolygon(path);
-      stand.endFill();
-    }
+    boardApi.drawShape(objectData, stand, lineStyle, isHex);
+
     var recreate = false;
     if (piece.children && piece.children.length && piece.children[1]) {
       if (piece.children[1].i != objectData.i || piece.children[1].eID != objectData.eID) {
         piece.children[1].destroy(true);
+        if (piece.children[2]) {
+          piece.children[2].destroy(true);
+        }
         recreate = true;
       }
     }
@@ -1535,15 +1683,71 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     if (recreate) {
       if (objectData.i) {
         objectData.i = String(objectData.i);
-        if (objectData.i[0] != "/") {
+        if (objectData.i[0] != "/" && layout.webclient) {
           objectData.i = "";
         }
+        var resource = PIXI.loader.resources[objectData.i];
         if (objectData.i && objectData.i.trim() && objectData.i.match(".mp4") || objectData.i.match(".webm") || objectData.i.match(".ogg")) {
           var videoText = PIXI.Texture.fromVideoUrl(objectData.i);
           videoText.baseTexture.source.loop = 1;
           videoText.baseTexture.source.volume = 0;
 
           token = new PIXI.Sprite(videoText);
+          token.i = objectData.i;
+        }
+        else if (objectData.i && objectData.i.trim() && objectData.i.match(".gif") && false) {
+          if (resource && resource.gifFrames && resource.gifFrames.length) {
+            token = new PIXI.extras.AnimatedSprite(resource.gifFrames);
+            token.animationSpeed = 0.2;
+            token.i = objectData.i;
+            token.gotoAndPlay(Math.round(Math.random() * resource.gifFrames.length - 1));
+          }
+          else if (!resource) {
+            var getFrames = function(r){
+              var frames           = [];
+              var gif              = new GIF(new Uint8Array(r.data));
+              var gifFrames        = gif.decompressFrames(true);
+              var gifWidth         = gifFrames[0].dims.width;
+              var gifHeight        = gifFrames[0].dims.height;
+              var gifCanvas        = document.createElement('canvas');
+              var gifCtx           = gifCanvas.getContext('2d');
+              var gifImageData     = gifCtx.createImageData(gifWidth, gifHeight);
+              gifCanvas.width  = gifWidth * gifFrames.length;
+              gifCanvas.height = gifHeight;
+              var gifSpriteSheet = new PIXI.BaseTexture.fromCanvas(gifCanvas);
+              gifFrames.map(function(f, i){
+                gifImageData.data.set(f.patch);
+                gifCtx.putImageData(gifImageData, i * gifWidth, 0);
+              }).map(function(f, i){
+                frames.push(new PIXI.Texture(gifSpriteSheet, new PIXI.Rectangle(i * gifWidth, 0, gifWidth, gifHeight)));
+              });
+              if (Math.floor(Math.log2(gifWidth)) != Math.ceil(Math.log2(gifWidth)) || Math.floor(Math.log2(gifHeight)) != Math.ceil(Math.log2(gifHeight))) {
+                sendAlert({text : ".gif size must be a power of 2"});
+                return [];
+              }
+              else {
+                return frames;
+              }
+            };
+            var onLoad = function(loader, res){
+              Object.keys(res).forEach(function(k){
+                if (res[k].extension == "gif" && res[k].data && !res[k].gifFrames) {
+                   res[k].gifFrames = getFrames(res[k]);
+                 }
+              });
+              obj.update();
+            };
+
+            PIXI.loaders.Resource.setExtensionLoadType('gif', PIXI.loaders.Resource.LOAD_TYPE.XHR);
+            PIXI.loaders.Resource.setExtensionXhrType('gif', PIXI.loaders.Resource.XHR_RESPONSE_TYPE.BUFFER);
+            PIXI.loader.add(objectData.i).load(onLoad);
+
+            token = new PIXI.Sprite.fromImage(objectData.i);
+            token.i = objectData.i;
+          }
+          else {
+            token = new PIXI.Sprite.fromImage(objectData.i);
+          }
         }
         else {
           token = new PIXI.Sprite.fromImage(objectData.i);
@@ -1557,7 +1761,6 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
         token.i = objectData.i;
         token.eID = duplicate(objectData.eID);
         piece.addChild(token);
-        //delete token.mask;
       }
       else if (objectData.eID) {
         var ent = getEnt(objectData.eID);
@@ -1583,6 +1786,11 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
             token.i = objectData.i;
             token.eID = duplicate(objectData.eID);
             piece.addChild(token);
+
+            var mask = new PIXI.Graphics();
+            boardApi.drawShape(objectData, mask, lineStyle, isHex);
+            piece.addChild(mask);
+            token.mask = mask;
           }
         }
       }
@@ -1598,44 +1806,140 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
         piece.children[1].width = objectData.w;
         piece.children[1].height = objectData.h;
       }
+      if (piece.children[1].mask) {
+        piece.children[1].mask.clear();
+        boardApi.drawShape(objectData, piece.children[1].mask, lineStyle, isHex);
+      }
     }
 
     var showHP = false;
     var percentage;
-
+    var hpHeight = 0;
     if (objectData.eID) {
       var ent = getEnt(objectData.eID);
-      if (ent && ent.data) {
-        boardApi.pix.entListen(objectData.eID);
-        if (!objectData.hp && game.templates.display.sheet.health) {
+      if (ent && ent.data && ent.data._t == "c") {
+        boardApi.entListen(objectData.eID);
+        if (!objectData.hp || objectData.hpb) {
           if (!obj.data.options.hpMode || obj.data.options.hpMode == 1 && (ent && ent.data && hasSecurity(getCookie("UserID"), "Visible", ent.data))) {
-            percentage = sync.traverse(ent.data, game.templates.display.sheet.health);
-            if (percentage instanceof Object && percentage.max) {
-              percentage = Number(percentage.current)/Number(percentage.max);
-              if (!objectData.hp) {
-                var hpHeight = 6*Math.min(Math.max(Math.floor(objectData.h/64),1),3);
+            var count = 0;
+            healthbar.clear();
+            if (!objectData.hpb) {
+              var path;
+              var boxed;
+              var color;
+              var hpStuff;
+              if (game.templates.display.sheet && game.templates.display.sheet.health) {
+                hpStuff = game.templates.display.sheet.health;
+              }
+              else if (game.templates.build && game.templates.display && game.templates.display.actors && game.templates.display.actors[ent.data._type]) {
+                hpStuff = game.templates.display.actors[ent.data._type].health;
+              }
 
-                healthbar.clear();
-                var endHP = percentage;
-                if (pieceWrap.force) {
-                  var timePerc = Math.min((Date.now()-pieceWrap.force)/1000/pieceWrap.duration, 0);
-                  percentage = endHP + (endHP-(healthbar.last || percentage))* timePerc;
+              if (hpStuff instanceof Object) {
+                path = hpStuff.target;
+                boxed = hpStuff.boxed;
+                color = hpStuff.color;
+              }
+              else {
+                path = hpStuff;
+              }
+              if (path) {
+                percentage = sync.traverse(ent.data, path);
+                if (percentage instanceof Object && percentage.max) {
+                  percentage = Math.min(Math.max(Number(percentage.current)/Number(percentage.max), 0), 1);
+
+                  if (!objectData.hp) {
+                    hpHeight = 6*Math.min(Math.max(Math.floor(objectData.h/64),1),3);
+                    var endHP = percentage;
+                    if (pieceWrap.force) {
+                      var timePerc = Math.min((Date.now()-pieceWrap.force)/1000/pieceWrap.duration, 0);
+                      percentage = endHP + (endHP-(healthbar.last || percentage))* timePerc;
+                    }
+                    showHP = "rgb("+(200-Math.ceil(200 * percentage))+","+(Math.ceil(200 * percentage))+",0)";
+
+                    if (boxed) {
+                      var healthEnt = sync.traverse(ent.data, path);
+                      var limit = Math.min(healthEnt.max || healthEnt.current, 15);
+                      var width = (objectData.w-4);
+                      for (var i=0; i<limit; i++) {
+                        healthbar.beginFill(0x333333, 0.5);
+                        healthbar.lineStyle(1,0x333333, 0.5);
+                        healthbar.drawRect(1 + ((2+width)/limit) * i, 0, width/limit-1, hpHeight);
+                        healthbar.endFill();
+                        if (i < healthEnt.current) {
+                          healthbar.beginFill(util.RGB_HEX(color || ("rgb("+(200-Math.ceil(200 * percentage))+","+(Math.ceil(200 * percentage))+",0)")), 0.7);
+                          healthbar.drawRect(1 + ((2+width)/limit) * i, 0, width/limit-1, hpHeight);
+                          healthbar.endFill();
+                        }
+                      }
+                    }
+                    else {
+                      healthbar.beginFill(0x333333, 0.5);
+                      healthbar.lineStyle(1,0x333333, 0.5);
+                      healthbar.drawRect(1, 0, (objectData.w-4), hpHeight);
+                      healthbar.endFill();
+                      healthbar.beginFill(util.RGB_HEX(color || ("rgb("+(200-Math.ceil(200 * percentage))+","+(Math.ceil(200 * percentage))+",0)")), 0.7);
+                      healthbar.drawRect(1, 0, (objectData.w-4)*percentage, hpHeight);
+                      healthbar.endFill();
+                    }
+
+                    healthbar.last = percentage;
+
+                    count++;
+                  }
                 }
-                showHP = "rgb("+(200-Math.ceil(200 * percentage))+","+(Math.ceil(200 * percentage))+",0)";
-
-                healthbar.beginFill(0x333333, 0.5);
-                healthbar.lineStyle(1,0x333333, 0.5);
-                healthbar.drawRect(2, 0, (objectData.w-4), hpHeight);
-                healthbar.endFill();
-                healthbar.beginFill(util.RGB_HEX("rgb("+(200-Math.ceil(200 * percentage))+","+(Math.ceil(200 * percentage))+",0)"), 0.7);
-                healthbar.drawRect(2, 0, (objectData.w-4)*percentage, hpHeight);
-                healthbar.endFill();
-                healthbar.x = 1;
-                healthbar.y = objectData.h-2-hpHeight;
-                healthbar.visible = true;
-                healthbar.last = percentage;
               }
             }
+            else {
+              for (var key in objectData.hpb) {
+                if (!objectData.hp) {
+                  hpHeight = 6*Math.min(Math.max(Math.floor(objectData.h/64),1),3);
+                  showHP = true;
+                  var percentage = Math.min(Math.max(Number(ent.data.counters[key].current)/Number(ent.data.counters[key].max), 0), 1);
+                  if (game.templates.display.sheet && ("counters."+key) == game.templates.display.sheet.health) {
+                    var endHP = percentage;
+                    healthbar.beginFill(0x333333, 0.5);
+                    healthbar.lineStyle(1,0x333333, 0.5);
+                    healthbar.drawRect(1, 0, (objectData.w-4), hpHeight);
+                    healthbar.endFill();
+                    healthbar.beginFill(util.RGB_HEX("rgb("+(200-Math.ceil(200 * percentage))+","+(Math.ceil(200 * percentage))+",0)"), 0.7);
+                    healthbar.drawRect(1, 0, (objectData.w-4)*percentage, hpHeight);
+                    healthbar.endFill();
+                  }
+                  else {
+                    if (objectData.hpb[key].b && ent.data.counters[key].current <= 15) {
+                      var limit = Math.min(ent.data.counters[key].max || ent.data.counters[key].current, 15);
+                      var width = (objectData.w-4);
+                      for (var i=0; i<limit; i++) {
+                        healthbar.beginFill(0x333333, 0.5);
+                        healthbar.lineStyle(1,0x333333, 0.5);
+                        healthbar.drawRect(1 + ((2+width)/limit) * i, hpHeight + (2 + 3) * count + 4, width/limit-1, 3);
+                        healthbar.endFill();
+                        if (i < ent.data.counters[key].current) {
+                          healthbar.beginFill(util.RGB_HEX(objectData.hpb[key].c), 0.7);
+                          healthbar.drawRect(1 + ((2+width)/limit) * i, hpHeight + (2 + 3) * count + 4, width/limit-1, 3);
+                          healthbar.endFill();
+                        }
+                      }
+                    }
+                    else {
+                      healthbar.beginFill(0x333333, 0.5);
+                      healthbar.lineStyle(1,0x333333, 0.5);
+                      healthbar.drawRect(1, hpHeight + (2 + 3) * count + 4, (objectData.w-4), 3);
+                      healthbar.endFill();
+                      healthbar.beginFill(util.RGB_HEX(objectData.hpb[key].c), 0.7);
+                      healthbar.drawRect(1, hpHeight + (2 + 3) * count + 4, (objectData.w-4)*percentage, 3);
+                      healthbar.endFill();
+                    }
+
+                    count++;
+                  }
+                }
+              }
+            }
+            healthbar.x = 1;
+            healthbar.y = objectData.h-2-hpHeight;
+            healthbar.visible = true;
           }
         }
       }
@@ -1643,12 +1947,39 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     if (!showHP) {
       healthbar.visible = false;
     }
+    if (objectData.rpg) {
+      for (var i=0; i<objectData.rpg.length; i++) {
+        var found = false;
+        for (var key=0; key<statusEffects.children.length; key++) {
+          if (statusEffects.children[key].img == objectData.rpg[i]) {
+            found = true;
+          }
+        }
+        if (!found) {
+          var effect = new PIXI.Sprite.fromImage(objectData.rpg[i]);
+          effect.width = 20;
+          effect.height = 20;
+          effect.img = objectData.rpg[i];
+          statusEffects.addChild(effect);
+        }
+      }
+      for (var key=statusEffects.children.length-1; key>=0; key--) {
+        statusEffects.children[key].x = objectData.w-key * 20-20;
+        statusEffects.children[key].y = 0;
+        if (!util.contains(objectData.rpg, statusEffects.children[key].img)) {
+          statusEffects.removeChild(statusEffects.children[key]);
+        }
+      }
+    }
+    else {
+      statusEffects.removeChildren();
+    }
 
     if (objectData.t) {
       title.anchor.x = 0.5;
       title.anchor.y = 0.5;
       title.x = objectData.w/2;
-      title.y = (objectData.eID == null)?(objectData.h/2):(10);
+      title.y = (objectData.eID == null)?(objectData.h/2):(objectData.h + 10);
       title.text = objectData.t;
       if (title.text != objectData.t) {
         title.text = objectData.t;
@@ -1671,12 +2002,12 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
     else {
       pieceWrap.alpha = 1;
     }
-    if ((objectData.e || boardApi.pix.triggers.cache[obj.id()][layer+"-"+index]) && layer != null && index != null) {
+    if ((objectData.e || boardApi.triggers.cache[obj.id()][layer+"-"+index]) && layer != null && index != null) {
       if (!objectData.e) {
-        delete boardApi.pix.triggers.cache[obj.id()][layer+"-"+index];
+        delete boardApi.triggers.cache[obj.id()][layer+"-"+index];
       }
       else {
-        boardApi.pix.triggers.cache[obj.id()][layer+"-"+index] = {layer : layer, index : index};
+        boardApi.triggers.cache[obj.id()][layer+"-"+index] = {layer : layer, index : index};
       }
     }
   }
@@ -1684,7 +2015,7 @@ boardApi.pix.createPiece = function(options, obj, app, scope){
   return pieceWrap;
 }
 
-boardApi.pix.createWall = function(options, obj, app, scope) {
+boardApi.createWall = function(options, obj, app, scope) {
   var data = obj.data;
   var isHex = data.options && data.options.hex;
   var hasGrid = data.gridW && data.gridW;
@@ -1711,7 +2042,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
       if (obj.data.layers[layer] && obj.data.layers[layer][type][index]) {
         piece.update();
       }
-      boardApi.pix.selections[obj.id()+"-"+layer+"-"+type+"-"+index] = {
+      boardApi.selections[obj.id()+"-"+layer+"-"+type+"-"+index] = {
         layer : layer,
         index : index,
         type : type,
@@ -1731,7 +2062,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
     if (obj.data.layers[layer] && obj.data.layers[layer][type][index]) {
       piece.update();
     }
-    delete boardApi.pix.selections[obj.id()+"-"+layer+"-"+type+"-"+index];
+    delete boardApi.selections[obj.id()+"-"+layer+"-"+type+"-"+index];
   }
 
   var token = new PIXI.Graphics();
@@ -1741,8 +2072,19 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
   piece.addChild(handle1);
 
   piece.move = function(ev, deltaX, deltaY){
-    boardApi.pix.rebuildFogData(obj, app);
-    boardApi.pix.rebuildDynamicFog(obj, app);
+    boardApi.rebuildFogData(obj, app);
+    boardApi.rebuildDynamicFog(obj, app);
+    var layer = piece.lookup.layer;
+    var type = piece.lookup.type;
+    var index = piece.lookup.index;
+    if ((objectData.e || boardApi.triggers.cache[obj.id()][layer+"-"+index]) && layer != null && index != null) {
+      if (!objectData.e) {
+        delete boardApi.triggers.cache[obj.id()][layer+"-"+index];
+      }
+      else {
+        boardApi.triggers.cache[obj.id()][layer+"-"+index] = {layer : layer, index : index};
+      }
+    }
   }
 
   var circle = new PIXI.Graphics();
@@ -1760,26 +2102,26 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
   handle1.mousedown = function(ev){
     var key = ev.data.originalEvent.keyCode || ev.data.originalEvent.which;
     if (key == 1) {
-      if (!boardApi.pix.dragging) {
+      if (!boardApi.dragging) {
         if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.drawing && game.locals["drawing"].data.fog) {
           var layer = piece.lookup.layer;
           var type = piece.lookup.type;
           var index = piece.lookup.index;
           var pData = obj.data.layers[layer][type][index];
-          boardApi.pix.startX = pData.x1;
-          boardApi.pix.startY = pData.y1;
+          boardApi.startX = pData.x1;
+          boardApi.startY = pData.y1;
         }
         else {
-          var stage = boardApi.pix.apps[app.attr("id")].stage;
+          var stage = boardApi.apps[app.attr("id")].stage;
           var offset = ev.data.getLocalPosition(stage);
-          boardApi.pix.newDragEvent({
+          boardApi.newDragEvent({
             startX : offset.x,
             startY : offset.y,
             move : function(ev){
               var layer = piece.lookup.layer;
               var type = piece.lookup.type;
               var index = piece.lookup.index;
-              var stage = boardApi.pix.apps[app.attr("id")].stage;
+              var stage = boardApi.apps[app.attr("id")].stage;
               var pData = obj.data.layers[layer][type][index];
               var focal = stage.toLocal({x : ev.pageX, y : ev.pageY});
 
@@ -1787,7 +2129,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
               var deltaY = focal.y;
 
               if (Math.abs(deltaX) >= 1 || Math.abs(deltaY) >= 1) {
-                boardApi.pix.dragging.dragged = true;
+                boardApi.dragging.dragged = true;
                 layout.coverlay($(".piece-quick-edit"));
               }
               pData.x1 = focal.x;
@@ -1801,7 +2143,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
               var layer = piece.lookup.layer;
               var type = piece.lookup.type;
               var index = piece.lookup.index;
-              var stage = boardApi.pix.apps[app.attr("id")].stage;
+              var stage = boardApi.apps[app.attr("id")].stage;
               var pData = obj.data.layers[layer][type][index];
               var original = stage.toLocal({x : ev.pageX, y : ev.pageY});
               var focal = stage.toLocal({x : ev.pageX, y : ev.pageY});
@@ -1809,29 +2151,36 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
               if (!_down[16] && data.gridW && data.gridH) {
                 var xGrid = Math.round((focal.x - (data.gridX || 0))/data.gridW);
                 var yGrid = Math.round((focal.y - (data.gridY || 0))/data.gridH);
-                focal.x = (xGrid * data.gridW + (data.gridX || 0));
-                focal.y = (yGrid * data.gridH + (data.gridY || 0));
+                var gridInc = data.gridW;
+
+                if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.gridInc) {
+                  gridInc = game.locals["drawing"].data.gridInc;
+                  xGrid = Math.round((focal.x-(data.gridX || 0)) / gridInc);
+                  yGrid = Math.round((focal.y-(data.gridY || 0)) / gridInc);
+                }
+                focal.x = (xGrid * gridInc + (data.gridX || 0));
+                focal.y = (yGrid * gridInc + (data.gridY || 0));
                 if (_down[18]) {
                   var distX = focal.x-original.x;
                   var distY = focal.y-original.y;
 
-                  focal.x = (xGrid * data.gridW + (data.gridX || 0));
-                  focal.y = (yGrid * data.gridH + (data.gridY || 0));
+                  focal.x = (xGrid * gridInc + (data.gridX || 0));
+                  focal.y = (yGrid * gridInc + (data.gridY || 0));
 
                   if (Math.abs(distX) < Math.abs(distY)) {
                     if (distY > 0) {
-                      focal.y -= data.gridH/2;
+                      focal.y -= gridInc/2;
                     }
                     else {
-                      focal.y += data.gridH/2;
+                      focal.y += gridInc/2;
                     }
                   }
                   else {
                     if (distX > 0) {
-                      focal.x -= data.gridW/2;
+                      focal.x -= gridInc/2;
                     }
                     else {
-                      focal.x += data.gridW/2;
+                      focal.x += gridInc/2;
                     }
                   }
                 }
@@ -1839,7 +2188,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
               pData.x1 = focal.x;
               pData.y1 = focal.y;
               if (util.dist(pData.x2, pData.x1, pData.y2, pData.y1) < 4 && util.dist(pData.x1, original.x, pData.y1, original.y) < 6) {
-                boardApi.pix.destroyObject(layer, type, index, obj);
+                boardApi.destroyObject(layer, type, index, obj);
               }
               else {
                 if (piece.move) {
@@ -1848,7 +2197,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
                 piece.update();
                 runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : pData});
               }
-              delete boardApi.pix.dragging;
+              delete boardApi.dragging;
             }
           });
         }
@@ -1873,26 +2222,26 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
   handle2.cursor = "pointer";
   handle2.mousedown = function(ev){
     var key = ev.data.originalEvent.keyCode || ev.data.originalEvent.which;
-    if (!boardApi.pix.dragging) {
+    if (!boardApi.dragging) {
       if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.drawing && game.locals["drawing"].data.fog) {
         var layer = piece.lookup.layer;
         var type = piece.lookup.type;
         var index = piece.lookup.index;
         var pData = obj.data.layers[layer][type][index];
-        boardApi.pix.startX = pData.x2;
-        boardApi.pix.startY = pData.y2;
+        boardApi.startX = pData.x2;
+        boardApi.startY = pData.y2;
       }
       else {
-        var stage = boardApi.pix.apps[app.attr("id")].stage;
+        var stage = boardApi.apps[app.attr("id")].stage;
         var offset = ev.data.getLocalPosition(stage);
-        boardApi.pix.newDragEvent({
+        boardApi.newDragEvent({
           startX : offset.x,
           startY : offset.y,
           move : function(ev){
             var layer = piece.lookup.layer;
             var type = piece.lookup.type;
             var index = piece.lookup.index;
-            var stage = boardApi.pix.apps[app.attr("id")].stage;
+            var stage = boardApi.apps[app.attr("id")].stage;
             var pData = obj.data.layers[layer][type][index];
             var focal = stage.toLocal({x : ev.pageX, y : ev.pageY});
 
@@ -1900,7 +2249,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
             var deltaY = focal.y;
 
             if (Math.abs(deltaX) >= 1 || Math.abs(deltaY) >= 1) {
-              boardApi.pix.dragging.dragged = true;
+              boardApi.dragging.dragged = true;
               layout.coverlay($(".piece-quick-edit"));
             }
             pData.x2 = focal.x;
@@ -1914,7 +2263,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
             var layer = piece.lookup.layer;
             var type = piece.lookup.type;
             var index = piece.lookup.index;
-            var stage = boardApi.pix.apps[app.attr("id")].stage;
+            var stage = boardApi.apps[app.attr("id")].stage;
             var pData = obj.data.layers[layer][type][index];
             var original = stage.toLocal({x : ev.pageX, y : ev.pageY});
             var focal = stage.toLocal({x : ev.pageX, y : ev.pageY});
@@ -1922,29 +2271,38 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
             if (!_down[16] && data.gridW && data.gridH) {
               var xGrid = Math.round((focal.x - (data.gridX || 0))/data.gridW);
               var yGrid = Math.round((focal.y - (data.gridY || 0))/data.gridH);
-              focal.x = (xGrid * data.gridW + (data.gridX || 0));
-              focal.y = (yGrid * data.gridH + (data.gridY || 0));
+              var gridInc = data.gridW;
+
+              if (game.locals["drawing"] && game.locals["drawing"].data && game.locals["drawing"].data.gridInc) {
+                gridInc = game.locals["drawing"].data.gridInc;
+                xGrid = Math.round((focal.x-(data.gridX || 0)) / gridInc);
+                yGrid = Math.round((focal.y-(data.gridY || 0)) / gridInc);
+              }
+
+              focal.x = (xGrid * gridInc + (data.gridX || 0));
+              focal.y = (yGrid * gridInc + (data.gridY || 0));
+
               if (_down[18]) {
                 var distX = focal.x-original.x;
                 var distY = focal.y-original.y;
 
-                focal.x = (xGrid * data.gridW + (data.gridX || 0));
-                focal.y = (yGrid * data.gridH + (data.gridY || 0));
+                focal.x = (xGrid * gridInc + (data.gridX || 0));
+                focal.y = (yGrid * gridInc + (data.gridY || 0));
 
                 if (Math.abs(distX) < Math.abs(distY)) {
                   if (distY > 0) {
-                    focal.y -= data.gridH/2;
+                    focal.y -= gridInc/2;
                   }
                   else {
-                    focal.y += data.gridH/2;
+                    focal.y += gridInc/2;
                   }
                 }
                 else {
                   if (distX > 0) {
-                    focal.x -= data.gridW/2;
+                    focal.x -= gridInc/2;
                   }
                   else {
-                    focal.x += data.gridW/2;
+                    focal.x += gridInc/2;
                   }
                 }
               }
@@ -1952,7 +2310,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
             pData.x2 = focal.x;
             pData.y2 = focal.y;
             if (util.dist(pData.x2, pData.x1, pData.y2, pData.y1) < 4 && util.dist(pData.x2, original.x, pData.y2, original.y) < 6) {
-              boardApi.pix.destroyObject(layer, type, index, obj);
+              boardApi.destroyObject(layer, type, index, obj);
             }
             else {
               if (piece.move) {
@@ -1961,7 +2319,7 @@ boardApi.pix.createWall = function(options, obj, app, scope) {
               piece.update();
               runCommand("boardMove", {id : obj.id(), layer : layer, type : type, index : index, data : pData});
             }
-            delete boardApi.pix.dragging;
+            delete boardApi.dragging;
           }
         });
       }

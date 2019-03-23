@@ -37,7 +37,7 @@ sync.render("_logs", function(obj, app, scope) {
   more.addClass("lrmargin");
   more.click(function(){
     var content = $("<div>");
-    content.addClass("flexcolumn");
+    content.addClass("flexcolumn spadding");
 
     for (var name in filters) {
       var checkDiv = $("<div>").appendTo(content);
@@ -77,7 +77,7 @@ sync.render("_logs", function(obj, app, scope) {
 
     var del = genIcon("trash", "Destroy Channel");
     del.attr("title", "Destroy channel");
-    del.appendTo(content);
+    //del.appendTo(content);
     del.addClass("destroy");
     del.click(function(){
       app.remove();
@@ -90,7 +90,7 @@ sync.render("_logs", function(obj, app, scope) {
       target : $(this),
       title : "Filters",
       id : "channel-options",
-    }, content)
+    }, content);
   });
 
   var more = genIcon("trash").appendTo(optionsBar);
@@ -111,30 +111,32 @@ sync.render("_logs", function(obj, app, scope) {
   chatListed.css("overflow-y", "scroll");
   chatListed.attr("_lastScrollTop", app.attr("_lastScrollTop"));
   if (app.attr("freeScroll") != "true") {
-    setTimeout(function(){chatListed.attr("_lastScrollTop", Number(chatListed[0].scrollHeight) + 100); chatListed.scrollTop(Number(chatListed[0].scrollHeight) + 100);}, 10);
+    setTimeout(function(){chatListed.attr("_lastScrollTop", Number(chatListed[0].scrollHeight) + 100); chatListed.scrollTop(Number(chatListed[0].scrollHeight) + 100); app.removeAttr("freeScroll"); }, 10);
   }
 
   var chatPlate = $("<div>").appendTo(chatListed);
 
   chatListed.scroll(function() {
-    app.attr("_lastScrollTop", $(this).scrollTop());
-    if (Math.round($(this).scrollTop() + $(this).outerHeight()) < $(this)[0].scrollHeight) {
-      app.attr("freeScroll", "true");
+    if (app.is(":visible")) {
+      app.attr("_lastScrollTop", $(this).scrollTop());
+      if (Math.round($(this).scrollTop() + $(this).outerHeight()) < $(this)[0].scrollHeight) {
+        app.attr("freeScroll", "true");
+      }
+      else {
+        app.removeAttr("freeScroll");
+        optionsBar.removeClass("highlight");
+        optionsBar.addClass("foreground");
+      }
+      app.attr("_lastScrollLeft", $(this).scrollLeft());
+      $(this).attr("_lastScrollTop", $(this).scrollTop());
     }
-    else {
-      app.removeAttr("freeScroll");
-      optionsBar.removeClass("highlight");
-      optionsBar.addClass("foreground");
-    }
-    app.attr("_lastScrollLeft", $(this).scrollLeft());
-    $(this).attr("_lastScrollTop", $(this).scrollTop());
   });
 
-  function build(list, events, app) {
-    var start = 0;
-    if (layout.mobile) {
-      start = Math.max(events.length-25,0);
-    }
+  function build(list, events, app, startIndex) {
+    var start = startIndex || 0;
+    //if (layout.mobile) {
+      start = Math.max(events.length-200,0);
+    //}
     for (var index=start; index<events.length; index++) {
       var chatData = events[index];
       if (chatData.p && !chatData.p[getCookie("UserID")] && !hasSecurity(getCookie("UserID"), "Visible", {_s : chatData.p})) {
@@ -143,467 +145,34 @@ sync.render("_logs", function(obj, app, scope) {
 
       var postType = {};
 
-      var chatContainer = $("<div>");
-      chatContainer.addClass("fit-x spadding");
-      chatContainer.attr("index", index);
-      chatContainer.attr("id", "log-"+index);
-      chatContainer.css("position", "relative");
-
-      if (hasSecurity(getCookie("UserID"), "Game Master")) {
-        chatContainer.contextmenu(function(ev){
-          var index = $(this).attr("index");
-          var actionsList = [
-            {
-              name : "Remove Event",
-              click : function(){
-                runCommand("emptyLogEvent", index);
-              }
-            }
-          ];
-
-          ui_dropMenu($(this), actionsList, {id : "empty-log-event", align : "center"});
-          ev.stopPropagation();
-          ev.preventDefault();
-          return false;
-        });
-      }
-
-      var headerPlate = $("<div>").appendTo(chatContainer);
-      headerPlate.addClass("flexrow");
-      if (Boolean(app.attr("timeStamps") == "true") && chatData.timeStamp) {
-        headerPlate.append(genIcon({raw : true, icon : "time"}).addClass("dull").attr("title", new Date(chatData.timeStamp)));
-      }
-      var icon;
-      if (chatData.f || chatData.href) {
-        var icon = $("<div>").appendTo(headerPlate);
-        icon.addClass("flexcolumn flexmiddle white outline spadding");
-        icon.css("background-image", "url('"+(chatData.href || "/content/icons/blankchar.png")+"')");
-        icon.css("background-size", "contain");
-        icon.css("background-repeat", "no-repeat");
-        icon.css("background-position", "center");
-        if (chatData.f) {
-          icon.css("width", "3em");
-          icon.css("height", "3em");
-          icon.addClass("round");
-        }
-        else {
-          icon.addClass("smooth");
-          icon.css("width", "4em");
-          icon.css("height", "1.4em");
-        }
-      }
-
-      var namePlate = $("<div>").appendTo(headerPlate);
-      namePlate.addClass("flexcolumn");
-      namePlate.css("text-align", "left");
-
       var repeated = false;
-      if (chatData.user && index != 0 && chatData.user == events[index-1].user && chatData.f == events[index-1].f && (chatData.href == events[index-1].href)) {
-        namePlate.hide();
-        if (icon) {
-          icon.hide();
-        }
+      if (index && ((chatData.user == events[index-1].user) && (chatData.person == events[index-1].person) && (chatData.userID == events[index-1].userID))) {
         repeated = true;
       }
 
-      var name = $("<text>").appendTo(namePlate);
-      name.text(chatData.f || chatData.user);
-
-      var contentPlate = $("<div>").appendTo(chatContainer);
-      contentPlate.addClass("bold");
-      contentPlate.text(chatData.text);
-      contentPlate.css("overflow-wrap", "break-word");
-
       if (chatData.eID) {
-        postType["Events"] = true;
-      }
-      chatData.text = chatData.text || "";
-      if (chatData.f) {
-        namePlate.addClass("padding");
-        name.css("-webkit-text-stroke-width", "1px");
-
-        if (chatData.f != chatData.user) {
-          var pName = $("<text>").appendTo(namePlate);
-          pName.addClass("alttext lrpadding smooth outline bold");
-          pName.css("background", (chatData.color || "linear-gradient(to top, #222, #333)"));
-          pName.addClass("subtitle");
-          pName.text(chatData.user);
-        }
-        else {
-          namePlate.addClass("flexmiddle");
-        }
-        if (chatData.text.match("/me") && chatData.text.match("/me").index == 0) {
-          headerPlate.css("background-color", "rgb(255,232,204)");
-
-          contentPlate.appendTo(headerPlate);
-          if (chatData.f == chatData.user) {
-            contentPlate.addClass("flexmiddle");
-          }
-          contentPlate.css("font-style", "italic");
-          contentPlate.addClass("lpadding");
-          contentPlate.text(contentPlate.text().replace("/me", ""));
-        }
-        else {
-          contentPlate.addClass("outline smooth");
-          contentPlate.css("border-radius", "8px");
-          chatContainer.css("margin-bottom", "1em");
-
-          if (chatData.text.match("/w") && chatData.text.match("/w").index == 0) {
-            headerPlate.append("<i class='subtitle flex flexmiddle spadding'>whispered to you</i>");
-            contentPlate.css("background-color", "rgba(66,108,66,0.2)");
-            contentPlate.css("font-style", "italic");
-            contentPlate.css("font-size", "0.9em");
-            contentPlate.text(contentPlate.text().replace("/w", ""));
-          }
-
-          if (chatData.evID) {
-            contentPlate.addClass("padding");
-            contentPlate.text("");
-            function hasAccess(eventID) {
-              var ev = game.events.data[eventID];
-              if (ev && hasSecurity(getCookie("UserID"), "Visible", ev.data)){
-                return true;
-              }
-              return false;
-            }
-            if (hasAccess(chatData.evID)) {
-              if (hasSecurity(getCookie("UserID"), "Trusted Player")) {
-                chatContainer.attr("evID", chatData.evID);
-                chatContainer.addClass("hover2");
-                chatContainer.attr("draggable", true);
-                chatContainer.on("dragstart", function(ev){
-                  _dragTransfer = {roll : $(this).attr("evID")};
-                });
-                chatContainer.on("drop", function(ev){
-                  _dragTransfer = null;
-                });
-                chatContainer.click(function(){
-                  var evID = $(this).attr("evID");
-                  var actionList = util.buildActions(evID);
-                  if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-                    actionList.push({
-                      name : "Edit",
-                      icon : "edit",
-                      click : function(ev, ui) {
-                        var content = $("<div>");
-                        content.addClass("flexcolumn flex");
-
-                        var dummyObj = sync.obj();
-                        dummyObj.data = {pool : duplicate(game.events.data[evID].data.data.pool)};
-
-                        var newApp = sync.newApp("ui_JSON").appendTo(content);
-                        newApp.attr("lookup", "pool");
-                        newApp.attr("hideConfirm", true);
-                        newApp.attr("width", "200px");
-                        newApp.attr("height", "200px");
-                        dummyObj.addApp(newApp);
-
-                        var confirm = $("<button>").appendTo(content);
-                        confirm.append("Change Result");
-                        confirm.click(function(){
-                          game.events.data[evID].data.data.pool = dummyObj.data.pool;
-                          if (layout.offline) {
-                            game.events.data[evID].update();
-                            game.logs.update();
-                          }
-                          else {
-                            game.events.data[evID].sync("updateEvent");
-                          }
-                          layout.coverlay("edit-results");
-                        });
-                        var pop = ui_popOut({
-                          id : "edit-results",
-                          target : ui,
-                        }, content);
-                      }
-                    });
-                  }
-                  if (util.getTargets(true).length) {
-                    actionList.push({
-                      name : "De-select targets",
-                      click : function(ev, ui) {
-                        util.unSelectTargets();
-                      }
-                    });
-                  }
-
-                  var pop = ui_dropMenu($(this), actionList, {id : "dice-action", align : "bottom"});
-                });
-              }
-              var label = $("<i class='flex flexmiddle bold subtitle'>"+chatData.text+"</i>").appendTo(headerPlate);
-              if (!repeated) {
-                label.addClass("lpadding");
-              }
-              var display;
-              if (game.templates.display.ui && game.templates.display.ui[chatData.ui || game.templates.dice.ui]) {
-                display = game.templates.display.ui[chatData.ui || game.templates.dice.ui];
-              }
-              else {
-                display = null;
-              }
-              var diceRes = sync.render("ui_newDiceResults")(game.events.data[chatData.evID], app, {display : display});
-              diceRes.appendTo(contentPlate);
-
-              if (game.events.data[chatData.evID].data && game.events.data[chatData.evID].data.data.pool && game.events.data[chatData.evID].data.data.pool.discarded) {
-                var discarded = genIcon("", String(game.events.data[chatData.evID].data.data.pool.discarded).substring(0,10)).appendTo(chatContainer);
-                discarded.addClass("subtitle lrpadding lrmargin bold");
-                discarded.attr("title", "Discarded Roll(s)");
-                discarded.css("position", "absolute");
-                discarded.css("right", "0");
-                discarded.css("bottom", "0");
-              }
-            }
-            postType["Events"] = true;
-          }
-          else {
-            contentPlate.addClass("lpadding");
-          }
-          if (chatData.text.match("/y") && chatData.text.match("/y").index == 0) {
-            contentPlate.removeClass("lpadding");
-            contentPlate.addClass("padding");
-
-            var yell = $("<b>").appendTo(headerPlate);
-            yell.addClass("spadding flexmiddle flex");
-            yell.css("-webkit-text-stroke-width", "1px");
-            yell.css("font-size", "1.6em");
-            yell.text("Yelled Out!")
-
-            contentPlate.css("-webkit-text-stroke-width", "1px");
-            contentPlate.css("font-style", "italic");
-            contentPlate.css("font-size", "1.4em");
-            contentPlate.css("background-color", "rgba(255,138,0,0.2)");
-            contentPlate.text(contentPlate.text().replace("/y", ""));
-          }
-        }
         postType["Actors"] = true;
       }
+      if (chatData.eventData) {
+        postType["Events"] = true;
+      }
+      if (chatData.person) {
+        postType["Actors"] = true;
+        if (chatData.userID) {
+          postType["Players"] = true;
+        }
+      }
       else if (chatData.user) {
-        namePlate.addClass("bold lrpadding");
-        namePlate.css("color", (chatData.color));
-
-        if (chatData.text.match("/me") && chatData.text.match("/me").index == 0) {
-          contentPlate.css("font-style", "italic");
-          contentPlate.addClass("lpadding");
-          contentPlate.text(contentPlate.text().replace("/me", ""));
-        }
-        else if (chatData.text.match("/w") && chatData.text.match("/w").index == 0) {
-          headerPlate.append("<i class='subtitle flex flexmiddle spadding'>whispered to you</i>");
-
-          contentPlate.css("background-color", "rgba(66,108,66,0.2)");
-          contentPlate.css("font-style", "italic");
-          contentPlate.css("font-size", "0.9em");
-          contentPlate.text(contentPlate.text().replace("/w", ""));
-        }
-        else if (chatData.text.match("/y") && chatData.text.match("/y").index == 0) {
-          var yell = $("<b>").appendTo(headerPlate);
-          yell.addClass("spadding flexmiddle flex");
-          yell.css("-webkit-text-stroke-width", "1px");
-          yell.css("font-size", "1.6em");
-          yell.text("Yelled Out!")
-
-          contentPlate.css("-webkit-text-stroke-width", "1px");
-          contentPlate.css("font-style", "italic");
-          contentPlate.css("font-size", "1.4em");
-          contentPlate.css("background-color", "rgba(255,138,0,0.2)");
-          contentPlate.text(contentPlate.text().replace("/y", ""));
-        }
-
-        if (chatData.evID) {
-          contentPlate.addClass("smooth padding");
-          chatContainer.css("margin-bottom", "1em");
-          function hasAccess(eventID) {
-            var ev = game.events.data[eventID];
-            if (ev && hasSecurity(getCookie("UserID"), "Visible", ev.data)){
-              return true;
-            }
-            return false;
-          }
-          if (hasAccess(chatData.evID)) {
-            if (hasSecurity(getCookie("UserID"), "Trusted Player")) {
-              chatContainer.attr("evID", chatData.evID);
-              chatContainer.addClass("hover2");
-              chatContainer.attr("draggable", true);
-              chatContainer.on("dragstart", function(ev){
-                _dragTransfer = {roll : $(this).attr("evID")};
-              });
-              chatContainer.on("drop", function(ev){
-                _dragTransfer = null;
-              });
-              chatContainer.click(function(){
-                var evID = $(this).attr("evID");
-                var actionList = util.buildActions(evID);
-                if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-                  actionList.push({
-                    name : "Edit",
-                    icon : "edit",
-                    submenu : [
-                      {
-                        name : "Results",
-                        click : function(ev, ui) {
-                          var content = $("<div>");
-                          content.addClass("flexcolumn flex");
-
-                          var dummyObj = sync.obj();
-                          dummyObj.data = {pool : duplicate(game.events.data[evID].data.data.pool)};
-
-                          var newApp = sync.newApp("ui_JSON").appendTo(content);
-                          newApp.attr("lookup", "pool");
-                          newApp.attr("hideConfirm", true);
-                          newApp.attr("width", "200px");
-                          newApp.attr("height", "200px");
-                          dummyObj.addApp(newApp);
-
-                          var confirm = $("<button>").appendTo(content);
-                          confirm.append("Change Result");
-                          confirm.click(function(){
-                            game.events.data[evID].data.data.pool = dummyObj.data.pool;
-                            if (layout.offline) {
-                              game.events.data[evID].update();
-                              game.logs.update();
-                            }
-                            else {
-                              game.events.data[evID].sync("updateEvent");
-                            }
-                            layout.coverlay("edit-results");
-                          });
-                          var pop = ui_popOut({
-                            id : "edit-results",
-                            target : ui,
-                          }, content);
-                        }
-                      }
-                    ]
-                  });
-                }
-                if (util.getTargets(true).length) {
-                  actionList.push({
-                    name : "De-select targets",
-                    click : function(ev, ui) {
-                      util.unSelectTargets();
-                    }
-                  });
-                }
-
-                var pop = ui_dropMenu($(this), actionList, {id : "dice-action", align : "bottom"});
-              });
-            }
-            contentPlate.text("");
-            var label = $("<i class='flex flexmiddle spadding bold subtitle'>"+chatData.text+"</i>").appendTo(headerPlate);
-            chatContainer.attr("index", index);
-            var display;
-            if (game.templates.display.ui && game.templates.display.ui[chatData.ui || game.templates.dice.ui]) {
-              display = game.templates.display.ui[chatData.ui || game.templates.dice.ui];
-            }
-            else {
-              display = null;
-            }
-            var diceRes = sync.render("ui_newDiceResults")(game.events.data[chatData.evID], app, {display : display});
-            diceRes.appendTo(contentPlate);
-
-            if (game.events.data[chatData.evID].data && game.events.data[chatData.evID].data.data.pool && game.events.data[chatData.evID].data.data.pool.discarded) {
-              var discarded = genIcon("", String(game.events.data[chatData.evID].data.data.pool.discarded).substring(0,10)).appendTo(chatContainer);
-              discarded.addClass("subtitle lrpadding lrmargin bold");
-              discarded.attr("title", "Discarded Roll(s)");
-              discarded.css("position", "absolute");
-              discarded.css("right", "0");
-              discarded.css("bottom", "0");
-            }
-          }
-          postType["Events"] = true;
-        }
-        else {
-          contentPlate.addClass("spadding subtitle");
-          contentPlate.css("padding-left", "1em");
-        }
-
         postType["Players"] = true;
       }
       else {
-        contentPlate.addClass("flexmiddle subtitle lpadding");
-        contentPlate.removeClass("bold");
-
-        chatContainer.css("background", chatData.color);
-
         postType["Game"] = true;
       }
 
-      if (chatData.user && index <= events.length-2 && chatData.user == events[index+1].user && chatData.f == events[index+1].f) {
-        chatContainer.css("margin-bottom", "0");
-      }
-
       if (chatData.media) {
-        var mediaContainer = $("<div>").appendTo(contentPlate);
-        mediaContainer.addClass("flexcolumn flexmiddle");
-        mediaContainer.css("overflow-wrap", "break-word");
-        mediaContainer.attr("srcImg", chatData.media);
-
-        var mediaLink = $("<a>").appendTo(mediaContainer);
-        mediaLink.addClass("flexcolumn flexmiddle");
-        mediaLink.css("max-width", "100%");
-        mediaLink.attr("href", chatData.media);
-        mediaLink.attr("target", "_");
-        mediaLink.attr("title", chatData.media);
-        mediaLink.css("overflow-wrap", "break-word");
-        mediaLink.css("word-break", "break-all");
-        var str = chatData.media;
-        if (str.length > 30) {
-          str = str.substring(0, 30) + "...";
-        }
-        mediaLink.append(str);
-        mediaLink.click(function(ev){
-          ev.stopPropagation();
-        });
-        //mediaLink.css("word-break", "break-all");
-        if (util.matchYoutube(chatData.media)) {
-          var media = $("<img>");
-          media.appendTo(mediaContainer);
-          media.css("width", "auto");
-          media.css("max-width", "100%");
-          media.css("height", "100px");
-          media.css("pointer-events", "none");
-          media.attr("src", "/cdn/youtube.ico");
-          if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
-            mediaContainer.css("cursor", "pointer");
-            mediaContainer.click(function(ev){
-              util.shareYoutube($(this).attr("srcImg"));
-            });
-          }
-        }
-        else {
-          var media = ui_processMedia(chatData.media);
-          media.appendTo(mediaContainer);
-          media.css("width", "auto");
-          media.css("max-width", "100%");
-          media.css("height", "100px");
-          media.css("pointer-events", "none");
-
-          if (media.is("img")) {
-            mediaContainer.css("cursor", "pointer");
-            mediaContainer.click(function(ev){
-              assetTypes["img"].preview(ev, $(this), $(this).attr("srcImg"));
-            });
-            mediaContainer.contextmenu(function(ev){
-              assetTypes["img"].contextmenu(ev, $(this), $(this).attr("srcImg"));
-              ev.stopPropagation();
-              ev.preventDefault();
-              return false;
-            });
-          }
-          else {
-            media[0].play();
-          }
-        }
         postType["Players"] = true;
       }
-      if (chatData.style) {
-        for (var i in chatData.style) {
-          chatContainer.css(i, chatData.style[i]);
-        }
-      }
       var shouldPost = true;
-      if (chatData.p) {
-        chatContainer.addClass("inactive");
-      }
       if (chatData.p && (!chatData.p[getCookie("UserID")] && !hasSecurity(getCookie("UserID"), "Visible", {_s : chatData.p}))) {
         shouldPost = false;
       }
@@ -614,13 +183,386 @@ sync.render("_logs", function(obj, app, scope) {
         }
       }
       if (shouldPost) {
-        chatContainer.appendTo(list);
+        var chatBubble;
+        if (!game.debug) {
+          try {
+            chatBubble = sync.render("ui_chatBubble")(chatData, app, {hideHeader : repeated, index : index}).appendTo(list);
+          }
+          catch (err) {
+            console.log(err);
+            chatBubble = $("<div>"+err+"</div>").appendTo(list);
+          }
+        }
+        else {
+          chatBubble = sync.render("ui_chatBubble")(chatData, app, {hideHeader : repeated, index : index}).appendTo(list);
+        }
+        if (index <= events.length-2 && ((chatData.user == events[index+1].user) && (chatData.person == events[index+1].person) && (chatData.userID == events[index+1].userID))) {
+          chatBubble.css("margin-bottom", "0");
+          chatBubble.removeClass("outlinebottom");
+        }
+        else {
+          chatBubble.css("margin-bottom", "1.6em");
+        }
       }
     }
   }
   build(chatPlate, obj.data.events, app);
 
   return div;
+});
+
+sync.render("ui_chatBubble", function(obj, app, scope){
+  var chatData = obj;
+
+  var div = $("<div>");
+  div.addClass("fit-x");
+
+  if (chatData.userID) {
+    div.addClass("white outlinebottom");
+  }
+
+  if (hasSecurity(getCookie("UserID"), "Game Master") && scope.index != null) {
+    div.contextmenu(function(ev){
+      var index = scope.index;
+      var actionsList = [
+        {
+          name : "Remove Event",
+          click : function(){
+            runCommand("emptyLogEvent", index);
+          }
+        }
+      ];
+
+      ui_dropMenu($(this), actionsList, {id : "empty-log-event"});
+      ev.stopPropagation();
+      ev.preventDefault();
+      return false;
+    });
+  }
+
+  var headerPlate = $("<div>").appendTo(div);
+  headerPlate.addClass("flexrow fit-x");
+
+  if (Boolean(app.attr("timeStamps") == "true") && chatData.timeStamp) {
+    headerPlate.append(genIcon({raw : true, icon : "time"}).addClass("lrmargin flexmiddle subtitle").attr("title", new Date(chatData.timeStamp)));
+  }
+
+  var headerPlateWrap = $("<div>").appendTo(headerPlate);
+  headerPlateWrap.addClass("flexrow flexmiddle smargin");
+
+
+  if (!scope.hideHeader) {
+    if (chatData.icon) {
+      var icon = $("<div>").appendTo(headerPlateWrap);
+      icon.addClass("flexcolumn flexmiddle outline");
+      icon.css("border-color", "rgba(0,0,0,0.2)");
+      icon.attr("src", (chatData.icon || "/content/icons/blankchar.png"));
+      icon.css("background-image", "url('"+(chatData.icon || "/content/icons/blankchar.png")+"')");
+      icon.css("background-repeat", "no-repeat");
+      icon.css("background-size", "cover");
+      icon.css("background-position", "50% 10%");
+      if (chatData.person) {
+        icon.addClass("smooth hover2");
+        icon.css("width", "2.8em");
+        icon.css("height", "2.8em");
+      }
+      else {
+        icon.addClass("smooth flex hover2");
+        icon.css("max-width", "4em");
+        icon.css("max-height", "2.8em");
+      }
+      icon.click(function(ev){
+        var image = $(this).attr("src");
+        if (chatData.eID) {
+          var ent = getEnt(chatData.eID);
+          if (ent && ent.data && ent.data.info && ent.data.info.img && hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
+            image = sync.rawVal(ent.data.info.img) || sync.rawVal(ent.data.info.img.min) || image;
+          }
+        }
+        assetTypes["img"].preview(ev, $(this), image);
+        ev.stopPropagation();
+        ev.preventDefault();
+      });
+      icon.contextmenu(function(ev){
+        assetTypes["img"].contextmenu(ev, $(this), $(this).attr("src"));
+        ev.stopPropagation();
+        ev.preventDefault();
+        return false;
+      });
+    }
+
+    headerPlateWrap.append("<div class='spadding'></div>");
+
+    var namePlate = $("<div>").appendTo(headerPlateWrap);
+    namePlate.addClass("flexcolumn");
+
+    namePlate.append("<div class='flex'></div>");
+
+    var nameWrap = $("<text>").appendTo(namePlate);
+    nameWrap.addClass("flexrow fit-x");
+
+    var name = $("<text>").appendTo(nameWrap);
+    name.css("-webkit-text-stroke-width", "1px");
+    name.text(chatData.person || chatData.user);
+    if (chatData.eID) {
+      var ent = getEnt(chatData.eID);
+      if (ent && ent.data && hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
+        name.addClass("link");
+        name.click(function(ev){
+          assetTypes[ent.data._t].preview(ent, $("body"));
+        });
+        name.contextmenu(function(ev){
+          assetTypes[ent.data._t].contextmenu(ent, $("body"));
+          return false;
+        });
+      }
+    }
+    if (chatData.userID) {
+      if (chatData.person && chatData.person != chatData.user) {
+        var pNameWrap = $("<text>").appendTo(namePlate);
+        pNameWrap.addClass("flexrow fit-x");
+
+        var pName = $("<text>").appendTo(pNameWrap);
+        pName.addClass("lrpadding alttext smooth outline bold");
+        pName.css("font-size", "0.6em");
+        pName.css("background", (chatData.color || "linear-gradient(to top, #222, #333)"));
+        pName.text(chatData.user || getPlayerName(chatData.userID));
+      }
+    }
+  }
+
+  var flavorWrap = $("<text>").appendTo(headerPlate);
+  flavorWrap.addClass("flexcolumn flex");
+  flavorWrap.append("<div class='flex'></div>");
+
+  var flavorText = $("<text>").appendTo(flavorWrap);
+  flavorText.addClass("flexrow subtitle");
+  flavorText.css("text-align", "right");
+  flavorText.css("display", "inline");
+  flavorText.text(chatData.flavor);
+  if (chatData.flavor) {
+    if (!chatData.person && chatData.eID) {
+      var ent = getEnt(chatData.eID);
+      if (ent && ent.data && hasSecurity(getCookie("UserID"), "Visible", ent.data)) {
+        flavorText.addClass("link");
+        flavorText.click(function(ev){
+          assetTypes[ent.data._t].preview(ent, $("body"));
+        });
+        flavorText.contextmenu(function(ev){
+          assetTypes[ent.data._t].contextmenu(ent, $("body"));
+          return false;
+        });
+      }
+    }
+  }
+
+  var contentPlate = $("<div>").appendTo(div);
+  if (chatData.eventData) {
+    if (!chatData.p || hasSecurity(getCookie("UserID"), "Visible", {_s : chatData.p})) {
+      if (hasSecurity(getCookie("UserID"), "Trusted Player")) {
+        contentPlate.addClass("hover2");
+        contentPlate.attr("draggable", true);
+        contentPlate.on("dragstart", function(ev){
+          _dragTransfer = {roll : duplicate(chatData)};
+        });
+        contentPlate.on("drop", function(ev){
+          _dragTransfer = null;
+        });
+        contentPlate.click(function(){
+          var actionList = util.buildActions(chatData);
+          /*
+          if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+            actionList.push({
+              name : "Edit",
+              icon : "edit",
+              click : function(ev, ui) {
+                var content = $("<div>");
+                content.addClass("flexcolumn flex");
+
+                var dummyObj = sync.obj();
+                dummyObj.data = {pool : duplicate(game.events.data[evID].data.data.pool)};
+
+                var newApp = sync.newApp("ui_JSON").appendTo(content);
+                newApp.attr("lookup", "pool");
+                newApp.attr("hideConfirm", true);
+                newApp.attr("width", "200px");
+                newApp.attr("height", "200px");
+                dummyObj.addApp(newApp);
+
+                var confirm = $("<button>").appendTo(content);
+                confirm.append("Change Result");
+                confirm.click(function(){
+                  game.events.data[evID].data.data.pool = dummyObj.data.pool;
+                  if (layout.offline) {
+                    game.events.data[evID].update();
+                    game.logs.update();
+                  }
+                  else {
+                    game.events.data[evID].sync("updateEvent");
+                  }
+                  layout.coverlay("edit-results");
+                });
+                var pop = ui_popOut({
+                  id : "edit-results",
+                  target : ui,
+                }, content);
+              }
+            });
+          }
+          */
+          if (util.getTargets(true).length) {
+            actionList.push({
+              name : "De-select targets",
+              click : function(ev, ui) {
+                util.unSelectTargets();
+              }
+            });
+          }
+
+          var pop = ui_dropMenu($(this), actionList, {id : "dice-action", align : "bottom"});
+        });
+      }
+
+      if (chatData.user) {
+        contentPlate.addClass("bold spadding");
+      }
+      else {
+        contentPlate.addClass("lrmargin lrpadding");
+        contentPlate.css("font-size", "0.7em");
+      }
+
+      var display;
+      if (game.templates.display.ui && game.templates.display.ui[chatData.eventData.ui || game.templates.dice.ui]) {
+        display = game.templates.display.ui[chatData.eventData.ui || game.templates.dice.ui];
+      }
+      else {
+        display = null;
+      }
+      var diceRes = sync.render("ui_newDiceResults")(chatData, app, {display : display});
+      diceRes.appendTo(contentPlate);
+    }
+  }
+  else if (chatData.ui) {
+   sync.render(chatData.ui)(chatData, app, scope).appendTo(contentPlate);
+  }
+  else if (chatData.media) {
+    var mediaContainer = $("<div>").appendTo(contentPlate);
+    mediaContainer.addClass("flexcolumn flexmiddle smooth");
+    mediaContainer.css("overflow-wrap", "break-word");
+    mediaContainer.attr("srcImg", chatData.media);
+
+    var str = chatData.media;
+    if (str.length > 30) {
+      str = str.substring(0, 30) + "...";
+    }
+    flavorText.empty();
+    flavorText.append("<a href='"+chatData.media+"' target='_'>"+str+"</a>");
+
+
+    var mediaLink = $("<a>").appendTo(mediaContainer);
+    mediaLink.addClass("flexcolumn flexmiddle");
+    mediaLink.css("max-width", "100%");
+    mediaLink.attr("href", chatData.media);
+    mediaLink.attr("target", "_");
+    mediaLink.attr("title", chatData.media);
+    mediaLink.css("overflow-wrap", "break-word");
+    mediaLink.css("word-break", "break-all");
+    mediaLink.click(function(ev){
+      ev.stopPropagation();
+    });
+    //mediaLink.css("word-break", "break-all");
+    if (util.matchYoutube(chatData.media)) {
+      var media = $("<img>");
+      media.appendTo(mediaContainer);
+      media.css("width", "auto");
+      media.css("max-width", "100%");
+      media.css("height", "100px");
+      media.css("pointer-events", "none");
+      media.attr("src", "/content/youtube.ico");
+      if (hasSecurity(getCookie("UserID"), "Assistant Master")) {
+        mediaContainer.css("cursor", "pointer");
+        mediaContainer.click(function(ev){
+          util.shareYoutube($(this).attr("srcImg"));
+        });
+      }
+    }
+    else {
+      var media = ui_processMedia(chatData.media);
+      media.appendTo(mediaContainer);
+      media.css("width", "auto");
+      media.css("max-width", "100%");
+      media.css("height", "100px");
+      media.css("pointer-events", "none");
+
+      if (media.is("img")) {
+        mediaContainer.css("cursor", "pointer");
+        mediaContainer.click(function(ev){
+          assetTypes["img"].preview(ev, $(this), $(this).attr("srcImg"));
+        });
+        mediaContainer.contextmenu(function(ev){
+          assetTypes["img"].contextmenu(ev, $(this), $(this).attr("srcImg"));
+          ev.stopPropagation();
+          ev.preventDefault();
+          return false;
+        });
+      }
+      else {
+        media[0].play();
+      }
+    }
+  }
+  else if (chatData.text) {
+    contentPlate.addClass("subtitle");
+    if (chatData.user) {
+      contentPlate.addClass("bold spadding");
+      contentPlate.css("padding-left", "1.0em");
+      contentPlate.css("padding-right", "1.0em");
+    }
+    else {
+      contentPlate.addClass("lrmargin lrpadding");
+      contentPlate.css("font-size", "0.7em");
+    }
+
+    if (chatData.text.match("/me") && chatData.text.match("/me").index == 0) {
+      flavorWrap.addClass("flexmiddle subtitle");
+      headerPlate.css("background-color", "rgb(255,232,204)");
+      if (chatData.person == chatData.user) {
+        flavorWrap.addClass("flexmiddle");
+      }
+      flavorWrap.css("font-style", "italic");
+      flavorWrap.text(chatData.text.replace("/me", ""));
+      contentPlate.hide();
+    }
+    else if (chatData.text.match("/w") && chatData.text.match("/w").index == 0) {
+      if (getCookie("UserID") != chatData.userID) {
+        flavorText.append("<i class='subtitle flex flexmiddle spadding'>whispered to you</i>");
+      }
+      else {
+        flavorText.append("<i class='subtitle flex flexmiddle spadding'>you whispered</i>");
+      }
+      contentPlate.css("background-color", "rgba(66,108,66,0.2)");
+      contentPlate.css("font-style", "italic");
+      contentPlate.css("font-size", "0.9em");
+      contentPlate.text(chatData.text.replace("/w", ""));
+    }
+    else if (chatData.text.match("/y") && chatData.text.match("/y").index == 0) {
+      contentPlate.addClass("padding size3");
+      flavorText.text("Yelled Out!");
+
+      contentPlate.css("font-style", "italic");
+      contentPlate.css("background-color", "rgba(255,138,0,0.2)");
+      contentPlate.text(chatData.text.replace("/y", ""));
+    }
+    else {
+      contentPlate.text(chatData.text);
+    }
+  }
+  if (chatData.display) {
+    var ctx = sync.defaultContext();
+    merge(ctx, duplicate(chatData.eventData));
+    sync.render("ui_processUI")(chatData, app, {display : chatData.display, viewOnly : true, context : ctx}).appendTo(contentPlate);
+  }
+  return div
 });
 
 var _whisperTargets = {};
@@ -631,11 +573,9 @@ sync.render("ui_textBox", function(obj, app, scope){
     data = obj.data;
   }
   var div = $("<div>");
-  div.addClass("fit-xy white");
-  div.css("display", "flex");
-  div.css("flex-flow", "column");
+  div.addClass("fit-xy flexcolumn sheet1");
 
-  if (!layout.mobile) {
+  /*if (!layout.mobile) {
     div.on("dragover", function(ev) {
       ev.preventDefault();
       ev.stopPropagation();
@@ -650,10 +590,10 @@ sync.render("ui_textBox", function(obj, app, scope){
         olay.append("<b>Drop to Share</b>");
       }
     });
-    div.on('drop', function(ev){
+    div.on('drop', function(ev, ui){
       ev.preventDefault();
       ev.stopPropagation();
-      var dt = ev.originalEvent.dataTransfer;
+      var dt = ev.originalEvent.dataTransfer||$(ui.draggable).data("dt");
       if (dt.getData("Text") && dt.getData("Text").trim()) {
         var flavor;
         var icon;
@@ -680,12 +620,12 @@ sync.render("ui_textBox", function(obj, app, scope){
       ev.stopPropagation();
       layout.coverlay(app.attr("id")+"-drag-overlay");
     });
-  }
+  }*/
 
   var header = $("<div>").appendTo(div);
 
   var chatList = $("<div>").appendTo(div);
-  chatList.addClass("flexcolumn flex");
+  chatList.addClass("flexcolumn flex3");
 
   if (game.logs) {
     /*if (isChrome()) {
@@ -700,21 +640,21 @@ sync.render("ui_textBox", function(obj, app, scope){
     }*/
 
     var chatApp = sync.newApp("_logs").appendTo(chatList);
-    chatApp.addClass("flex noSelected");
+    chatApp.addClass("flex3 noSelected");
     chatApp.css("overflow-x", "none");
     chatApp.css("overflow-y", "none");
     //chatApp.attr("show-Game", "false");
-
-    game.logs.addApp(chatApp);
+    setTimeout(function(){game.logs.addApp(chatApp);}, 10);
   }
   var outlinebottom = $("<div>").appendTo(div);
   outlinebottom.addClass("outlinebottom");
 
   var textInput = $("<div>").appendTo(div);
-  textInput.addClass("flexcolumn padding white");
+  textInput.addClass("flexcolumn");
+  textInput.css("background", "#D8D7DD");
 
   var imperson = $("<div>").appendTo(textInput);
-  imperson.addClass("flexrow fit-x");
+  imperson.addClass("flexrow fit-x lrpadding");
 
   var chatType = $("<button>").appendTo(imperson);
   chatType.addClass("subtitle mpadding chatType");
@@ -722,7 +662,7 @@ sync.render("ui_textBox", function(obj, app, scope){
   chatType.text("OOC");
 
   var newApp = sync.newApp("_imperson").appendTo(imperson);
-  newApp.addClass("white");
+  newApp.css("outline-color", "transparent");
   newApp.attr("ICText", "No Character");
   newApp.attr("src", "/content/icons/blankchar.png");
   game.players.addApp(newApp);
@@ -741,7 +681,7 @@ sync.render("ui_textBox", function(obj, app, scope){
   });
 
   var input = $("<textarea>").appendTo(textInput);
-  input.addClass("smooth");
+  input.addClass("smooth subtitle lrmargin");
   input.attr("placeholder", "Enter Chat Text Here");
   input.css("height", "60px");
   input.css("overflow-x", "hidden");
@@ -800,7 +740,7 @@ sync.render("ui_textBox", function(obj, app, scope){
   });
 
   var wrap = $("<div>").appendTo(textInput);
-  wrap.addClass("smooth spadding flexrow flexaround");
+  wrap.addClass("smooth spadding flexrow flexbetween");
 
   if (game.templates.dice.defaults && game.templates.dice.defaults.length) {
     var diceWrap = $("<div>").appendTo(wrap);
@@ -854,7 +794,7 @@ sync.render("ui_textBox", function(obj, app, scope){
     }
   }
 
-  var extendedDice = $("<a>Dice Pool</a>").appendTo(wrap);
+  var extendedDice = $("<button>Pools</button>").appendTo(wrap);
   extendedDice.addClass("subtitle lrmargin flexmiddle");
   extendedDice.click(function() {
     var content = $("<div>");
@@ -873,7 +813,7 @@ sync.render("ui_textBox", function(obj, app, scope){
     checkWrap.addClass("flexcolumn lrmargin");
 
     var check = $("<div>").appendTo(checkWrap);
-    check.addClass("flexmiddle");
+    check.addClass("flexrow flexmiddle");
 
     var close = genInput({
       parent : check,
@@ -882,9 +822,10 @@ sync.render("ui_textBox", function(obj, app, scope){
     });
     close.prop("checked", true);
     check.append("<b class='subtitle lrpadding'>Close after rolling</b>");
+    check.append("<div class='flex'></div>");
 
     var check = $("<div>").appendTo(checkWrap);
-    check.addClass("flexmiddle");
+    check.addClass("flexrow flexmiddle");
 
     var show = genInput({
       parent : check,
@@ -902,6 +843,28 @@ sync.render("ui_textBox", function(obj, app, scope){
       game.locals["diceRoll"].update();
     });
     check.append("<b class='subtitle lrpadding'>Show all dice types</b>");
+    check.append("<div class='flex'></div>");
+
+    var check = $("<div>").appendTo(checkWrap);
+    check.addClass("flexrow flexmiddle");
+
+    var show1 = genInput({
+      parent : check,
+      type : "checkbox",
+      style : {"margin-top" : "0"},
+    });
+    show1.prop("checked", false);
+    show1.change(function(){
+      if (show.prop("checked") == true) {
+        extraDice.attr("total", "true");
+      }
+      else {
+        extraDice.attr("total", "false");
+      }
+      game.locals["diceRoll"].update();
+    });
+    check.append("<b class='subtitle lrpadding'>Total up Dice</b>");
+    check.append("<div class='flex'></div>");
 
     var button = $("<button>").appendTo(confirmWrap);
     button.addClass("flex");
@@ -926,10 +889,22 @@ sync.render("ui_textBox", function(obj, app, scope){
         }
         ic = newApp.attr("ICText");
       }
+      if (extraDice.attr("total")) {
+        var equation = "";
+        for (var i in game.locals["diceRoll"].data.dice) {
+          if (game.templates.dice.pool[i]) {
+            equation += game.locals["diceRoll"].data.dice[i]+game.templates.dice.pool[i].value + "+";
+          }
+        }
+        equation = equation.substring(0, equation.length-1);
 
-      util.processEvent("/r " + equation, "rolled", icon, ic);
+        util.processEvent("/r " + equation, "rolled", icon, ic);
+      }
+      else {
+        util.processEvent("/r " + equation, "rolled", icon, ic);
+      }
       if (close.prop("checked") == true) {
-        layout.coverlay("dice-popout-"+extraDice.attr("id"), 500);
+        $("#dice-popout").hide();
       }
     });
 
@@ -959,22 +934,45 @@ sync.render("ui_textBox", function(obj, app, scope){
       }
       var priv = {};
       priv[getCookie("UserID")] = true;
-      util.processEvent("/r " + equation, "rolled", icon, ic, priv);
+      if (extraDice.attr("total")) {
+        var equation = "";
+        for (var i in game.locals["diceRoll"].data.dice) {
+          if (game.templates.dice.pool[i]) {
+            equation += game.locals["diceRoll"].data.dice[i]+game.templates.dice.pool[i].value + "+";
+          }
+        }
+        equation = equation.substring(0, equation.length-1);
+
+        util.processEvent("/r " + equation, "rolled", icon, ic, priv);
+      }
+      else {
+        util.processEvent("/r " + equation, "rolled", icon, ic, priv);
+      }
       if (close.prop("checked") == true) {
-        layout.coverlay("dice-popout-"+extraDice.attr("id"), 500);
+        $("#dice-popout").hide();
       }
     });
 
+    if (!$("#dice-popout").length) {
+      var popout = ui_popOut({
+        target : $(this),
+        title : "Dice Roller",
+        align : "top",
+        prompt : true,
+        close : function(){
+          popout.hide();
+        },
+        id : "dice-popout",
+        style : {"width": "300px"},
+      }, content).addClass("prompt");
+      popout.resizable();
+    }
+    else {
+      $("#dice-popout").toggle();
+      var max = util.getMaxZ(".ui-popout");
+      $("#dice-popout").css("z-index", max+1);
 
-    var popout = ui_popOut({
-      target : $(this),
-      title : "Dice Roller",
-      align : "top",
-      prompt : true,
-      id : "dice-popout-"+extraDice.attr("id"),
-      style : {"width": "300px"},
-    }, content).addClass("prompt");
-    popout.resizable();
+    }
   });
 
   var send = $("<button>").appendTo(wrap);
@@ -999,6 +997,21 @@ sync.render("ui_textBox", function(obj, app, scope){
     util.chatEvent(input.val(), flavor, _whisperTargets, input, icon, flavor);
     input.val("");
   });
+
+  var bottomContent = $("<div>").appendTo(textInput);
+  bottomContent.addClass("flexrow flex alttext");
+  bottomContent.css("position", "relative");
+
+  var cardWrap = $("<div>").appendTo(bottomContent);
+  cardWrap.addClass("flexcolumn lrmargin");
+
+  var rolls = sync.newApp("ui_hotRolls");
+  rolls.css("outline", "none");
+  rolls.css("color", "#333");
+  rolls.css("text-shadow", "none");
+  rolls.appendTo(cardWrap);
+  game.players.addApp(rolls);
+  
 
   return div;
 });
@@ -1050,7 +1063,7 @@ sync.render("_imperson", function(obj, app, scope){
   });
   icon.contextmenu(function(){
     app.removeAttr("src");
-    $(this).css("background-image", "none");
+    $(this).css("background-image", "/content/icons/blankchar.png");
     return false;
   });
 
@@ -1112,7 +1125,7 @@ sync.render("_imperson", function(obj, app, scope){
       list.sort(function(obj1, obj2){
         var obj1 = getEnt(obj1);
         var obj2 = getEnt(obj2);
-        return (sync.rawVal(obj1.data.info.name) || "").toLowerCase().localeCompare((sync.rawVal(obj2.data.info.name) || "").toLowerCase());
+        return (String(sync.rawVal(obj1.data.info.name) || "")).toLowerCase().localeCompare(String(sync.rawVal(obj2.data.info.name) || "").toLowerCase());
       });
 
       var entList = sync.render("ui_entList")(obj, app, {
@@ -1146,13 +1159,21 @@ sync.render("_imperson", function(obj, app, scope){
     });
   }
   else {
-    var dataList = $("<datalist>").appendTo(div);
-    dataList.attr("id", "chat-data-list");
+    var list = [];
+    for (var i in game.entities.data) {
+      var ent = game.entities.data[i];
+      if (ent && ent.data && game.entities.data[i].data._t == "c" && hasSecurity(getCookie("UserID"), "Rights", ent.data) && !util.contains(list, String(ent.data.info.name.current || ""))) {
+        list.push(String(ent.data.info.name.current || ""));
+      }
+    }
+    list.sort(function(obj1, obj2){
+      return String(obj1 || "").toLowerCase().localeCompare(String(obj2 || "").toLowerCase());
+    });
 
     var input = genInput({
       parent : iconDiv,
       type : "list",
-      list : "chat-data-list",
+      list : list
     });
     input.val(app.attr("ICText") || name);
     input.addClass("subtitle middle");
@@ -1174,6 +1195,7 @@ sync.render("_imperson", function(obj, app, scope){
         }, content);
       }
       else {
+        var input = $(this);
         $(this).val("");
         var list = [];
         for (var i in game.entities.data) {
@@ -1185,11 +1207,26 @@ sync.render("_imperson", function(obj, app, scope){
         list.sort(function(obj1, obj2){
           return String(obj1 || "").toLowerCase().localeCompare(String(obj2 || "").toLowerCase());
         });
-        dataList.empty();
-        for (var i in list) {
-          var option = $("<option>").appendTo(dataList);
-          option.attr("value", list[i]);
-        }
+        $(this).autocomplete({
+          source: list,
+          minLength: 0,
+          change : function(){
+            input.change();
+            for (var i in game.entities.data) {
+              var ent = game.entities.data[i];
+              if (ent && ent.data && game.entities.data[i].data._t == "c" && String(ent.data.info.name.current || "") == input.val()) {
+                if (sync.rawVal(ent.data.info.img)) {
+                  app.attr("src", sync.rawVal(ent.data.info.img));
+                }
+                else {
+                  app.removeAttr("src");
+                }
+                icon.css("background-image", "url('"+(sync.rawVal(ent.data.info.img) || "/content/icons/blankchar.png")+"')");
+                break;
+              }
+            }
+          }
+        });
       }
       input.contextmenu(function(ev){
         input.val(util.nameBank[Math.floor(util.nameBank.length * Math.random())]);
