@@ -1,55 +1,42 @@
 # gmforge-core
-This is a fork of [Noobulater's original work](https://github.com/Noobulater/gmforge-core) for development and pull-request purposes.  If you're here to help me out on things I'm working on specifically, that's great, and thanks!  If you're looking to get GMForge, though, you should really use the original repository.  (If there are pending pull requests from my repo that you would like to see integrated into the core GMForge code, [the GMForge Discord server](https://discord.gg/usy4ByN) would be a perfect place to mention your opinion.)
+The Core Scripts providing all the virtual tabletop aspects of the tool (Development Server code excluded for security purposes)
 
-# Tweaks/Features Under Development
- - Webserver Deployment (How to actually do it, and changes in the code to support easy configuration)
- - Development of pluggable, modularized component architecture that facilitate framework-dependent non-breaking changes to the definition of core-features
- - Addition of server-side support for access into HeroLab portfolio files
+# Getting Started
 
-# Webserver Deployment
-The management for this is configured in the options.json file in the root directory of the repository.  If you want to test your GMForge changes locally, you can remove the "cloudDeployed" key in the options, or just change it to some other text.  Currently, this change assumes that if the "cloudDeployed" key is present in the options, it will have two child keys, "playerLink" and "gmLink" that contain FQDN host names for the GM-facing and Player-facing access points for your webserver.
+## What you'll need
+A copy of GM Forge
 
-Note that these host names can, in fact, be IP addresses, have specified port numbers, and include base path names, as long as your webserver configuration is set up to process requests accordingly.
+A way to concatenate Javascript files (see [grunt](https://github.com/gruntjs/grunt), [gulp](https://github.com/gulpjs/gulp))
 
-## Webserver Configuration
-This deployment has been tested with an Nginx webserver connected to a Phusion Passenger instance that actually handles the rendering of the Node.js GMForge application instance.  [Instructions on setting that up.](https://www.phusionpassenger.com/library/deploy/nginx/deploy/nodejs/)  My testing scenario also employed free security certificates obtained via CertBot/[LetsEncrypt](https://letsencrypt.org/).  Note that this deployment does not (yet) restrict access to images/data content based on any kind of logged-in status, so be aware that anything deployed to the `public/` directory will be publicly available.  (I'm hoping to correct this in a later update.)
 
-Passenger/Nginx as the webserver makes for exceptionally simple configurations.  In my testing, I established one subdomain for GM access and another that provided Player access to the GMForge application running on the server.  To ensure that the server was only spinning up one instance of the GMForge application (currently, the app runs in a mode that can cause memory leaks if more than one instance is active, according to the warning logs), these subdomains had to be handled by a single Nginx server-block.  In addition to that, CertBot automatically installed redirects to ensure that the GMForge app was only accessible via https.  This resulted in two relevant server-blocks, structured roughly as follows:
+# How to start testing your code
 
-```nginx
-server {
+#### Testing on the development Server
+If you are just building a quick little applet, you can do live testing on the development server
 
-    server_name ~(forge|gm)\.your-domain-name\.net;
+To start testing your code, simply go to the development server @ www.gmforge.io, log-in and access the 'mod tools'
 
-    root /path/to/gmforge/public;
+![Alt Text](https://i.imgur.com/KXwZkLV.gif)
 
-    passenger_enabled on;
-    passenger_app_type node;
-    passenger_startup_file app.js;
 
-    listen [::]:443 ssl; # managed by Certbot
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/forge.your-domain-name.net/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/forge.your-domain-name.net/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+#### Testing on your local GM Forge server
 
-}
+In order to get your new code running, you must first concatenate your modified 'Scripts' folder together into a single file, 'core.js'.
 
-server {
+1. Install [node.js](https://nodejs.org/en/download/)
+2. Open Power Shell/ CMD /Git Bash in main directory of repository.
+3. Run "npm -g install gulp" (this will *globally* install gulp for you so you can use it as a command)
+4. Run "node update" (this will download all modules used by this repository, it may take a while).	+4. Run "npm update" (this will download all modules used by this repository, it may take a while).
+5. Run "gulp all" to generate core.js	 5. Run "gulp all" to generate core.js
+6. Run "node start" to run the application.	+6. Run "npm start" to run the application.
 
-    if ($host = forge.your-domain-name.net) {
-        return 301 https://$host$request_uri;
-    } # managed by Certbot
+Once you make changes you need to repeat step 5 and refresh page afterwards.
 
-    if ($host = gm.your-domain-name.net) {
-        return 301 https://$host$request_uri;
-    } # managed by Certbot
+#####TODO Write out how to concatenate your files
 
-    listen 80 ;
-    listen [::]:80 ;
-    server_name forge.your-domain-name.net gm.your-domain-name.net;
-    return 404; # managed by Certbot
+Once you have concatenated the files, overwrite the 'core.js' file in your /public/bin folder.
 
-}
-```
+Once you have overwritten the changes, simply refresh using ctrl+R, or restart your server, and you will be able to see the newest changes.
+
+# This Readme is a WIP (Obviously)
+I am doing my best to expand it! Lend me some support https://www.patreon.com/gmforge so I can spend the proper amount of time documenting and explaining how to do things!
