@@ -30,7 +30,9 @@
     }
   },
   "hostName": "New host name",
-  "cloudDeployed": {
+  "hostPW": "test",
+  "make-me-named-'cloudDeployed'-to-use-me": {
+    "comment#notused": "replace the values below with the right ones for your configuration...",
     "playerLink": "player-subdomain.your-domain.net",
     "gmLink": "gm-subdomain.your-domain.net"
   }
