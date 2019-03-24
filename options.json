@@ -5,20 +5,16 @@
   "height": "",
   "accounts": {
     "player_1": {
-      "displayName": "Whisszard",
       "password": ""
     },
     "player_2": {
-      "displayName": "Kindle",
       "password": ""
     },
     "player_3": {
-      "displayName": "I only play Dwarves",
       "password": ""
     },
     "player_4": {
-      "password": "",
-      "displayName": "dd"
+      "password": ""
     },
     "player_5": {
       "password": ""
@@ -34,5 +30,8 @@
     }
   },
   "hostName": "New host name",
-  "hostPW": "test"
+  "cloudDeployed": {
+    "playerLink": "player-subdomain.your-domain.net",
+    "gmLink": "gm-subdomain.your-domain.net"
+  }
 }

@@ -32,12 +32,14 @@
     }
 
     const ngrok = require('ngrok');
-    var ngrokURL;
+    var publicLinkAddress;
     ngrok.kill();
-    if (!options.noNgrok) {
+    if (!options.noNgrok && !options.cloudDeployed) {
       ngrok.connect(options.port || 30000).then(function(resultURL){
-        ngrokURL = resultURL;
+        publicLinkAddress = resultURL;
       });
+    } else if (options.cloudDeployed) {
+      publicLinkAddress = options.cloudDeployed.playerLink;
     }
 
 
@@ -404,13 +406,13 @@
 
     app.get('/join', function(req, res){
       var ip = req.ip;
-      console.log(ngrokURL);
+      console.log(publicLinkAddress);
       if (req.query.userID && req.query.userID != "localhost") {
         if (!options.accounts || (!options.accounts[req.query.userID].password || options.accounts[req.query.userID].password == req.query.password)) {
           res.cookie("InternalIP", addresses[0] || "", 99999999999999)
           res.cookie("ExternalIP", externalIP || "", 99999999999999);
           res.cookie("PublicPort", publicPort || privatePort, 9999999999999);
-          res.cookie("PublicLink", encodeURI(ngrokURL), 9999999999999);
+          res.cookie("PublicLink", encodeURI(publicLinkAddress), 9999999999999);
           res.cookie("PrivatePort", publicPort, 9999999999999); // don't give them the private port regardless
           res.cookie("UserID", req.query.userID, 9999999999999999);
           res.render('game', {
@@ -429,7 +431,7 @@
           res.cookie("InternalIP", addresses[0] || "", 99999999999999)
           res.cookie("ExternalIP", externalIP || "", 99999999999999);
           res.cookie("PublicPort", publicPort  || privatePort, 9999999999999);
-          res.cookie("PublicLink", encodeURI(ngrokURL), 9999999999999);
+          res.cookie("PublicLink", encodeURI(publicLinkAddress), 9999999999999);
           res.cookie("PrivatePort", privatePort, 9999999999999);
           res.cookie("UserID", "localhost", 99999999999999);
           res.render('game', {host : true, layout : "game"});
@@ -602,13 +604,19 @@
       }
     });
 
-    var isThisLocalhost = function (req){
-    
+    var isThisLocalhost = options.cloudDeployed ? function (req){
+
+      var host = req.headers.host;
+
+      return host === options.cloudDeployed.gmLink;
+
+    } : function (req){
+
       var ip = req.connection.remoteAddress;
       var host = req.get('host');
-      
+
       return ip === "127.0.0.1" || ip === "::ffff:127.0.0.1" || ip === "::1" || host.indexOf("localhost") !== -1;
-  }
+    }
 
     app.get("/openFiles", function(req, res){
       var ip = req.ip;
@@ -639,7 +647,7 @@
     });
 
     app.get('/packagePack', function(req, res){
- 
+
     });
     app.get('/workshopUpdate', function(req, res){
 
