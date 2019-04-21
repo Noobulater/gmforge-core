@@ -3196,7 +3196,7 @@ sync.render("ui_processUI", function(obj, app, scope) {
         value : value,
         obj : obj,
         cmd : "updateAsset",
-        disabled : scope.viewOnly,
+        disabled : scope.viewOnly || !!$(this).attr("disabled"),
       }, null, $(this));
       if ($(this).attr("isChecked") == true || $(this).attr("isChecked") == "true"){
         $(this).prop("checked", true);
