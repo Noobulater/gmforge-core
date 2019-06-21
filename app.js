@@ -461,6 +461,12 @@
         }
       }
     });
+
+    app.post('/saveGame', (req, res) => {
+      game.saveGame();
+      res.send({ text: "Successfully Save" });
+    });
+
     var users = require("./lib/users.js");
     users.initialize(server);
 
@@ -603,10 +609,10 @@
     });
 
     var isThisLocalhost = function (req){
-    
+
       var ip = req.connection.remoteAddress;
       var host = req.get('host');
-      
+
       return ip === "127.0.0.1" || ip === "::ffff:127.0.0.1" || ip === "::1" || host.indexOf("localhost") !== -1;
   }
 
@@ -639,7 +645,7 @@
     });
 
     app.get('/packagePack', function(req, res){
- 
+
     });
     app.get('/workshopUpdate', function(req, res){
 
