@@ -12,7 +12,7 @@
   "devDependencies": {
     "electron": "3.0.9",
     "electron-packager": "^9.1.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-es6-transpiler": "^1.0.1",
     "gulp-rename": "^1.2.2",
