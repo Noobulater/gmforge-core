@@ -10,7 +10,7 @@
   "author": "Game Master LLC",
   "license": "",
   "devDependencies": {
-    "electron": "3.0.9",
+    "electron": "18.3.7",
     "electron-packager": "^9.1.0",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
